@@ -1,0 +1,24 @@
+packages:
+  - apps/*
+  - services/*
+  - packages/*
+
+allowBuilds:
+  '@google/genai': false
+  esbuild: true
+  msgpackr-extract: true
+  protobufjs: false
+
+minimumReleaseAgeExclude:
+  - '@vitest/mocker@5.0.5'
+  - '@vitest/spy@5.0.5'
+  - vitest@5.0.5
+
+# Overleaf's ported LaTeX completions rely on Overleaf's patch to
+# @codemirror/autocomplete (completion `extend`/`deduplicate`, nextChar/prevChar,
+# closeBrackets `buildInsert`). Keep one patched copy for the whole workspace.
+overrides:
+  '@codemirror/autocomplete': 6.18.4
+
+patchedDependencies:
+  '@codemirror/autocomplete@6.18.4': patches/@codemirror__autocomplete@6.18.4.patch

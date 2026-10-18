@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Consumed only through the Vite bundle. The ported Overleaf sources use
+    // extensionless imports, non-`type` type imports and parameter properties.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2024", "dom", "dom.iterable"],
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "erasableSyntaxOnly": false,
+    "types": []
+  },
+  "include": ["src"]
+}

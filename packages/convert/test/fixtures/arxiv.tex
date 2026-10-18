@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[numbers]{natbib}
+\usepackage{authblk}
+\usepackage[colorlinks,allcolors=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem*{observation}{Observation}
+
+\title{Title of the Paper}
+\author[1]{First Author}
+\author[2]{Second Author}
+\affil[1]{Department, University, City, Country\\\texttt{first@example.org}}
+\affil[2]{Company, City, Country\\\texttt{second@example.com}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\noindent\textbf{Keywords:} first keyword, second keyword, third keyword
+
+\section{Introduction}
+\label{sec:intro}
+Cite related work like this~\cite{knuth}, or several works at once~\cite{knuth,lamport}.
+
+\begin{definition}
+A thing is \emph{good} if it works.
+\end{definition}
+
+\begin{assumption}
+Things work.
+\end{assumption}
+
+\begin{theorem}
+\label{thm:main}
+Every good thing works.
+\end{theorem}
+
+\begin{lemma}
+Good things exist.
+\end{lemma}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+By definition,
+\[
+  1 + 1 = 2. \qedhere
+\]
+\end{proof}
+
+\begin{observation}
+This is plain.
+\end{observation}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{fig.png}
+  \caption{Overview of the method.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Conclusion}
+Summarise the findings and what comes next.
+
+\section*{Acknowledgements}
+Thank the people and funding that supported this work.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\section{Additional Results}
+Material that supports the paper but is not needed to follow it.
+
+\end{document}

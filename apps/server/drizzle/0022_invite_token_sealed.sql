@@ -1,0 +1,1 @@
+ALTER TABLE "invites" ADD COLUMN "token_sealed" text;

@@ -1,0 +1,8 @@
+# Set COLTEX_DOMAIN to your public hostname; Caddy obtains HTTPS certificates automatically.
+{$COLTEX_DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 60MB
+	}
+	reverse_proxy server:3690
+}

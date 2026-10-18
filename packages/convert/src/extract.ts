@@ -1,0 +1,671 @@
+import { clean, cut, findEnvs, findMacros, mask, splitTop, unbrace, type Group } from './scan.ts'
+import type { Affiliation, Author, Bibliography, Paper, TargetOptions, UsedPackage } from './types.ts'
+
+export class ConvertError extends Error {}
+
+/** Where the bibliography and acknowledgments were, so the target puts its own versions there. */
+export const BIB_MARK = '%%COLTEX:BIBLIOGRAPHY%%'
+export const ACK_MARK = '%%COLTEX:ACKNOWLEDGMENTS%%'
+
+/** Commands that only configure a particular class's front matter; dropped on conversion. */
+const FRONT_CONFIG = [
+  // general
+  'date', 'maketitle', 'titlerunning', 'authorrunning', 'shorttitle',
+  // IEEEtran
+  'IEEEpeerreviewmaketitle', 'IEEEoverridecommandlockouts', 'IEEEdisplaynontitleabstractindextext', 'markboth',
+  // acmart
+  'acmConference', 'acmBooktitle', 'acmYear', 'acmDOI', 'acmISBN', 'acmPrice', 'acmSubmissionID', 'acmJournal',
+  'acmVolume', 'acmNumber', 'acmArticle', 'acmMonth', 'acmArticleSeq', 'setcopyright', 'copyrightyear',
+  'ccsdesc', 'settopmatter', 'received', 'citestyle', 'acmBadge',
+  // elsarticle
+  'journal', 'cortext', 'fntext',
+  // revtex
+  'pacs',
+]
+
+/** Commands with their argument counts, as [name, optional, mandatory]. */
+const ARGS: Record<string, [number, number]> = {
+  date: [0, 1], titlerunning: [0, 1], authorrunning: [0, 1], shorttitle: [0, 1],
+  markboth: [0, 2], acmConference: [1, 3], acmBooktitle: [0, 1], acmYear: [0, 1], acmDOI: [0, 1], acmISBN: [0, 1],
+  acmPrice: [0, 1], acmSubmissionID: [0, 1], acmJournal: [0, 1], acmVolume: [0, 1], acmNumber: [0, 1],
+  acmArticle: [0, 1], acmMonth: [0, 1], acmArticleSeq: [0, 1], setcopyright: [0, 1], copyrightyear: [0, 1],
+  ccsdesc: [1, 1], settopmatter: [0, 1], received: [1, 1], citestyle: [0, 1], acmBadge: [1, 1], journal: [0, 1],
+  cortext: [1, 1], fntext: [1, 1], pacs: [0, 1],
+}
+
+const COUNTRIES = new Set(
+  [
+    'china', 'p. r. china', 'p.r. china', 'pr china', 'usa', 'u.s.a.', 'united states', 'united states of america', 'uk',
+    'united kingdom', 'germany', 'france', 'japan', 'korea', 'south korea', 'republic of korea', 'singapore', 'canada',
+    'australia', 'italy', 'spain', 'netherlands', 'the netherlands', 'switzerland', 'sweden', 'india', 'hong kong',
+    'hong kong sar', 'taiwan', 'macau', 'israel', 'austria', 'belgium', 'denmark', 'finland', 'norway', 'portugal',
+    'brazil', 'russia', 'new zealand', 'ireland', 'greece', 'poland', 'czech republic', 'saudi arabia', 'uae',
+    'united arab emirates', 'mexico', 'turkey', 'iran', 'egypt', 'south africa', 'chile', 'argentina', 'malaysia',
+    'thailand', 'vietnam', 'indonesia', 'pakistan', '中国', '中国香港', '日本', '新加坡', '美国', '英国',
+  ],
+)
+const DEPARTMENT_RE = /\b(dep(?:t|artment)|school|faculty|division|lab(?:oratory)?|college of|center|centre|group)\b|学院|系|实验室|研究中心/i
+const INSTITUTION_RE = /universit|institut|college|academy|polytechnic|\blabs?\b|\binc\b|corp|\bltd\b|gmbh|hospital|大学|研究院|研究所|公司|医院/i
+
+/** Best-effort structure for an affiliation written as free text. */
+export function structureAffiliation(raw: string): Omit<Affiliation, 'id' | 'raw'> {
+  const parts = raw
+    .split(/\s*,\s*/)
+    .map(p => p.trim())
+    .filter(Boolean)
+  const out: Omit<Affiliation, 'id' | 'raw'> = {}
+  if (parts.length && COUNTRIES.has(parts.at(-1)!.toLowerCase().replace(/\.$/, ''))) out.country = parts.pop()!.replace(/\.$/, '')
+  const dept = parts.findIndex(p => DEPARTMENT_RE.test(p) && !INSTITUTION_RE.test(p.replace(/institute of .*/i, '')))
+  if (dept !== -1) out.department = parts[dept]
+  const inst = parts.findIndex((p, i) => i !== dept && INSTITUTION_RE.test(p))
+  const instIndex = inst !== -1 ? inst : parts.findIndex((_, i) => i !== dept)
+  if (instIndex !== -1) out.institution = parts[instIndex]
+  // The city is usually the last remaining part (postal codes stripped).
+  const rest = parts.filter((_, i) => i !== dept && i !== instIndex)
+  // A country we don't know still comes last after a city ("…, Nairobi, Kenya"),
+  // but not a state code or a postal code ("…, Stanford, CA 94305").
+  if (!out.country && rest.length >= 2 && !/\d/.test(rest.at(-1)!) && !/^[A-Z]{2,3}$/.test(rest.at(-1)!)) out.country = rest.pop()!.replace(/\.$/, '')
+  const city = rest.at(-1)?.replace(/\b\d{4,6}\b/g, '').trim()
+  if (city && !/\d/.test(city) && city.length < 40) out.city = city
+  return out
+}
+
+const EMAIL_RE = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/
+
+/** Pull an email out of a line written as plain text, \texttt, \href{mailto:} or \email. */
+function emailIn(line: string): string | undefined {
+  return clean(line).match(EMAIL_RE)?.[0]
+}
+
+/** An email in an address line, with the markup around it (\\texttt, \\href{mailto:}, \\email, "E-mail:"). */
+const EMAIL_MARKUP = /(?:e-?mail\s*:?\s*)?(?:\\(?:texttt|email|url|href)\s*\{(?:mailto:)?[^{}]*@[^{}]*\}(?:\{[^{}]*\})?|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/gi
+
+/**
+ * Split emails out of an affiliation's lines: authblk and similar
+ * affiliations often carry the author's address on a line of its own, and an
+ * email left in would be taken for the city (and breaks elsarticle's
+ * key=value affiliation).
+ */
+function takeEmails(ls: string[]): { lines: string[]; emails: string[] } {
+  const emails: string[] = []
+  const rest: string[] = []
+  for (const l of ls) {
+    for (const e of clean(l).matchAll(new RegExp(EMAIL_RE.source, 'g'))) emails.push(e[0])
+    const left = l.replace(EMAIL_MARKUP, '').replace(/^[\s,;]+|[\s,;]+$/g, '')
+    if (left) rest.push(left)
+  }
+  return { lines: rest, emails }
+}
+
+/** Give the authors of one affiliation the emails written into it, when it's clear whose they are. */
+function assignEmails(owners: Author[], emails: string[]): boolean {
+  if (!emails.length) return true
+  if (!owners.length || (owners.length > 1 && owners.length !== emails.length)) return false
+  owners.forEach((a, i) => {
+    if (!a.email && emails[i]) a.email = emails[i]
+  })
+  return true
+}
+
+/** Drop font and size switches that only styled the front matter (\textit{x} → x). */
+export function plain(s: string): string {
+  let out = s
+  for (let i = 0; i < 3; i++) out = out.replace(/\\(?:textit|textbf|textrm|textsf|textsc|textup|emph|mbox)\{([^{}]*)\}/g, '$1')
+  return clean(out.replace(/\\(?:it|bf|rm|sf|sc|em|small|footnotesize|scriptsize|normalsize|large|Large|centering|upshape|itshape|bfseries)\b\s*/g, ''))
+}
+
+/** An author's name without affiliation markers (\textsuperscript{1}, $^{1,*}$, \footnotemark). */
+function cleanName(s: string): string {
+  return plain(
+    s
+      .replace(/\\textsuperscript\{[^}]*\}/g, '')
+      .replace(/\$\^\{?[^$]*\}?\$/g, '')
+      .replace(/\\(?:footnotemark|IEEEauthorrefmark|thanksref|corref|fnref)(?:\[[^\]]*\])?(?:\{[^}]*\})?/g, ''),
+  ).replace(/[\s,]+$/, '')
+}
+
+function lines(s: string): string[] {
+  return splitTop(s, '\\\\')
+    .map(l => plain(l))
+    .filter(Boolean)
+}
+
+/** Remove a macro (with its arguments) from a string, returning the arguments of each hit. */
+function takeMacro(s: string, name: string, opts: number, args: number): { rest: string; hits: { opts: string[]; args: string[] }[] } {
+  const m = mask(s)
+  const found = findMacros(m, s, name, { opts, args })
+  return {
+    rest: cut(s, found),
+    hits: found.map(h => ({ opts: h.opts.map(o => o.inner), args: h.args.map(a => a.inner) })),
+  }
+}
+
+class AffiliationTable {
+  readonly list: Affiliation[] = []
+  /** Add (or find) an affiliation by its text. */
+  add(raw: string, structured?: Omit<Affiliation, 'id' | 'raw'>): string {
+    const text = raw.replace(/\s+/g, ' ').trim()
+    const existing = this.list.find(a => a.raw.toLowerCase() === text.toLowerCase())
+    if (existing) return existing.id
+    const id = `a${this.list.length + 1}`
+    this.list.push({ id, raw: text, ...(structured ?? structureAffiliation(text)) })
+    return id
+  }
+}
+
+/** acmart's \affiliation{\institution{..}\department{..}\city{..}\country{..}}. */
+function acmAffiliation(inner: string): { raw: string; structured: Omit<Affiliation, 'id' | 'raw'> } {
+  const m = mask(inner)
+  const get = (name: string) => {
+    const hit = findMacros(m, inner, name, { args: 1 })[0]
+    return hit?.args[0] ? clean(hit.args[0].inner) : undefined
+  }
+  const structured = {
+    department: get('department'),
+    institution: get('institution'),
+    city: get('city'),
+    country: get('country'),
+  }
+  const parts = [structured.department, structured.institution, get('streetaddress'), structured.city, get('state'), get('postcode'), structured.country]
+  return { raw: parts.filter(Boolean).join(', '), structured }
+}
+
+/** elsarticle's key=value affiliation: organization={..}, city={..}, country={..}. */
+function keyvalAffiliation(inner: string): { raw: string; structured: Omit<Affiliation, 'id' | 'raw'> } | undefined {
+  if (!/\b(organization|addressline|city|country|postcode)\s*=/.test(inner)) return undefined
+  const kv: Record<string, string> = {}
+  for (const part of splitTop(inner, ',')) {
+    const eq = part.indexOf('=')
+    if (eq === -1) continue
+    kv[part.slice(0, eq).trim().toLowerCase()] = clean(unbrace(part.slice(eq + 1)))
+  }
+  const org = kv.organization ?? ''
+  const [dept, inst] = org.includes(',') ? [org.split(',')[0]!.trim(), org.split(',').slice(1).join(',').trim()] : [undefined, org]
+  const structured = { department: dept, institution: inst || undefined, city: kv.city, country: kv.country }
+  const raw = [org, kv.addressline, kv.city, kv.postcode, kv.state, kv.country].filter(Boolean).join(', ')
+  return { raw, structured }
+}
+
+/** Find front-matter hits in order: [kind, hit] for the sequence-style classes (acmart, revtex, amsart). */
+type Hit = { kind: string; start: number; end: number; opts: Group[]; args: Group[] }
+
+function sequenceAuthors(m: string, src: string, to: number, table: AffiliationTable): { authors: Author[]; ranges: Hit[] } {
+  const kinds: [string, number, number][] = [
+    ['author', 1, 1],
+    ['affiliation', 1, 1],
+    ['address', 1, 1],
+    ['email', 0, 1],
+    ['orcid', 0, 1],
+    ['additionalaffiliation', 0, 1],
+    ['altaffiliation', 1, 1],
+    ['affil', 1, 1],
+    ['thanks', 0, 1],
+  ]
+  const hits: Hit[] = []
+  for (const [kind, o, a] of kinds) {
+    for (const h of findMacros(m, src, kind, { opts: o, args: a }, 0, to)) hits.push({ kind, ...h })
+  }
+  hits.sort((a, b) => a.start - b.start)
+  // Drop hits nested inside an \author{...} argument (e.g. \thanks inside it).
+  const top = hits.filter(h => !hits.some(o => o !== h && o.kind === 'author' && o.start < h.start && h.end <= o.end))
+
+  const authors: Author[] = []
+  let pending: Author[] = [] // authors waiting for an affiliation
+  for (const h of top) {
+    const arg = h.args[0]?.inner ?? ''
+    if (h.kind === 'author') {
+      const { rest, hits: thanks } = takeMacro(arg, 'thanks', 0, 1)
+      const author: Author = { name: cleanName(rest), affiliations: [] }
+      if (thanks.length) author.note = thanks.map(t => clean(t.args[0] ?? '')).join(' ')
+      authors.push(author)
+      if (pending.length && pending.every(p => p.affiliations.length)) pending = []
+      pending.push(author)
+    } else if (h.kind === 'affiliation' || h.kind === 'address' || h.kind === 'additionalaffiliation' || h.kind === 'altaffiliation') {
+      const acm = /\\(institution|country|city)\b/.test(arg) ? acmAffiliation(arg) : undefined
+      const kv = acm ? undefined : keyvalAffiliation(arg)
+      const text = acm || kv ? undefined : takeEmails(lines(arg))
+      const id = acm ? table.add(acm.raw, acm.structured) : kv ? table.add(kv.raw, kv.structured) : table.add(text!.lines.join(', '))
+      const targets = pending.length ? pending : authors.slice(-1)
+      for (const a of targets) if (!a.affiliations.includes(id)) a.affiliations.push(id)
+      if (text) assignEmails(targets, text.emails)
+    } else if (h.kind === 'email') {
+      const last = authors.at(-1)
+      if (last && !last.email) last.email = clean(arg)
+    } else if (h.kind === 'orcid') {
+      const last = authors.at(-1)
+      if (last) last.orcid = clean(arg)
+    } else if (h.kind === 'thanks') {
+      const last = authors.at(-1)
+      if (last) last.note = [last.note, clean(arg)].filter(Boolean).join(' ')
+    }
+  }
+  return { authors, ranges: top }
+}
+
+/** \author{A \and B} with "\\"-separated lines (article, report, many others). */
+function blockAuthors(arg: string, table: AffiliationTable): Author[] {
+  return splitTop(arg, '\\and').flatMap(part => {
+    const { rest, hits: thanks } = takeMacro(part, 'thanks', 0, 1)
+    const ls = lines(rest)
+    if (!ls.length) return []
+    const [nameLine, ...others] = ls
+    const emails = others.map(emailIn)
+    const affLines = others.filter((_, i) => !emails[i])
+    // Several names on one line ("A, B and C") share the affiliation.
+    const names = nameLine!.split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean)
+    const affId = affLines.length ? table.add(affLines.join(', ')) : undefined
+    return names.map((name, i) => ({
+      name: cleanName(name),
+      affiliations: affId ? [affId] : [],
+      email: names.length === 1 ? emails.find(Boolean) : undefined,
+      note: i === 0 && thanks.length ? thanks.map(t => clean(t.args[0] ?? '')).join(' ') : undefined,
+    }))
+  })
+}
+
+/** IEEEtran conference: \IEEEauthorblockN{..}\IEEEauthorblockA{..} pairs; journal: names with \thanks. */
+function ieeeAuthors(arg: string, table: AffiliationTable): Author[] {
+  if (!arg.includes('\\IEEEauthorblockN')) {
+    let rest = arg
+    rest = takeMacro(rest, 'IEEEmembership', 0, 1).rest
+    const { rest: noThanks, hits: thanks } = takeMacro(rest, 'thanks', 0, 1)
+    const names = clean(noThanks)
+      .replace(/\\IEEEauthorrefmark\{[^}]*\}/g, '')
+      .split(/\s*,\s*(?:and\s+)?|\s+and\s+/)
+      .map(n => n.trim())
+      .filter(Boolean)
+    const note = thanks.map(t => clean(t.args[0] ?? '')).join(' ')
+    return names.map((name, i) => ({ name: cleanName(name), affiliations: [], note: i === 0 && note ? note : undefined }))
+  }
+  return splitTop(arg, '\\and').flatMap(part => {
+    const m = mask(part)
+    const n = findMacros(m, part, 'IEEEauthorblockN', { args: 1 })
+    const a = findMacros(m, part, 'IEEEauthorblockA', { args: 1 })
+    const names = n.flatMap(h => lines(h.args[0]?.inner ?? '').flatMap(l => l.split(/\s*,\s*(?:and\s+)?|\s+and\s+/)))
+      .map(s => s.replace(/\\IEEEauthorrefmark\{[^}]*\}/g, '').replace(/\$\^\{?[\w,*†‡]+\}?\$/g, '').trim())
+      .filter(Boolean)
+    const affLines = a.flatMap(h => lines(h.args[0]?.inner ?? ''))
+    const email = affLines.map(emailIn).find(Boolean)
+    const rest = affLines.filter(l => !emailIn(l)).map(l => l.replace(/^\\textit\{(.*)\}$/, '$1'))
+    const affId = rest.length ? table.add(rest.join(', ')) : undefined
+    return names.map(name => ({ name: cleanName(name), affiliations: affId ? [affId] : [], email: names.length === 1 ? email : undefined }))
+  })
+}
+
+/** llncs: \author{A\inst{1}\orcidID{..} \and B\inst{2}} with \institute{I1 \and I2}. */
+function lncsAuthors(authorArg: string, instituteArg: string | undefined, table: AffiliationTable): Author[] {
+  const institutes = instituteArg
+    ? splitTop(instituteArg, '\\and').map(part => {
+        const { rest, hits } = takeMacro(part, 'email', 0, 1)
+        const noUrl = takeMacro(rest, 'url', 0, 1).rest
+        const ls = lines(noUrl).filter(l => !emailIn(l))
+        return { id: ls.length ? table.add(ls.join(', ')) : undefined, emails: hits.map(h => clean(h.args[0] ?? '')) }
+      })
+    : []
+  return splitTop(authorArg, '\\and').flatMap(part => {
+    const inst = takeMacro(part, 'inst', 0, 1)
+    const orcid = takeMacro(inst.rest, 'orcidID', 0, 1)
+    const name = cleanName(orcid.rest)
+    if (!name) return []
+    const nums = inst.hits.flatMap(h => (h.args[0] ?? '').split(',').map(n => Number.parseInt(n.trim(), 10)))
+    const affs = (nums.length ? nums : institutes.length === 1 ? [1] : []).flatMap(n => (institutes[n - 1]?.id ? [institutes[n - 1]!.id!] : []))
+    const emails = nums.flatMap(n => institutes[n - 1]?.emails ?? [])
+    return [{ name, affiliations: affs, orcid: orcid.hits[0] ? clean(orcid.hits[0].args[0] ?? '') : undefined, email: emails.length === 1 ? emails[0] : undefined }]
+  })
+}
+
+/** authblk: \author[1,2]{Name} \affil[1]{Text}. */
+function authblkAuthors(m: string, src: string, to: number, table: AffiliationTable, notes: string[]): { authors: Author[]; ranges: { start: number; end: number }[] } {
+  const affils = findMacros(m, src, 'affil', { opts: 1, args: 1 }, 0, to)
+  const labels = new Map<string, string>()
+  const emails = new Map<string, string[]>()
+  affils.forEach((h, i) => {
+    const text = takeEmails(lines(h.args[0]?.inner ?? ''))
+    const id = table.add(text.lines.join(', '))
+    labels.set(h.opts[0]?.inner.trim() ?? String(i + 1), id)
+    emails.set(id, [...(emails.get(id) ?? []), ...text.emails])
+  })
+  const authorHits = findMacros(m, src, 'author', { opts: 1, args: 1 }, 0, to)
+  const authors = authorHits.flatMap(h => {
+    const keys = (h.opts[0]?.inner ?? '').split(',').map(k => k.trim()).filter(Boolean)
+    const ids = keys.flatMap(k => (labels.has(k) ? [labels.get(k)!] : []))
+    return blockAuthors(h.args[0]?.inner ?? '', table).map(a => ({ ...a, affiliations: ids.length ? ids : a.affiliations }))
+  })
+  // authblk without labels: each \affil belongs to the authors before it.
+  if (authorHits.every(h => !h.opts.length) && affils.length) {
+    for (const a of authors) if (!a.affiliations.length) a.affiliations = [...labels.values()].slice(0, 1)
+  }
+  for (const [id, list] of emails) {
+    if (!assignEmails(authors.filter(a => a.affiliations.includes(id)), list)) {
+      notes.push(`Couldn't tell whose email ${list.join(', ')} is; add it to the right author.`)
+    }
+  }
+  return { authors, ranges: [...affils, ...authorHits] }
+}
+
+/** elsarticle: \author[a,b]{Name\corref{c1}} \ead{..} \affiliation[a]{..} / \address[a]{..}. */
+function elsevierAuthors(m: string, src: string, to: number, table: AffiliationTable): { authors: Author[]; ranges: { start: number; end: number }[] } | undefined {
+  const authorHits = findMacros(m, src, 'author', { opts: 1, args: 1 }, 0, to)
+  if (!authorHits.some(h => h.opts.length)) return undefined
+  const affHits = [...findMacros(m, src, 'affiliation', { opts: 1, args: 1 }, 0, to), ...findMacros(m, src, 'address', { opts: 1, args: 1 }, 0, to)]
+  const labels = new Map<string, string>()
+  for (const h of affHits) {
+    const inner = h.args[0]?.inner ?? ''
+    const kv = keyvalAffiliation(inner)
+    labels.set(h.opts[0]?.inner.trim() ?? '', kv ? table.add(kv.raw, kv.structured) : table.add(lines(inner).join(', ')))
+  }
+  const eads = findMacros(m, src, 'ead', { opts: 1, args: 1 }, 0, to)
+  const authors: Author[] = authorHits.map(h => {
+    const keys = (h.opts[0]?.inner ?? '').split(',').map(k => k.trim())
+    let name = h.args[0]?.inner ?? ''
+    const corr = /\\corref\b/.test(name)
+    for (const c of ['corref', 'fnref', 'tnoteref']) name = takeMacro(name, c, 0, 1).rest
+    return { name: cleanName(name), affiliations: keys.flatMap(k => (labels.has(k) ? [labels.get(k)!] : [])), corresponding: corr || undefined }
+  })
+  // \ead follows its author.
+  for (const e of eads) {
+    if (e.opts[0]?.inner.trim() === 'url') continue
+    const owner = [...authorHits].reverse().findIndex(h => h.start < e.start)
+    const author = owner === -1 ? undefined : authors[authorHits.length - 1 - owner]
+    if (author && !author.email) author.email = clean(e.args[0]?.inner ?? '')
+  }
+  return { authors, ranges: [...authorHits, ...affHits, ...eads] }
+}
+
+function splitKeywords(s: string): string[] {
+  const text = s.replace(/\\(and|sep)\b/g, ';')
+  return text
+    .split(/[;,，；]|\s+·\s+/)
+    .map(k => clean(k).replace(/\.$/, ''))
+    .filter(Boolean)
+}
+
+/** "\textbf{Keywords:} a, b" written by hand (article and friends). */
+const MANUAL_KEYWORDS = /(?:\\noindent\s*)?\\(?:textbf|textit|emph|textsc)\{\s*(?:Key\s?words|Index Terms|关键词)\s*[:：.—-]?\s*\}\s*[:：.—-]?\s*([^\n]+)/i
+
+/** Inline \input/\include files that carry front matter, so it can be extracted. */
+function inlineFrontMatter(src: string, read?: (path: string) => string | undefined): string {
+  if (!read) return src
+  const m = mask(src)
+  const hits = [...findMacros(m, src, 'input', { args: 1 }), ...findMacros(m, src, 'include', { args: 1 })].sort((a, b) => b.start - a.start)
+  let out = src
+  for (const h of hits) {
+    const name = h.args[0]?.inner.trim()
+    if (!name) continue
+    const content = read(name.endsWith('.tex') ? name : `${name}.tex`) ?? read(name)
+    if (content && /\\(title|author|maketitle)\b|\\begin\{abstract\}/.test(mask(content))) out = out.slice(0, h.start) + content + out.slice(h.end)
+  }
+  return out
+}
+
+/**
+ * Read a paper from its main file. `read` resolves other project files (for
+ * front matter kept in an \input file).
+ */
+export function extractPaper(input: string, read?: (path: string) => string | undefined): Paper {
+  const src = inlineFrontMatter(input, read)
+  const m = mask(src)
+  const notes: string[] = []
+  const removed: { start: number; end: number }[] = []
+  const remove = (r: { start: number; end: number } | undefined) => {
+    if (r) removed.push({ start: r.start, end: r.end })
+  }
+
+  const docClass = findMacros(m, src, 'documentclass', { opts: 1, args: 1 })[0]
+  const sourceClass = docClass?.args[0]?.inner.trim() ?? 'article'
+  const classOptions = (docClass?.opts[0]?.inner ?? '').split(',').map(s => s.trim()).filter(Boolean)
+  const begin = m.indexOf('\\begin{document}')
+  const end = m.lastIndexOf('\\end{document}')
+  if (begin === -1 || end === -1) throw new ConvertError('The main file has no \\begin{document} … \\end{document}.')
+  const preambleStart = docClass ? docClass.end : 0
+  const bodyStart = begin + '\\begin{document}'.length
+
+  // Front matter lives in the preamble and the start of the document, up to the first heading.
+  const heading = /\\(?:section|chapter|part)\*?\s*[[{]/g
+  heading.lastIndex = bodyStart
+  const firstHeading = heading.exec(m)
+  const abstractEnv = findEnvs(m, src, 'abstract', {}, bodyStart, end)[0]
+  const frontEnd = Math.max(firstHeading ? firstHeading.index : end, abstractEnv ? abstractEnv.end : 0)
+
+  // ---- title ----
+  const titleHit = findMacros(m, src, 'title', { opts: 1, args: 1 }, 0, frontEnd)[0]
+  const title = titleHit?.args[0] ? clean(titleHit.args[0].inner) : ''
+  const shortTitle = titleHit?.opts[0] ? clean(titleHit.opts[0].inner) : findMacros(m, src, 'titlerunning', { args: 1 }, 0, frontEnd)[0]?.args[0]?.inner
+  remove(titleHit)
+  if (!title) notes.push('No \\title found; fill it in before converting.')
+
+  // ---- authors and affiliations ----
+  const table = new AffiliationTable()
+  let authors: Author[] = []
+  const authorHits = findMacros(m, src, 'author', { opts: 1, args: 1 }, 0, frontEnd)
+  if (sourceClass === 'IEEEtran' || authorHits.some(h => h.args[0]?.inner.includes('\\IEEEauthorblockN'))) {
+    for (const h of authorHits) {
+      authors.push(...ieeeAuthors(h.args[0]?.inner ?? '', table))
+      remove(h)
+    }
+  } else if (sourceClass === 'llncs' || findMacros(m, src, 'institute', { args: 1 }, 0, frontEnd).length) {
+    const inst = findMacros(m, src, 'institute', { args: 1 }, 0, frontEnd)[0]
+    for (const h of authorHits) {
+      authors.push(...lncsAuthors(h.args[0]?.inner ?? '', inst?.args[0]?.inner, table))
+      remove(h)
+    }
+    remove(inst)
+  } else if (findMacros(m, src, 'affil', { opts: 1, args: 1 }, 0, frontEnd).length) {
+    const r = authblkAuthors(m, src, frontEnd, table, notes)
+    authors = r.authors
+    r.ranges.forEach(remove)
+  } else {
+    const els = sourceClass === 'elsarticle' ? elsevierAuthors(m, src, frontEnd, table) : undefined
+    if (els) {
+      authors = els.authors
+      els.ranges.forEach(remove)
+    } else if (
+      authorHits.length > 1 ||
+      ['acmart', 'revtex4-2', 'revtex4-1', 'amsart', 'elsarticle'].includes(sourceClass) ||
+      findMacros(m, src, 'affiliation', { args: 1 }, 0, frontEnd).length
+    ) {
+      const r = sequenceAuthors(m, src, frontEnd, table)
+      authors = r.authors
+      r.ranges.forEach(remove)
+    } else if (authorHits[0]) {
+      authors = blockAuthors(authorHits[0].args[0]?.inner ?? '', table)
+      remove(authorHits[0])
+    }
+  }
+  // Emails not tied to an author by the class (\email after \maketitle, etc.) stay unassigned.
+  for (const name of ['email', 'ead', 'orcid', 'institute', 'affiliation', 'address', 'thanks']) {
+    for (const h of findMacros(m, src, name, { opts: 1, args: 1 }, 0, frontEnd)) {
+      if (!removed.some(r => r.start <= h.start && h.end <= r.end) && h.start < bodyStart) remove(h)
+    }
+  }
+  if (!authors.length) notes.push('No authors found; add them before converting.')
+
+  // ---- abstract and keywords ----
+  let abstract = ''
+  let keywords: string[] = []
+  const ieeeIndex = findMacros(m, src, 'IEEEtitleabstractindextext', { args: 1 }, 0, frontEnd)[0]
+  const absEnv = abstractEnv ?? findEnvs(m, src, 'abstract', {}, 0, frontEnd)[0]
+  if (absEnv) {
+    abstract = src.slice(absEnv.bodyStart, absEnv.bodyEnd).trim()
+    remove(absEnv)
+  }
+  for (const env of ['IEEEkeywords', 'keyword', 'keywords']) {
+    for (const k of findEnvs(m, src, env, {}, 0, frontEnd)) {
+      keywords.push(...splitKeywords(src.slice(k.bodyStart, k.bodyEnd)))
+      remove(k)
+    }
+  }
+  for (const k of findMacros(m, src, 'keywords', { args: 1 }, 0, frontEnd)) {
+    keywords.push(...splitKeywords(k.args[0]?.inner ?? ''))
+    remove(k)
+  }
+  if (ieeeIndex) {
+    const inner = ieeeIndex.args[0]?.inner ?? ''
+    const im = mask(inner)
+    const a = findEnvs(im, inner, 'abstract')[0]
+    if (a && !abstract) abstract = inner.slice(a.bodyStart, a.bodyEnd).trim()
+    const k = findEnvs(im, inner, 'IEEEkeywords')[0]
+    if (k) keywords.push(...splitKeywords(inner.slice(k.bodyStart, k.bodyEnd)))
+    remove(ieeeIndex)
+  }
+  // llncs and others put \keywords inside the abstract: already collected above.
+  abstract = takeMacro(abstract, 'keywords', 0, 1).rest.trim()
+  // "Keywords:" typed inside the abstract or right after it.
+  const inAbstract = abstract.match(MANUAL_KEYWORDS)
+  if (inAbstract) {
+    keywords.push(...splitKeywords(inAbstract[1]!))
+    abstract = abstract.replace(MANUAL_KEYWORDS, '').trim()
+  }
+  if (!keywords.length) {
+    const re = new RegExp(MANUAL_KEYWORDS.source, 'gi')
+    re.lastIndex = bodyStart
+    const after = re.exec(m)
+    if (after && after.index < frontEnd + 400) {
+      keywords.push(...splitKeywords(src.slice(after.index, after.index + after[0].length).replace(MANUAL_KEYWORDS, '$1')))
+      remove({ start: after.index, end: after.index + after[0].length })
+    }
+  }
+  keywords = [...new Set(keywords)]
+
+  // ---- class-specific front-matter configuration ----
+  const hints: TargetOptions = {}
+  for (const name of FRONT_CONFIG) {
+    const [o, a] = ARGS[name] ?? [0, 0]
+    for (const h of findMacros(m, src, name, { opts: o, args: a }, 0, frontEnd)) {
+      if (name === 'journal' && h.args[0]) hints.journal = clean(h.args[0].inner)
+      if (name === 'acmConference' && h.args.length === 3) {
+        hints.venue = { short: h.opts[0] ? clean(h.opts[0].inner) : undefined, name: clean(h.args[0]!.inner), date: clean(h.args[1]!.inner), location: clean(h.args[2]!.inner) }
+      }
+      remove(h)
+    }
+  }
+  for (const env of ['CCSXML', 'frontmatter']) {
+    for (const e of findEnvs(m, src, env, {}, 0, frontEnd)) {
+      if (env === 'frontmatter') {
+        // Keep what's inside (it was all extracted); drop the wrapper only.
+        remove({ start: e.start, end: e.bodyStart })
+        remove({ start: e.bodyEnd, end: e.end })
+      } else remove(e)
+    }
+  }
+  for (const h of findMacros(m, src, 'maketitle', {}, bodyStart, end)) remove(h)
+
+  // ---- packages ----
+  const packages: UsedPackage[] = []
+  for (const name of ['usepackage', 'RequirePackage']) {
+    for (const h of findMacros(m, src, name, { opts: 1, args: 1 }, preambleStart, begin)) {
+      const options = h.opts[0] ? clean(h.opts[0].inner) : undefined
+      for (const p of (h.args[0]?.inner ?? '').split(',').map(s => clean(s)).filter(Boolean)) packages.push({ name: p, options })
+      remove(h)
+    }
+  }
+
+  // ---- bibliography ----
+  let bibliography: Bibliography = { kind: 'none' }
+  const style = findMacros(m, src, 'bibliographystyle', { args: 1 })[0]
+  const bibCmds = findMacros(m, src, 'bibliography', { args: 1 }, bodyStart, end)
+  const biblatex = packages.find(p => p.name === 'biblatex')
+  const resources = findMacros(m, src, 'addbibresource', { opts: 1, args: 1 }, preambleStart, begin)
+  const prints = findMacros(m, src, 'printbibliography', { opts: 1 }, bodyStart, end)
+  const files = (s: string) => s.split(',').map(f => clean(f).replace(/\.bib$/, '')).filter(Boolean)
+  const marks: { at: number; text: string }[] = []
+  if (biblatex) {
+    bibliography = { kind: 'biblatex', files: [...resources.flatMap(r => files(r.args[0]?.inner ?? '')), ...bibCmds.flatMap(b => files(b.args[0]?.inner ?? ''))], options: biblatex.options }
+    resources.forEach(remove)
+    prints.forEach((p, i) => (i === 0 ? marks.push({ at: p.start, text: BIB_MARK }) : null))
+    prints.forEach(remove)
+    bibCmds.forEach(remove)
+  } else if (bibCmds.length) {
+    bibliography = { kind: 'bibtex', files: bibCmds.flatMap(b => files(b.args[0]?.inner ?? '')), style: style?.args[0] ? clean(style.args[0].inner) : undefined }
+    marks.push({ at: bibCmds[0]!.start, text: BIB_MARK })
+    bibCmds.forEach(remove)
+  } else if (findEnvs(m, src, 'thebibliography', { args: 1 }, bodyStart, end).length) {
+    bibliography = { kind: 'inline' }
+  }
+  remove(style)
+
+  // ---- acknowledgments ----
+  let acknowledgments: string | undefined
+  for (const env of ['acks', 'acknowledgments', 'acknowledgements', 'credits']) {
+    const e = findEnvs(m, src, env, {}, bodyStart, end)[0]
+    if (e && acknowledgments === undefined) {
+      let text = src.slice(e.bodyStart, e.bodyEnd)
+      text = text.replace(/\\subsubsection\*?\{\\ackname\}/, '').replace(/\\subsubsection\*?\{\\discintname\}[\s\S]*$/, '')
+      acknowledgments = text.trim()
+      marks.push({ at: e.start, text: ACK_MARK })
+      remove(e)
+    }
+  }
+  if (acknowledgments === undefined) {
+    const re = /\\(?:section|subsection|subsubsection|paragraph)\*?\s*\{\s*(?:Acknowledge?ments?|Acknowledgment|致谢|鸣谢)\s*\}/gi
+    re.lastIndex = bodyStart
+    const head = re.exec(m)
+    if (head && head.index < end) {
+      const stop = /\\(?:section|chapter|appendix\b|bibliography\b|bibliographystyle|printbibliography)|\\begin\{thebibliography\}|\\end\{document\}/g
+      stop.lastIndex = head.index + head[0].length
+      const next = stop.exec(m)
+      const until = next ? next.index : end
+      acknowledgments = src.slice(head.index + head[0].length, until).trim()
+      marks.push({ at: head.index, text: ACK_MARK })
+      remove({ start: head.index, end: until })
+    }
+  }
+
+  // ---- assemble ----
+  // \renewcommand{\shortauthors}{...} (acmart) configures the old class only.
+  for (const h of findMacros(m, src, 'renewcommand', { args: 2 }, preambleStart, frontEnd)) {
+    if (/^\s*\\shortauthors\s*$/.test(h.args[0]?.inner ?? '')) remove(h)
+  }
+  const preambleRanges = [...removed.filter(r => r.end <= begin), { start: 0, end: preambleStart }]
+  const preamble = tidy(cut(src.slice(0, begin), preambleRanges))
+  let body = src.slice(bodyStart, end)
+  const bodyRanges = removed.filter(r => r.start >= bodyStart && r.end <= end).map(r => ({ start: r.start - bodyStart, end: r.end - bodyStart }))
+  // Insert the marks where the removed parts were.
+  const withMarks = [...bodyRanges]
+  body = spliceMarks(body, withMarks, marks.map(mk => ({ at: mk.at - bodyStart, text: mk.text })))
+  return {
+    sourceClass,
+    classOptions,
+    title,
+    shortTitle: shortTitle ? clean(shortTitle) : undefined,
+    authors,
+    affiliations: table.list,
+    abstract,
+    keywords,
+    acknowledgments,
+    packages,
+    preamble,
+    body: tidy(body),
+    bibliography,
+    notes,
+    hints,
+  }
+}
+
+/** Cut ranges and put each mark where its range began. */
+function spliceMarks(src: string, ranges: { start: number; end: number }[], marks: { at: number; text: string }[]): string {
+  const sorted = [...ranges].sort((a, b) => a.start - b.start)
+  let out = ''
+  let pos = 0
+  const pending = [...marks].sort((a, b) => a.at - b.at)
+  for (const r of sorted) {
+    if (r.start < pos) continue
+    out += src.slice(pos, r.start)
+    while (pending.length && pending[0]!.at <= r.start) out += `\n${pending.shift()!.text}\n`
+    pos = r.end
+  }
+  out += src.slice(pos)
+  for (const mk of pending) out += `\n${mk.text}\n`
+  return out
+}
+
+/** Collapse runs of blank lines left behind by removals. */
+function tidy(s: string): string {
+  return s
+    .split('\n')
+    .map(l => l.replace(/\s+$/, ''))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+

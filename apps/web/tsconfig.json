@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2024", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    // Bundled by Vite, so Node's type-stripping constraints don't apply; the
+    // ported Overleaf sources in @coltex/latex-language rely on that.
+    "verbatimModuleSyntax": false,
+    "erasableSyntaxOnly": false,
+    "allowJs": true,
+    "types": ["vite/client"],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "vite.config.ts"]
+}

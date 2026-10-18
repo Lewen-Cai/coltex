@@ -1,0 +1,1 @@
+ALTER TABLE "ai_preferences" ADD COLUMN "auto" boolean DEFAULT false NOT NULL;

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      # The server tests create their own database (coltex_test) here.
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: coltex
+          POSTGRES_PASSWORD: coltex
+          POSTGRES_DB: coltex
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U coltex" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://coltex:coltex@localhost:5432/coltex
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm -r test

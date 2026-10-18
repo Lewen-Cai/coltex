@@ -1,0 +1,91 @@
+\documentclass[preprint,12pt]{elsarticle}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\journal{Journal Name}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Title of the Paper}
+
+\author[inst1]{First Author\corref{cor1}}
+\ead{first@example.org}
+\cortext[cor1]{Corresponding author.}
+\author[inst2]{Second Author}
+
+\affiliation[inst1]{organization={Department, University},
+  city={City},
+  country={Country}}
+\affiliation[inst2]{organization={Company},
+  city={City},
+  country={Country}}
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\begin{keyword}
+first keyword \sep second keyword \sep third keyword
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+\label{sec:intro}
+Introduce the problem and why it matters, then the contributions of this
+paper. Cite related work like this~\cite{he2016deep}, or several works at
+once~\cite{vaswani2017attention,he2016deep}.
+
+\section{Related Work}
+Place this work among earlier ones~\cite{knuth1984,lamport1994}.
+
+\section{Method}
+\label{sec:method}
+Inline maths goes between dollar signs, such as $f(x) = x^2$. Numbered
+equations use the \texttt{equation} environment:
+\begin{equation}
+  \label{eq:loss}
+  \mathcal{L}(\theta) = \frac{1}{N} \sum_{i=1}^{N} \ell\bigl(f_\theta(x_i), y_i\bigr).
+\end{equation}
+Refer to it as Equation~\eqref{eq:loss}.
+
+\section{Experiments}
+\label{sec:experiments}
+Table~\ref{tab:results} and Figure~\ref{fig:overview} show the results.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Results on the test set.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Method & Accuracy (\%) & Time (s) \\
+    \midrule
+    Baseline & 81.2 & 12 \\
+    Ours     & \textbf{87.5} & 15 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{Overview of the method. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Conclusion}
+Summarise the findings and what comes next.
+
+\section*{Acknowledgements}
+Thank the people and funding that supported this work.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{references}
+
+\end{document}

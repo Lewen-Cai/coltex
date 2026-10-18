@@ -1,0 +1,511 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  /* A step larger than Tailwind's defaults (12/14px): most of the interface is
+     text-xs/text-sm, and those read too small on a desktop screen. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: calc(1.125 / 0.8125);
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: calc(1.375 / 0.9375);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ColTex theme: bright blue on cool neutrals. */
+:root {
+  color-scheme: light;
+  --background: oklch(0.985 0.003 247);
+  --foreground: oklch(0.21 0.02 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 262);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 262);
+  --primary: oklch(0.585 0.215 257);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.965 0.012 250);
+  --secondary-foreground: oklch(0.3 0.04 260);
+  --muted: oklch(0.965 0.006 250);
+  --muted-foreground: oklch(0.52 0.025 257);
+  --accent: oklch(0.955 0.03 255);
+  --accent-foreground: oklch(0.42 0.17 260);
+  --destructive: oklch(0.6 0.22 25);
+  --success: oklch(0.63 0.16 155);
+  --warning: oklch(0.75 0.16 75);
+  --border: oklch(0.915 0.01 255);
+  --input: oklch(0.9 0.012 255);
+  --ring: oklch(0.585 0.215 257);
+  --chart-1: oklch(0.585 0.215 257);
+  --chart-2: oklch(0.7 0.15 230);
+  --chart-3: oklch(0.65 0.17 290);
+  --chart-4: oklch(0.72 0.14 190);
+  --chart-5: oklch(0.8 0.1 250);
+  --radius: 0.65rem;
+  --sidebar: oklch(0.99 0.003 247);
+  --sidebar-foreground: oklch(0.3 0.03 260);
+  --sidebar-primary: oklch(0.585 0.215 257);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.95 0.03 255);
+  --sidebar-accent-foreground: oklch(0.42 0.17 260);
+  --sidebar-border: oklch(0.925 0.008 255);
+  --sidebar-ring: oklch(0.585 0.215 257);
+  /* Editor tokens and review marks (CodeEditor, review-extension). */
+  --syntax-keyword: oklch(0.5 0.2 262);
+  --syntax-atom: oklch(0.45 0.16 285);
+  --syntax-literal: oklch(0.5 0.13 155);
+  --syntax-string: oklch(0.5 0.17 30);
+  --syntax-escape: oklch(0.6 0.17 50);
+  --syntax-definition: oklch(0.5 0.2 262);
+  --syntax-type: oklch(0.5 0.12 175);
+  --syntax-attribute: oklch(0.48 0.14 230);
+  --syntax-macro: oklch(0.45 0.08 230);
+  --syntax-comment: oklch(0.55 0.08 70);
+  --syntax-meta: oklch(0.45 0.02 260);
+  --review-delete: oklch(0.55 0.2 27);
+  --review-delete-bg: oklch(0.63 0.22 27 / 0.1);
+  --review-comment: oklch(0.78 0.16 80);
+  --review-comment-bg: oklch(0.9 0.12 90 / 0.45);
+  --review-comment-active: oklch(0.86 0.15 85 / 0.75);
+  --review-comment-draft: oklch(0.86 0.15 85 / 0.6);
+  --shadow-popover: 0 8px 24px oklch(0.2 0.02 262 / 0.12);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.17 0.015 262);
+  --foreground: oklch(0.96 0.005 250);
+  --card: oklch(0.21 0.018 262);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.21 0.018 262);
+  --popover-foreground: oklch(0.96 0.005 250);
+  --primary: oklch(0.66 0.19 255);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.27 0.02 262);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.27 0.02 262);
+  --muted-foreground: oklch(0.7 0.02 257);
+  --accent: oklch(0.3 0.06 260);
+  --accent-foreground: oklch(0.9 0.05 255);
+  --destructive: oklch(0.7 0.19 22);
+  --success: oklch(0.7 0.15 155);
+  --warning: oklch(0.8 0.15 75);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.66 0.19 255);
+  --chart-1: oklch(0.66 0.19 255);
+  --chart-2: oklch(0.72 0.14 230);
+  --chart-3: oklch(0.68 0.16 290);
+  --chart-4: oklch(0.74 0.13 190);
+  --chart-5: oklch(0.82 0.09 250);
+  --sidebar: oklch(0.19 0.016 262);
+  --sidebar-foreground: oklch(0.92 0.01 250);
+  --sidebar-primary: oklch(0.66 0.19 255);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.27 0.03 260);
+  --sidebar-accent-foreground: oklch(0.92 0.04 255);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.66 0.19 255);
+  --syntax-keyword: oklch(0.75 0.14 262);
+  --syntax-atom: oklch(0.76 0.13 300);
+  --syntax-literal: oklch(0.78 0.13 155);
+  --syntax-string: oklch(0.76 0.13 40);
+  --syntax-escape: oklch(0.8 0.14 70);
+  --syntax-definition: oklch(0.75 0.14 262);
+  --syntax-type: oklch(0.8 0.11 180);
+  --syntax-attribute: oklch(0.8 0.1 230);
+  --syntax-macro: oklch(0.8 0.07 230);
+  --syntax-comment: oklch(0.65 0.05 80);
+  --syntax-meta: oklch(0.72 0.02 260);
+  --review-delete: oklch(0.72 0.17 25);
+  --review-delete-bg: oklch(0.63 0.22 27 / 0.18);
+  --review-comment: oklch(0.75 0.15 80);
+  --review-comment-bg: oklch(0.75 0.15 85 / 0.22);
+  --review-comment-active: oklch(0.75 0.15 85 / 0.42);
+  --review-comment-draft: oklch(0.75 0.15 85 / 0.32);
+  --shadow-popover: 0 8px 24px oklch(0 0 0 / 0.45);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Set for a moment while the theme flips (lib/theme.ts), so nothing animates its colours. */
+.coltex-theme-switching,
+.coltex-theme-switching * {
+  transition: none !important;
+}
+
+.cm-editor {
+  height: 100%;
+  font-size: 15px;
+}
+
+.cm-scroller {
+  font-family: var(--font-mono);
+}
+
+/* pdf.js sizes pages assuming content-box; Tailwind's preflight makes everything
+   border-box, which shrinks the canvas by the page border and misaligns the text
+   layer (and SyncTeX highlights) against the rendered page. */
+.pdfViewer .page,
+.pdfViewer .page * {
+  box-sizing: content-box;
+}
+
+.coltex-synctex-highlight {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  background: oklch(0.585 0.215 257 / 0.22);
+  outline: 1px solid oklch(0.585 0.215 257 / 0.6);
+  border-radius: 2px;
+  animation: coltex-fade 2.5s ease-in forwards;
+}
+
+@keyframes coltex-fade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Indeterminate progress bar (compiling). */
+@keyframes coltex-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+/* pdf.js pages: a soft shadow instead of the default border. */
+.pdfViewer .page {
+  border: none;
+  margin: 12px auto;
+  box-shadow: 0 1px 3px oklch(0.2 0.02 262 / 0.12), 0 8px 24px oklch(0.2 0.02 262 / 0.08);
+}
+
+/* PDF pages stay white in dark mode (they are paper); only the shadow deepens. */
+.dark .pdfViewer .page {
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.5), 0 8px 24px oklch(0 0 0 / 0.35);
+}
+
+/* The visual editor's table editor (table-generator/*; class names follow Overleaf's). */
+.table-generator {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0.5rem 0;
+  white-space: normal;
+  font-family: var(--font-sans);
+  line-height: 1.4;
+}
+
+.table-generator-floating-toolbar {
+  position: absolute;
+  bottom: 100%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding: 0.125rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 2px 8px oklch(0.2 0.02 262 / 0.1);
+  font-size: var(--text-xs);
+}
+
+.table-generator-toolbar-floating-custom-sizes {
+  margin-bottom: 1.75rem;
+}
+
+.table-generator-button-group {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.table-generator-button-group + .table-generator-button-group {
+  padding-left: 0.25rem;
+  border-left: 1px solid var(--border);
+}
+
+.table-generator-table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  outline: none;
+}
+
+.table-generator-cell {
+  position: relative;
+  padding: 0.25rem 0.5rem;
+  vertical-align: top;
+  border: 1px dashed var(--border);
+  overflow-wrap: anywhere;
+  outline: none;
+  cursor: default;
+}
+
+.table-generator-cell.alignment-left {
+  text-align: left;
+}
+
+.table-generator-cell.alignment-center {
+  text-align: center;
+}
+
+.table-generator-cell.alignment-right {
+  text-align: right;
+}
+
+.table-generator-cell.alignment-paragraph {
+  text-align: justify;
+}
+
+/* Real borders (| in the column specification, \hline and booktabs rules). */
+.table-generator-cell.table-generator-cell-border-left {
+  border-left: 1px solid var(--foreground);
+}
+
+.table-generator-cell.table-generator-cell-border-right {
+  border-right: 1px solid var(--foreground);
+}
+
+.table-generator-cell.table-generator-row-border-top {
+  border-top: 1px solid var(--foreground);
+}
+
+.table-generator-cell.table-generator-row-border-bottom {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.table-generator-cell.selected {
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+}
+
+.table-generator-cell.selection-edge-top {
+  box-shadow: inset 0 2px 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-bottom {
+  box-shadow: inset 0 -2px 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-left {
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-right {
+  box-shadow: inset -2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-left {
+  box-shadow: inset 0 2px 0 var(--primary), inset 2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-right {
+  box-shadow: inset 0 2px 0 var(--primary), inset -2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-bottom.selection-edge-left {
+  box-shadow: inset 0 -2px 0 var(--primary), inset 2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-bottom.selection-edge-right {
+  box-shadow: inset 0 -2px 0 var(--primary), inset -2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-bottom {
+  box-shadow: inset 0 2px 0 var(--primary), inset 0 -2px 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-bottom.selection-edge-left {
+  box-shadow: inset 0 2px 0 var(--primary), inset 0 -2px 0 var(--primary), inset 2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-bottom.selection-edge-right {
+  box-shadow: inset 0 2px 0 var(--primary), inset 0 -2px 0 var(--primary), inset -2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-left.selection-edge-right {
+  box-shadow: inset 0 2px 0 var(--primary), inset 2px 0 0 var(--primary), inset -2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-bottom.selection-edge-left.selection-edge-right {
+  box-shadow: inset 0 -2px 0 var(--primary), inset 2px 0 0 var(--primary), inset -2px 0 0 var(--primary);
+}
+
+.table-generator-cell.selection-edge-top.selection-edge-bottom.selection-edge-left.selection-edge-right {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.table-generator-cell.editing {
+  padding: 0;
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.table-generator-cell-render {
+  min-height: 1.4em;
+}
+
+.table-generator-cell-input {
+  display: block;
+  width: 100%;
+  min-height: 1.4em;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: var(--background);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* The bars that select a whole column (above) or row (left). */
+.table-generator-selector-cell {
+  padding: 0;
+  cursor: pointer;
+}
+
+.table-generator-selector-cell::after {
+  content: '';
+  display: block;
+  border-radius: 999px;
+  background: transparent;
+  transition: background-color 0.1s;
+}
+
+.table-generator-selector-cell.column-selector {
+  height: 0.75rem;
+  padding: 0 0.25rem 0.25rem;
+}
+
+.table-generator-selector-cell.column-selector::after {
+  height: 0.375rem;
+}
+
+.table-generator-selector-cell.row-selector {
+  width: 0.75rem;
+  padding: 0.25rem 0.25rem 0.25rem 0;
+}
+
+.table-generator-selector-cell.row-selector::after {
+  width: 0.375rem;
+  height: 100%;
+  min-height: 1rem;
+}
+
+.table-generator-table:hover .table-generator-selector-cell::after,
+.table-generator-table:focus-within .table-generator-selector-cell::after {
+  background: var(--muted);
+}
+
+.table-generator-table .table-generator-selector-cell:hover::after {
+  background: color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
+.table-generator-table .table-generator-selector-cell.fully-selected::after {
+  background: var(--primary);
+}
+
+.table-generator-column-widths-row td {
+  padding: 0 0 0.25rem;
+}
+
+.table-generator-column-indicator-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.375rem;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.table-generator-column-indicator-button:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.table-generator-error {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  white-space: normal;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+}

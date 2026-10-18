@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.turbo/
+# The instance's data (only the top-level folder: packages have data/ folders of their own).
+/data/
+.env
+*.log
+# Compiler logs used as test fixtures.
+!packages/log-parser/test/fixtures/*.log
+.DS_Store
+.playwright-mcp/
+apps/web/vendor/
+
+# Kept on this machine only: the development journal, notes for the coding
+# assistant and its local state.
+project.log
+CLAUDE.md
+.claude/

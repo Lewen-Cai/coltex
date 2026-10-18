@@ -1,0 +1,43 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{authblk}
+\usepackage[style=authoryear,backend=biber]{biblatex}
+\addbibresource{refs.bib}
+\DeclareFieldFormat{title}{\mkbibquote{#1}}
+\newcommand{\R}{\mathbb{R}} % reals
+
+\title{Learning Sparse Representations\\ for Graphs}
+\author[1]{Alice Zhang}
+\author[1,2]{Bob M\"uller}
+\author[2]{Carol Li}
+\affil[1]{Department of Computer Science, Tsinghua University, Beijing, China}
+\affil[2]{Max Planck Institute for Informatics, Saarbr\"ucken, Germany}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study sparse codes on graphs in $\R^n$.
+\end{abstract}
+
+\noindent\textbf{Keywords:} sparse coding, graph learning; representation
+
+\section{Introduction}
+As shown by \textcite{knuth}, sparsity helps \parencite[see][p.~3]{lamport}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{fig.png}
+  \caption{A figure.}
+\end{figure}
+
+\section*{Acknowledgments}
+We thank the reviewers.
+
+\printbibliography
+\end{document}

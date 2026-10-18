@@ -1,0 +1,1 @@
+DROP TABLE "ai_user_access" CASCADE;

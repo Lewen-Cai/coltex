@@ -1,0 +1,167 @@
+import { Queue, QueueEvents } from 'bullmq'
+import { Redis } from 'ioredis'
+import { customAlphabet } from 'nanoid'
+import {
+  CLEANUP_QUEUE,
+  COMPILE_QUEUE,
+  COMPILER_RESOURCES_KEY,
+  CompileResult,
+  SYNCTEX_QUEUE,
+  SynctexResult,
+  TEXLIVE_QUEUE,
+  TexLookupResult,
+  CompileJob,
+  type CleanupJob,
+  type CompileJobInput,
+  type SynctexJob,
+  type TexLookupJob,
+} from '@coltex/shared'
+import { config } from './config.ts'
+import { ServiceUnavailableError } from './errors.ts'
+
+const buildSuffix = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
+const SYNCTEX_TIMEOUT_MS = 15_000
+/** Converting a large PDF manual to text the first time takes a while. */
+const TEXLIVE_TIMEOUT_MS = 90_000
+
+export type CompilerContainer = { name: string; used: number; limit: number | null; cpu: number | null; cpus: number | null }
+
+export type QueueStats = {
+  workers: number
+  waiting: number
+  active: number
+  failed: number
+  /** Round trip of a Valkey ping, or null when it didn't answer. */
+  valkeyMs: number | null
+  /** Container memory (and CPU: % of its CPUs, null on the first report) each worker reported in the last 15 s. */
+  containers: CompilerContainer[]
+}
+
+/** Producer side of the queues served by the compiler worker. */
+export class CompileQueue {
+  private readonly connection: Redis
+  private readonly eventsConnection: Redis
+  private readonly compileQueue: Queue<CompileJob, CompileResult>
+  private readonly synctexQueue: Queue<SynctexJob, SynctexResult>
+  private readonly compileEvents: QueueEvents
+  private readonly synctexEvents: QueueEvents
+  private readonly texliveQueue: Queue<TexLookupJob, TexLookupResult>
+  private readonly texliveEvents: QueueEvents
+  private readonly cleanupQueue: Queue<CleanupJob>
+  /** Told about every finished build (the admin overview records them). */
+  onBuild: ((ms: number, status: string) => void) | undefined
+  /** Runs before each build, so the compiler reads current files (the S3 driver's local copy). */
+  beforeCompile: ((projectId: string) => Promise<void>) | undefined
+
+  constructor(redisUrl: string) {
+    this.connection = new Redis(redisUrl, { maxRetriesPerRequest: null })
+    this.eventsConnection = new Redis(redisUrl, { maxRetriesPerRequest: null })
+    this.compileQueue = new Queue(COMPILE_QUEUE, { connection: this.connection })
+    this.synctexQueue = new Queue(SYNCTEX_QUEUE, { connection: this.connection })
+    this.compileEvents = new QueueEvents(COMPILE_QUEUE, { connection: this.eventsConnection })
+    this.synctexEvents = new QueueEvents(SYNCTEX_QUEUE, { connection: this.eventsConnection.duplicate() })
+    this.texliveQueue = new Queue(TEXLIVE_QUEUE, { connection: this.connection })
+    this.texliveEvents = new QueueEvents(TEXLIVE_QUEUE, { connection: this.eventsConnection.duplicate() })
+    this.cleanupQueue = new Queue(CLEANUP_QUEUE, { connection: this.connection })
+  }
+
+  /**
+   * Have the compiler remove a deleted project's compile directory and
+   * outputs. Not awaited by anyone: the job waits in Valkey if no worker is
+   * running and is done when one starts.
+   */
+  async forget(projectId: string): Promise<void> {
+    await this.cleanupQueue.add('cleanup', { projectId }, { removeOnComplete: true, removeOnFail: 100, attempts: 3, backoff: { type: 'exponential', delay: 5000 } })
+  }
+
+  async compile(input: Omit<CompileJobInput, 'buildId'>): Promise<CompileResult> {
+    if ((await this.compileQueue.getWorkersCount()) === 0) {
+      throw new ServiceUnavailableError('No compiler worker is running')
+    }
+    await this.beforeCompile?.(input.projectId)
+    const buildId = `${Date.now().toString(36)}-${buildSuffix()}`
+    // Listen before adding: a job that finishes (and is removed) first would never be seen.
+    await this.compileEvents.waitUntilReady()
+    const job = await this.compileQueue.add('compile', CompileJob.parse({ ...input, buildId }), { removeOnComplete: 200, removeOnFail: 200 })
+    const started = Date.now()
+    try {
+      // Allow some slack on top of the compiler's own timeout for queueing/sync.
+      const result = CompileResult.parse(await job.waitUntilFinished(this.compileEvents, config.compileTimeoutMs + 60_000))
+      this.sample(started, result.status)
+      return result
+    } catch (err) {
+      this.sample(started, 'error')
+      throw err
+    }
+  }
+
+  private sample(started: number, status: string): void {
+    this.onBuild?.(Date.now() - started, status)
+  }
+
+  async synctex(input: SynctexJob): Promise<SynctexResult> {
+    if ((await this.synctexQueue.getWorkersCount()) === 0) {
+      throw new ServiceUnavailableError('No compiler worker is running')
+    }
+    await this.synctexEvents.waitUntilReady()
+    const job = await this.synctexQueue.add('synctex', input, { removeOnComplete: true, removeOnFail: 100 })
+    return SynctexResult.parse(await job.waitUntilFinished(this.synctexEvents, SYNCTEX_TIMEOUT_MS))
+  }
+
+  /** Read or search an installed TeX Live file or package documentation (for the assistant). */
+  async texLookup(input: TexLookupJob): Promise<TexLookupResult> {
+    if ((await this.texliveQueue.getWorkersCount()) === 0) {
+      throw new ServiceUnavailableError('No compiler worker is running')
+    }
+    await this.texliveEvents.waitUntilReady()
+    const job = await this.texliveQueue.add('lookup', input, { removeOnComplete: true, removeOnFail: 100 })
+    return TexLookupResult.parse(await job.waitUntilFinished(this.texliveEvents, TEXLIVE_TIMEOUT_MS))
+  }
+
+  /**
+   * Whether a compiler worker has the package manuals (the full edition), so
+   * the assistant is offered texlive_doc only where it can find something.
+   */
+  async hasManuals(): Promise<boolean> {
+    const reports = await this.connection.hgetall(COMPILER_RESOURCES_KEY).catch(() => ({}) as Record<string, string>)
+    return Object.values(reports).some(json => {
+      try {
+        const r = JSON.parse(json) as { at: number; manuals?: boolean }
+        return Date.now() - r.at < 15_000 && r.manuals === true
+      } catch {
+        return false
+      }
+    })
+  }
+
+  /** Workers online, jobs by state, Valkey latency and the workers' resources, for the admin overview. */
+  async stats(): Promise<QueueStats> {
+    const pinged = Date.now()
+    const valkeyMs = await Promise.race([
+      this.connection.ping().then(() => Date.now() - pinged),
+      new Promise<null>(r => setTimeout(() => r(null), 2000).unref()),
+    ]).catch(() => null)
+    if (valkeyMs === null) return { workers: 0, waiting: 0, active: 0, failed: 0, valkeyMs, containers: [] }
+    const [workers, counts, reports] = await Promise.all([
+      this.compileQueue.getWorkersCount(),
+      this.compileQueue.getJobCounts('waiting', 'active', 'failed'),
+      this.connection.hgetall(COMPILER_RESOURCES_KEY),
+    ])
+    const containers = Object.entries(reports).flatMap(([name, json]) => {
+      try {
+        const r = JSON.parse(json) as { used: number; limit: number | null; cpu?: number | null; cpus?: number; at: number }
+        return Date.now() - r.at < 15_000 ? [{ name, used: r.used, limit: r.limit, cpu: r.cpu ?? null, cpus: r.cpus ?? null }] : []
+      } catch {
+        return []
+      }
+    })
+    return { workers, waiting: counts.waiting ?? 0, active: counts.active ?? 0, failed: counts.failed ?? 0, valkeyMs, containers }
+  }
+
+  async close(): Promise<void> {
+    await Promise.all([this.compileEvents.close(), this.synctexEvents.close(), this.texliveEvents.close()])
+    await Promise.all([this.compileQueue.close(), this.synctexQueue.close(), this.texliveQueue.close(), this.cleanupQueue.close()])
+    this.connection.disconnect()
+    this.eventsConnection.disconnect()
+  }
+}

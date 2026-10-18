@@ -1,0 +1,294 @@
+ColTex
+Copyright (C) 2026 ColTex contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License version 3 (see LICENSE).
+
+-------------------------------------------------------------------------------
+Third-party code ported into this repository
+-------------------------------------------------------------------------------
+
+Overleaf (https://github.com/overleaf/overleaf), AGPL-3.0, Copyright (C) Overleaf.
+Upstream commit: e039ad26c5bf5422eb57b89fc7e57c75055e631d
+
+  packages/log-parser/src/latex-log-parser.ts
+    <- services/web/frontend/js/ide/log-parser/latex-log-parser.ts
+  packages/log-parser/src/bib-log-parser.ts
+    <- services/web/frontend/js/ide/log-parser/bib-log-parser.ts
+
+  Human-readable log hints (plain-text hints instead of JSX; only the rules
+  that carry hints in Overleaf CE):
+  packages/log-parser/src/human-readable/index.ts
+    <- services/web/frontend/js/ide/human-readable-logs/HumanReadableLogs.ts
+  packages/log-parser/src/human-readable/rules.ts (partial)
+    <- services/web/frontend/js/ide/human-readable-logs/HumanReadableLogsRules.tsx
+  packages/log-parser/src/human-readable/hints.ts
+    <- services/web/frontend/js/ide/human-readable-logs/HumanReadableLogsHints.tsx
+  packages/log-parser/src/human-readable/package-suggestions.ts
+    <- services/web/frontend/js/ide/human-readable-logs/HumanReadableLogsPackageSuggestions.ts
+
+  Ported language support (syntax, highlighting, completions):
+  packages/latex-language/src/extensions/figure-modal.ts
+    <- services/web/frontend/js/features/source-editor/extensions/figure-modal.ts
+       (without waitForFileTreeUpdate)
+  packages/latex-language/src/utils/paste-image.ts (partial)
+    <- services/web/frontend/js/features/source-editor/utils/paste-image.ts
+  packages/latex-language/src/utils/prepare-lines.ts
+    <- services/web/frontend/js/features/source-editor/utils/prepare-lines.ts
+       (itself adapted from CodeMirror's MIT-licensed @codemirror/autocomplete)
+  packages/latex-language/src/components/figure-modal/figure-commands.ts
+    adapted from S/components/figure-modal/figure-modal.tsx (its insert and
+    delete callbacks; caption and label text typed in the modal)
+  apps/web/src/outline/outline-pane.tsx
+    <- services/web/frontend/js/features/outline/** (pane, root, list, item,
+       toggle buttons, use-nested-outline, get-children-lines) and
+       closestSectionLineNumber from features/ide-react/context/outline-context.tsx,
+       combined into one file and redrawn
+  apps/web/src/outline/breadcrumbs.tsx
+    <- S/extensions/breadcrumbs.tsx (redrawn; sections jump to their heading)
+  apps/web/src/figure-modal/figure-modal.tsx
+    adapted from S/components/figure-modal/* (redrawn with ColTex's components;
+    upload and project-file sources only)
+  packages/latex-language/src/languages/bibtex/bibtex-language.ts
+    <- services/web/frontend/js/features/source-editor/languages/bibtex/bibtex-language.ts
+  packages/latex-language/src/languages/bibtex/completions/snippets.ts
+    <- services/web/frontend/js/features/source-editor/languages/bibtex/completions/snippets.ts
+  packages/latex-language/src/languages/latex/close-bracket-config.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/close-bracket-config.ts
+  packages/latex-language/src/languages/latex/complete.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/complete.ts
+  packages/latex-language/src/languages/latex/completions/apply.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/apply.ts
+  packages/latex-language/src/languages/latex/completions/bibliography-styles.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/bibliography-styles.ts
+  packages/latex-language/src/languages/latex/completions/classes.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/classes.ts
+  packages/latex-language/src/languages/latex/completions/data/bibliography-styles.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/data/bibliography-styles.ts
+  packages/latex-language/src/languages/latex/completions/data/class-names.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/data/class-names.ts
+  packages/latex-language/src/languages/latex/completions/data/environments.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/data/environments.ts
+  packages/latex-language/src/languages/latex/completions/data/package-names.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/data/package-names.ts
+  packages/latex-language/src/languages/latex/completions/data/snippets.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/data/snippets.ts
+  packages/latex-language/src/languages/latex/completions/data/top-hundred-snippets.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/data/top-hundred-snippets.ts
+  packages/latex-language/src/languages/latex/completions/doc-commands.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/doc-commands.ts
+  packages/latex-language/src/languages/latex/completions/doc-environments.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/doc-environments.ts
+  packages/latex-language/src/languages/latex/completions/environments.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/environments.ts
+  packages/latex-language/src/languages/latex/completions/include.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/include.ts
+  packages/latex-language/src/languages/latex/completions/index.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/index.ts
+  packages/latex-language/src/languages/latex/completions/labels.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/labels.ts
+  packages/latex-language/src/languages/latex/completions/packages.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/packages.ts
+  packages/latex-language/src/languages/latex/completions/references.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/references.ts
+  packages/latex-language/src/languages/latex/completions/sections.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/sections.ts
+  packages/latex-language/src/languages/latex/completions/snippets.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/snippets.ts
+  packages/latex-language/src/languages/latex/completions/types.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/completions/types.ts
+  packages/latex-language/src/languages/latex/document-commands.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/document-commands.ts
+  packages/latex-language/src/languages/latex/document-environments.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/document-environments.ts
+  packages/latex-language/src/languages/latex/document-outline.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/document-outline.ts
+  packages/latex-language/src/languages/latex/latex-indent-service.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/latex-indent-service.ts
+  packages/latex-language/src/languages/latex/latex-language.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/latex-language.ts
+  packages/latex-language/src/languages/latex/metadata.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/metadata.ts
+  packages/latex-language/src/languages/latex/open-autocomplete.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/open-autocomplete.ts
+  packages/latex-language/src/languages/latex/shortcuts.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/shortcuts.ts
+  packages/latex-language/src/languages/latex/snippets.ts
+    <- services/web/frontend/js/features/source-editor/languages/latex/snippets.ts
+  packages/latex-language/src/lezer-bibtex/bibtex.grammar
+    <- services/web/frontend/js/features/source-editor/lezer-bibtex/bibtex.grammar
+  packages/latex-language/src/lezer-bibtex/highlight.mjs
+    <- services/web/frontend/js/features/source-editor/lezer-bibtex/highlight.mjs
+  packages/latex-language/src/lezer-bibtex/tokens.mjs
+    <- services/web/frontend/js/features/source-editor/lezer-bibtex/tokens.mjs
+  packages/latex-language/src/lezer-latex/latex.grammar
+    <- services/web/frontend/js/features/source-editor/lezer-latex/latex.grammar
+  packages/latex-language/src/lezer-latex/tokens.mjs
+    <- services/web/frontend/js/features/source-editor/lezer-latex/tokens.mjs
+  packages/latex-language/src/utils/node-props.ts
+    <- services/web/frontend/js/features/source-editor/utils/node-props.ts
+  packages/latex-language/src/utils/projection-state-field.ts
+    <- services/web/frontend/js/features/source-editor/utils/projection-state-field.ts
+  packages/latex-language/src/utils/tree-operations/ancestors.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/ancestors.ts
+  packages/latex-language/src/utils/tree-operations/commands.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/commands.ts
+  packages/latex-language/src/utils/tree-operations/comments.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/comments.ts
+  packages/latex-language/src/utils/tree-operations/common.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/common.ts
+  packages/latex-language/src/utils/tree-operations/completions.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/completions.ts
+  packages/latex-language/src/utils/tree-operations/environments.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/environments.ts
+  packages/latex-language/src/utils/tree-operations/outline.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/outline.ts
+  packages/latex-language/src/utils/tree-operations/projection.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/projection.ts
+  packages/latex-language/src/utils/tree-operations/text.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/text.ts
+  packages/latex-language/src/utils/tree-operations/tokens.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-operations/tokens.ts
+  packages/latex-language/src/utils/tree-query.ts
+    <- services/web/frontend/js/features/source-editor/utils/tree-query.ts
+  packages/latex-language/src/utils/walk-included-files.ts
+    <- services/web/frontend/js/features/source-editor/utils/walk-included-files.ts
+
+  Client-side word count:
+  packages/latex-language/src/word-count/count-words-in-file.ts
+    <- services/web/frontend/js/features/word-count-modal/utils/count-words-in-file.ts
+  packages/latex-language/src/word-count/find-preamble-extent.ts
+    <- services/web/frontend/js/features/word-count-modal/utils/find-preamble-extent.ts
+  packages/latex-language/src/word-count/segmenters.ts
+    <- services/web/frontend/js/features/word-count-modal/utils/segmenters.ts
+  packages/latex-language/src/word-count/word-count-data.ts
+    <- services/web/frontend/js/features/word-count-modal/components/word-count-data.ts
+  packages/latex-language/test/word-count.test.ts (first two tests)
+    <- services/web/test/frontend/features/word-count-modal/utils/count-words-in-file.test.ts
+  packages/latex-language/test/fixtures/word-count/*.tex
+    <- services/web/test/frontend/features/word-count-modal/utils/*.tex
+  (word-count/project-snapshot.ts, which replaces Overleaf's ProjectSnapshot,
+  and apps/web/src/components/WordCountDialog.tsx, after word-counts-client.tsx,
+  are ColTex's.)
+
+  Spell checking (prefix S = services/web/frontend/js/features/source-editor):
+  apps/web/src/spelling/extensions/{index,spellchecker,cache,misspelled-words,
+    learned-words,helpers}.ts, context-menu.tsx, spelling-suggestions.tsx
+    <- S/extensions/spelling/<same names> (the suggestions menu is redrawn
+       with ColTex's components; lru-cache replaced by a small Map LRU)
+  apps/web/src/spelling/extensions/wait-for-parser.ts
+    <- S/extensions/wait-for-parser.ts
+  apps/web/src/spelling/extensions/close-all-context-menus-effect.ts
+    <- S/utils/close-all-context-menus-effect.ts
+  apps/web/src/spelling/extensions/ignored-words.ts
+    <- services/web/frontend/js/features/dictionary/ignored-words.ts
+  apps/web/src/spelling/use-hunspell.ts
+    <- S/hooks/use-hunspell.ts
+  apps/web/src/spelling/hunspell/{HunspellManager.ts,hunspell.worker.ts,
+    Dockerfile,build.sh,compile.sh,wordlists/en_US.txt,
+    wordlists/dictionary-additions.ts}
+    <- S/hunspell/<same names>
+  apps/web/src/spelling/hunspell/wasm/{hunspell.mjs,hunspell.wasm,hunspell.d.ts,
+    README.md}
+    <- S/hunspell/wasm/<same names>. hunspell.wasm and hunspell.mjs are
+       Hunspell (https://github.com/hunspell/hunspell, MPL 1.1/GPL 2.0/LGPL 2.1
+       tri-licence) compiled to WebAssembly with Emscripten by Overleaf's
+       build.sh/compile.sh, which are kept alongside to rebuild them.
+  The dictionaries are Overleaf's dictionaries package
+  (https://github.com/overleaf/dictionaries, v0.0.3), fetched at build time by
+  apps/web/scripts/dictionaries.ts (not stored in this repository): Hunspell
+  dictionaries from Debian, converted to UTF-8. Each language keeps its own
+  licence, listed in the package's *.copyright.txt files (copied next to the
+  dictionaries in the build).
+
+  Editor toolbar commands (prefix S = services/web/frontend/js/features/source-editor):
+  packages/latex-language/src/commands/ranges.ts <- S/commands/ranges.ts
+  packages/latex-language/src/extensions/toolbar/{commands,lists,sections,snippets}.ts
+    <- S/extensions/toolbar/<same names> (analytics removed; addComment fires
+       a window event instead of Overleaf's)
+  packages/latex-language/src/utils/tree-operations/formatting.ts
+    <- S/utils/tree-operations/formatting.ts
+  packages/latex-language/src/extensions/symbol-palette.ts
+    <- S/extensions/symbol-palette.ts
+  (extensions/visual-mode.ts, the facet the toolbar commands read as isVisual,
+  is ColTex's; the visual editor below sets it.)
+
+  Visual editor (prefix S as above, L = packages/latex-language/src):
+  L/extensions/visual/** <- S/extensions/visual/** (same file names), except:
+    - table-generator.ts is not ported (its toolbar-button entry point).
+    - visual-widgets/editable-graphics.ts: the edit button is drawn without
+      Bootstrap classes; graphics widgets also compare their preview URL.
+    - visual-widgets/tabular.ts <- tabular.tsx: it renders through a renderer the
+      web app passes in (visual-options.ts) instead of creating React roots.
+    - pasted-content.ts <- pasted-content.tsx, its menu redrawn as plain DOM.
+    - Maths is typeset with KaTeX instead of MathJax (visual-widgets/math.ts,
+      frame.ts, maketitle.ts, begin-theorem.ts).
+    - utils/katex.ts, utils/material-icon.ts and visual-options.ts are ColTex's.
+  L/extensions/file-preview.ts <- S/extensions/file-preview.ts
+  L/extensions/command-tooltip.ts <- S/extensions/command-tooltip.ts, with the
+    contents of S/components/command-tooltip/{href,url,ref,include,input,subfile}-tooltip.tsx
+    rebuilt as plain DOM; opening files and labels in other files goes through
+    the web app (visual-options.ts)
+  L/extensions/annotations.ts <- S/extensions/annotations.ts (without
+    diagnostic actions or analytics; the Annotation type from types/annotation.ts)
+  L/extensions/linting.ts <- S/extensions/linting.ts
+  L/languages/latex/linting.ts <- S/languages/latex/linting.ts
+  L/languages/latex/linter/{latex-linter,latex-linter.worker,errors-to-diagnostics,merge-overlapping-diagnostics}.ts
+    <- S/languages/latex/linter/* (the worker starts on first use)
+  L/utils/range.ts <- S/utils/range.ts
+  L/extensions/math-preview.ts <- S/extensions/math-preview.ts (KaTeX instead of
+    MathJax; Esc hides it instead of the React menu in
+    S/components/math-preview-tooltip.tsx)
+  L/extensions/tooltips-reposition.ts <- S/extensions/tooltips-reposition.ts
+  Table editor (visual mode), W = apps/web/src/table-generator,
+  T = S/components/table-generator:
+  L/components/table-generator/utils.ts <- T/utils.ts (ColTex: tabularx/xltabular,
+    X and \newcolumntype columns, *{n}{…}, <{…}, partial rules such as \cmidrule)
+  L/components/table-generator/tabular.ts <- T/tabular.tsx (the table model only)
+  L/components/table-generator/contexts/selection-context.ts
+    <- T/contexts/selection-context.tsx (TableSelection only)
+  L/components/table-generator/toolbar/commands.ts <- T/toolbar/commands.ts
+  L/components/table-generator/toolbar/column-width-modal/column-width.ts
+    <- T/toolbar/column-width-modal/column-width.ts
+  W/{tabular,table,row,cell,cell-input,selectors,column-size-indicator,help-modal}.tsx
+    <- T/<same names> (drawn with ColTex's shadcn components; help text rewritten)
+  W/contexts/{tabular,table,selection,editing}-context.tsx <- T/contexts/<same names>
+  W/toolbar/{toolbar,toolbar-button,toolbar-dropdown}.tsx <- T/toolbar/<same names>
+    (toolbar-button-menu.tsx's alignment menu is a toolbar-dropdown)
+  W/toolbar/column-width-modal/modal.tsx <- T/toolbar/column-width-modal/modal.tsx
+  (L/components/table-generator/typeset-cell.ts, W/render.tsx and
+  W/contexts/host-context.tsx are ColTex's.)
+  L/utils/effects.ts <- S/utils/effects.ts
+  L/utils/file.ts <- S/utils/file.ts (extension helpers only)
+  L/utils/tree-operations/{colors,figure,lists,math,theorems}.ts
+    <- S/utils/tree-operations/<same names>
+  KaTeX (https://katex.org, MIT) renders the maths; it is an npm dependency.
+
+  packages/latex-language/src/languages/latex/index.ts, languages/bibtex/index.ts
+    adapted from the upstream index files of the same name (linting, figure modal
+    and plugin completion sources removed)
+  packages/latex-language/src/lezer-*/*.mjs (latex.mjs, latex.terms.mjs, bibtex.mjs,
+    bibtex.terms.mjs) are generated from the ported grammars by scripts-generate.mjs
+
+  Package command completions:
+  packages/latex-language/src/metadata/package-mapping.json
+    <- services/web/app/src/Features/Metadata/packageMapping.mjs (converted to
+       JSON, data unchanged; loaded by metadata/package-commands.ts, ColTex's)
+
+  patches/@codemirror__autocomplete@6.18.4.patch
+    <- .yarn/patches/@codemirror-autocomplete-npm-6.18.4.patch (Overleaf's changes
+       to CodeMirror's MIT-licensed @codemirror/autocomplete)
+
+PilotDeck (https://github.com/OpenBMB/PilotDeck), AGPL-3.0, Copyright (C) OpenBMB.
+Upstream commit: 52660d5
+
+  apps/server/src/ai/health.ts
+    <- src/router/health/ProviderHealthTracker.ts (ported; ColTex keeps the last
+       error per provider and uses its own thresholds)
+  apps/server/src/ai/routing.ts
+    judge prompt and tier parsing adapted from src/router/tokenSaver/
+    generateJudgePrompt.ts and parseTier.ts (ColTex's two tiers, written anew)
+  apps/server/src/ai/match.ts
+    idea from src/tool/builtin/filesystem/editNormalization.ts (quote-normalised
+    matching); ColTex's implementation maps normalised text back to the original
+    and also normalises TeX quotes and whitespace

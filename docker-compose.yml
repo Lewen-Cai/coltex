@@ -1,0 +1,127 @@
+# ColTex — full stack.
+#   Production:   docker compose up -d --build
+#   With HTTPS:   COLTEX_DOMAIN=tex.example.org docker compose --profile proxy up -d --build
+#   Development:  pnpm infra:up   (only valkey + compiler; server/web run on the host)
+name: coltex
+
+services:
+  valkey:
+    image: valkey/valkey:9-alpine
+    restart: unless-stopped
+    command: ["valkey-server", "--appendonly", "yes"]
+    volumes:
+      - valkey:/data
+    networks: [default, backend]
+    # Exposed on localhost only, so a server running on the host can reach it in development.
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: coltex
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-coltex}
+      POSTGRES_DB: coltex
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coltex -d coltex"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Exposed on localhost only, so a server running on the host can reach it in development.
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  compiler:
+    build:
+      context: .
+      dockerfile: services/compiler/Dockerfile
+      args:
+        # standard (default, about 9 GB): full TeX Live without package manuals.
+        # full (about 20 GB): with the manuals and sources the assistant can read.
+        EDITION: ${COLTEX_EDITION:-standard}
+    restart: unless-stopped
+    user: "${COLTEX_UID:-1000}:${COLTEX_GID:-1000}"
+    environment:
+      REDIS_URL: redis://valkey:6379
+      COMPILE_TIMEOUT: ${COMPILE_TIMEOUT:-240}
+      COMPILE_CONCURRENCY: ${COMPILE_CONCURRENCY:-2}
+    volumes:
+      - ./data/projects:/data/projects:ro
+      - ./data/outputs:/data/outputs
+      - compile-cache:/work
+    # Untrusted TeX runs here: no internet, no extra privileges, bounded resources.
+    networks: [backend]
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 512
+    mem_limit: ${COMPILER_MEMORY:-4g}
+    depends_on: [valkey]
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    user: "${COLTEX_UID:-1000}:${COLTEX_GID:-1000}"
+    environment:
+      REDIS_URL: redis://valkey:6379
+      DATABASE_URL: postgres://coltex:${POSTGRES_PASSWORD:-coltex}@postgres:5432/coltex
+      # The address links use. Unset: whatever an administrator sets in Settings → Network,
+      # else the address each browser is using.
+      COLTEX_URL: ${COLTEX_URL:-}
+      # Other addresses people open ColTex at (comma-separated), e.g. a LAN or Tailscale address.
+      TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
+      COMPILE_TIMEOUT: ${COMPILE_TIMEOUT:-240}
+      # Set to "uniquelocal" when running behind the Caddy proxy (profile "proxy").
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      # Project files in an S3-compatible bucket instead of ./data/projects (docs/operations.md).
+      STORAGE: ${STORAGE:-local}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_PREFIX: ${S3_PREFIX:-}
+      S3_PATH_STYLE: ${S3_PATH_STYLE:-}
+      # The built-in Tailscale's device name (Settings → Network).
+      TS_HOSTNAME: ${TS_HOSTNAME:-coltex}
+    volumes:
+      - ./data:/data
+    networks: [default, backend]
+    ports:
+      # COLTEX_BIND=127.0.0.1 (install.sh --domain): only Caddy and this machine reach it.
+      - "${COLTEX_BIND:+${COLTEX_BIND}:}${COLTEX_PORT:-3690}:3690"
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_started }
+      compiler: { condition: service_started }
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: [proxy]
+    restart: unless-stopped
+    environment:
+      COLTEX_DOMAIN: ${COLTEX_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on: [server]
+
+networks:
+  backend:
+    internal: true
+
+volumes:
+  postgres:
+  valkey:
+  compile-cache:
+  caddy-data:
