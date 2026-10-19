@@ -1,6 +1,4 @@
-import crypto from 'node:crypto'
-import { Agent, type AgentEvent, type AgentMessage } from '@earendil-works/pi-agent-core'
-import type { AssistantMessage } from '@earendil-works/pi-ai'
+import { Agent } from '@earendil-works/pi-agent-core'
 import {
   OUTPUT,
   type AiApplyBody,
@@ -9,8 +7,9 @@ import {
   type AiItem,
   type AiMessageBody,
   type AiPreference,
+  type AiSaveProposedSkill,
   type AiSessionState,
-  type AiStreamEvent,
+  type AiSkill,
   type CompileResult,
   type ProjectMeta,
 } from '@coltex/shared'
@@ -24,11 +23,13 @@ import { engineFor } from '../projects/engine.ts'
 import type { ProjectService } from '../projects/service.ts'
 import type { ProjectStore } from '../storage/types.ts'
 import { Changeset } from './changeset.ts'
-import { COMPACT_SYSTEM_PROMPT, compactedTranscript, contextTokens, estimateTokens, renderTranscript } from './compact.ts'
+import { AgentChat, shortId } from './chat.ts'
+import { COMPACT_SYSTEM_PROMPT, compactedTranscript, estimateTokens, renderTranscript } from './compact.ts'
 import { conversationTitle, type ConversationStore, type SavedConversation } from './conversations.ts'
 import { systemPrompt, userMessage } from './prompt.ts'
 import { modelInfo, type AiService } from './service.ts'
-import { createTools, describeToolCall, errorCount, type ToolContext } from './tools.ts'
+import { saveDraftedSkill, type SkillStore } from './skills.ts'
+import { createTools, errorCount, type ToolContext } from './tools.ts'
 import type { Tier } from './routing.ts'
 
 /** Per-message limits, so a confused model cannot loop forever. */
@@ -45,11 +46,10 @@ export type AiDeps = {
   projects: ProjectService
   outputsDir: string
   conversations: ConversationStore
+  skills: SkillStore
 }
 
 type AppliedFile = { path: string; kind: 'modified' | 'created'; original: string; applied: string }
-
-const shortId = () => crypto.randomUUID().slice(0, 12)
 
 function summary(result: CompileResult): AiCompileSummary {
   return { buildId: result.buildId, status: result.status, errors: errorCount(result.diagnostics) }
@@ -64,24 +64,14 @@ function isRegression(before: CompileResult, after: CompileResult): boolean {
 }
 
 /** One conversation between a user and the assistant about one project. */
-export class AiSession {
-  readonly id: string
-  readonly userId: string
+export class AiSession extends AgentChat {
   readonly projectId: string
-  lastActive = Date.now()
   private readonly deps: AiDeps
-  private readonly items: AiItem[]
-  /** A reopened conversation's transcript, until the agent takes it over. */
-  private restored?: AgentMessage[]
   private title?: string
-  private context: number | null
   /** Stops a compaction in progress. */
   private compacting?: AbortController
-  private readonly listeners = new Set<(e: AiStreamEvent) => void>()
   private readonly changeset: Changeset
   private readonly toolContext: ToolContext
-  private agent?: Agent
-  private running = false
   private notes: string[] = []
   private authorBuild?: string
   private lastApplied?: { snapshot: string; at: string; files: AppliedFile[] }
@@ -90,13 +80,9 @@ export class AiSession {
   readonly canEdit: boolean
 
   constructor(deps: AiDeps, userId: string, project: ProjectMeta, canEdit = true, saved?: SavedConversation) {
+    super(deps.ai, userId, project.id, saved)
     this.deps = deps
-    this.id = saved?.id ?? crypto.randomUUID()
-    this.items = saved?.items ?? []
-    this.restored = saved?.messages
     this.title = saved?.title
-    this.context = saved?.contextTokens ?? null
-    this.userId = userId
     this.canEdit = canEdit
     this.projectId = project.id
     this.changeset = new Changeset(project.id, deps.store)
@@ -108,6 +94,9 @@ export class AiSession {
       outputsDir: deps.outputsDir,
       canEdit,
       authorBuild: () => this.authorBuild,
+      skills: () => this.skills,
+      onProposeSkill: skill => this.upsert({ kind: 'skill', id: shortId(), ...skill, saved: null }),
+      proposedReply: "Shown to the author, who can edit it and save it to their skills or the project's.",
       onTrial: result => {
         const errors = errorCount(result.diagnostics)
         this.changeset.trial = {
@@ -120,27 +109,8 @@ export class AiSession {
     }
   }
 
-  // ---- Events ---------------------------------------------------------------
-
-  subscribe(listener: (e: AiStreamEvent) => void): () => void {
-    this.listeners.add(listener)
-    listener({ type: 'snapshot', state: this.state() })
-    return () => this.listeners.delete(listener)
-  }
-
-  private emit(event: AiStreamEvent): void {
-    for (const l of this.listeners) l(event)
-  }
-
-  private upsert(item: AiItem): void {
-    const i = this.items.findIndex(x => x.id === item.id)
-    if (i === -1) this.items.push(item)
-    else this.items[i] = item
-    this.emit({ type: 'item', item })
-  }
-
-  private notice(level: 'info' | 'success' | 'error', text: string): void {
-    this.upsert({ kind: 'notice', id: shortId(), level, text })
+  protected override afterTool(name: string): void {
+    if (['edit_file', 'create_file', 'revert_file', 'compile'].includes(name)) this.emitChanges()
   }
 
   private emitChanges(): void {
@@ -162,19 +132,6 @@ export class AiSession {
     }
   }
 
-  /** The agent's transcript, or the saved one before the agent exists. */
-  private transcript(): AgentMessage[] {
-    return this.agent?.state.messages ?? this.restored ?? []
-  }
-
-  /** Deleted: nothing is saved any more, even by a reply that was still coming. */
-  private forgotten = false
-
-  forget(): void {
-    this.forgotten = true
-    this.abort()
-  }
-
   /** Save the conversation (once the person has said something), so it can be reopened. */
   private async persist(): Promise<void> {
     if (this.forgotten || !this.items.some(i => i.kind === 'user')) return
@@ -182,10 +139,6 @@ export class AiSession {
     await this.deps.conversations
       .save(this.userId, this.projectId, { id: this.id, title: this.title, items: this.items, messages: this.transcript(), contextTokens: this.context })
       .catch(() => {})
-  }
-
-  get isRunning(): boolean {
-    return this.running
   }
 
   // ---- Conversation -----------------------------------------------------------
@@ -204,15 +157,15 @@ export class AiSession {
     const context = [errors ? `${errors} compile errors` : '', body.selection ? `a selection of ${body.selection.toLine - body.selection.fromLine + 1} lines` : '']
       .filter(Boolean)
       .join(', ')
-    const plan = await ai.planMessage(user, body.preference, { text: body.text, context }, this.lastTier, (model, usage) => {
-      void ai.recordUsage({ userId: this.userId, projectId: this.projectId, provider: model.provider, model: model.id, usage }).catch(() => {})
-    })
+    const text = body.skill ? `/${body.skill} ${body.text}`.trim() : body.text
+    const plan = await ai.planMessage(user, body.preference, { text, context }, this.lastTier, (model, usage) => this.recordUsage(model, usage))
     if (!plan) throw new ForbiddenError('No AI model is available to you')
     this.lastTier = plan.tier
     const { model, thinkingLevel, notices } = plan
     if (this.agent) {
       this.agent.state.model = model
       this.agent.state.thinkingLevel = thinkingLevel
+      this.syncSkills(this.agent)
       return { agent: this.agent, notices }
     }
     this.toolContext.manuals = (await this.deps.queue.hasManuals?.().catch(() => true)) ?? true
@@ -232,90 +185,25 @@ export class AiSession {
     agent.subscribe(event => this.onAgentEvent(event))
     this.agent = agent
     this.restored = undefined
+    this.syncSkills(agent)
     return { agent, notices }
   }
 
   private toolCalls = 0
   private compiles = 0
-  private assistantItem?: { id: string; text: string }
-
-  private onAgentEvent(event: AgentEvent): void {
-    switch (event.type) {
-      case 'message_start':
-        if (event.message.role === 'assistant') this.assistantItem = undefined
-        break
-      case 'message_update': {
-        const e = event.assistantMessageEvent
-        if (e.type !== 'text_delta') break
-        if (!this.assistantItem) {
-          this.assistantItem = { id: shortId(), text: '' }
-          this.upsert({ kind: 'assistant', id: this.assistantItem.id, text: '' })
-        }
-        this.assistantItem.text += e.delta
-        this.emit({ type: 'delta', id: this.assistantItem.id, text: e.delta })
-        break
-      }
-      case 'message_end': {
-        if (event.message.role !== 'assistant') break
-        const message = event.message as AssistantMessage
-        const text = message.content.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('')
-        if (text.trim()) {
-          const id = this.assistantItem?.id ?? shortId()
-          const i = this.items.findIndex(x => x.id === id)
-          if (i === -1) this.items.push({ kind: 'assistant', id, text })
-          else this.items[i] = { kind: 'assistant', id, text }
-          // Clients already have the text from deltas unless the provider didn't stream.
-          if (!this.assistantItem || this.assistantItem.text !== text) this.emit({ type: 'item', item: { kind: 'assistant', id, text } })
-        }
-        this.assistantItem = undefined
-        this.context = contextTokens(message.usage) ?? this.context
-        if (message.stopReason === 'error') this.notice('error', message.errorMessage ?? 'The model request failed')
-        this.deps.ai.recordOutcome(
-          message.provider,
-          message.stopReason === 'error' ? 'error' : message.stopReason === 'aborted' ? 'aborted' : 'ok',
-          message.errorMessage,
-        )
-        void this.deps.ai
-          .recordUsage({ userId: this.userId, projectId: this.projectId, provider: message.provider, model: message.model, usage: message.usage })
-          .catch(() => {})
-        break
-      }
-      case 'tool_execution_start':
-        this.upsert({
-          kind: 'tool',
-          id: event.toolCallId,
-          name: event.toolName,
-          label: describeToolCall(event.toolName, (event.args ?? {}) as Record<string, unknown>),
-          status: 'running',
-        })
-        break
-      case 'tool_execution_end': {
-        const existing = this.items.find(x => x.id === event.toolCallId)
-        const output = event.result.content.flatMap((b: { type: string; text?: string }) => (b.type === 'text' ? [b.text ?? ''] : [])).join('')
-        const failed = event.isError || event.result.isError
-        if (existing?.kind === 'tool') {
-          this.upsert({
-            ...existing,
-            status: failed ? 'error' : 'ok',
-            // Errors explain themselves; for compiles the first line is the useful summary.
-            result: failed ? output.slice(0, 400) : event.toolName === 'compile' ? output.split('\n')[0] : undefined,
-          })
-        }
-        if (['edit_file', 'create_file', 'revert_file', 'compile'].includes(event.toolName)) this.emitChanges()
-        break
-      }
-    }
-  }
 
   async send(body: AiMessageBody, project: ProjectMeta, user: SessionUser): Promise<void> {
     if (this.running) throw new ConflictError('The assistant is still working on the previous message')
     this.lastActive = Date.now()
     this.toolContext.project = project
     if (body.compile) this.authorBuild = body.compile.buildId
+    this.skills = await this.deps.skills.available(this.userId, this.projectId)
+    const skill = body.skill ? this.skills.find(s => s.name === body.skill) : undefined
+    if (body.skill && !skill) throw new BadRequestError(`There is no skill named ${body.skill}`)
     const { agent, notices } = await this.ensureAgent(user, body)
-    const { text, attachments } = userMessage(body, this.notes)
+    const { text, attachments } = userMessage(body, this.notes, skill)
     this.notes = []
-    this.upsert({ kind: 'user', id: shortId(), text: body.text, attachments })
+    this.upsert({ kind: 'user', id: shortId(), text: body.text.trim(), attachments, ...(skill ? { skill: skill.name } : {}) })
     for (const n of notices) this.notice('info', n)
 
     this.running = true
@@ -363,9 +251,7 @@ export class AiSession {
     const messages = this.transcript()
     if (!messages.some(m => m.role === 'user')) throw new BadRequestError('There is nothing to compact yet')
     const { ai } = this.deps
-    const plan = await ai.planMessage(user, preference, { text: 'Summarise this conversation', context: '' }, this.lastTier, (model, usage) => {
-      void ai.recordUsage({ userId: this.userId, projectId: this.projectId, provider: model.provider, model: model.id, usage }).catch(() => {})
-    })
+    const plan = await ai.planMessage(user, preference, { text: 'Summarise this conversation', context: '' }, this.lastTier, (model, usage) => this.recordUsage(model, usage))
     if (!plan) throw new ForbiddenError('No AI model is available to you')
     this.running = true
     this.lastActive = Date.now()
@@ -378,7 +264,7 @@ export class AiSession {
         { systemPrompt: COMPACT_SYSTEM_PROMPT, messages: [{ role: 'user', content: renderTranscript(messages), timestamp: Date.now() }] },
         { signal: controller.signal },
       )
-      void ai.recordUsage({ userId: this.userId, projectId: this.projectId, provider: res.provider, model: res.model, usage: res.usage }).catch(() => {})
+      this.recordUsage({ provider: res.provider, id: res.model }, res.usage)
       ai.recordOutcome(res.provider, res.stopReason === 'error' ? 'error' : res.stopReason === 'aborted' ? 'aborted' : 'ok', res.errorMessage)
       if (res.stopReason === 'aborted') return
       const summary = res.content.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('')
@@ -402,13 +288,20 @@ export class AiSession {
       })
   }
 
-  abort(): void {
-    this.agent?.abort()
-    this.compacting?.abort()
+  /** Save a skill the agent proposed (as it was, or edited), to the person's skills or the project's. */
+  async saveProposedSkill(itemId: string, input: AiSaveProposedSkill, user: SessionUser): Promise<AiSkill> {
+    if (input.scope === 'project' && !this.canEdit) throw new ForbiddenError('Only editors can add project skills')
+    const owner = input.scope === 'personal' ? { scope: input.scope, userId: user.id } : { scope: input.scope, projectId: this.projectId, userId: user.id }
+    return saveDraftedSkill(this.deps.skills, owner, this.items, itemId, input, item => {
+      this.upsert(item)
+      this.notes.push(`The author saved your proposed skill as ${input.scope === 'personal' ? 'one of their skills' : 'a project skill'}, named ${item.name}.`)
+      void this.persist()
+    })
   }
 
-  async waitForIdle(): Promise<void> {
-    await this.agent?.waitForIdle()
+  override abort(): void {
+    super.abort()
+    this.compacting?.abort()
   }
 
   discard(): void {

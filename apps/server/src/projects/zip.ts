@@ -25,6 +25,9 @@ export type ProjectArchive = {
 /** OS and VCS clutter that never belongs in a LaTeX project. */
 const JUNK = [/^__MACOSX(\/|$)/, /(^|\/)\.DS_Store$/, /(^|\/)Thumbs\.db$/, /(^|\/)\.git(\/|$)/]
 
+/** Whether a path is OS or VCS clutter (also for files uploaded one by one). */
+export const isJunk = (p: string) => JUNK.some(re => re.test(p))
+
 const S_IFMT = 0o170000
 const S_IFLNK = 0o120000
 

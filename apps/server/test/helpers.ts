@@ -7,6 +7,8 @@ import { DbCredentialStore, SecretBox } from '../src/ai/credentials.ts'
 import { AiService } from '../src/ai/service.ts'
 import { AiSessionManager } from '../src/ai/session.ts'
 import { ConversationStore } from '../src/ai/conversations.ts'
+import { SkillStore } from '../src/ai/skills.ts'
+import { SkillChatStore, SkillWorkshops } from '../src/ai/workshop.ts'
 import { buildApp } from '../src/app.ts'
 import { NetworkService } from '../src/network/service.ts'
 import { TailscaleClient } from '../src/network/tailscale.ts'
@@ -70,7 +72,8 @@ async function s3TestStore(dataDir: string) {
   return { store, close: async () => fake?.close() }
 }
 
-export async function createTestApp() {
+/** `builtinSkills`: a folder of built-in skills (none by default, so tests see only what they create). */
+export async function createTestApp(options: { builtinSkills?: string } = {}) {
   const db = createDb(await resetTestDatabase())
   await runMigrations(db)
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'coltex-test-'))
@@ -152,7 +155,9 @@ export async function createTestApp() {
   const notifications = new NotificationService(db)
   // Not started: tests feed it samples themselves.
   const monitor = new MonitorHistory(db, () => queue.stats().then(s => s.containers))
-  const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir, conversations: new ConversationStore(db) })
+  const skills = new SkillStore(db, options.builtinSkills ?? path.join(dataDir, 'no-builtin-skills'))
+  const skillChats = new SkillWorkshops({ ai, skills, chats: new SkillChatStore(db) })
+  const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir, conversations: new ConversationStore(db), skills })
   // Not started either; there is no pg_dump here, so the dump is a stand-in tests can replace.
   const dumps = { dump: async (file: string) => fs.writeFile(file, '-- test dump\n') }
   const backup = new BackupService(
@@ -202,7 +207,7 @@ export async function createTestApp() {
   })
   const accounts = new AccountService(db, auth, box)
   const app = await buildApp(
-    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
     { logger: false, handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
   )
   return {

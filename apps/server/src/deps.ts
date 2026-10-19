@@ -1,6 +1,8 @@
 import type { NetworkService } from './network/service.ts'
 import type { AiService } from './ai/service.ts'
 import type { AiSessionManager } from './ai/session.ts'
+import type { SkillStore } from './ai/skills.ts'
+import type { SkillWorkshops } from './ai/workshop.ts'
 import type { AccountService } from './auth/accounts.ts'
 import type { Auth } from './auth/auth.ts'
 import type { BackupService } from './backup/service.ts'
@@ -30,6 +32,10 @@ export type Deps = {
   collab: CollabHooks
   ai: AiService
   aiSessions: AiSessionManager
+  /** AI skills, personal and per project. */
+  skills: SkillStore
+  /** The skills chat in Settings → AI skills, one per person. */
+  skillChats: SkillWorkshops
   history: HistoryService
   review: ReviewService
   convert: ConvertService

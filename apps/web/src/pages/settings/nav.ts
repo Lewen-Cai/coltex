@@ -7,7 +7,16 @@ export const PERSONAL: SettingsItem[] = [
   { title: tk('Appearance'), href: '#/settings/appearance', route: '/settings/appearance' },
   { title: tk('Dictionary'), href: '#/settings/dictionary', route: '/settings/dictionary' },
   { title: tk('Zotero'), href: '#/settings/zotero', route: '/settings/zotero' },
+  { title: tk('AI skills'), href: '#/settings/skills', route: '/settings/skills' },
 ]
+
+/** Only people who have the AI agent see its skills page. */
+export const AI_ROUTES = new Set(['/settings/skills'])
+
+/** The personal pages someone sees (the AI ones only with AI access). */
+export function personalItems(aiAvailable: boolean | undefined): SettingsItem[] {
+  return aiAvailable ? PERSONAL : PERSONAL.filter(i => !AI_ROUTES.has(i.route))
+}
 
 /** Instance administration; only the system administrator sees (and can open) all of these. */
 export const ADMIN: SettingsItem[] = [

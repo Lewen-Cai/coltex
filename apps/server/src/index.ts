@@ -4,6 +4,8 @@ import { DbCredentialStore, SecretBox } from './ai/credentials.ts'
 import { AiService } from './ai/service.ts'
 import { AiSessionManager } from './ai/session.ts'
 import { ConversationStore } from './ai/conversations.ts'
+import { SkillStore } from './ai/skills.ts'
+import { SkillChatStore, SkillWorkshops } from './ai/workshop.ts'
 import { buildApp } from './app.ts'
 import { dumpDatabase } from './backup/postgres.ts'
 import { BackupService } from './backup/service.ts'
@@ -94,7 +96,9 @@ const backup = new BackupService(
   },
 )
 backup.start()
-const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir: config.outputsDir, conversations: new ConversationStore(db) })
+const skills = new SkillStore(db)
+const skillChats = new SkillWorkshops({ ai, skills, chats: new SkillChatStore(db) })
+const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
 const accounts = new AccountService(db, auth, box)
 const builds = new CompileCoalescer()
 const linkedFiles = new LinkedFileService({
@@ -107,7 +111,7 @@ const linkedFiles = new LinkedFileService({
   compile: (projectId, userId) => buildProject({ projects, store, queue, collab, builds }, projectId, userId),
 })
 const app = await buildApp(
-  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references: new ReferenceService({ db, box, store, collab, history, projects }), templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references: new ReferenceService({ db, box, store, collab, history, projects }), templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
   { handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
 )
 

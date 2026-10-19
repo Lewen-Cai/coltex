@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { AiApplyBody, AiItem, AiMessageBody, AiPreference, AiSessionState, AiStatus, AiStreamEvent, CompileResult } from '@coltex/shared'
+import type { AiApplyBody, AiItem, AiMessageBody, AiPreference, AiSaveProposedSkill, AiSessionState, AiStatus, AiStreamEvent, CompileResult } from '@coltex/shared'
 import { toast } from 'sonner'
 import { api } from './api.ts'
 
@@ -25,6 +25,33 @@ export function useAiStatus() {
     api.aiSetPreference(pick).then(setStatus, e => toast.error((e as Error).message))
   }, [])
   return { status, choose }
+}
+
+const availability = new Map<string, Promise<boolean>>()
+
+/**
+ * Whether this person has the AI agent: pages about it, such as the skills,
+ * show only then. Asked again whenever `refresh` changes (the settings
+ * sidebar passes the route), so connecting a provider shows them without a
+ * reload; requests made at the same time share one.
+ */
+export function useAiAvailable(userId: string, refresh?: unknown): boolean | undefined {
+  const [available, setAvailable] = useState<boolean>()
+  useEffect(() => {
+    let request = availability.get(userId)
+    if (!request) {
+      request = api.aiStatus().then(s => s.available, () => false)
+      availability.set(userId, request)
+      const settled = request
+      void settled.finally(() => availability.get(userId) === settled && availability.delete(userId))
+    }
+    let live = true
+    void request.then(a => live && setAvailable(a))
+    return () => {
+      live = false
+    }
+  }, [userId, refresh])
+  return available
 }
 
 /** The pick to send with a message, so it applies even before saving it has finished. */
@@ -124,13 +151,62 @@ export function useAiSession(projectId: string, enabled: boolean) {
   const conversations = useCallback(() => api.aiConversations(projectId), [projectId])
   const rename = useCallback((conversation: string, title: string) => api.aiRenameConversation(projectId, conversation, title), [projectId])
   const compact = useCallback((preference?: AiPreference) => guard(() => api.aiCompact(projectId, preference)), [guard, projectId])
+  /** The skills for the "/" menu: the person's and the project's. */
+  const skillMenu = useCallback(() => api.skillMenu(projectId), [projectId])
+  /** Save a skill the agent drafted (errors go to the caller: the editor dialog shows them). */
+  const saveSkill = useCallback((item: string, body: AiSaveProposedSkill) => api.aiSaveProposedSkill(projectId, item, body), [projectId])
   const apply = useCallback((body: AiApplyBody) => guard(() => api.aiApply(projectId, body)), [guard, projectId])
   const undo = useCallback(
     (): Promise<{ message: string; compile: CompileResult } | undefined> => guard(() => api.aiUndo(projectId)),
     [guard, projectId],
   )
 
-  return { state, error, busy, setError, send, abort, discard, reset, open, remove, compact, conversations, rename, apply, undo }
+  return { state, error, busy, setError, send, abort, discard, reset, open, remove, compact, conversations, rename, skillMenu, saveSkill, apply, undo }
 }
 
 export type AiSessionHandle = ReturnType<typeof useAiSession>
+
+/**
+ * The person's skills chat (Settings → AI skills): the agent that helps
+ * write skills. Like `useAiSession`, without a project or a draft.
+ */
+export function useSkillChat() {
+  const [state, setState] = useState<AiSessionState>()
+  const [error, setError] = useState<string>()
+  const [busy, setBusy] = useState(false)
+  const [epoch, setEpoch] = useState(0)
+
+  useEffect(() => {
+    const source = new EventSource(api.skillChatEventsUrl)
+    source.onmessage = ev => setState(prev => reduce(prev, JSON.parse(ev.data) as AiStreamEvent))
+    return () => source.close()
+  }, [epoch])
+
+  const guard = useCallback(async <T,>(action: () => Promise<T>): Promise<T | undefined> => {
+    setError(undefined)
+    setBusy(true)
+    try {
+      return await action()
+    } catch (e) {
+      setError((e as Error).message)
+      return undefined
+    } finally {
+      setBusy(false)
+    }
+  }, [])
+
+  const send = useCallback((body: AiMessageBody) => guard(() => api.skillChatSend(body)), [guard])
+  const abort = useCallback(() => guard(() => api.skillChatAbort()), [guard])
+  const reset = useCallback(
+    () =>
+      guard(async () => {
+        setState(await api.skillChatReset())
+        setEpoch(n => n + 1)
+      }),
+    [guard],
+  )
+  /** Save a drafted skill (errors go to the caller: a name clash asks whether to replace). */
+  const saveSkill = useCallback((item: string, body: AiSaveProposedSkill) => api.skillChatSave(item, body), [])
+
+  return { state, error, busy, send, abort, reset, saveSkill }
+}

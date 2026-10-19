@@ -2,13 +2,14 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Type, type Static, type TSchema } from '@earendil-works/pi-ai'
 import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
-import { OUTPUT, TexLookupJob, type CompileResult, type Diagnostic, type ProjectMeta } from '@coltex/shared'
+import { AiSkillBody, OUTPUT, TexLookupJob, type CompileResult, type Diagnostic, type ProjectMeta } from '@coltex/shared'
 import type { CompileQueue } from '../compile-queue.ts'
 import { BadRequestError } from '../errors.ts'
 import { engineFor } from '../projects/engine.ts'
 import { cleanPath, isTextPath } from '../storage/paths.ts'
 import type { ProjectStore } from '../storage/types.ts'
 import { Changeset } from './changeset.ts'
+import { draftedFiles, type LoadedSkill } from './skills.ts'
 
 const MAX_READ_LINES = 1500
 const MAX_SEARCH_RESULTS = 80
@@ -28,6 +29,15 @@ export type ToolContext = {
   onTrial: (result: CompileResult) => void
   /** The compiler has the package manuals (the full edition); otherwise texlive_doc isn't offered. */
   manuals?: boolean
+} & SkillToolContext
+
+export type SkillToolContext = {
+  /** The skills this person can use here (read at each message). */
+  skills: () => LoadedSkill[]
+  /** A skill the agent drafted, shown to the person to save. */
+  onProposeSkill: (skill: AiSkillBody & { files: Record<string, string> }) => void
+  /** What the tool tells the agent after a draft is shown (where the person can save it). */
+  proposedReply: string
 }
 
 const text = (t: string): AgentToolResult<undefined> => ({ content: [{ type: 'text', text: t }], details: undefined })
@@ -102,6 +112,10 @@ export function describeToolCall(name: string, args: Record<string, unknown>): s
       return args.query ? `Look up “${String(args.query)}” in ${String(args.name)}` : `Read ${String(args.name)} from TeX Live`
     case 'texlive_doc':
       return args.query ? `Search the ${String(args.name)} manual for “${String(args.query)}”` : `Read the ${String(args.name)} manual`
+    case 'read_skill':
+      return args.path ? `Read ${String(args.path)} of skill “${String(args.name)}”` : `Use skill “${String(args.name)}”`
+    case 'propose_skill':
+      return `Draft skill “${String(args.name)}”`
     default:
       return name
   }
@@ -116,6 +130,60 @@ async function lookup(ctx: ToolContext, job: TexLookupJob): Promise<string> {
   const r = await ctx.queue.texLookup(parsed.data)
   if (!r.found) return r.text
   return `${r.file} (${r.totalLines} lines)\n${r.text}`
+}
+
+/** Reading the person's skills and drafting new ones: in the project panel and the skills chat. */
+export function skillTools(ctx: SkillToolContext): AgentTool<any, undefined>[] {
+  return [
+    tool({
+      name: 'read_skill',
+      label: 'Read skill',
+      description:
+        "Load one of the author's skills (listed in the system prompt): its instructions and the names of its reference files. With path, read one of those files instead.",
+      parameters: Type.Object({
+        name: Type.String({ description: 'The skill name' }),
+        path: Type.Optional(Type.String({ description: 'A reference file of the skill' })),
+      }),
+      execute: async ({ name, path: file }) => {
+        const skill = ctx.skills().find(s => s.name === name)
+        if (!skill) throw new BadRequestError(`There is no skill named ${name}`)
+        if (file) {
+          const text = skill.files[file.replace(/^\.?\//, '')]
+          if (text === undefined) throw new BadRequestError(`Skill ${name} has no file ${file}`)
+          return text
+        }
+        const files = Object.keys(skill.files)
+        return `# Skill: ${skill.name}\n${skill.body}${files.length ? `\n\nReference files (read with path): ${files.join(', ')}` : ''}`
+      },
+    }),
+
+    tool({
+      name: 'propose_skill',
+      label: 'Propose skill',
+      description:
+        'Draft a skill for the author to save (only when they ask for one), or a new version of one of theirs (same name). It is shown to them with the option to edit and save it; nothing is saved by this call.',
+      parameters: Type.Object({
+        name: Type.String({ description: 'Lowercase letters, digits and hyphens, e.g. "polish-abstract"' }),
+        description: Type.String({ description: 'What it does and when to use it, in one or two sentences' }),
+        body: Type.String({ description: 'The instructions (the body of SKILL.md, without front matter), in Markdown' }),
+        files: Type.Optional(
+          Type.Array(
+            Type.Object({
+              path: Type.String({ description: 'Relative to the skill folder, e.g. "references/house-style.md"' }),
+              content: Type.String({ description: 'The file as text' }),
+            }),
+            { description: 'Reference files the instructions point to, loaded only when needed' },
+          ),
+        ),
+      }),
+      execute: async ({ files, ...params }) => {
+        const parsed = AiSkillBody.safeParse(params)
+        if (!parsed.success) throw new BadRequestError(`Invalid skill: ${parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')}`)
+        ctx.onProposeSkill({ ...parsed.data, files: draftedFiles(files ?? []) })
+        return ctx.proposedReply
+      },
+    }),
+  ]
 }
 
 export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
@@ -336,6 +404,8 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
       }),
       execute: async ({ name, query, fromLine }) => lookup(ctx, { kind: 'doc', name, query, fromLine }),
     }),
+
+    ...skillTools(ctx),
   ]
   // Without edit rights the assistant answers questions only: no draft, no trial builds.
   // The standard edition has no manuals: texdoc would find nothing.

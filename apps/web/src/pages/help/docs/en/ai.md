@@ -35,3 +35,15 @@ Viewers and reviewers can ask the AI agent but can't apply changes.
   - `/compact`: summarise the chat so far and continue from the summary, freeing the context. The messages stay visible; the AI agent remembers them through the summary.
   - `/new`: start a new chat.
   - `/chats`: the previous chats.
+
+## Skills
+
+A skill is a set of instructions for a task you do again and again, for example "shorten an abstract to the journal's limit" or "check that every figure is referenced". Skills use the Agent Skills format (a `SKILL.md` with a name, a description and the instructions), so skills written for other AI agents work here too.
+
+- **Your skills** are in **Settings → AI skills**; only you see them. **Project skills** are in the project settings (**AI skills**): every member who has the AI agent can use them, editors add and change them.
+- Create one with **New skill**, or **Import** one: **Upload files** takes a `SKILL.md` with its reference files, or a `.zip` of skill folders; **Upload folder** takes a skill's folder, or a folder holding several. Scripts in a skill are kept as text the AI agent can read; nothing in a skill is ever run.
+- Use one by typing `/` and picking it, then add your message (`/polish-abstract keep it under 200 words`). The AI agent also reads the descriptions and loads a skill on its own when your request fits one.
+- Ask the AI agent to turn something into a skill ("save how we just fixed the bibliography as a skill"): it drafts one in the chat, and you edit it or save it to your skills or the project's.
+- Next to your skills, a chat with the AI agent helps you write new skills and improve the ones you have. It follows the built-in **skill-creator** skill: it asks how you would use the skill, drafts it (with reference files when they help), and can try a draft on text you paste. Drafts are saved only when you save them; saving one under a name you already use asks before replacing it. The chat is kept until you start a new one.
+- ColTex comes with built-in skills (marked **Built-in**), such as **skill-creator**. You can read and download them but not change them; a skill of your own with the same name is used instead.
+- When one of your skills has the same name as a project skill, yours is used.

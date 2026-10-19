@@ -183,6 +183,20 @@
       "when": 1792329999957,
       "tag": "0025_drop_git_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792377287779,
+      "tag": "0026_ai_skills",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1792410508883,
+      "tag": "0027_ai_skill_chats",
+      "breakpoints": true
     }
   ]
 }

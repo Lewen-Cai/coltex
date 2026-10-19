@@ -15,6 +15,7 @@ import { LoginPage } from './components/auth/LoginPage.tsx'
 import { SetupPage } from './components/auth/SetupPage.tsx'
 import { UNAUTHORIZED_EVENT, api } from './lib/api.ts'
 import { authClient, type SessionUser } from './lib/auth.ts'
+import { useAiAvailable } from './lib/ai.ts'
 import { useLocale } from './lib/i18n.ts'
 import { useNotificationStream } from './lib/notifications.ts'
 import { navigate, useHashRoute } from './lib/router.ts'
@@ -34,6 +35,7 @@ const AccountSettingsPage = lazy(() => import('@/pages/settings/account').then(m
 const AppearanceSettingsPage = lazy(() => import('@/pages/settings/appearance').then(m => ({ default: m.AppearanceSettingsPage })))
 const DictionarySettingsPage = lazy(() => import('@/pages/settings/dictionary').then(m => ({ default: m.DictionarySettingsPage })))
 const ZoteroSettingsPage = lazy(() => import('@/pages/settings/zotero').then(m => ({ default: m.ZoteroSettingsPage })))
+const SkillsSettingsPage = lazy(() => import('@/pages/settings/skills').then(m => ({ default: m.SkillsSettingsPage })))
 
 function Loading() {
   return (
@@ -41,6 +43,15 @@ function Loading() {
       <Spinner className="size-6" />
     </div>
   )
+}
+
+/** Pages about the AI agent: for people who have it; everyone else lands on their account. */
+function AiOnly({ user, children }: { user: SessionUser; children: ReactNode }) {
+  const available = useAiAvailable(user.id)
+  useEffect(() => {
+    if (available === false) navigate('/settings')
+  }, [available])
+  return available ? children : <Loading />
 }
 
 function consolePage(route: string, user: SessionUser): ReactNode {
@@ -63,6 +74,7 @@ function settingsPage(route: string, user: SessionUser): ReactNode {
   if (route === '/settings/appearance') return <AppearanceSettingsPage />
   if (route === '/settings/dictionary') return <DictionarySettingsPage />
   if (route === '/settings/zotero') return <ZoteroSettingsPage />
+  if (route === '/settings/skills') return <AiOnly user={user}><SkillsSettingsPage /></AiOnly>
   if (user.role === 'admin' || user.role === 'manager') {
     if (route === '/admin/invites') return <AdminInvitesPage user={user} />
     if (route === '/admin/users') return <AdminUsersPage user={user} />

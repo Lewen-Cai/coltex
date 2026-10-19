@@ -52,7 +52,8 @@ import { authClient, type SessionUser } from '@/lib/auth'
 import { t, tk } from '@/lib/i18n'
 import { useUnreadNotifications } from '@/lib/notifications'
 import { navigate } from '@/lib/router'
-import { PERSONAL, adminItems, isSettingsRoute, settingsItemActive, settingsTitle, type SettingsItem } from '@/pages/settings/nav'
+import { adminItems, isSettingsRoute, personalItems, settingsItemActive, settingsTitle, type SettingsItem } from '@/pages/settings/nav'
+import { useAiAvailable } from '@/lib/ai'
 import { helpSection, helpSections, helpTitle, isHelpRoute } from '@/pages/help/nav'
 import { useTags } from '@/lib/tags'
 import { inView, useProjects } from '@/pages/projects-data'
@@ -159,6 +160,7 @@ function SettingsGroup({ label, items, route }: { label: string; items: Settings
 
 /** The sidebar while settings are open: a way back, the personal pages, and (for admins) administration. */
 function SettingsNav({ user, route }: { user: SessionUser; route: string }) {
+  const aiAvailable = useAiAvailable(user.id, route)
   return (
     <>
       <SidebarGroup>
@@ -173,7 +175,7 @@ function SettingsNav({ user, route }: { user: SessionUser; route: string }) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
-      <SettingsGroup label={t('Personal')} items={PERSONAL} route={route} />
+      <SettingsGroup label={t('Personal')} items={personalItems(aiAvailable)} route={route} />
       {adminItems(user).length > 0 && <SettingsGroup label={t('Administration')} items={adminItems(user)} route={route} />}
     </>
   )

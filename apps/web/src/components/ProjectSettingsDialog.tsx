@@ -10,6 +10,7 @@ import { SHORTCUT_COMMANDS, bindingFromEvent, bindingsFor, commandWithKey, type 
 import { cn } from '../lib/utils.ts'
 import { spellLanguageName } from '../spelling/index.ts'
 import { openPublishTemplate } from './publish-template-dialog.tsx'
+import { SkillLibrary } from './skills/skill-library.tsx'
 import { Button } from './ui/button.tsx'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from './ui/command.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover.tsx'
@@ -30,6 +31,8 @@ type Props = {
   onWordCount: () => void
   onCopy: () => void
   onConvert: () => void
+  /** The person has the AI agent: the project's skills are shown. */
+  aiAvailable: boolean
 }
 
 const itemClass =
@@ -317,6 +320,7 @@ const SECTIONS = [
   { id: 'appearance', label: tk('Appearance') },
   { id: 'editing', label: tk('Editing') },
   { id: 'shortcuts', label: tk('Keyboard shortcuts') },
+  { id: 'skills', label: tk('AI skills') },
   { id: 'actions', label: tk('Actions') },
 ] as const
 type SectionId = (typeof SECTIONS)[number]['id']
@@ -334,7 +338,8 @@ export function ProjectSettingsDialog(props: Props) {
     props.onOpenChange(false)
     fn()
   }
-  const current = SECTIONS.find(s => s.id === section)!
+  const sections = SECTIONS.filter(s => s.id !== 'skills' || props.aiAvailable)
+  const current = sections.find(s => s.id === section) ?? sections[0]!
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="flex h-[min(640px,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
@@ -344,15 +349,15 @@ export function ProjectSettingsDialog(props: Props) {
         </DialogHeader>
         <div className="flex min-h-0 flex-1 max-sm:flex-col">
           <nav className="grid shrink-0 content-start gap-0.5 border-r bg-muted/30 p-2 sm:w-48 max-sm:flex max-sm:overflow-x-auto max-sm:border-r-0 max-sm:border-b">
-            {SECTIONS.map(s => (
+            {sections.map(s => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => setSection(s.id)}
-                aria-current={section === s.id ? 'page' : undefined}
+                aria-current={current.id === s.id ? 'page' : undefined}
                 className={cn(
                   'rounded-md px-3 py-1.5 text-left text-sm whitespace-nowrap transition-colors hover:bg-accent hover:text-accent-foreground',
-                  section === s.id ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground',
+                  current.id === s.id ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground',
                 )}
               >
                 {t(s.label)}
@@ -361,7 +366,7 @@ export function ProjectSettingsDialog(props: Props) {
           </nav>
           <div className="min-w-0 flex-1 overflow-y-auto p-5">
             <h3 className="mb-3 px-2 text-base font-semibold">{t(current.label)}</h3>
-            {section === 'project' && (
+            {current.id === 'project' && (
               <div className="grid gap-1">
                 <Setting label={t('Compiler')}>
                   <Select value={project?.engine ?? ''} onValueChange={v => props.onUpdate({ engine: v as EngineSetting })} disabled={!canEdit}>
@@ -404,10 +409,15 @@ export function ProjectSettingsDialog(props: Props) {
                 </a>
               </div>
             )}
-            {section === 'appearance' && <AppearanceSettings />}
-            {section === 'editing' && <EditingSettings />}
-            {section === 'shortcuts' && <ShortcutSettings />}
-            {section === 'actions' && (
+            {current.id === 'appearance' && <AppearanceSettings />}
+            {current.id === 'editing' && <EditingSettings />}
+            {current.id === 'shortcuts' && <ShortcutSettings />}
+            {current.id === 'skills' && project && (
+              <div className="px-2">
+                <SkillLibrary base={`/api/projects/${project.id}/ai/skills`} canEdit={canEdit} />
+              </div>
+            )}
+            {current.id === 'actions' && (
               <div className="grid gap-1">
                 <button type="button" className={itemClass} onClick={act(props.onWordCount)}>
                   <WholeWord /> {t('Word count')}

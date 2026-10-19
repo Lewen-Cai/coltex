@@ -630,7 +630,7 @@ export class AiService {
 
   // ---- Usage --------------------------------------------------------------
 
-  async recordUsage(entry: { userId: string; projectId: string; provider: string; model: string; usage: Usage }): Promise<void> {
+  async recordUsage(entry: { userId: string; projectId: string | null; provider: string; model: string; usage: Usage }): Promise<void> {
     const { usage } = entry
     await this.db.insert(aiUsage).values({
       userId: entry.userId,

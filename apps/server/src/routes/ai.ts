@@ -14,6 +14,8 @@ import {
   AiCompactBody,
   AiConversation,
   AiRenameBody,
+  AiSaveProposedSkill,
+  AiSkill,
   AiSettings,
   AiSettingsPatch,
   AiPreference,
@@ -22,12 +24,12 @@ import {
   AiUserRow,
   CompileResult,
   ProjectId,
-  type AiStreamEvent,
 } from '@coltex/shared'
 import type { FastifyRequest } from 'fastify'
 import { requireAdmin, requireUser } from '../auth/fastify.ts'
 import type { Deps } from '../deps.ts'
 import { ForbiddenError } from '../errors.ts'
+import { streamAiEvents } from './sse.ts'
 
 const IdParams = z.object({ id: ProjectId })
 const Ok = z.object({ ok: z.literal(true) })
@@ -72,22 +74,7 @@ export const aiRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, aiSession
   // Server-sent events: a snapshot first, then live updates.
   app.get('/projects/:id/ai/session/events', { schema: { params: IdParams } }, async (req, reply) => {
     const { session } = await sessionFor(req)
-    reply.hijack()
-    const res = reply.raw
-    res.writeHead(200, {
-      'content-type': 'text/event-stream; charset=utf-8',
-      'cache-control': 'no-store',
-      connection: 'keep-alive',
-      // Tell reverse proxies (nginx) not to buffer the stream.
-      'x-accel-buffering': 'no',
-    })
-    const send = (e: AiStreamEvent) => res.write(`data: ${JSON.stringify(e)}\n\n`)
-    const unsubscribe = session.subscribe(send)
-    const ping = setInterval(() => res.write(': ping\n\n'), 15_000)
-    req.raw.on('close', () => {
-      clearInterval(ping)
-      unsubscribe()
-    })
+    streamAiEvents(req, reply, send => session.subscribe(send))
   })
 
   app.post(
@@ -118,6 +105,16 @@ export const aiRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, aiSession
       const { session, user } = await sessionFor(req)
       await session.compact(user, req.body.preference)
       return reply.code(202).send({ ok: true })
+    },
+  )
+
+  // Save a skill the agent proposed in this conversation (personal, or the project's for editors).
+  app.post(
+    '/projects/:id/ai/session/skills/:item',
+    { schema: { params: z.object({ id: ProjectId, item: z.string().min(1).max(64) }), body: AiSaveProposedSkill, response: { 201: AiSkill } } },
+    async (req, reply) => {
+      const { session, user } = await sessionFor(req)
+      return reply.code(201).send(await session.saveProposedSkill(req.params.item, req.body, user))
     },
   )
 

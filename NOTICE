@@ -292,3 +292,13 @@ Upstream commit: 52660d5
     idea from src/tool/builtin/filesystem/editNormalization.ts (quote-normalised
     matching); ColTex's implementation maps normalised text back to the original
     and also normalises TeX quotes and whitespace
+
+OpenAI Skills (https://github.com/openai/skills), Apache-2.0, Copyright OpenAI.
+Upstream commit: 4ab6e0fd99c6667163bc34173e3ed3a3fed75ebc
+
+  apps/server/skills/skill-creator/SKILL.md
+    <- skills/.system/skill-creator/SKILL.md (adapted: ColTex's agent runs no
+       scripts, so the init/validate scripts and agents/openai.yaml are replaced
+       by drafting with propose_skill; examples are about LaTeX writing)
+  apps/server/skills/skill-creator/LICENSE.txt
+    <- skills/.system/skill-creator/LICENSE.txt (the Apache License 2.0)

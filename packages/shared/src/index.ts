@@ -940,6 +940,8 @@ export const AiItem = z.discriminatedUnion('kind', [
     text: z.string(),
     /** Short labels for context that was attached, e.g. "3 compile errors", "main.tex L10–14". */
     attachments: z.array(z.string()).default([]),
+    /** The skill the person invoked with `/name`, if any. */
+    skill: z.string().optional(),
   }),
   z.object({ kind: z.literal('assistant'), id: z.string(), text: z.string() }),
   z.object({
@@ -960,6 +962,17 @@ export const AiItem = z.discriminatedUnion('kind', [
   }),
   /** The conversation was summarised to free its context (`/compact`): tokens before and after. */
   z.object({ kind: z.literal('compacted'), id: z.string(), before: z.number().nullable(), after: z.number().nullable() }),
+  /** A skill the agent drafted (propose_skill), until the person saves it (`saved`: where to). */
+  z.object({
+    kind: z.literal('skill'),
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    body: z.string(),
+    /** Reference files drafted with it (path → text); older drafts have none. */
+    files: z.record(z.string(), z.string()).optional(),
+    saved: z.enum(['personal', 'project']).nullable(),
+  }),
 ])
 export type AiItem = z.infer<typeof AiItem>
 
@@ -1041,7 +1054,10 @@ export const AiSelection = z.object({
 export type AiSelection = z.infer<typeof AiSelection>
 
 export const AiMessageBody = z.object({
-  text: z.string().min(1).max(20_000),
+  /** May be empty when a skill is invoked on its own. */
+  text: z.string().max(20_000),
+  /** A skill invoked with `/name`: its instructions go with this message. */
+  skill: z.string().max(64).optional(),
   /** The compile the author is looking at, so the assistant can read its errors and log. */
   compile: z.object({ buildId: z.string().regex(/^[a-z0-9]+-[a-z0-9]+$/), status: CompileStatus, diagnostics: z.array(Diagnostic).max(200) }).optional(),
   /** The open file and cursor line. */
@@ -1049,8 +1065,68 @@ export const AiMessageBody = z.object({
   selection: AiSelection.optional(),
   /** The model and thinking level picked in the panel; the saved preference otherwise. */
   preference: AiPreference.optional(),
-})
+}).refine(b => b.text.trim() !== '' || b.skill, { message: 'Type a message', path: ['text'] })
 export type AiMessageBody = z.infer<typeof AiMessageBody>
+
+// ---------------------------------------------------------------------------
+// AI skills (Agent Skills format: a SKILL.md with a name, a description and
+// instructions, plus reference files). Personal or per project.
+// ---------------------------------------------------------------------------
+
+/** The "/" commands built into the panel; skills can't take their names. */
+export const RESERVED_SKILL_NAMES = ['compact', 'new', 'chats'] as const
+
+export const SkillName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(64)
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, digits and single hyphens')
+  .refine(n => !(RESERVED_SKILL_NAMES as readonly string[]).includes(n), 'This name is taken by a built-in command')
+
+export const SkillScope = z.enum(['personal', 'project'])
+export type SkillScope = z.infer<typeof SkillScope>
+
+/** Where a skill comes from: someone's own, a project's, or shipped with ColTex (read-only). */
+export const SkillSource = z.enum(['personal', 'project', 'builtin'])
+export type SkillSource = z.infer<typeof SkillSource>
+
+/** What creating or editing a skill sends. */
+export const AiSkillBody = z.object({
+  name: SkillName,
+  description: z.string().trim().min(1).max(1024),
+  body: z.string().trim().min(1).max(100_000),
+})
+export type AiSkillBody = z.infer<typeof AiSkillBody>
+
+export const AiSkill = z.object({
+  id: z.string(),
+  scope: SkillSource,
+  name: z.string(),
+  description: z.string(),
+  body: z.string(),
+  /** Reference files that came with an imported skill (read by the agent, never run). */
+  files: z.array(z.object({ path: z.string(), size: z.number() })),
+  updatedAt: z.string(),
+  /** Project skills: who added it. */
+  author: z.string().nullable(),
+})
+export type AiSkill = z.infer<typeof AiSkill>
+
+/** A skill in the panel's "/" menu (personal ones win over project ones of the same name). */
+export const AiSkillSummary = z.object({ name: z.string(), description: z.string(), scope: SkillSource })
+export type AiSkillSummary = z.infer<typeof AiSkillSummary>
+
+export const AiSkillImportResult = z.object({ skills: z.array(AiSkill), warnings: z.array(z.string()) })
+export type AiSkillImportResult = z.infer<typeof AiSkillImportResult>
+
+/** Saving a skill the agent proposed (possibly edited first). */
+export const AiSaveProposedSkill = AiSkillBody.extend({
+  scope: SkillScope,
+  /** Overwrite a skill of the same name (otherwise that is a conflict). */
+  replace: z.boolean().default(false),
+})
+export type AiSaveProposedSkill = z.infer<typeof AiSaveProposedSkill>
 
 /** Files the author accepted, with the content they accepted (all or some hunks). */
 export const AiApplyBody = z.object({

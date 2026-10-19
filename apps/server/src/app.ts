@@ -20,6 +20,7 @@ import { adminRoutes } from './routes/admin.ts'
 import { networkRoutes } from './routes/network.ts'
 import { backupRoutes } from './routes/backup.ts'
 import { aiRoutes } from './routes/ai.ts'
+import { skillRoutes } from './routes/skills.ts'
 import { archiveRoutes } from './routes/archive.ts'
 import { chatRoutes } from './routes/chat.ts'
 import { compileRoutes } from './routes/compile.ts'
@@ -90,6 +91,7 @@ export async function buildApp(
       await api.register(fileRoutes, deps)
       await api.register(compileRoutes, deps)
       await api.register(aiRoutes, deps)
+      await api.register(skillRoutes, deps)
       await api.register(historyRoutes, deps)
       await api.register(reviewRoutes, deps)
       await api.register(chatRoutes, deps)

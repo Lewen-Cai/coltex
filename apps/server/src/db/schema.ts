@@ -2,6 +2,7 @@ import { relations, sql } from 'drizzle-orm'
 import {
   bigint,
   boolean,
+  check,
   customType,
   doublePrecision,
   index,
@@ -307,6 +308,49 @@ export const aiConversations = pgTable(
   },
   t => [index('ai_conversations_user_project_idx').on(t.userId, t.projectId, t.updatedAt)],
 )
+
+/**
+ * AI skills (Agent Skills: a name, a description and instructions, plus the
+ * reference files an imported skill came with, as text). A personal skill has
+ * `userId`, a project skill `projectId`; names are unique within each.
+ */
+export const aiSkills = pgTable(
+  'ai_skills',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+    /** Who added it (shown for project skills). */
+    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+    name: text('name').notNull(),
+    description: text('description').notNull(),
+    body: text('body').notNull(),
+    /** Reference files: path → text. */
+    files: jsonb('files').$type<Record<string, string>>().notNull().default({}),
+    createdAt: timestamps.createdAt,
+    updatedAt: timestamps.updatedAt,
+  },
+  t => [
+    uniqueIndex('ai_skills_user_name_idx').on(t.userId, t.name).where(sql`${t.projectId} is null`),
+    uniqueIndex('ai_skills_project_name_idx').on(t.projectId, t.name).where(sql`${t.projectId} is not null`),
+    check('ai_skills_one_owner', sql`(${t.userId} is null) <> (${t.projectId} is null)`),
+  ],
+)
+
+/**
+ * Each person's conversation in the skills chat (Settings → AI skills): one
+ * per person, kept until they start a new one.
+ */
+export const aiSkillChats = pgTable('ai_skill_chats', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  id: text('id').notNull(),
+  items: jsonb('items').notNull(),
+  messages: jsonb('messages').notNull(),
+  contextTokens: integer('context_tokens'),
+  updatedAt: timestamps.updatedAt,
+})
 
 /** Named versions ("Submitted to journal"); the version id is a commit in the project's history repo. */
 export const historyLabels = pgTable(

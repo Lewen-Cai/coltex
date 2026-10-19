@@ -853,12 +853,13 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
   }
 
   /** Send a message with the editor context the author chose to attach. */
-  const sendToAi = (text: string, include: { errors: boolean; selection: boolean }, only?: Diagnostic, build = result) => {
+  const sendToAi = (text: string, include: { errors: boolean; selection: boolean }, only?: Diagnostic, build = result, skill?: string) => {
     openAi()
     const cursor = editor.current?.getCursor()
     const selected = include.selection ? editor.current?.getSelection() : undefined
     void ai.send({
       text,
+      skill,
       compile:
         build && (include.errors || only)
           ? { buildId: build.buildId, status: build.status, diagnostics: (only ? [only] : build.diagnostics).slice(0, 200) }
@@ -1254,7 +1255,7 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
                   status={aiStatus!}
                   onChoose={chooseAiModel}
                   context={{ errors: errorCount, selection: selection && doc ? { path: doc.path, ...selection } : undefined }}
-                  onSend={(text, include) => sendToAi(text, include)}
+                  onSend={(text, include, skill) => sendToAi(text, include, undefined, result, skill)}
                   onApplied={res => {
                     if (res?.compile) {
                       showBuild(res.compile)
@@ -1480,6 +1481,7 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
         onWordCount={() => setWordCountOpen(true)}
         onCopy={() => project && openCopyProject(projectId, project.name)}
         onConvert={() => project && openConvert(projectId, project.name)}
+        aiAvailable={aiAvailable}
       />
       <WordCountDialog
         projectId={projectId}

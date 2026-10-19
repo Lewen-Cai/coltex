@@ -26,14 +26,16 @@ import {
   Wand2,
   } from 'lucide-react'
 import { motion } from 'motion/react'
-import type { AiItem, AiModelInfo, AiPreference, AiSessionState, AiStatus, ThinkingLevel } from '@coltex/shared'
+import type { AiItem, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillScope, SkillSource, ThinkingLevel } from '@coltex/shared'
 import { aiPick, type AiSessionHandle } from '../lib/ai.ts'
+import { ApiError } from '../lib/api.ts'
 import { ChatsDialog, ContextMeter, tokens } from './ai-chats.tsx'
 import { confirmDialog } from './confirm.tsx'
 import { plural, t, tk, translateServerMessage } from '../lib/i18n.ts'
 import { cn } from '../lib/utils.ts'
 import { AiReview, type ReviewScope } from './AiReview.tsx'
 import { Markdown } from './Markdown.tsx'
+import { SkillEditor } from './skills/skill-editor.tsx'
 import { ProviderIcon } from './provider-icon.tsx'
 import { toast } from 'sonner'
 import { copyText } from '../lib/clipboard.ts'
@@ -55,7 +57,7 @@ type Props = {
   status: AiStatus
   onChoose: (pick: AiPreference) => void
   context: AiContextInfo
-  onSend: (text: string, include: { errors: boolean; selection: boolean }) => void
+  onSend: (text: string, include: { errors: boolean; selection: boolean }, skill?: string) => void
   onApplied: (result: Awaited<ReturnType<AiSessionHandle['apply']>>) => void
   onUndone: (result: Awaited<ReturnType<AiSessionHandle['undo']>>) => void
   onOpenFile: (path: string) => void
@@ -98,8 +100,9 @@ export function AiPanel(props: Props) {
   const newChat = async () => {
     if (await leave()) await session.reset()
   }
-  const commands = SLASH_COMMANDS.filter(c => !running || c.whileRunning).map(c => ({
-    ...c,
+  const commands: SlashEntry[] = SLASH_COMMANDS.filter(c => !running || c.whileRunning).map(c => ({
+    name: c.name,
+    label: t(c.label),
     run: () => {
       setText('')
       if (c.name === 'compact') void session.compact(aiPick(status))
@@ -109,7 +112,16 @@ export function AiPanel(props: Props) {
   }))
   // The "/" menu: while the message is a single word starting with "/".
   const slash = /^\/(\S*)$/.exec(text)
-  const matches = slash ? commands.filter(c => c.name.startsWith(slash[1]!.toLowerCase())) : []
+  // Skills join the menu; fetched at first and each time it opens, so new ones show without a reload.
+  const [skills, setSkills] = useState<AiSkillSummary[]>([])
+  const menuOpen = !!slash
+  useEffect(() => {
+    session.skillMenu().then(setSkills, () => setSkills([]))
+  }, [menuOpen, session.skillMenu])
+  const skillEntries: SlashEntry[] = running
+    ? []
+    : skills.map(s => ({ name: s.name, label: s.description, source: s.scope, run: () => setText(`/${s.name} `) }))
+  const matches = slash ? [...commands, ...skillEntries].filter(c => c.name.startsWith(slash[1]!.toLowerCase())) : []
   useEffect(() => setCommand(0), [slash?.[1]])
 
   // Stick to the bottom while the conversation grows.
@@ -128,7 +140,10 @@ export function AiPanel(props: Props) {
     if (!trimmed || running) return
     const typed = commands.find(c => `/${c.name}` === trimmed.toLowerCase())
     if (typed) return typed.run()
-    onSend(trimmed, { errors: withErrors && context.errors > 0, selection: withSelection && !!context.selection })
+    // `/skill the rest`: the skill's instructions go with the rest of the message.
+    const invoked = /^\/([a-z0-9-]+)(?:\s+([\s\S]*))?$/.exec(trimmed)
+    const skill = invoked && skills.some(s => s.name === invoked[1]) ? invoked[1] : undefined
+    onSend(skill ? (invoked![2] ?? '').trim() : trimmed, { errors: withErrors && context.errors > 0, selection: withSelection && !!context.selection }, skill)
     setText('')
   }
 
@@ -188,6 +203,8 @@ export function AiPanel(props: Props) {
           <Item
             key={item.id}
             item={item}
+            skillScopes={props.canEdit ? ['personal', 'project'] : ['personal']}
+            onSaveSkill={(body, scope, replace) => session.saveSkill(item.id, { ...body, scope, replace }).then(() => undefined)}
             onOpenFile={props.onOpenFile}
             // Only the latest card can show its diff: the draft has moved on since older turns.
             onReviewTurn={item.id === latestTurnCard && changed && state.changes.turn ? () => review('turn') : undefined}
@@ -234,7 +251,7 @@ export function AiPanel(props: Props) {
         )}
         <div className="relative rounded-lg border border-border bg-background transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
           {matches.length > 0 && (
-            <div role="listbox" aria-label={t('Commands')} className="absolute inset-x-0 bottom-full z-10 mb-1.5 overflow-hidden rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
+            <div role="listbox" aria-label={t('Commands')} className="absolute inset-x-0 bottom-full z-10 mb-1.5 max-h-72 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
               {matches.map((c, i) => (
                 <button
                   key={c.name}
@@ -246,8 +263,11 @@ export function AiPanel(props: Props) {
                   onClick={c.run}
                   className={cn('flex w-full items-baseline gap-2 rounded-md px-2 py-1.5 text-left text-sm', i === command && 'bg-accent text-accent-foreground')}
                 >
-                  <span className="font-mono">/{c.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{t(c.label)}</span>
+                  <span className="shrink-0 font-mono">/{c.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{c.label}</span>
+                  {c.source && c.source !== 'personal' && (
+                    <span className="shrink-0 text-xs text-muted-foreground">{c.source === 'project' ? t('Project') : t('Built-in')}</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -302,7 +322,9 @@ export function AiPanel(props: Props) {
   )
 }
 
-/** The "/" commands (skills come later). */
+type SlashEntry = { name: string; label: string; source?: SkillSource; run: () => void }
+
+/** The "/" commands built in; the person's and the project's skills follow them in the menu. */
 const SLASH_COMMANDS: { name: 'compact' | 'new' | 'chats'; label: string; whileRunning: boolean }[] = [
   { name: 'compact', label: tk('Summarise the chat to free its context'), whileRunning: false },
   { name: 'new', label: tk('Start a new chat'), whileRunning: false },
@@ -314,7 +336,7 @@ const SLASH_COMMANDS: { name: 'compact' | 'new' | 'chats'; label: string; whileR
  * Auto, which picks per message) and how full the context is. The picker
  * above shows the model only.
  */
-function SessionStatus({ status, state }: { status: AiStatus; state: AiSessionState | undefined }) {
+export function SessionStatus({ status, state }: { status: AiStatus; state: AiSessionState | undefined }) {
   const auto = status.auto.on
   const model = status.model
   const thinking = !auto && !!model && model.thinkingLevels.length >= 2
@@ -487,8 +509,108 @@ function TurnCard({ item, onOpenFile, onReview }: { item: Extract<AiItem, { kind
   )
 }
 
-function Item({ item, onOpenFile, onReviewTurn }: { item: AiItem; onOpenFile: (path: string) => void; onReviewTurn?: () => void }) {
+export type SaveDraftedSkill = (body: AiSkillBody, scope: SkillScope, replace: boolean) => Promise<void>
+
+/** A skill the agent drafted: saved only when the person saves it (as it is, or edited). */
+function SkillCard({ item, scopes, onSave }: { item: Extract<AiItem, { kind: 'skill' }>; scopes: SkillScope[]; onSave: SaveDraftedSkill }) {
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState<SkillScope>()
+  const files = Object.keys(item.files ?? {})
+  /** Saving under a name already taken there replaces that skill, once the person agrees. False: they didn't. */
+  const saveAs = async (body: AiSkillBody, scope: SkillScope): Promise<void | false> => {
+    try {
+      await onSave(body, scope, false)
+    } catch (e) {
+      if (!(e instanceof ApiError) || e.status !== 409) throw e
+      const ok = await confirmDialog({
+        title: scope === 'personal' ? t('Replace your skill “{name}”?', { name: body.name }) : t('Replace the project skill “{name}”?', { name: body.name }),
+        confirmLabel: t('Replace'),
+      })
+      if (!ok) return false
+      await onSave(body, scope, true)
+    }
+    toast.success(scope === 'personal' ? t('Saved to your skills') : t('Saved to the project skills'))
+  }
+  const save = async (scope: SkillScope) => {
+    setSaving(scope)
+    try {
+      await saveAs({ name: item.name, description: item.description, body: item.body }, scope)
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setSaving(undefined)
+    }
+  }
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border bg-card text-sm">
+      <div className="flex items-center gap-2 border-b px-3 py-2">
+        <Sparkles className="size-4 text-muted-foreground" />
+        <span className="min-w-0 flex-1 truncate font-mono font-medium">{item.name}</span>
+        {item.saved ? (
+          <span className="flex items-center gap-1 text-[13px] text-emerald-700 dark:text-emerald-400">
+            <Check className="size-3.5" />
+            {item.saved === 'personal' ? t('In your skills') : t('In the project skills')}
+          </span>
+        ) : (
+          <Button variant="ghost" size="xs" className="text-primary" onClick={() => setEditing(true)}>
+            {t('Edit')}
+          </Button>
+        )}
+      </div>
+      <div className="grid gap-1 px-3 py-2">
+        <p className="text-muted-foreground">{item.description}</p>
+        <pre className="max-h-40 overflow-y-auto rounded-md bg-muted/50 px-2 py-1.5 font-mono text-[13px] whitespace-pre-wrap">{item.body}</pre>
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {files.map(f => (
+              <span key={f} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[13px] text-muted-foreground">
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      {!item.saved && (
+        <div className="flex flex-wrap justify-end gap-1.5 border-t px-3 py-2">
+          {scopes.map(scope => (
+            <Button key={scope} size="xs" variant={scope === 'personal' ? 'default' : 'outline'} disabled={!!saving} onClick={() => void save(scope)}>
+              {saving === scope && <Loader2 className="animate-spin" />}
+              {scope === 'personal' ? t('Save to my skills') : t('Save to project skills')}
+            </Button>
+          ))}
+        </div>
+      )}
+      <SkillEditor
+        open={editing}
+        onOpenChange={setEditing}
+        title={t('Save skill')}
+        initial={item}
+        files={Object.entries(item.files ?? {}).map(([path, text]) => ({ path, size: new Blob([text]).size }))}
+        scopes={scopes}
+        onSave={(body, scope) => saveAs(body, scope ?? 'personal')}
+      />
+    </motion.div>
+  )
+}
+
+/** One entry of a conversation with the agent (also used by the skills chat). */
+export function Item({
+  item,
+  skillScopes,
+  onSaveSkill,
+  onOpenFile,
+  onReviewTurn,
+}: {
+  item: AiItem
+  /** Where the person may save a drafted skill. */
+  skillScopes: SkillScope[]
+  onSaveSkill: SaveDraftedSkill
+  onOpenFile?: (path: string) => void
+  onReviewTurn?: () => void
+}) {
   switch (item.kind) {
+    case 'skill':
+      return <SkillCard item={item} scopes={skillScopes} onSave={onSaveSkill} />
     case 'compacted':
       return (
         <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
@@ -499,7 +621,7 @@ function Item({ item, onOpenFile, onReviewTurn }: { item: AiItem; onOpenFile: (p
         </div>
       )
     case 'changes':
-      return <TurnCard item={item} onOpenFile={onOpenFile} onReview={onReviewTurn} />
+      return <TurnCard item={item} onOpenFile={onOpenFile ?? (() => {})} onReview={onReviewTurn} />
     case 'user':
       return (
         <motion.div
@@ -507,7 +629,10 @@ function Item({ item, onOpenFile, onReviewTurn }: { item: AiItem; onOpenFile: (p
           animate={{ opacity: 1, y: 0, scale: 1 }}
           className="ml-8 rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground"
         >
-          <div className="whitespace-pre-wrap break-words">{item.text}</div>
+          {item.skill && (
+            <span className="mb-0.5 inline-block rounded-full bg-white/20 px-2 py-0.5 font-mono text-[13px]">/{item.skill}</span>
+          )}
+          {item.text && <div className="whitespace-pre-wrap break-words">{item.text}</div>}
           {item.attachments.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
               {item.attachments.map(a => (
@@ -533,7 +658,7 @@ function Item({ item, onOpenFile, onReviewTurn }: { item: AiItem; onOpenFile: (p
       // Labels come from the server in English; the path is found there and then in the translated label.
       const label = translateServerMessage(item.label)
       const found = /^(?:Read|Edit|Create) (\S+)/.exec(item.label)?.[1]
-      const path = found && label.includes(found) ? found : undefined
+      const path = found && onOpenFile && label.includes(found) ? found : undefined
       return (
         <div className="text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
@@ -541,7 +666,7 @@ function Item({ item, onOpenFile, onReviewTurn }: { item: AiItem; onOpenFile: (p
             {path ? (
               <span>
                 {label.slice(0, label.indexOf(path))}
-                <button className="font-mono hover:underline" onClick={() => onOpenFile(path)}>
+                <button className="font-mono hover:underline" onClick={() => onOpenFile?.(path)}>
                   {path}
                 </button>
                 {label.slice(label.indexOf(path) + path.length)}
@@ -610,7 +735,7 @@ function AssistantReply({ text }: { text: string }) {
  * lets this person use, and the thinking levels pi-ai lists for the picked
  * one. Auto routing sets the thinking level per message.
  */
-function ModelPicker({ status, onChoose }: { status: AiStatus; onChoose: (pick: AiPreference) => void }) {
+export function ModelPicker({ status, onChoose }: { status: AiStatus; onChoose: (pick: AiPreference) => void }) {
   const [open, setOpen] = useState(false)
   const model = status.model
   const auto = status.auto.on

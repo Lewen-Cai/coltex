@@ -6,5 +6,6 @@ Click your avatar at the bottom left and choose **Settings**.
 - **Appearance**: light, dark or system theme, and the interface language (English / 简体中文). Dark mode applies to the editor too; PDF pages stay white. Kept in this browser.
 - **Dictionary**: words you added while spell checking; they count as correct in all your projects. Search and remove them here.
 - **Zotero**: connect your Zotero account; see [References](#/help/references).
+- **AI skills** (when you have the AI agent): your own skills, the built-in ones, and a chat with the AI agent for writing skills; see [AI agent](#/help/ai).
 
 Editor settings (font size, colours, Vim…) are under **Settings** at the bottom of the editor's left rail; see [Editor](#/help/editor).

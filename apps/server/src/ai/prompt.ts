@@ -1,5 +1,22 @@
-import type { AiMessageBody, ProjectMeta } from '@coltex/shared'
+import type { AiMessageBody, ProjectMeta, SkillSource } from '@coltex/shared'
+import type { LoadedSkill } from './skills.ts'
 import { errorCount, formatDiagnostics } from './tools.ts'
+
+/** The prompt section listing the author's skills (replaced whenever they change). */
+export const SKILLS_SECTION = 'author-skills'
+
+/** The skills part of the system prompt: what each is for, so the agent can pick one. */
+export function skillsSection(skills: { name: string; description: string; scope: SkillSource }[]): string {
+  const list = skills.length
+    ? `When a request matches one of these descriptions, load the skill with read_skill before you start, and follow it:
+${skills.map(s => `- ${s.name} (${s.scope === 'builtin' ? 'built in' : s.scope}): ${s.description.replace(/\s+/g, ' ')}`).join('\n')}`
+    : 'The author has none at the moment.'
+  return `<skills>
+Skills are instructions for recurring tasks: the author's own, the project's, or built into ColTex. ${list}
+Skills may mention scripts or tools you don't have. You can read a skill's files but you can't run anything: do those steps yourself where you can, and say what you can't do.
+When the author asks you to turn a way of working into a skill, or to write one, follow the skill-creator skill and draft it with propose_skill: a short lowercase-hyphenated name, a description saying what it does and when to use it, the instructions in Markdown, and any reference files. They review it and save it themselves.
+</skills>`
+}
 
 export function systemPrompt(project: ProjectMeta, canEdit = true, manuals = true): string {
   const editing = canEdit
@@ -36,12 +53,19 @@ Answer in the language the author writes in. Be clear and reasonably brief. Your
 
 export type TurnNotes = string[]
 
-/** The user's message plus the editor context ColTex attaches to it. */
-export function userMessage(body: AiMessageBody, notes: TurnNotes): { text: string; attachments: string[] } {
+/** The user's message plus the editor context ColTex attaches to it (and the skill they invoked). */
+export function userMessage(body: AiMessageBody, notes: TurnNotes, skill?: LoadedSkill): { text: string; attachments: string[] } {
   const parts: string[] = []
   const attachments: string[] = []
   if (notes.length) parts.push(notes.map(n => `[${n}]`).join('\n'))
-  parts.push(body.text)
+  if (skill) {
+    const files = Object.keys(skill.files)
+    parts.push(
+      `<skill name="${skill.name}">\n${skill.body}\n</skill>\nThe author invoked the skill above with /${skill.name} for this message: follow its instructions.` +
+        (files.length ? ` Its reference files, for read_skill when you need them: ${files.join(', ')}.` : ''),
+    )
+  }
+  parts.push(body.text.trim() || '(No further message.)')
 
   const context: string[] = []
   if (body.compile) {
@@ -64,4 +88,28 @@ export function userMessage(body: AiMessageBody, notes: TurnNotes): { text: stri
   }
   if (context.length) parts.push(`<editor-context>\n${context.join('\n\n')}\n</editor-context>`)
   return { text: parts.join('\n\n'), attachments }
+}
+
+/**
+ * The skills chat (Settings → AI skills): an agent that helps the person
+ * write and improve their own skills, following the built-in skill-creator.
+ * It has no project and no files: only their skills and propose_skill.
+ */
+export function workshopPrompt(creator: { body: string; files: Record<string, string> } | undefined): string {
+  const guide = creator
+    ? `<skill name="skill-creator">\n${creator.body}\n</skill>${Object.keys(creator.files).length ? `\nIts reference files (read_skill skill-creator with path): ${Object.keys(creator.files).join(', ')}.` : ''}`
+    : ''
+  return `You are the skills assistant in ColTex, a self-hosted collaborative LaTeX editor. Here the author writes and improves skills for ColTex's AI agent: instructions it follows for recurring tasks in their LaTeX projects (polishing an abstract, checking references, a journal's house style, translating between Chinese and English, and so on).
+
+How skills work in ColTex:
+- A skill is a SKILL.md (a name, a description, instructions in Markdown) plus optional text reference files, in the Agent Skills format.
+- The agent in a project sees every skill's name and description and loads a skill with read_skill when a request matches its description; the author can also invoke one with /name. So the description decides when a skill is used.
+- The agent there can read and search the project, look up TeX Live packages, draft edits for the author to review and apply, and run trial compiles. It cannot run scripts, reach the internet, or use files other than the project's and the skill's. Write skills for those abilities; a step that needs a script must be done by the agent itself.
+- Skills saved here are the author's personal ones, available in all their projects. Built-in skills can't be changed, but a personal skill of the same name replaces one for them.
+
+You have no project here. Use read_skill to look at the author's skills, and propose_skill to draft a new skill or a new version of an existing one (the same name). The author reviews the draft, can edit it, and saves it; nothing is saved until they do. When they paste a sample of their writing, you can try a draft on it by following its instructions yourself, so they see what it would do.
+
+Follow the skill-creator skill below. Answer in the language the author writes in, and keep the skill itself in the language they want (ask if unclear; English is a good default for instructions). Your replies are shown as Markdown.
+
+${guide}`
 }

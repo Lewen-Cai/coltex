@@ -1,5 +1,10 @@
 import type {
   AiConversation,
+  AiSaveProposedSkill,
+  AiSkill,
+  AiSkillBody,
+  AiSkillImportResult,
+  AiSkillSummary,
   InviteRole,
   ManagedUser,
   AiAdminState,
@@ -83,6 +88,14 @@ export class ApiError extends Error {
     super(message)
     this.status = status
   }
+}
+
+/** A file's bytes as base64, for JSON uploads. */
+async function base64(file: Blob): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return btoa(binary)
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -315,6 +328,40 @@ export const api = {
   aiApply: (id: string, body: AiApplyBody) => request<AiApplyResult>(`/api/projects/${id}/ai/session/apply`, json('POST', body)),
   aiUndo: (id: string) =>
     request<{ message: string; compile: CompileResult }>(`/api/projects/${id}/ai/session/undo`, json('POST', {})),
+  aiSaveProposedSkill: (id: string, item: string, body: AiSaveProposedSkill) =>
+    request<AiSkill>(`/api/projects/${id}/ai/session/skills/${item}`, json('POST', body)),
+
+  // ---- AI skills: `base` is /api/me/ai/skills (personal) or /api/projects/:id/ai/skills ----
+  skillMenu: (id: string) => request<AiSkillSummary[]>(`/api/projects/${id}/ai/skill-menu`),
+
+  // ---- The skills chat (Settings → AI skills) ----
+  skillChatEventsUrl: '/api/me/ai/skill-chat/events',
+  skillChatSend: (body: AiMessageBody) => request<{ ok: true }>('/api/me/ai/skill-chat/messages', json('POST', body)),
+  skillChatAbort: () => request<{ ok: true }>('/api/me/ai/skill-chat/abort', json('POST', {})),
+  skillChatReset: () => request<AiSessionState>('/api/me/ai/skill-chat/reset', json('POST', {})),
+  skillChatSave: (item: string, body: AiSaveProposedSkill) => request<AiSkill>(`/api/me/ai/skill-chat/skills/${item}`, json('POST', body)),
+  skills: (base: string) => request<AiSkill[]>(base),
+  createSkill: (base: string, body: AiSkillBody) => request<AiSkill>(base, json('POST', body)),
+  updateSkill: (base: string, name: string, body: AiSkillBody) => request<AiSkill>(`${base}/${name}`, json('PUT', body)),
+  deleteSkill: (base: string, name: string) => request<{ ok: true }>(`${base}/${name}`, { method: 'DELETE' }),
+  skillDownloadUrl: (base: string, name: string) => `${base}/${name}/download`,
+  /** A SKILL.md goes as text, a zip as the file itself. */
+  /** One zip, or the files of one or more skills (picked one by one or as a folder, paths kept). */
+  importSkills: async (base: string, picked: File[], replace: boolean) => {
+    const relative = (f: File) => f.webkitRelativePath || f.name
+    // A folder can hold a whole .git; the server skips the same clutter.
+    const files = picked.filter(f => !/(^|\/)(\.git|__MACOSX)(\/|$)|(^|\/)(\.DS_Store|Thumbs\.db)$/.test(relative(f)))
+    if (!files.length) throw new Error('No SKILL.md found')
+    const zip = files.length === 1 && /\.zip$/i.test(files[0]!.name)
+    if (!zip && files.some(f => /\.zip$/i.test(f.name))) throw new Error('Upload a zip on its own')
+    const filename = zip ? files[0]!.name : (relative(files[0]!).split('/').length > 1 ? relative(files[0]!).split('/')[0]! : files[0]!.name)
+    const query = `?filename=${encodeURIComponent(filename)}&replace=${replace ? 1 : 0}`
+    if (zip) {
+      return request<AiSkillImportResult>(`${base}/import${query}`, { method: 'POST', headers: { 'content-type': 'application/zip' }, body: files[0] })
+    }
+    const encoded = await Promise.all(files.map(async f => ({ path: relative(f), data: await base64(f) })))
+    return request<AiSkillImportResult>(`${base}/import${query}`, json('POST', { files: encoded }))
+  },
 
   // ---- AI administration ----
   aiAdmin: () => request<AiAdminState>('/api/admin/ai'),

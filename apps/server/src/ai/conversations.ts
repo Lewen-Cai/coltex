@@ -19,7 +19,7 @@ export type SavedConversation = {
 /** The first thing the person asked, as the conversation's name. */
 export function conversationTitle(items: AiItem[]): string {
   const first = items.find(i => i.kind === 'user')
-  const text = first?.kind === 'user' ? first.text.replace(/\s+/g, ' ').trim() : ''
+  const text = first?.kind === 'user' ? `${first.skill ? `/${first.skill} ` : ''}${first.text}`.replace(/\s+/g, ' ').trim() : ''
   return text.length > 80 ? `${text.slice(0, 79)}…` : text || 'New chat'
 }
 

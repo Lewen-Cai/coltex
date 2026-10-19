@@ -56,6 +56,14 @@ const messages: Record<string, string> = {
   'Undo draft changes to {path}': '撤销对 {path} 的草稿修改',
   'Edit {path}': '编辑 {path}',
   'Create {path}': '创建 {path}',
+  'Use skill “{name}”': '使用技能“{name}”',
+  'Read {path} of skill “{name}”': '读取技能“{name}”的 {path}',
+  'Draft skill “{name}”': '起草技能“{name}”',
+  // Notes from importing skills
+  'Renamed “{from}” to {name}': '已将“{from}”改名为 {name}',
+  '{name} has no description; used its first line': '{name} 没有描述，已用它的第一行代替',
+  '{name}: skipped {path} (not a text file)': '{name}：已跳过 {path}（不是文本文件）',
+  '{name}: skipped {path} (too large)': '{name}：已跳过 {path}（太大）',
 
   // AI administration and provider logins
   'API key for {name} (leave empty if the server needs none)': '{name} 的 API 密钥（如果服务器不需要，可留空）',
