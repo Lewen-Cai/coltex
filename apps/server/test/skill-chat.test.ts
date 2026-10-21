@@ -66,6 +66,11 @@ describe('Built-in skills and the skills chat', () => {
     assert.equal(download.statusCode, 200)
     const back = await readSkillZip(download.rawPayload, 'x')
     assert.deepEqual(Object.keys(back.skills[0]!.files), ['references/examples.md'])
+    const file = await api('GET', '/me/ai/skills/skill-creator/files/references/examples.md', admin)
+    assert.equal(file.statusCode, 200)
+    assert.match(file.body, /^# Examples/)
+    assert.equal((await api('GET', '/me/ai/skills/skill-creator/files/LICENSE.txt', admin)).statusCode, 404)
+    assert.equal((await api('GET', '/me/ai/skills/skill-creator/files/references/examples.md', noAi)).statusCode, 403)
 
     const menu = async () => (await api('GET', `/projects/${projectId}/ai/skill-menu`, admin)).json() as { name: string; scope: string }[]
     assert.deepEqual((await menu()).map(s => [s.name, s.scope]), [['skill-creator', 'builtin']])
@@ -189,5 +194,6 @@ describe('Built-in skills and the skills chat', () => {
     const project = await save('project')
     assert.equal(project.statusCode, 201, project.body)
     assert.deepEqual((project.json() as AiSkill).files, [{ path: 'references/glossary.md', size: 9 }])
+    assert.equal((await api('GET', `/projects/${projectId}/ai/skills/thesis-terms/files/references/glossary.md`, admin)).body, 'term list')
   })
 })

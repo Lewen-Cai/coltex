@@ -345,6 +345,11 @@ export const api = {
   updateSkill: (base: string, name: string, body: AiSkillBody) => request<AiSkill>(`${base}/${name}`, json('PUT', body)),
   deleteSkill: (base: string, name: string) => request<{ ok: true }>(`${base}/${name}`, { method: 'DELETE' }),
   skillDownloadUrl: (base: string, name: string) => `${base}/${name}/download`,
+  skillFile: async (base: string, name: string, path: string) => {
+    const res = await fetch(`${base}/${name}/files/${path.split('/').map(encodeURIComponent).join('/')}`)
+    if (!res.ok) throw new ApiError(res.status, `Failed to read ${path}`)
+    return res.text()
+  },
   /** A SKILL.md goes as text, a zip as the file itself. */
   /** One zip, or the files of one or more skills (picked one by one or as a folder, paths kept). */
   importSkills: async (base: string, picked: File[], replace: boolean) => {

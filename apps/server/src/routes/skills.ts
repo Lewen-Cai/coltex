@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { AiMessageBody, AiSaveProposedSkill, AiSessionState, AiSkill, AiSkillBody, AiSkillImportResult, AiSkillSummary, ProjectId } from '@coltex/shared'
 import { requireUser } from '../auth/fastify.ts'
 import type { Deps } from '../deps.ts'
-import { BadRequestError, ForbiddenError } from '../errors.ts'
+import { BadRequestError, ForbiddenError, NotFoundError } from '../errors.ts'
 import { buildProjectZip, isJunk } from '../projects/zip.ts'
 import { cleanPath } from '../storage/paths.ts'
 import {
@@ -23,6 +23,8 @@ const Ok = z.object({ ok: z.literal(true) })
 const NameParams = z.object({ name: z.string().min(1).max(64) })
 const ProjectParams = z.object({ id: ProjectId })
 const ProjectNameParams = z.object({ id: ProjectId, name: z.string().min(1).max(64) })
+const FileParams = NameParams.extend({ '*': z.string().min(1) })
+const ProjectFileParams = ProjectNameParams.extend({ '*': z.string().min(1) })
 const ImportQuery = z.object({
   /** Overwrite skills of the same name. */
   replace: z.enum(['0', '1']).default('0'),
@@ -98,6 +100,13 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
     return reply.type('application/zip').header('content-disposition', attachment(`${skill.name}.zip`)).send(buildProjectZip(files, []))
   }
 
+  /** One reference file's text, for reading it on the skills page. */
+  async function referenceFile(owner: SkillOwner, name: string, file: string, reply: FastifyReply) {
+    const text = (await skills.full(owner, name)).files[cleanPath(file)]
+    if (text === undefined) throw new NotFoundError('File not found')
+    return reply.header('cache-control', 'no-store').type('text/plain; charset=utf-8').send(text)
+  }
+
   // ---- Personal ------------------------------------------------------------------
 
   // Their own skills and the built-in ones (read-only).
@@ -118,6 +127,10 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
 
   app.get('/me/ai/skills/:name/download', { schema: { params: NameParams } }, async (req, reply) =>
     download(await personal(req), req.params.name, reply),
+  )
+
+  app.get('/me/ai/skills/:name/files/*', { schema: { params: FileParams } }, async (req, reply) =>
+    referenceFile(await personal(req), req.params.name, req.params['*'], reply),
   )
 
   app.post(
@@ -193,6 +206,10 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
 
   app.get('/projects/:id/ai/skills/:name/download', { schema: { params: ProjectNameParams } }, async (req, reply) =>
     download(await project(req, false), req.params.name, reply),
+  )
+
+  app.get('/projects/:id/ai/skills/:name/files/*', { schema: { params: ProjectFileParams } }, async (req, reply) =>
+    referenceFile(await project(req, false), req.params.name, req.params['*'], reply),
   )
 
   app.post(

@@ -157,6 +157,14 @@ const messages: Record<string, string> = {
   'Look at my skills and suggest how to improve them.': '看看我的技能，提出改进建议。',
   'Create a skill with the AI agent': '和 AI 智能体一起创建技能',
   'Describe the skill you want, or paste text to try a draft on…': '描述你想要的技能，或贴一段文字来试用草稿…',
+  'Create with AI': '用 AI 创建',
+  'My skills': '我的技能',
+  'All skills': '全部技能',
+  'Improve in chat': '在对话中改进',
+  'Help me improve my skill “{name}”: ': '帮我改进我的技能“{name}”：',
+  'Help me make my own version of the built-in skill “{name}”: ': '参照内置技能“{name}”，帮我做一个自己的版本：',
+  'Added by {name}': '由 {name} 添加',
+  'Updated {time}': '更新于 {time}',
 }
 
 export default messages
