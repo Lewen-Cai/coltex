@@ -5,9 +5,7 @@ export type SettingsItem = { title: string; href: string; route: string }
 export const PERSONAL: SettingsItem[] = [
   { title: tk('Account'), href: '#/settings', route: '/settings' },
   { title: tk('Appearance'), href: '#/settings/appearance', route: '/settings/appearance' },
-  { title: tk('Dictionary'), href: '#/settings/dictionary', route: '/settings/dictionary' },
-  { title: tk('Zotero'), href: '#/settings/zotero', route: '/settings/zotero' },
-  { title: tk('Git'), href: '#/settings/git', route: '/settings/git' },
+  { title: tk('Sync services'), href: '#/settings/sync', route: '/settings/sync' },
   { title: tk('AI skills'), href: '#/settings/skills', route: '/settings/skills' },
 ]
 

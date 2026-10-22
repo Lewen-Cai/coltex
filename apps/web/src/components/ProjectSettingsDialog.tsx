@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { BookA, Check, ChevronsUpDown, Copy, Download, FileText, LayoutTemplate, RotateCcw, Share2, WholeWord } from 'lucide-react'
+import { Check, ChevronsUpDown, Copy, Download, FileText, LayoutTemplate, RotateCcw, Share2, WholeWord } from 'lucide-react'
 import type { EngineSetting, ProjectMeta, SpellCheckLanguage } from '@coltex/shared'
 import { copyText } from '../lib/clipboard.ts'
 import { EDITOR_THEMES } from '../lib/editor-themes.ts'
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Kbd, KbdGroup } from './ui/kbd.tsx'
 import { Switch } from './ui/switch.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog.tsx'
+import { DictionaryManager } from './dictionary-manager.tsx'
 import { LinkList } from './link-list.tsx'
 
 type Props = {
@@ -44,8 +45,8 @@ function GitClone({ projectId }: { projectId: string }) {
       <p className="text-xs text-muted-foreground">
         {tr('When git asks, use any user name and a Git token as the password ({settings}).', {
           settings: (
-            <a href="#/settings/git" className="text-primary underline-offset-4 hover:underline">
-              {t('Settings → Git')}
+            <a href="#/settings/sync" className="text-primary underline-offset-4 hover:underline">
+              {t('Settings → Sync services')}
             </a>
           ),
         })}
@@ -338,6 +339,7 @@ const SECTIONS = [
   { id: 'project', label: tk('Project') },
   { id: 'appearance', label: tk('Appearance') },
   { id: 'editing', label: tk('Editing') },
+  { id: 'dictionary', label: tk('Dictionary') },
   { id: 'shortcuts', label: tk('Keyboard shortcuts') },
   { id: 'skills', label: tk('AI skills') },
   { id: 'actions', label: tk('Actions') },
@@ -383,8 +385,9 @@ export function ProjectSettingsDialog(props: Props) {
               </button>
             ))}
           </nav>
-          <div className="min-w-0 flex-1 overflow-y-auto p-5">
-            <h3 className="mb-3 px-2 text-base font-semibold">{t(current.label)}</h3>
+          {/* The dictionary scrolls its own list (letter headings stick, the index stays beside it). */}
+          <div className={cn('min-w-0 flex-1 p-5', current.id === 'dictionary' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto')}>
+            <h3 className="mb-3 shrink-0 px-2 text-base font-semibold">{t(current.label)}</h3>
             {current.id === 'project' && (
               <div className="grid gap-1">
                 <Setting label={t('Compiler')}>
@@ -423,9 +426,6 @@ export function ProjectSettingsDialog(props: Props) {
                   />
                 </Setting>
                 {!canEdit && <p className="px-2 text-sm text-muted-foreground">{t('Only editors can change these settings.')}</p>}
-                <a href="#/settings/dictionary" className={itemClass}>
-                  <BookA /> {t('Edit dictionary')}
-                </a>
                 {project && (
                   <div className="mt-4 grid gap-1">
                     <span className="px-2 text-sm font-medium text-muted-foreground">{t('Git')}</span>
@@ -436,6 +436,11 @@ export function ProjectSettingsDialog(props: Props) {
             )}
             {current.id === 'appearance' && <AppearanceSettings />}
             {current.id === 'editing' && <EditingSettings />}
+            {current.id === 'dictionary' && (
+              <div className="flex min-h-0 flex-1 flex-col px-2">
+                <DictionaryManager />
+              </div>
+            )}
             {current.id === 'shortcuts' && <ShortcutSettings />}
             {current.id === 'skills' && project && (
               <div className="px-2">

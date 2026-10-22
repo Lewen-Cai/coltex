@@ -166,7 +166,6 @@ const messages: Record<string, string> = {
 
   // Project menu
   'Spell check': '拼写检查',
-  'Edit dictionary': '编辑词典',
 
   // Chat
   Chat: '聊天',
@@ -308,7 +307,7 @@ const messages: Record<string, string> = {
 
   // Git bridge
   Git: 'Git',
-  'Git tokens': 'Git 令牌',
+  'Sync services': '同步服务',
   'Token name': '令牌名称',
   'e.g. My laptop': '例如：我的笔记本',
   'Create token': '创建令牌',
@@ -319,7 +318,7 @@ const messages: Record<string, string> = {
   'never used': '从未使用',
   'Revoke “{name}”?': '撤销“{name}”？',
   'Git clients using this token can no longer pull or push.': '使用这个令牌的 git 客户端将无法再拉取或推送。',
-  'Settings → Git': '设置 → Git',
+  'Settings → Sync services': '设置 → 同步服务',
   'When git asks, use any user name and a Git token as the password ({settings}).': 'git 询问时，用户名随意，密码填 Git 令牌（{settings}）。',
 
   // References (Zotero, DOI, citations)
@@ -339,7 +338,6 @@ const messages: Record<string, string> = {
   'Import from Zotero…': '从 Zotero 导入…',
   'Import from Zotero': '从 Zotero 导入',
   'Connect Zotero in {settings} to import your libraries here.': '先在 {settings} 中连接 Zotero，再从这里导入文库。',
-  'Settings → Zotero': '设置 → Zotero',
   'Synced files': '同步的文件',
   'None yet.': '暂无。',
   'Refresh from Zotero': '从 Zotero 刷新',

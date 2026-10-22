@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import type { ZoteroStatus } from '@coltex/shared'
-import { PageHeader } from '@/components/shell/app-shell'
 import { confirmDialog } from '@/components/confirm'
 import { Button } from '@/components/ui/button'
+import { ServiceTile, ZoteroLogo } from '@/components/service-icons'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,8 +13,8 @@ import { t, tr } from '@/lib/i18n'
 
 const NEW_KEY_URL = 'https://www.zotero.org/settings/keys/new'
 
-/** The person's Zotero connection, used to import their libraries into projects as .bib files. */
-export function ZoteroSettingsPage() {
+/** The person's Zotero connection, used to import their libraries into projects as .bib files (Settings → Sync services). */
+export function ZoteroCard() {
   const [status, setStatus] = useState<ZoteroStatus>()
   const [apiKey, setApiKey] = useState('')
   const [busy, setBusy] = useState(false)
@@ -55,11 +55,13 @@ export function ZoteroSettingsPage() {
   }
 
   return (
-    <>
-      <PageHeader title={t('Zotero')} />
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('Connection')}</CardTitle>
+    <Card>
+      <CardHeader className="flex items-start gap-3">
+        <ServiceTile>
+          <ZoteroLogo />
+        </ServiceTile>
+        <div className="grid min-w-0 gap-1.5">
+          <CardTitle>{t('Zotero')}</CardTitle>
           <CardDescription>
             {status?.connected
               ? tr('Connected as {name}.', { name: <b>{status.username}</b> })
@@ -71,34 +73,34 @@ export function ZoteroSettingsPage() {
                   ),
                 })}
           </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!status ? (
-            <Spinner className="size-5 text-muted-foreground" />
-          ) : status.connected ? (
-            <Button variant="outline" disabled={busy} onClick={() => void disconnect()}>
-              {t('Disconnect')}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {!status ? (
+          <Spinner className="size-5 text-muted-foreground" />
+        ) : status.connected ? (
+          <Button variant="outline" disabled={busy} onClick={() => void disconnect()}>
+            {t('Disconnect')}
+          </Button>
+        ) : (
+          <form
+            className="flex max-w-xl flex-wrap items-end gap-2"
+            onSubmit={e => {
+              e.preventDefault()
+              void connect()
+            }}
+          >
+            <div className="grid min-w-64 flex-1 gap-1.5">
+              <Label htmlFor="zotero-key">{t('API key')}</Label>
+              <Input id="zotero-key" value={apiKey} onChange={e => setApiKey(e.target.value)} autoComplete="off" spellCheck={false} className="font-mono" />
+            </div>
+            <Button type="submit" disabled={busy || apiKey.trim().length < 10}>
+              {busy && <Spinner />}
+              {t('Connect')}
             </Button>
-          ) : (
-            <form
-              className="flex max-w-xl flex-wrap items-end gap-2"
-              onSubmit={e => {
-                e.preventDefault()
-                void connect()
-              }}
-            >
-              <div className="grid min-w-64 flex-1 gap-1.5">
-                <Label htmlFor="zotero-key">{t('API key')}</Label>
-                <Input id="zotero-key" value={apiKey} onChange={e => setApiKey(e.target.value)} autoComplete="off" spellCheck={false} className="font-mono" />
-              </div>
-              <Button type="submit" disabled={busy || apiKey.trim().length < 10}>
-                {busy && <Spinner />}
-                {t('Connect')}
-              </Button>
-            </form>
-          )}
-        </CardContent>
-      </Card>
-    </>
+          </form>
+        )}
+      </CardContent>
+    </Card>
   )
 }

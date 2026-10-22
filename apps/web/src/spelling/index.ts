@@ -6,5 +6,9 @@ export type { HunspellManager } from './hunspell/HunspellManager'
 export { useHunspell } from './use-hunspell'
 export { useLearnedWords, loadLearnedWords, noteLearnedWord } from './use-learned-words'
 export { spellLanguageName, spellLanguageOptions, dicFor } from './languages'
-/** Fired on window when a word is removed from the dictionary, so open editors check it again. */
-export const REMOVE_LEARNED_WORD_EVENT = 'editor:remove-learned-word'
+/**
+ * Fired on window when the dictionary changes outside the spelling menu (the
+ * dictionary in the editor's settings), so open editors check those words again.
+ */
+export const LEARNED_WORDS_CHANGED_EVENT = 'editor:learned-words-changed'
+export type LearnedWordsChange = { added?: string[]; removed?: string[] }

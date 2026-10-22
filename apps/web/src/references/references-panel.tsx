@@ -263,8 +263,8 @@ function ZoteroTab({ projectId, links, onChanged }: { projectId: string; links?:
         <p className="text-sm text-muted-foreground">
           {tr('Connect Zotero in {settings} to import your libraries here.', {
             settings: (
-              <a href="#/settings/zotero" className="text-primary underline-offset-4 hover:underline">
-                {t('Settings → Zotero')}
+              <a href="#/settings/sync" className="text-primary underline-offset-4 hover:underline">
+                {t('Settings → Sync services')}
               </a>
             ),
           })}

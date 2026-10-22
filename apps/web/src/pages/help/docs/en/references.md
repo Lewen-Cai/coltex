@@ -12,7 +12,7 @@ On the **DOI** tab, enter a DOI (e.g. `10.1145/3290605.3300857`) or an arXiv id 
 
 ## Zotero
 
-1. In **Settings → Zotero**, enter a Zotero API key (made in your zotero.org settings; read access is enough). It's stored encrypted on this server and only used to read your library.
+1. In **Settings → Sync services**, enter a Zotero API key (made in your zotero.org settings; read access is enough). It's stored encrypted on this server and only used to read your library.
 2. On the **Zotero** tab of the References panel, choose a library or collection to import as a `.bib` file in the project.
 3. **Refresh** replaces that file with what is in Zotero now, so edit entries in Zotero rather than in the file.
 

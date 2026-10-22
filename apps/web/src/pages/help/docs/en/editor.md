@@ -26,7 +26,9 @@ Typing `\` suggests commands; `\ref{` and `\cite{` list the project's labels and
 
 ## Spell checking
 
-Misspelled words get a red dotted underline (CJK text isn't checked). Right-click one for suggestions or **Add to dictionary**. The language is a project setting; your dictionary is in **Settings → Dictionary**.
+Misspelled words get a red dotted underline (CJK text isn't checked). Right-click one for suggestions or **Add to dictionary**. The language is a project setting.
+
+Your dictionary is under **Settings → Dictionary** at the bottom of the editor's rail; its words count as correct in all your projects. Type in the field to find a word, and press Enter to add it if it isn't there yet; the letters above the list jump to that letter. The **⋯** menu imports a text file (one word per line, or separated by spaces or commas; Hunspell `.dic` files work too), exports your words as `dictionary.txt`, and removes them all. Open editors check the words again straight away.
 
 ## Right-click menu
 

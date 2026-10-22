@@ -9,15 +9,27 @@ const messages: Record<string, string> = {
 
   // Settings: dictionary
   Dictionary: '词典',
-  'Learned words': '已加入的单词',
-  'Filter words': '筛选单词',
   'Your dictionary is empty': '词典是空的',
-  'No words match “{query}”.': '没有与“{query}”匹配的单词。',
-  '{n} word matches': '{n} 个单词匹配',
-  '{n} words match': '{n} 个单词匹配',
   'Remove “{word}”': '移除“{word}”',
   'Remove from dictionary': '从词典中移除',
-  'Removed “{word}” from your dictionary': '已从词典中移除“{word}”',
+  'One word, without spaces': '只能是一个单词，不含空格',
+  Export: '导出',
+  'Remove all': '全部移除',
+  'Find or add a word': '查找或添加单词',
+  'Import…': '导入…',
+  '“{word}” isn’t in your dictionary.': '词典里没有“{word}”。',
+  '{shown} of {total}': '{shown} / {total}',
+  '{n} word': '{n} 个单词',
+  '{n} words': '{n} 个单词',
+  Letters: '字母',
+  'Remove all words': '移除全部单词',
+  'Remove all words?': '移除全部单词？',
+  '{n} word will be marked as misspelled again.': '{n} 个单词会重新被标记为拼写错误。',
+  '{n} words will be marked as misspelled again.': '{n} 个单词会重新被标记为拼写错误。',
+  'Added {n} word': '已添加 {n} 个单词',
+  'Added {n} words': '已添加 {n} 个单词',
+  '{n} entry was skipped: not a single word': '跳过了 {n} 项：不是单个单词',
+  '{n} entries were skipped: not single words': '跳过了 {n} 项：不是单个单词',
 }
 
 export default messages

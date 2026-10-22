@@ -167,5 +167,17 @@ describe('compile options, sources, spelling', () => {
     assert.equal((await dict('DELETE', admin, 'Yjs')).statusCode, 204)
     assert.deepEqual((await dict('GET', admin)).json(), { words: ['Hocuspocus'] })
     assert.equal((await t.app.inject({ method: 'GET', url: '/api/me/dictionary' })).statusCode, 401)
+
+    // An imported list: new words added, known ones kept once, non-words skipped.
+    const imported = await t.app.inject({
+      method: 'POST',
+      url: '/api/me/dictionary/import',
+      headers: { cookie: admin },
+      payload: { words: ['Hocuspocus', ' Zotero ', 'two words', '', 'BibLaTeX', 'BibLaTeX'] },
+    })
+    assert.deepEqual(imported.json(), { added: 2, skipped: 2 })
+    assert.deepEqual((await dict('GET', admin)).json(), { words: ['BibLaTeX', 'Hocuspocus', 'Zotero'] })
+    assert.equal((await t.app.inject({ method: 'DELETE', url: '/api/me/dictionary/all', headers: { cookie: admin } })).statusCode, 204)
+    assert.deepEqual((await dict('GET', admin)).json(), { words: [] })
   })
 })

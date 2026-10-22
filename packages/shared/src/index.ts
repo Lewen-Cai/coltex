@@ -624,6 +624,10 @@ export const LearnedWords = z.object({ words: z.array(z.string()) })
 export type LearnedWords = z.infer<typeof LearnedWords>
 /** One word: letters, digits, apostrophes and hyphens as Hunspell sees them; no spaces. */
 export const LearnedWord = z.object({ word: z.string().min(1).max(100).regex(/^\S+$/) })
+/** Words added together (an imported list); ones that are not single words are skipped. */
+export const LearnedWordsImport = z.object({ words: z.array(z.string()).max(10_000) })
+export const LearnedWordsImported = z.object({ added: z.number(), skipped: z.number() })
+export type LearnedWordsImported = z.infer<typeof LearnedWordsImported>
 
 export const CompileStatus = z.enum(['success', 'failure', 'timeout', 'error'])
 export type CompileStatus = z.infer<typeof CompileStatus>

@@ -10,7 +10,7 @@ import {
   TransactionSpec,
 } from '@codemirror/state'
 import { misspelledWordsField } from './misspelled-words'
-import { removeLearnedWord } from './learned-words'
+import { addLearnedWordEffect, learnedWords, removeLearnedWordEffect } from './learned-words'
 import { cacheField } from './cache'
 import { hideSpellingMenu, spellingMenuField } from './context-menu'
 import { SpellChecker } from './spellchecker'
@@ -46,16 +46,23 @@ export const spelling = ({ spellCheckLanguage, hunspellManager }: Options) => {
   ]
 }
 
+// ColTex: one event for words added and removed in the dictionary manager
+// (imports and "remove all" change many at once); the shared word set is
+// already updated by then.
 const dictionary = ViewPlugin.define(view => {
   const listener = (event: Event) => {
-    view.dispatch(removeLearnedWord((event as CustomEvent<string>).detail))
+    const { added = [], removed = [] } = (event as CustomEvent<{ added?: string[]; removed?: string[] }>).detail
+    for (const w of added) learnedWords.global.add(w)
+    for (const w of removed) learnedWords.global.delete(w)
+    const effects = [...added.map(w => addLearnedWordEffect.of(w)), ...removed.map(w => removeLearnedWordEffect.of(w))]
+    if (effects.length) view.dispatch({ effects })
   }
 
-  window.addEventListener('editor:remove-learned-word', listener)
+  window.addEventListener('editor:learned-words-changed', listener)
 
   return {
     destroy() {
-      window.removeEventListener('editor:remove-learned-word', listener)
+      window.removeEventListener('editor:learned-words-changed', listener)
     },
   }
 })

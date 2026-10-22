@@ -302,3 +302,16 @@ Upstream commit: 4ab6e0fd99c6667163bc34173e3ed3a3fed75ebc
        by drafting with propose_skill; examples are about LaTeX writing)
   apps/server/skills/skill-creator/LICENSE.txt
     <- skills/.system/skill-creator/LICENSE.txt (the Apache License 2.0)
+
+Simple Icons (https://simpleicons.org), CC0-1.0; simple-icons 13.21.0.
+
+  apps/web/src/components/service-icons.tsx
+    <- icons/git.svg (the path, unchanged). The Git logo is by Jason Long,
+       licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/).
+
+Zotero icon (https://www.zotero.org/support/brand). Zotero is a trademark of
+the Corporation for Digital Scholarship; the icon is used only to mark the
+Zotero connection.
+
+  apps/web/src/assets/zotero.png
+    <- https://www.zotero.org/support/_media/logo/zotero_128x128x32.png

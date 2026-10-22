@@ -59,6 +59,7 @@ import type {
   CompileRequest,
   CompileResult,
   LearnedWords,
+  LearnedWordsImported,
   ProjectSources,
   ReplaceBody,
   ReplaceResult,
@@ -283,6 +284,8 @@ export const api = {
   learnedWords: () => request<LearnedWords>('/api/me/dictionary'),
   learnWord: (word: string) => request<void>('/api/me/dictionary', json('POST', { word })),
   unlearnWord: (word: string) => request<void>('/api/me/dictionary', json('DELETE', { word })),
+  importWords: (words: string[]) => request<LearnedWordsImported>('/api/me/dictionary/import', json('POST', { words })),
+  clearDictionary: () => request<void>('/api/me/dictionary/all', { method: 'DELETE' }),
 
   synctexToPdf: (id: string, buildId: string, pos: { file: string; line: number; column: number }) =>
     request<{ positions: PdfPosition[] }>(

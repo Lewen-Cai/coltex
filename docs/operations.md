@@ -199,7 +199,7 @@ If the old server used `COLTEX_SECRET`, set the same value on the new one.
 Every project can be cloned, pulled and pushed with git at
 `<your ColTex address>/api/git/<project id>.git` (shown in the project's
 settings). People sign in with any user name and a personal Git token as the
-password (Settings → Git). Reading needs access to the project; pushing needs
+password (Settings → Sync services). Reading needs access to the project; pushing needs
 editor or owner rights. Only `main` can be pushed, and only as a fast-forward:
 if the project changed since someone's last pull, their push is refused until
 they pull.
