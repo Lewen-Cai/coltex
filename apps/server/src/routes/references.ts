@@ -3,6 +3,7 @@ import { z } from 'zod'
 import {
   DoiBody,
   DoiResult,
+  LiteratureSearchResult,
   ProjectId,
   ReferenceImportResult,
   ReferenceLink,
@@ -71,6 +72,16 @@ export const referenceRoutes: FastifyPluginAsyncZod<Deps> = async (app, { refere
     await references.unlink(req.params.id, req.body.path)
     return reply.code(204).send()
   })
+
+  // Only editors can add what they find, so only they search (the server asks Crossref and arXiv).
+  app.get(
+    '/projects/:id/references/search',
+    { schema: { params: IdParams, querystring: z.object({ q: z.string().trim().min(2).max(300) }), response: { 200: LiteratureSearchResult } } },
+    async req => {
+      await projects.requireAccess(req.params.id, requireUser(req).id, 'editor')
+      return references.searchLiterature(req.query.q)
+    },
+  )
 
   app.post('/projects/:id/references/doi', { schema: { params: IdParams, body: DoiBody, response: { 200: DoiResult } } }, async req => {
     const userId = requireUser(req).id

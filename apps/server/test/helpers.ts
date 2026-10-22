@@ -14,6 +14,7 @@ import { NetworkService } from '../src/network/service.ts'
 import { TailscaleClient } from '../src/network/tailscale.ts'
 import { BackupService } from '../src/backup/service.ts'
 import { ReferenceService } from '../src/references/service.ts'
+import { LiteratureSearch } from '../src/references/search.ts'
 import { ZoteroClient } from '../src/references/zotero.ts'
 import { GitBridgeService } from '../src/gitbridge/service.ts'
 import { TemplateService } from '../src/projects/templates.ts'
@@ -179,6 +180,8 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     doi: async (_doi: string): Promise<string> => {
       throw new Error('not faked')
     },
+    /** Crossref and arXiv for the literature search. */
+    search: async (_url: string, _init: RequestInit): Promise<Response> => new Response('not faked', { status: 500 }),
   }
   const references = new ReferenceService({
     db,
@@ -189,6 +192,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     projects,
     zotero: new ZoteroClient({ base: 'http://zotero.test', fetch: (url, init) => referenceFakes.zotero(url, init) }),
     fetchDoi: doi => referenceFakes.doi(doi),
+    literature: new LiteratureSearch({ fetch: (url, init) => referenceFakes.search(url, init) }),
   })
   const gitBridge = new GitBridgeService({ db, store, collab, history, projects, dir: path.join(dataDir, 'git-bridge') })
   const builds = new CompileCoalescer()

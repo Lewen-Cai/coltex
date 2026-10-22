@@ -16,7 +16,8 @@ const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', '
 /** A DOI from what someone pasted: a bare DOI, doi:…, a doi.org link, or an arXiv id. */
 export function normalizeDoi(input: string): string {
   const s = input.trim()
-  const arxiv = /^(?:arxiv:|https?:\/\/arxiv\.org\/(?:abs|pdf)\/)?(\d{4}\.\d{4,5})(?:v\d+)?(?:\.pdf)?$/i.exec(s)
+  // New-style ids (2301.01234) and old-style ones (hep-th/9901001, math.AG/0101001).
+  const arxiv = /^(?:arxiv:|https?:\/\/arxiv\.org\/(?:abs|pdf)\/)?(\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?\/\d{7})(?:v\d+)?(?:\.pdf)?$/i.exec(s)
   if (arxiv) return `10.48550/arXiv.${arxiv[1]}`
   const doi = /^(?:doi:\s*|https?:\/\/(?:dx\.)?doi\.org\/)?(10\.\d{4,9}\/\S+)$/i.exec(s)
   if (!doi) throw new BadRequestError('Not a DOI or an arXiv id')

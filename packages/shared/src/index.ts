@@ -1617,6 +1617,25 @@ export type DoiBody = z.infer<typeof DoiBody>
 export const DoiResult = z.object({ path: z.string(), key: z.string(), entry: z.string() })
 export type DoiResult = z.infer<typeof DoiResult>
 
+/** A paper found by searching Crossref or arXiv; `id` is what DoiBody takes to add it. */
+export const LiteratureHit = z.object({
+  source: z.enum(['crossref', 'arxiv']),
+  id: z.string(),
+  doi: z.string().nullable(),
+  title: z.string(),
+  authors: z.array(z.string()),
+  year: z.number().int().nullable(),
+  venue: z.string().nullable(),
+})
+export type LiteratureHit = z.infer<typeof LiteratureHit>
+
+export const LiteratureSearchResult = z.object({
+  hits: z.array(LiteratureHit),
+  /** Sources that didn't answer this time. */
+  unavailable: z.array(z.enum(['crossref', 'arxiv'])),
+})
+export type LiteratureSearchResult = z.infer<typeof LiteratureSearchResult>
+
 // --- Git bridge --------------------------------------------------------------
 
 export const GitToken = z.object({

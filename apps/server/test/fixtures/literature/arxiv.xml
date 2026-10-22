@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/24pAj9cN5/9ynVH6j4X++K0wt/o</id>
+  <title>arXiv Query: search_query=all:attention AND all:all AND all:you AND all:need&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-10-22T14:39:11Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:attention+AND+(all:all+AND+(all:you+AND+all:need))&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>177</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2512.19700v1</id>
+    <title>"All You Need" is Not All You Need for a Paper Title: On the Origins of a Scientific Meme</title>
+    <updated>2025-12-03T17:36:45Z</updated>
+    <link href="https://arxiv.org/abs/2512.19700v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2512.19700v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>The 2017 paper ''Attention Is All You Need'' introduced the Transformer architecture-and inadvertently spawned one of machine learning's most persistent naming conventions. We analyze 717 arXiv preprints containing ''All You Need'' in their titles (2009-2025), finding exponential growth ($R^2$ &gt; 0.994) following the original paper, with 200 titles in 2025 alone. Among papers following the canonical ''X [Is] All You Need'' structure, ''Attention'' remains the most frequently claimed necessity (28 occurrences). Situating this phenomenon within memetic theory, we argue the pattern's success reflects competitive pressures in scientific communication that increasingly favor memorability over precision. Whether this trend represents harmless academic whimsy or symptomatic sensationalism, we leave-with appropriate self-awareness-to the reader.</summary>
+    <category term="cs.CY" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.DL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-12-03T17:36:45Z</published>
+    <arxiv:primary_category term="cs.CY"/>
+    <author>
+      <name>Anton Alyakin</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2112.05993v1</id>
+    <title>Object Counting: You Only Need to Look at One</title>
+    <updated>2021-12-11T14:22:05Z</updated>
+    <link href="https://arxiv.org/abs/2112.05993v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2112.05993v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>This paper aims to tackle the challenging task of one-shot object counting. Given an image containing novel, previously unseen category objects, the goal of the task is to count all instances in the desired category with only one supporting bounding box example. To this end, we propose a counting model by which you only need to Look At One instance (LaoNet). First, a feature correlation module combines the Self-Attention and Correlative-Attention modules to learn both inner-relations and inter-relations. It enables the network to be robust to the inconsistency of rotations and sizes among different instances. Second, a Scale Aggregation mechanism is designed to help extract features with different scale information. Compared with existing few-shot counting methods, LaoNet achieves state-of-the-art results while learning with a high convergence speed. The code will be available soon.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2021-12-11T14:22:05Z</published>
+    <arxiv:comment>Keywords: Crowd counting, one-shot object counting, Attention</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Hui Lin</name>
+    </author>
+    <author>
+      <name>Xiaopeng Hong</name>
+    </author>
+    <author>
+      <name>Yabin Wang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2410.05767v2</id>
+    <title>Grounding is All You Need? Dual Temporal Grounding for Video Dialog</title>
+    <updated>2024-11-14T11:27:41Z</updated>
+    <link href="https://arxiv.org/abs/2410.05767v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2410.05767v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>In the realm of video dialog response generation, the understanding of video content and the temporal nuances of conversation history are paramount. While a segment of current research leans heavily on large-scale pretrained visual-language models and often overlooks temporal dynamics, another delves deep into spatial-temporal relationships within videos but demands intricate object trajectory pre-extractions and sidelines dialog temporal dynamics. This paper introduces the Dual Temporal Grounding-enhanced Video Dialog model (DTGVD), strategically designed to merge the strengths of both dominant approaches. It emphasizes dual temporal relationships by predicting dialog turn-specific temporal regions, filtering video content accordingly, and grounding responses in both video and dialog contexts. One standout feature of DTGVD is its heightened attention to chronological interplay. By recognizing and acting upon the dependencies between different dialog turns, it captures more nuanced conversational dynamics. To further bolster the alignment between video and dialog temporal dynamics, we've implemented a list-wise contrastive learning strategy. Within this framework, accurately grounded turn-clip pairings are designated as positive samples, while less precise pairings are categorized as negative. This refined classification is then funneled into our holistic end-to-end response generation mechanism. Evaluations using AVSD@DSTC-7 and AVSD@DSTC-8 datasets underscore the superiority of our methodology.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.MM" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-10-08T07:48:34Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>You Qin</name>
+    </author>
+    <author>
+      <name>Wei Ji</name>
+    </author>
+    <author>
+      <name>Xinze Lan</name>
+    </author>
+    <author>
+      <name>Hao Fei</name>
+    </author>
+    <author>
+      <name>Xun Yang</name>
+    </author>
+    <author>
+      <name>Dan Guo</name>
+    </author>
+    <author>
+      <name>Roger Zimmermann</name>
+    </author>
+    <author>
+      <name>Lizi Liao</name>
+    </author>
+  </entry>
+</feed>

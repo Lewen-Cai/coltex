@@ -3,7 +3,11 @@ import assert from 'node:assert/strict'
 import { eq } from 'drizzle-orm'
 import { cookieFrom, createTestApp } from './helpers.ts'
 import { zoteroAccounts } from '../src/db/schema.ts'
+import fs from 'node:fs'
 import { bibKeys, citationKey, fetchDoiBibtex, formatEntry, keyWithDoi, normalizeDoi } from '../src/references/doi.ts'
+import { exactFirst, mergeHits, parseArxiv, parseCrossref, plainText } from '../src/references/search.ts'
+
+const fixture = (name: string) => fs.readFileSync(new URL(`./fixtures/literature/${name}`, import.meta.url), 'utf8')
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
 
@@ -14,6 +18,8 @@ describe('DOI helpers', () => {
     assert.equal(normalizeDoi('doi:10.1000/xyz%20a'), '10.1000/xyz a')
     assert.equal(normalizeDoi('arXiv:2301.01234v2'), '10.48550/arXiv.2301.01234')
     assert.equal(normalizeDoi('https://arxiv.org/abs/2301.01234'), '10.48550/arXiv.2301.01234')
+    assert.equal(normalizeDoi('arXiv:hep-th/9901001v1'), '10.48550/arXiv.hep-th/9901001')
+    assert.equal(normalizeDoi('math.AG/0101001'), '10.48550/arXiv.math.AG/0101001')
     assert.throws(() => normalizeDoi('hello'))
   })
 
@@ -51,6 +57,38 @@ describe('DOI helpers', () => {
     await assert.rejects(fetchDoiBibtex('10.2/evil', { fetch }), /isn't a DOI registration agency/)
     assert.ok(!calls.some(c => c.includes('169.254')))
     await assert.rejects(fetchDoiBibtex('10.9/none', { fetch }), /not found/)
+  })
+})
+
+describe('literature search parsing', () => {
+  test('Crossref and arXiv answers become hits with an id to add', () => {
+    const crossref = parseCrossref(fixture('crossref.json'))
+    assert.equal(crossref.length, 3)
+    assert.deepEqual(crossref[0], {
+      source: 'crossref',
+      id: '10.1007/978-3-031-84300-6_13',
+      doi: '10.1007/978-3-031-84300-6_13',
+      title: 'Is Attention All You Need?',
+      authors: ['Patrick Mineault'],
+      year: 2025,
+      venue: 'From Human Attention to Computational Attention',
+    })
+    const arxiv = parseArxiv(fixture('arxiv.xml'))
+    assert.equal(arxiv.length, 3)
+    assert.equal(arxiv[0]!.id, 'arXiv:2512.19700')
+    assert.equal(arxiv[0]!.title, '"All You Need" is Not All You Need for a Paper Title: On the Origins of a Scientific Meme')
+    assert.ok(arxiv.every(h => h.source === 'arxiv' && h.authors.length > 0 && h.year && h.year > 2000))
+    // Every id is one the DOI route takes.
+    for (const hit of [...crossref, ...arxiv]) assert.doesNotThrow(() => normalizeDoi(hit.id))
+  })
+
+  test('plain text, merging without duplicates, exact titles first', () => {
+    assert.equal(plainText('<jats:title>A &amp; B&#x2014;<i>C</i>\n  &#233;</jats:title>'), 'A & B—C é')
+    const hit = (source: 'crossref' | 'arxiv', id: string, doi: string | null, title = id) => ({ source, id, doi, title, authors: [], year: null, venue: null })
+    const merged = mergeHits([hit('crossref', '10.1/a', '10.1/a'), hit('crossref', '10.1/b', '10.1/b')], [hit('arxiv', '10.1/A', '10.1/A'), hit('arxiv', 'arXiv:2301.00001', null)])
+    assert.deepEqual(merged.map(h => h.id), ['10.1/a', '10.1/b', 'arXiv:2301.00001'])
+    const ranked = exactFirst([hit('crossref', 'x', null, 'Is attention all you need?'), hit('arxiv', 'y', null, 'Attention Is All You Need')], 'attention is all you need')
+    assert.deepEqual(ranked.map(h => h.id), ['y', 'x'])
   })
 })
 
@@ -181,5 +219,32 @@ describe('references: Zotero and DOI', () => {
     const again = await api('POST', `/projects/${id}/references/doi`, { id: 'doi:10.1000/A', path: 'new.bib' })
     assert.equal(again.statusCode, 400)
     assert.match(again.json().error, /already in new.bib as Smith_2020/)
+  })
+
+  test('searching asks Crossref and arXiv, and says which didn’t answer', async () => {
+    const urls: string[] = []
+    t.referenceFakes.search = async url => {
+      urls.push(url)
+      if (url.startsWith('https://api.crossref.org/works?')) return new Response(fixture('crossref.json'))
+      if (url.startsWith('https://export.arxiv.org/api/query?')) return new Response(fixture('arxiv.xml'))
+      return new Response('', { status: 404 })
+    }
+    const res = await api('GET', `/projects/${id}/references/search?q=${encodeURIComponent('attention is all you need')}`)
+    assert.equal(res.statusCode, 200)
+    const { hits, unavailable } = res.json()
+    assert.equal(hits.length, 6)
+    assert.deepEqual(hits.slice(0, 2).map((h: { source: string }) => h.source), ['crossref', 'arxiv'])
+    assert.deepEqual(unavailable, [])
+    const arxivQuery = new URL(urls.find(u => u.includes('arxiv'))!).searchParams.get('search_query')
+    assert.equal(arxivQuery, 'ti:"attention is all you need" OR (all:attention AND all:is AND all:all AND all:you AND all:need)')
+
+    // A source that fails is named, the other's hits still come, and the failure isn't cached.
+    t.referenceFakes.search = async url => (url.includes('arxiv') ? new Response('busy', { status: 503 }) : new Response(fixture('crossref.json')))
+    const partial = (await api('GET', `/projects/${id}/references/search?q=graph+neural+networks`)).json()
+    assert.deepEqual(partial.unavailable, ['arxiv'])
+    assert.equal(partial.hits.length, 3)
+
+    assert.equal((await api('GET', `/projects/${id}/references/search?q=a`)).statusCode, 400)
+    assert.equal((await api('GET', `/projects/${id}/references/search?q=graph`, undefined, bob)).statusCode, 404)
   })
 })

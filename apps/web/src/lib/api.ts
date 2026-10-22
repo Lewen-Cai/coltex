@@ -64,6 +64,7 @@ import type {
   ReplaceBody,
   ReplaceResult,
   DoiResult,
+  LiteratureSearchResult,
   ReferenceImportResult,
   ReferenceLink,
   ZoteroCollection,
@@ -262,6 +263,8 @@ export const api = {
     request<ReferenceImportResult>(`/api/projects/${id}/references/refresh`, json('POST', { path })),
   unlinkReferences: (id: string, path: string) => request<void>(`/api/projects/${id}/references/unlink`, json('POST', { path })),
   addDoi: (id: string, doi: string, path: string) => request<DoiResult>(`/api/projects/${id}/references/doi`, json('POST', { id: doi, path })),
+  searchLiterature: (id: string, q: string) =>
+    request<LiteratureSearchResult>(`/api/projects/${id}/references/search?${new URLSearchParams({ q })}`),
   /** Project-wide replace; files whose text changed since the search are skipped. */
   replaceInProject: (id: string, body: ReplaceBody) => request<ReplaceResult>(`/api/projects/${id}/replace`, json('POST', body)),
 

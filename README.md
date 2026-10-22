@@ -39,7 +39,7 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - LaTeX completions, a code check, equation preview, spell checking in many languages, word count, project-wide search and replace, and Vim or Emacs keys.
 - Compiles with latexmk on a complete TeX Live. The engine (pdfLaTeX, XeLaTeX or LuaLaTeX) is picked from the document, Chinese included (ctex, xeCJK).
 - PDF preview with SyncTeX in both directions, also in a separate window. Compile errors are underlined in the source, with plain-language hints.
-- References: cite from your `.bib` files, add entries by DOI or arXiv id, or import a Zotero library or collection and keep it in sync.
+- References: cite from your `.bib` files, search Crossref and arXiv (or paste a DOI or arXiv id) to add entries, or import a Zotero library or collection and keep it in sync.
 
 ### Collaboration
 - Real-time editing with everyone's cursors, comments with @mentions, track changes (accept, reject, and undo a decision), project chat and in-app notifications.

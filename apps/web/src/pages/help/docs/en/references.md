@@ -6,9 +6,13 @@
 
 **Cite** lists every `.bib` entry in the project; search by author, title, year or key. Click an entry to insert `\cite{key}` at the cursor. Typing `\cite{` in the editor suggests keys too.
 
-## By DOI or arXiv id
+## Search and add
 
-On the **DOI** tab, enter a DOI (e.g. `10.1145/3290605.3300857`) or an arXiv id and choose a `.bib` file; the entry is fetched from doi.org and added at the end of the file with a unique key. Check what was fetched.
+On the **Add** tab, type a title, authors or keywords and press Enter: ColTex searches Crossref (journals, proceedings, books) and arXiv (preprints) and lists what it finds, the best matches of each first. **+** adds a paper to the `.bib` file chosen under the field. A preprint arXiv knows the published version of is added by that version's DOI.
+
+A DOI (e.g. `10.1145/3290605.3300857`), a doi.org link or an arXiv id is added directly, without a search.
+
+Entries are fetched from doi.org and added at the end of the file with a unique key; one already in the file (same DOI) isn't added twice. Check what was fetched.
 
 ## Zotero
 

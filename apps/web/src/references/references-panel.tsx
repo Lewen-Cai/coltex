@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { RefreshCw, X } from 'lucide-react'
+import { Check, Plus, RefreshCw, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 import type { EditorView } from '@codemirror/view'
-import type { ReferenceLink, ZoteroCollection, ZoteroLibrary, ZoteroStatus } from '@coltex/shared'
+import type { LiteratureHit, LiteratureSearchResult, ReferenceLink, ZoteroCollection, ZoteroLibrary, ZoteroStatus } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
@@ -78,13 +79,13 @@ export function ReferencesPanel({
         <Tabs value={tab} onValueChange={v => setTab(v as Tab)}>
           <TabsList className="w-full">
             <TabsTrigger value="cite">{t('Cite')}</TabsTrigger>
-            {canEdit && <TabsTrigger value="add">{t('Add by DOI')}</TabsTrigger>}
+            {canEdit && <TabsTrigger value="add">{t('Add')}</TabsTrigger>}
             {canEdit && <TabsTrigger value="zotero">{t('Zotero')}</TabsTrigger>}
           </TabsList>
         </Tabs>
       </div>
       {tab === 'cite' && <CiteTab bibSources={bibSources} version={version} canType={canType} getView={getView} />}
-      {tab === 'add' && canEdit && <DoiTab projectId={projectId} bibPaths={bibPaths.filter(p => !linked.has(p))} />}
+      {tab === 'add' && canEdit && <AddTab projectId={projectId} bibPaths={bibPaths.filter(p => !linked.has(p))} />}
       {tab === 'zotero' && canEdit && <ZoteroTab projectId={projectId} links={links} onChanged={loadLinks} />}
     </div>
   )
@@ -167,50 +168,140 @@ function BibSelect({ value, onChange, paths }: { value: string; onChange: (path:
   )
 }
 
-function DoiTab({ projectId, bibPaths }: { projectId: string; bibPaths: string[] }) {
-  const [doi, setDoi] = useState('')
-  const [path, setPath] = useState(bibPaths[0] ?? NEW_FILE)
-  const [busy, setBusy] = useState(false)
-  const [added, setAdded] = useState<string>()
+/** A DOI, a doi.org link or an arXiv id: added directly instead of searched for. */
+const LOOKS_LIKE_ID = /^(?:doi:\s*|https?:\/\/(?:dx\.)?doi\.org\/)?10\.\d{4,9}\/\S+$|^(?:arxiv:|https?:\/\/arxiv\.org\/(?:abs|pdf)\/)?(?:\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?\/\d{7})(?:v\d+)?$/i
 
-  const add = async () => {
-    setBusy(true)
-    setAdded(undefined)
+const SOURCE_NAME: Record<LiteratureHit['source'], string> = { crossref: 'Crossref', arxiv: 'arXiv' }
+
+/** "A. Smith, B. Li, C. Wu et al." */
+function authorList(authors: string[]): string {
+  return authors.length > 3 ? `${authors.slice(0, 3).join(', ')} ${t('et al.')}` : authors.join(', ')
+}
+
+/**
+ * Add references to a .bib file: search Crossref and arXiv by title, authors
+ * or keywords and add a hit, or paste a DOI or an arXiv id to add it directly.
+ */
+function AddTab({ projectId, bibPaths }: { projectId: string; bibPaths: string[] }) {
+  const [text, setText] = useState('')
+  const [path, setPath] = useState(bibPaths[0] ?? NEW_FILE)
+  const [searching, setSearching] = useState(false)
+  const [result, setResult] = useState<LiteratureSearchResult & { query: string }>()
+  const [adding, setAdding] = useState<string>()
+  const [added, setAdded] = useState<Record<string, string>>({})
+  const [entry, setEntry] = useState<string>()
+
+  const add = async (id: string) => {
+    setAdding(id)
     try {
-      const res = await api.addDoi(projectId, doi.trim(), path)
-      setAdded(res.entry)
-      setDoi('')
+      const res = await api.addDoi(projectId, id, path)
+      setAdded(a => ({ ...a, [id]: res.key }))
       toast.success(t('Added {key} to {path}', { key: res.key, path: res.path }))
+      return res
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
-      setBusy(false)
+      setAdding(undefined)
+    }
+  }
+
+  const submit = async () => {
+    const q = text.trim()
+    if (q.length < 2) return
+    if (LOOKS_LIKE_ID.test(q)) {
+      const res = await add(q)
+      if (res) {
+        setEntry(res.entry)
+        setText('')
+      }
+      return
+    }
+    setSearching(true)
+    setEntry(undefined)
+    try {
+      setResult({ ...(await api.searchLiterature(projectId, q)), query: q })
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setSearching(false)
     }
   }
 
   return (
-    <form
-      className="grid min-h-0 flex-1 content-start gap-3 overflow-y-auto p-3"
-      onSubmit={e => {
-        e.preventDefault()
-        void add()
-      }}
-    >
-      <div className="grid gap-1.5">
-        <Label htmlFor="doi">{t('DOI or arXiv id')}</Label>
-        <Input id="doi" value={doi} onChange={e => setDoi(e.target.value)} placeholder="10.1038/s41586-020-2649-2" className="h-8 font-mono text-xs" />
-      </div>
-      <div className="grid gap-1.5">
-        <Label>{t('Add to')}</Label>
-        <BibSelect value={path} onChange={setPath} paths={bibPaths.length ? bibPaths : [NEW_FILE]} />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <form
+        className="grid shrink-0 gap-2 border-b p-3"
+        onSubmit={e => {
+          e.preventDefault()
+          void submit()
+        }}
+      >
+        <InputGroup className="h-8">
+          <InputGroupAddon>{searching ? <Spinner /> : <Search />}</InputGroupAddon>
+          <InputGroupInput
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder={t('Title, authors, keywords, DOI or arXiv id')}
+            aria-label={t('Search for a paper')}
+            autoFocus
+          />
+        </InputGroup>
+        <div className="flex items-center gap-2">
+          <Label className="shrink-0 text-xs text-muted-foreground">{t('Add to')}</Label>
+          <BibSelect value={path} onChange={setPath} paths={bibPaths.length ? bibPaths : [NEW_FILE]} />
+        </div>
         {!bibPaths.includes(path) && <p className="text-xs text-muted-foreground">{t('The file is created.')}</p>}
+      </form>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {entry && <pre className="m-3 overflow-x-auto rounded-md bg-muted p-2 font-mono text-[11px] whitespace-pre">{entry}</pre>}
+        {result && !entry && (
+          <>
+            {result.unavailable.length > 0 && (
+              <p className="px-3 pt-2 text-xs text-amber-700 dark:text-amber-400">
+                {t('{sources} didn’t answer; try again later.', { sources: result.unavailable.map(s => SOURCE_NAME[s]).join(', ') })}
+              </p>
+            )}
+            {result.hits.length === 0 ? (
+              <p className="px-3 py-6 text-center text-sm text-muted-foreground">{t('Nothing found for “{query}”.', { query: result.query })}</p>
+            ) : (
+              <ul className="py-1">
+                {result.hits.map(hit => (
+                  <li key={`${hit.source}:${hit.id}`} className="group flex items-start gap-2 px-3 py-2 hover:bg-accent/50">
+                    <div className="grid min-w-0 flex-1 gap-0.5">
+                      <span className="line-clamp-2 text-sm">{hit.title}</span>
+                      <span className="line-clamp-2 text-xs text-muted-foreground">
+                        {[authorList(hit.authors), hit.year, hit.venue].filter(Boolean).join(' · ')}
+                      </span>
+                      <span className="truncate font-mono text-[11px] text-muted-foreground">
+                        {SOURCE_NAME[hit.source]} · {hit.id}
+                      </span>
+                    </div>
+                    {added[hit.id] ? (
+                      <span className="flex shrink-0 items-center gap-1 pt-0.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400" title={t('Added')}>
+                        <Check className="size-3.5" /> {added[hit.id]}
+                      </span>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="shrink-0"
+                        disabled={adding !== undefined}
+                        onClick={() => void add(hit.id)}
+                        aria-label={t('Add “{title}”', { title: hit.title })}
+                        title={t('Add to {path}', { path })}
+                      >
+                        {adding === hit.id ? <Spinner /> : <Plus />}
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
       </div>
-      <Button type="submit" size="sm" disabled={busy || doi.trim().length < 3} className="justify-self-start">
-        {busy && <Spinner />}
-        {t('Look up and add')}
-      </Button>
-      {added && <pre className="overflow-x-auto rounded-md bg-muted p-2 font-mono text-[11px] whitespace-pre">{added}</pre>}
-    </form>
+    </div>
   )
 }
 

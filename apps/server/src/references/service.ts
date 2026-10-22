@@ -1,7 +1,8 @@
 import { and, eq } from 'drizzle-orm'
-import type { DoiResult, ReferenceImportResult, ReferenceLink, ZoteroCollection, ZoteroImportBody, ZoteroLibrary, ZoteroStatus } from '@coltex/shared'
+import type { DoiResult, LiteratureSearchResult, ReferenceImportResult, ReferenceLink, ZoteroCollection, ZoteroImportBody, ZoteroLibrary, ZoteroStatus } from '@coltex/shared'
 import type { SecretBox } from '../ai/credentials.ts'
 import type { CollabHooks } from '../collab/server.ts'
+import { config } from '../config.ts'
 import { TEXT_KEY } from '../collab/server.ts'
 import type { Db } from '../db/client.ts'
 import { referenceLinks, user, zoteroAccounts } from '../db/schema.ts'
@@ -11,6 +12,7 @@ import type { ProjectService } from '../projects/service.ts'
 import { cleanPath } from '../storage/paths.ts'
 import type { ProjectStore } from '../storage/types.ts'
 import { bibKeys, citationKey, fetchDoiBibtex, formatEntry, keyWithDoi, normalizeDoi } from './doi.ts'
+import { LiteratureSearch } from './search.ts'
 import { ZoteroClient } from './zotero.ts'
 
 const BIB_PATH = /\.bib$/i
@@ -30,6 +32,7 @@ export class ReferenceService {
   private readonly projects: ProjectService
   private readonly zotero: ZoteroClient
   private readonly doi: (doi: string) => Promise<string>
+  private readonly literature: LiteratureSearch
 
   constructor(deps: {
     db: Db
@@ -40,6 +43,7 @@ export class ReferenceService {
     projects: ProjectService
     zotero?: ZoteroClient
     fetchDoi?: (doi: string) => Promise<string>
+    literature?: LiteratureSearch
   }) {
     this.db = deps.db
     this.box = deps.box
@@ -49,6 +53,7 @@ export class ReferenceService {
     this.projects = deps.projects
     this.zotero = deps.zotero ?? new ZoteroClient()
     this.doi = deps.fetchDoi ?? (doi => fetchDoiBibtex(doi))
+    this.literature = deps.literature ?? new LiteratureSearch({ version: config.version })
   }
 
   // --- Zotero connection ---------------------------------------------------
@@ -184,6 +189,11 @@ export class ReferenceService {
   // --- DOI -----------------------------------------------------------------
 
   /** Look the DOI up and add its entry to the end of a .bib file (made if missing). */
+  /** Papers matching a title, authors or keywords, from Crossref and arXiv. */
+  searchLiterature(query: string): Promise<LiteratureSearchResult> {
+    return this.literature.search(query)
+  }
+
   async addDoi(projectId: string, userId: string, id: string, rawPath: string): Promise<DoiResult> {
     const path = this.bibPath(rawPath)
     const doi = normalizeDoi(id)
