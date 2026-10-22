@@ -365,6 +365,11 @@ export const FileEntry = z.object({
   binary: z.boolean(),
   /** Last modification (ms since epoch), when the storage driver knows it. */
   modifiedAt: z.number().optional(),
+  /**
+   * Changes whenever the content does (S3's ETag), when the driver knows it.
+   * S3 times are whole seconds, so two same-size writes within one look alike.
+   */
+  version: z.string().optional(),
 })
 export type FileEntry = z.infer<typeof FileEntry>
 
@@ -1607,3 +1612,18 @@ export type DoiBody = z.infer<typeof DoiBody>
 
 export const DoiResult = z.object({ path: z.string(), key: z.string(), entry: z.string() })
 export type DoiResult = z.infer<typeof DoiResult>
+
+// --- Git bridge --------------------------------------------------------------
+
+export const GitToken = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+  lastUsedAt: z.string().nullable(),
+})
+export type GitToken = z.infer<typeof GitToken>
+
+export const CreateGitTokenBody = z.object({ name: z.string().trim().min(1).max(100) })
+/** The token itself is only in this response. */
+export const CreatedGitToken = GitToken.extend({ token: z.string() })
+export type CreatedGitToken = z.infer<typeof CreatedGitToken>

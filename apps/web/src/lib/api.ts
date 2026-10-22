@@ -68,6 +68,8 @@ import type {
   ZoteroCollection,
   ZoteroLibrary,
   ZoteroStatus,
+  CreatedGitToken,
+  GitToken,
   PdfPosition,
   Invite,
   InviteInfo,
@@ -237,6 +239,10 @@ export const api = {
   /** Current text of the project's .tex files, after flushing live edits (for the word count). */
   projectSources: (id: string, include: 'tex' | 'text' = 'tex') =>
     request<ProjectSources>(`/api/projects/${id}/sources${include === 'text' ? '?include=text' : ''}`),
+  // Git bridge tokens (the token itself only comes back when created).
+  gitTokens: () => request<GitToken[]>('/api/me/git-tokens'),
+  createGitToken: (name: string) => request<CreatedGitToken>('/api/me/git-tokens', json('POST', { name })),
+  revokeGitToken: (id: string) => request<void>(`/api/me/git-tokens/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   // References: the person's Zotero connection, and a project's .bib files from Zotero or DOIs.
   zoteroStatus: () => request<ZoteroStatus>('/api/me/zotero'),
   connectZotero: (apiKey: string) => request<ZoteroStatus>('/api/me/zotero', json('PUT', { apiKey })),

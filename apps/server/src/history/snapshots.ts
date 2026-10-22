@@ -70,7 +70,7 @@ export type Snapshot = {
   changes: FileChange[]
 }
 
-type Index = { commit: string; files: Record<string, { size: number; modifiedAt: number; blob: string }> }
+type Index = { commit: string; files: Record<string, { size: number; modifiedAt: number; version?: string; blob: string }> }
 
 const TRAILER = /^Coltex-([A-Za-z-]+): (.*)$/
 
@@ -217,7 +217,7 @@ export class SnapshotService {
       ]
       for (const f of files) {
         const known = reusable[f.path]
-        if (known && f.modifiedAt !== undefined && known.size === f.size && known.modifiedAt === f.modifiedAt) {
+        if (known && f.modifiedAt !== undefined && known.size === f.size && known.modifiedAt === f.modifiedAt && known.version === f.version) {
           chunks.push(Buffer.from(`M 100644 ${known.blob} ${quotePath(f.path)}\n`))
           continue
         }
@@ -247,7 +247,7 @@ export class SnapshotService {
       const next: Index = { commit: id, files: {} }
       for (const f of files) {
         const blob = blobs.get(f.path)
-        if (blob && f.modifiedAt !== undefined) next.files[f.path] = { size: f.size, modifiedAt: f.modifiedAt, blob }
+        if (blob && f.modifiedAt !== undefined) next.files[f.path] = { size: f.size, modifiedAt: f.modifiedAt, version: f.version, blob }
       }
       await fs.writeFile(path.join(dir, INDEX_FILE), JSON.stringify(next))
       return { id, created: true }

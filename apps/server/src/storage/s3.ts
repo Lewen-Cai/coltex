@@ -132,7 +132,7 @@ export class S3ProjectStore implements ProjectStore {
   async listTree(id: string): Promise<ProjectTree> {
     const found = await this.objects(id)
     if (!found) throw new NotFoundError(`Project ${id} has no files`)
-    const files: FileEntry[] = [...found.files].map(([p, o]) => ({ path: p, size: o.size, binary: !isTextPath(p), modifiedAt: o.modified }))
+    const files: FileEntry[] = [...found.files].map(([p, o]) => ({ path: p, size: o.size, binary: !isTextPath(p), modifiedAt: o.modified, version: o.etag || undefined }))
     return { files: files.sort((a, b) => a.path.localeCompare(b.path)), folders: [...found.folders].sort() }
   }
 

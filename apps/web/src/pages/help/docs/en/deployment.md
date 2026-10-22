@@ -45,7 +45,7 @@ The server accepts sign-ins made to its own address: open it at `localhost`, a L
 
 ## Which addresses links use
 
-Invitation links are offered once for every address ColTex can be reached at, each with its own copy button, so you pick the one the recipient can open:
+Invitation links and Git clone addresses are offered once for every address ColTex can be reached at, each with its own copy button, so you pick the one the recipient can open:
 
 - **LAN** or **Tailscale**: the address you opened ColTex at (recognised by its address);
 - **Tailscale**, **Cloudflare**: the built-in Tailscale's or Cloudflare Tunnel's addresses while connected. They appear and disappear with them; nothing needs changing when one is turned off;

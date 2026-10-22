@@ -45,7 +45,7 @@ Cut, copy, paste, select all, delete, go to PDF, and add a comment. On `\ref{…
 
 **Settings** at the bottom of the left rail groups its settings into categories on the left:
 
-- **Project**: compiler, main document, spell-check language (editors change them, for everyone);
+- **Project**: compiler, main document, spell-check language (editors change them, for everyone), and the Git clone address;
 - **Appearance**: font size, font (monospace or sans-serif), line height, **Code colours** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark and more, code mode only), breadcrumbs;
 - **Editing**: keybindings (default, Vim or Emacs) and switches for the code check, equation preview, auto-close brackets and autocomplete;
 - **Keyboard shortcuts**: see below;

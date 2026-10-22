@@ -7,6 +7,7 @@ export const PERSONAL: SettingsItem[] = [
   { title: tk('Appearance'), href: '#/settings/appearance', route: '/settings/appearance' },
   { title: tk('Dictionary'), href: '#/settings/dictionary', route: '/settings/dictionary' },
   { title: tk('Zotero'), href: '#/settings/zotero', route: '/settings/zotero' },
+  { title: tk('Git'), href: '#/settings/git', route: '/settings/git' },
   { title: tk('AI skills'), href: '#/settings/skills', route: '/settings/skills' },
 ]
 

@@ -10,6 +10,7 @@ import { buildApp } from './app.ts'
 import { dumpDatabase } from './backup/postgres.ts'
 import { BackupService } from './backup/service.ts'
 import { ReferenceService } from './references/service.ts'
+import { GitBridgeService } from './gitbridge/service.ts'
 import { TemplateService } from './projects/templates.ts'
 import { LinkedFileService } from './projects/linked-files.ts'
 import { CompileCoalescer, buildProject } from './routes/compile.ts'
@@ -44,6 +45,7 @@ const projects = new ProjectService(db, store, async id => {
   aiSessions.dropProject(id)
   history.dropProject(id)
   await snapshots.deleteProject(id)
+  await gitBridge.deleteProject(id)
   await fs.rm(path.join(config.outputsDir, id), { recursive: true, force: true })
   // The compile directory is only visible to the compiler; it also removes
   // outputs of a build that was still running.
@@ -85,7 +87,7 @@ const monitor = new MonitorHistory(db, () => queue.stats().then(s => s.container
 queue.onBuild = (ms, status) => void monitor.recordBuild(ms, status)
 monitor.start()
 const backup = new BackupService(
-  { db, store, collab, snapshots, box },
+  { db, store, collab, snapshots, gitBridge: { bundle: (id, file) => gitBridge.bundle(id, file) }, box },
   {
     tmpDir: path.join(config.cacheDir, 'backup'),
     instanceSecret: config.secret,
@@ -100,6 +102,7 @@ const skills = new SkillStore(db)
 const skillChats = new SkillWorkshops({ ai, skills, chats: new SkillChatStore(db) })
 const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
 const accounts = new AccountService(db, auth, box)
+const gitBridge = new GitBridgeService({ db, store, collab, history, projects, dir: config.gitBridgeDir })
 const builds = new CompileCoalescer()
 const linkedFiles = new LinkedFileService({
   db,
@@ -111,7 +114,7 @@ const linkedFiles = new LinkedFileService({
   compile: (projectId, userId) => buildProject({ projects, store, queue, collab, builds }, projectId, userId),
 })
 const app = await buildApp(
-  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references: new ReferenceService({ db, box, store, collab, history, projects }), templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references: new ReferenceService({ db, box, store, collab, history, projects }), gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
   { handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
 )
 

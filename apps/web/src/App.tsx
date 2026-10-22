@@ -34,6 +34,7 @@ const AdminUsersPage = lazy(() => import('@/pages/admin/users').then(m => ({ def
 const AccountSettingsPage = lazy(() => import('@/pages/settings/account').then(m => ({ default: m.AccountSettingsPage })))
 const AppearanceSettingsPage = lazy(() => import('@/pages/settings/appearance').then(m => ({ default: m.AppearanceSettingsPage })))
 const DictionarySettingsPage = lazy(() => import('@/pages/settings/dictionary').then(m => ({ default: m.DictionarySettingsPage })))
+const GitSettingsPage = lazy(() => import('@/pages/settings/git').then(m => ({ default: m.GitSettingsPage })))
 const ZoteroSettingsPage = lazy(() => import('@/pages/settings/zotero').then(m => ({ default: m.ZoteroSettingsPage })))
 const SkillsSettingsPage = lazy(() => import('@/pages/settings/skills').then(m => ({ default: m.SkillsSettingsPage })))
 
@@ -74,6 +75,7 @@ function settingsPage(route: string, user: SessionUser): ReactNode {
   if (route === '/settings/appearance') return <AppearanceSettingsPage />
   if (route === '/settings/dictionary') return <DictionarySettingsPage />
   if (route === '/settings/zotero') return <ZoteroSettingsPage />
+  if (route === '/settings/git') return <GitSettingsPage />
   if (route === '/settings/skills') return <AiOnly user={user}><SkillsSettingsPage /></AiOnly>
   if (user.role === 'admin' || user.role === 'manager') {
     if (route === '/admin/invites') return <AdminInvitesPage user={user} />

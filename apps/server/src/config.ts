@@ -120,6 +120,8 @@ export const config = {
   outputsDir: path.join(dataDir, 'outputs'),
   /** Snapshots (bare git repositories), one per project. */
   historyDir: path.join(dataDir, 'history'),
+  /** The Git bridge's repositories (git clone/pull/push of projects). */
+  gitBridgeDir: path.join(dataDir, 'git-bridge'),
   /** Rebuildable state: the S3 driver's compile-copy manifests, backup scratch files. */
   cacheDir: path.join(dataDir, 'cache'),
   storage: storage(),

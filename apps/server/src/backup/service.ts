@@ -117,6 +117,7 @@ export class BackupService {
   private readonly collab: Pick<CollabHooks, 'flushProject'>
   private readonly snapshots: Pick<SnapshotService, 'bundle'>
   /** The Git bridge's repositories: people's clones know their commits. */
+  private readonly gitBridge?: Pick<SnapshotService, 'bundle'>
   private readonly box: SecretBox
   private readonly opts: BackupOptions
   private timer: NodeJS.Timeout | undefined
@@ -129,6 +130,7 @@ export class BackupService {
       store: ProjectStore
       collab: Pick<CollabHooks, 'flushProject'>
       snapshots: Pick<SnapshotService, 'bundle'>
+      gitBridge?: Pick<SnapshotService, 'bundle'>
       box: SecretBox
     },
     opts: BackupOptions,
@@ -137,6 +139,7 @@ export class BackupService {
     this.store = deps.store
     this.collab = deps.collab
     this.snapshots = deps.snapshots
+    this.gitBridge = deps.gitBridge
     this.box = deps.box
     this.opts = opts
   }
@@ -334,6 +337,8 @@ export class BackupService {
         }
         const bundle = path.join(work, `${id}.bundle`)
         if (await this.snapshots.bundle(id, bundle)) entries.push({ name: `history/${id}.bundle`, file: bundle })
+        const bridge = path.join(work, `${id}.git-bridge.bundle`)
+        if (this.gitBridge && (await this.gitBridge.bundle(id, bridge))) entries.push({ name: `git-bridge/${id}.bundle`, file: bridge })
       }
 
       const secret: BackupManifest['secret'] = this.opts.secretFromEnv ? 'environment' : password ? 'included' : 'omitted'

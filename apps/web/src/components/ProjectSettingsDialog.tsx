@@ -4,7 +4,7 @@ import type { EngineSetting, ProjectMeta, SpellCheckLanguage } from '@coltex/sha
 import { copyText } from '../lib/clipboard.ts'
 import { EDITOR_THEMES } from '../lib/editor-themes.ts'
 import { FONT_SIZES, updateEditorSettings, useEditorSettings, type EditorSettings } from '../lib/editor-settings.ts'
-import { t, tk } from '../lib/i18n.ts'
+import { t, tk, tr } from '../lib/i18n.ts'
 import { formatKeys, isMac, keyParts } from '../lib/platform.ts'
 import { SHORTCUT_COMMANDS, bindingFromEvent, bindingsFor, commandWithKey, type ShortcutCommand } from '../lib/shortcuts.ts'
 import { cn } from '../lib/utils.ts'
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Kbd, KbdGroup } from './ui/kbd.tsx'
 import { Switch } from './ui/switch.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog.tsx'
+import { LinkList } from './link-list.tsx'
 
 type Props = {
   open: boolean
@@ -33,6 +34,24 @@ type Props = {
   onConvert: () => void
   /** The person has the AI agent: the project's skills are shown. */
   aiAvailable: boolean
+}
+
+/** The project's clone address (the Git bridge) for each address ColTex has, with how to sign in. */
+function GitClone({ projectId }: { projectId: string }) {
+  return (
+    <div className="grid min-w-0 gap-1.5 px-2">
+      <LinkList format={base => `git clone ${base}/api/git/${projectId}.git`} />
+      <p className="text-xs text-muted-foreground">
+        {tr('When git asks, use any user name and a Git token as the password ({settings}).', {
+          settings: (
+            <a href="#/settings/git" className="text-primary underline-offset-4 hover:underline">
+              {t('Settings → Git')}
+            </a>
+          ),
+        })}
+      </p>
+    </div>
+  )
 }
 
 const itemClass =
@@ -328,7 +347,7 @@ type SectionId = (typeof SECTIONS)[number]['id']
 /**
  * Project settings, opened from the bottom of the editor's rail as in
  * Overleaf: the project's own settings (compiler, main document, spell
- * checking), the person's editor settings and keys, and project
+ * checking, Git), the person's editor settings and keys, and project
  * actions, one category at a time beside a list of categories.
  */
 export function ProjectSettingsDialog(props: Props) {
@@ -407,6 +426,12 @@ export function ProjectSettingsDialog(props: Props) {
                 <a href="#/settings/dictionary" className={itemClass}>
                   <BookA /> {t('Edit dictionary')}
                 </a>
+                {project && (
+                  <div className="mt-4 grid gap-1">
+                    <span className="px-2 text-sm font-medium text-muted-foreground">{t('Git')}</span>
+                    <GitClone projectId={project.id} />
+                  </div>
+                )}
               </div>
             )}
             {current.id === 'appearance' && <AppearanceSettings />}

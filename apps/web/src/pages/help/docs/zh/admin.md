@@ -33,4 +33,4 @@
 
 ## 网络
 
-**网络** 页面列出 ColTex 现在可访问的地址（邀请链接会用到），可以开启自带的 Tailscale 和 Cloudflare Tunnel，并显示请求是怎样到达服务器的。详见[部署与网络](#/help/deployment)。
+**网络** 页面列出 ColTex 现在可访问的地址（邀请链接、Git 地址都会用到），可以开启自带的 Tailscale 和 Cloudflare Tunnel，并显示请求是怎样到达服务器的。详见[部署与网络](#/help/deployment)。

@@ -12,6 +12,7 @@ Commands assume the Docker Compose setup; with `pnpm dev`, run
 | Accounts, projects, members, comments, chat, settings | PostgreSQL |
 | Project files | `DATA_DIR/projects` (local) or an S3 bucket |
 | History (versions) | `DATA_DIR/history`, one git repository per project |
+| Git bridge repositories (git clone/push) | `DATA_DIR/git-bridge`, one per project that has been cloned |
 | Instance secret (signs sessions, encrypts AI credentials) | `DATA_DIR/.secret`, or `COLTEX_SECRET` |
 | Build output, compile caches, the S3 driver's local copies | `DATA_DIR/outputs`, the `compile-cache` volume, `DATA_DIR/projects` (rebuildable) |
 
@@ -148,7 +149,8 @@ password. **Test connection** checks that ColTex can create and delete a
 file there.
 
 Each backup is one file, `coltex-backup-<date>-<time>.zip` (UTC), holding the
-database dump, every project's files and its history. Back up now, or every
+database dump, every project's files, its history and its Git bridge
+repository (so existing clones keep pulling after a restore). Back up now, or every
 day or week at a set time. Older backups beyond the number to keep are
 deleted from the folder after a successful backup; other files in the folder
 are left alone.
@@ -191,3 +193,17 @@ Restore into a fresh install: an empty database and an empty data directory
    its database migrations on start.
 
 If the old server used `COLTEX_SECRET`, set the same value on the new one.
+
+## Git bridge
+
+Every project can be cloned, pulled and pushed with git at
+`<your ColTex address>/api/git/<project id>.git` (shown in the project's
+settings). People sign in with any user name and a personal Git token as the
+password (Settings → Git). Reading needs access to the project; pushing needs
+editor or owner rights. Only `main` can be pushed, and only as a fast-forward:
+if the project changed since someone's last pull, their push is refused until
+they pull.
+
+Behind a reverse proxy, make sure large request bodies are allowed for
+`/api/git/` (pushes of images and PDFs).
+

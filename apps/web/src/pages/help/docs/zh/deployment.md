@@ -45,7 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 
 ## 链接用哪些地址
 
-邀请链接会按 ColTex 能访问到的每个地址各给一条，每条都能单独复制，你按对方能打开的那条发：
+邀请链接和 Git clone 地址会按 ColTex 能访问到的每个地址各给一条，每条都能单独复制，你按对方能打开的那条发：
 
 - **局域网** 或 **Tailscale**：你当前打开 ColTex 用的地址（按地址自动识别类型）；
 - **Tailscale**、**Cloudflare**：自带的 Tailscale 或 Cloudflare Tunnel 连上时的地址。它们随开关自动出现和消失，关掉后不需要改任何设置；

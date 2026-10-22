@@ -33,4 +33,4 @@ The system administrator sees the Administration pages under **Settings** in the
 
 ## Network
 
-**Network** lists the addresses ColTex is reached at (invitation links use them), turns on the built-in Tailscale and Cloudflare Tunnel, and shows how requests reach the server. See [Deployment and network](#/help/deployment).
+**Network** lists the addresses ColTex is reached at (invitations and Git addresses use them), turns on the built-in Tailscale and Cloudflare Tunnel, and shows how requests reach the server. See [Deployment and network](#/help/deployment).

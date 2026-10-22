@@ -127,6 +127,15 @@ describe('backups', () => {
   })
 
   test('backs up the database, files and history to the folder', async () => {
+    // A clone made the project's Git bridge repository; it goes into the backup too.
+    const token = (await t.app.inject({ method: 'POST', url: '/api/me/git-tokens', headers: { cookie: admin }, payload: { name: 'ci' } })).json().token
+    const refs = await t.app.inject({
+      method: 'GET',
+      url: `/api/git/${projectId}.git/info/refs?service=git-upload-pack`,
+      headers: { authorization: `Basic ${Buffer.from(`git:${token}`).toString('base64')}` },
+    })
+    assert.equal(refs.statusCode, 200, refs.body)
+    assert.match(refs.body, /refs\/heads\/main/)
     const run = await runBackup()
     assert.equal(run.status, 'success', run.error)
     assert.match(run.file, /^coltex-backup-\d{8}-\d{6}\.zip$/)
@@ -148,6 +157,9 @@ describe('backups', () => {
     zip.close()
     const log = execFileSync('git', ['bundle', 'list-heads', bundle]).toString()
     assert.match(log, /refs\/heads\/main/)
+    const bridge = await readArchive(await download(run.file))
+    assert.ok(bridge.names.includes(`git-bridge/${projectId}.bundle`), 'the Git bridge repository is backed up')
+    bridge.close()
   })
 
   test('encrypts archives so openssl can open them, and then includes the secret', async () => {

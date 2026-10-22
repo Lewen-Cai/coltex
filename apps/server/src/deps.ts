@@ -18,6 +18,7 @@ import type { TemplateService } from './projects/templates.ts'
 import type { LinkedFileService } from './projects/linked-files.ts'
 import type { CompileCoalescer } from './routes/compile.ts'
 import type { ReferenceService } from './references/service.ts'
+import type { GitBridgeService } from './gitbridge/service.ts'
 import type { ReviewService } from './review/service.ts'
 import type { ProjectStore } from './storage/types.ts'
 
@@ -43,6 +44,7 @@ export type Deps = {
   monitor: MonitorHistory
   backup: BackupService
   references: ReferenceService
+  gitBridge: GitBridgeService
   templates: TemplateService
   linkedFiles: LinkedFileService
   /** One build per project at a time, shared by everything that builds for a person. */

@@ -36,7 +36,7 @@ export function useProjectMetadata(projectId: string, files: FileEntry[]) {
   useEffect(() => {
     let cancelled = false
     const wanted = new Map(
-      files.filter(f => !f.binary && SCANNED.test(f.path)).map(f => [f.path, `${f.size}:${f.modifiedAt ?? ''}`]),
+      files.filter(f => !f.binary && SCANNED.test(f.path)).map(f => [f.path, `${f.size}:${f.modifiedAt ?? ''}:${f.version ?? ''}`]),
     )
     for (const path of contents.current.keys()) {
       if (!wanted.has(path)) {

@@ -587,6 +587,25 @@ export const referenceLinks = pgTable(
 )
 
 /**
+ * Personal access tokens for the Git bridge (git clone/pull/push over HTTP).
+ * Only a SHA-256 of the token is kept; it is shown once when created.
+ */
+export const gitTokens = pgTable(
+  'git_tokens',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+    createdAt: timestamps.createdAt,
+  },
+  t => [uniqueIndex('git_tokens_hash_idx').on(t.tokenHash), index('git_tokens_user_idx').on(t.userId)],
+)
+
+/**
  * Projects published as templates for everyone on this server. New projects
  * copy the project's files at the time; the entry goes with its project.
  */

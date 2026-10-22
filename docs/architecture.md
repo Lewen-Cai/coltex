@@ -14,7 +14,7 @@
 | Auth | better-auth 1.7, email+password, sign-up disabled, admin plugin | argon2id hashing; first-run setup + single-use invites; telemetry off; OIDC later |
 | Storage | Local disk (default) or S3-compatible | `ProjectStore` interface in `apps/server/src/storage` |
 | Backup | WebDAV target (DB dump + project files + history bundles) | `apps/server/src/backup`, restore via `src/cli.ts` |
-| History | One bare git repo per project (snapshots) | No Git bridge (removed 2026-10-19: ColTex is used in the browser) |
+| History / Git bridge | One bare git repo per project, `git http-backend` | |
 | AI | Pi (`@earendil-works/pi-ai`, `pi-agent-core`; formerly `@mariozechner/*`) behind our own harness | API keys, subscription sign-in and OpenAI-compatible endpoints, admin-managed |
 | Proxy | Caddy (optional compose profile) | |
 | License | AGPL-3.0 | Ported Overleaf code tracked in `NOTICE` |
@@ -650,8 +650,8 @@ references.
    link-first sharing with optional sign-up ✅, ownership transfer ✅.
    @mentions and in-app notifications ✅.
 5. **Server Pro parity** — admin panel ✅, S3 storage and WebDAV backups ✅,
-   Zotero import and refresh, entries by DOI, citation picker ✅. (A Git bridge
-   was built and then removed on 2026-10-19.) No OIDC (decided: ColTex serves one person or a small group).
+   Zotero import and refresh, entries by DOI, citation picker ✅, Git bridge
+   ✅. No OIDC (decided: ColTex serves one person or a small group).
 
 ## Storage drivers
 

@@ -45,6 +45,7 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - Real-time editing with everyone's cursors, comments with @mentions, track changes (accept, reject, and undo a decision), project chat and in-app notifications.
 - Roles per project: owner, editor, reviewer (suggestions only) and viewer.
 - Version history like git: automatic versions, versions saved with a message, and undoing one version's changes.
+- Git access: clone a project, work on it locally and push back (personal tokens; edits made in the browser meanwhile are merged).
 
 ### AI agent
 - Ask about LaTeX, your project or your writing, or let it fix compile errors. It drafts changes in a private copy, test-compiles them and shows a diff; you apply all or part of it.

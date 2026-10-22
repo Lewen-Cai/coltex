@@ -99,6 +99,7 @@ async function restore(file: string | undefined): Promise<void> {
     }
     const store = await createStore(config)
     const snapshots = new SnapshotService(config.historyDir, store)
+    const bridges = new SnapshotService(config.gitBridgeDir, store)
     for (const id of manifest.projects) {
       if (await exists(store, id)) throw new Error(`Project ${id} already has files in the storage; restore into an empty one`)
       const repo = path.join(config.historyDir, `${id}.git`)
@@ -135,8 +136,14 @@ async function restore(file: string | undefined): Promise<void> {
         await snapshots.restoreBundle(id, local)
         await fs.rm(local)
       }
-      // Older backups also hold a `git-bridge/` repository per project: ColTex no longer has one.
-      console.log(`  ${id}: ${files.size} files${zip.names.includes(bundle) ? ', history' : ''}`)
+      const bridge = `git-bridge/${id}.bundle`
+      if (zip.names.includes(bridge)) {
+        const local = path.join(work, `${id}.git-bridge.bundle`)
+        await zip.extract(bridge, local)
+        await bridges.restoreBundle(id, local)
+        await fs.rm(local)
+      }
+      console.log(`  ${id}: ${files.size} files${zip.names.includes(bundle) ? ', history' : ''}${zip.names.includes(bridge) ? ', Git bridge' : ''}`)
     }
 
     if (zip.names.includes('secret')) {

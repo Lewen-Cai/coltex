@@ -53,6 +53,20 @@ function contract(name: string, setup: () => Promise<{ store: ProjectStore; mirr
       await store.deleteProject(id)
     })
 
+    test('a rewrite of the same size still shows in the listing', async () => {
+      // Snapshots and the editor skip files whose listing entry is unchanged.
+      const id = newId()
+      await store.createProject(id, new Map([['main.tex', 'five']]))
+      const entry = async () => {
+        const f = (await store.listTree(id)).files[0]!
+        return [f.size, f.modifiedAt, f.version]
+      }
+      const first = await entry()
+      await store.writeFile(id, 'main.tex', 'FIVE')
+      assert.notDeepEqual(await entry(), first)
+      await store.deleteProject(id)
+    })
+
     test('writes files, with createOnly and clashes', async () => {
       const id = newId()
       await store.createProject(id, new Map([['main.tex', 'v1']]))

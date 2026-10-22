@@ -15,6 +15,7 @@ import { TailscaleClient } from '../src/network/tailscale.ts'
 import { BackupService } from '../src/backup/service.ts'
 import { ReferenceService } from '../src/references/service.ts'
 import { ZoteroClient } from '../src/references/zotero.ts'
+import { GitBridgeService } from '../src/gitbridge/service.ts'
 import { TemplateService } from '../src/projects/templates.ts'
 import { LinkedFileService } from '../src/projects/linked-files.ts'
 import { CompileCoalescer, buildProject } from '../src/routes/compile.ts'
@@ -90,6 +91,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     aiSessions.dropProject(id)
     history.dropProject(id)
     await snapshots.deleteProject(id)
+    await gitBridge.deleteProject(id)
     await fs.rm(path.join(outputsDir, id), { recursive: true, force: true })
     await queue.forget(id)
   })
@@ -161,7 +163,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   // Not started either; there is no pg_dump here, so the dump is a stand-in tests can replace.
   const dumps = { dump: async (file: string) => fs.writeFile(file, '-- test dump\n') }
   const backup = new BackupService(
-    { db, store, collab, snapshots, box },
+    { db, store, collab, snapshots, gitBridge: { bundle: (id, file) => gitBridge.bundle(id, file) }, box },
     {
       tmpDir: path.join(dataDir, 'cache', 'backup'),
       instanceSecret: 'test-secret',
@@ -188,6 +190,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     zotero: new ZoteroClient({ base: 'http://zotero.test', fetch: (url, init) => referenceFakes.zotero(url, init) }),
     fetchDoi: doi => referenceFakes.doi(doi),
   })
+  const gitBridge = new GitBridgeService({ db, store, collab, history, projects, dir: path.join(dataDir, 'git-bridge') })
   const builds = new CompileCoalescer()
   /** Tests replace this to serve linked-file URLs (the real fetcher refuses local addresses). */
   const linkedFakes = {
@@ -207,7 +210,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   })
   const accounts = new AccountService(db, auth, box)
   const app = await buildApp(
-    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
     { logger: false, handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
   )
   return {
@@ -222,6 +225,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     referenceFakes,
     linkedFakes,
     outputsDir,
+    gitBridge,
     dumps,
     store,
     snapshots,
