@@ -10,7 +10,7 @@ On Linux or macOS with Docker, one command:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-It checks Docker (on Linux it can install it), gets ColTex into `~/coltex`, writes the settings, builds and starts it, and prints the addresses to open on this machine and on your network. The first build downloads TeX Live. There are two editions:
+It checks Docker (on Linux it can install it), gets ColTex into `~/coltex`, writes the settings, downloads the prebuilt images (x86-64 and ARM64) and starts it, and prints the addresses to open on this machine and on your network. The first start downloads TeX Live. There are two editions:
 
 | Edition | Download | On disk (all of ColTex) | Free space to have |
 | --- | --- | --- | --- |
@@ -32,8 +32,8 @@ Then manage it with `coltex`:
 | Command | What it does |
 | --- | --- |
 | `coltex status` / `logs` | State / logs |
-| `coltex edition [standard\|full]` | Show or switch the TeX Live edition (rebuilds the compiler) |
-| `coltex update` | Pull the code and rebuild; data and settings stay |
+| `coltex edition [standard\|full]` | Show or switch the TeX Live edition (downloads the other compiler image) |
+| `coltex update` | Update to the latest release (downloads the new images); data and settings stay |
 | `coltex stop` / `start` | Stop / start |
 | `coltex tailscale up` | Join your tailnet (prints a sign-in link and QR code) |
 | `coltex cloudflare quick` | A temporary public Cloudflare address |

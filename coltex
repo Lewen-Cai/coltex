@@ -3,10 +3,13 @@
 #
 #   coltex start | stop | restart | status | logs [service] | version
 #   coltex update [VERSION]          to the latest release (or VERSION, e.g. v0.0.2, or main)
-#   coltex edition [standard | full]  show or switch the TeX Live edition (rebuilds the compiler)
+#   coltex edition [standard | full]  show or switch the TeX Live edition
 #   coltex tailscale [status | up | down | off]
 #   coltex cloudflare [status | quick | token [TOKEN] | off]
 #   coltex cli <command…>          any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
+#
+# The images come prebuilt from ghcr.io for the installed version (COLTEX_IMAGE_TAG in .env);
+# COLTEX_BUILD=1 in .env (install.sh --build) builds them from the sources here instead.
 set -euo pipefail
 
 self="${BASH_SOURCE[0]}"
@@ -23,7 +26,37 @@ current() {
   if git symbolic-ref -q HEAD >/dev/null; then echo "$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short HEAD)"
   else git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD; fi
 }
-port() { grep -E '^COLTEX_PORT=' .env 2>/dev/null | cut -d= -f2 || true; }
+# A setting in .env, or nothing when it isn't there.
+get() { grep -E "^$1=" .env 2>/dev/null | tail -1 | cut -d= -f2- || true; }
+# A setting in .env: replaced when there, added when not.
+setting() {
+  if grep -q "^$1=" .env 2>/dev/null; then sed -i.bak "s|^$1=.*|$1=$2|" .env && rm -f .env.bak; else echo "$1=$2" >>.env; fi
+}
+port() { get COLTEX_PORT; }
+# The images ColTex's own containers run now.
+running_images() {
+  local id
+  for id in $(compose ps -q server compiler 2>/dev/null); do docker inspect -f '{{.Image}}' "$id" 2>/dev/null || true; done
+}
+# Start the given services (default: all) on this version's images: pulled from ghcr.io, or
+# built here with COLTEX_BUILD=1 or when there are none for this version. Afterwards the
+# images the containers ran before are removed (TeX Live is several GB per version).
+deploy() {
+  local before after old
+  before="$(running_images)"
+  if [ "$(get COLTEX_BUILD)" = 1 ]; then
+    compose up -d --build "$@"
+  elif compose pull "$@"; then
+    compose up -d "$@"
+  else
+    echo "No prebuilt images for ColTex $(get COLTEX_IMAGE_TAG); building them from the sources (this takes a while)…"
+    compose up -d --build "$@"
+  fi
+  after=" $(running_images | tr '\n' ' ') "
+  for old in $before; do
+    case "$after" in *" $old "*) ;; *) docker image rm "$old" >/dev/null 2>&1 || true ;; esac
+  done
+}
 # `docker compose exec` with a terminal when there is one (the cloudflare token prompt needs it).
 exec_server() {
   if [ -t 0 ] && [ -t 1 ]; then compose exec server node src/cli.ts "$@"; else compose exec -T server node src/cli.ts "$@"; fi
@@ -57,20 +90,25 @@ case "${1:-help}" in
       git fetch --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
     fi
     echo "Updating ColTex $from → $(current); see the release notes: https://github.com/Lewen-Cai/coltex/releases"
-    compose up -d --build
+    setting COLTEX_IMAGE_TAG "$to"
+    deploy
+    ;;
+  deploy)
+    # Used by install.sh.
+    shift
+    deploy "$@"
     ;;
   edition)
-    current="$(grep -E '^COLTEX_EDITION=' .env 2>/dev/null | cut -d= -f2 || true)"
+    current="$(get COLTEX_EDITION)"
     current="${current:-standard}"
     case "${2:-}" in
       "") echo "TeX Live edition: $current (standard: without package manuals, about 9 GB; full: with them, about 20 GB)" ;;
       standard | full)
         if [ "$2" = "$current" ]; then echo "Already the $2 edition"; exit 0; fi
-        if grep -q '^COLTEX_EDITION=' .env; then sed -i.bak "s/^COLTEX_EDITION=.*/COLTEX_EDITION=$2/" .env && rm -f .env.bak
-        else echo "COLTEX_EDITION=$2" >>.env; fi
-        echo "Switching to the $2 edition: rebuilding the compiler (downloads TeX Live)…"
-        compose up -d --build compiler
-        echo "Done. The previous TeX Live image can be removed with: docker image prune"
+        setting COLTEX_EDITION "$2"
+        echo "Switching to the $2 edition (downloads TeX Live)…"
+        deploy compiler
+        echo "Done."
         ;;
       *) echo "Usage: coltex edition [standard | full]" >&2; exit 2 ;;
     esac

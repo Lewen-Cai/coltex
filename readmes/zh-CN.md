@@ -63,15 +63,15 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 <a id="install"></a>
 ## 安装
 
-需要一台装有 Docker 的 Linux 或 macOS 电脑（Linux 上安装脚本可以帮你装 Docker），至少 2 核 CPU、4 GB 内存。
+需要一台装有 Docker 的 Linux 或 macOS 电脑（Linux 上安装脚本可以帮你装 Docker），至少 2 核 CPU、4 GB 内存。镜像已为 x86-64 和 ARM64 预先构建好。
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-脚本会把最新版本下载到 `~/coltex`，生成配置，构建并启动 ColTex，最后打印访问地址。然后打开 `http://<服务器>:3690`，创建管理员账号。
+脚本会把最新版本下载到 `~/coltex`，生成配置，下载预构建的镜像并启动 ColTex，最后打印访问地址。然后打开 `http://<服务器>:3690`，创建管理员账号。
 
-第一次构建要下载 TeX Live，有两个版本可选：
+第一次启动要下载 TeX Live，有两个版本可选：
 
 | 版本 | 下载量 | 整个 ColTex 占用 | 建议预留空间 |
 | --- | --- | --- | --- |
@@ -91,6 +91,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--edition full` | 完整版 TeX Live |
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |
+| `--build` | 在本机从源码构建镜像，而不是下载预构建的镜像 |
 
 如果服务器能从公网访问，不要通过明文 `http://` 登录：请用 `--domain`、Tailscale 或 Cloudflare 隧道。
 

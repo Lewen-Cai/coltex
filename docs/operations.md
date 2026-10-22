@@ -97,7 +97,8 @@ hostnames). cloudflared forwards from loopback with `X-Forwarded-For` and
 clones the repository (`DEFAULT_REPO` at the top; `--repo` or `COLTEX_REPO`
 for a fork) into `~/coltex` or pulls it when
 already there, writes `.env` once (port, a random `POSTGRES_PASSWORD`,
-`COLTEX_UID/GID`, `TS_HOSTNAME`), builds and starts, waits for
+`COLTEX_UID/GID`, `TS_HOSTNAME`; `COLTEX_IMAGE_TAG` on every run), pulls the
+images and starts (`coltex deploy`), waits for
 `/api/health`, links `coltex` into `~/.local/bin`, and optionally runs
 `--domain HOST`: writes `COLTEX_DOMAIN`, `COLTEX_URL=https://HOST`,
 `TRUST_PROXY=uniquelocal`, `COMPOSE_PROFILES=proxy` (so every `docker compose`
@@ -105,6 +106,26 @@ and `coltex` command includes Caddy) and `COLTEX_BIND=127.0.0.1`; then it
 `coltex tailscale up` / `coltex cloudflare quick|token`. `coltex` wraps
 `docker compose` (start, stop, restart, status, logs, update) and the
 server's CLI (`tailscale`, `cloudflare`, `cli …`).
+
+### Prebuilt images
+
+`.github/workflows/images.yml` builds the server and the compiler (both
+editions) for linux/amd64 and linux/arm64, each on a native runner, and
+pushes them to ghcr.io on every push to `main` and every `v*` tag:
+
+| Image | Tags |
+| --- | --- |
+| `ghcr.io/lewen-cai/coltex-server` | `v0.0.2`, `latest`, `main` |
+| `ghcr.io/lewen-cai/coltex-compiler` | the same, with `-standard` or `-full` |
+
+`docker-compose.yml` names them from `.env`: `COLTEX_IMAGES` (the registry
+and owner, for a fork), `COLTEX_IMAGE_TAG` (written by `install.sh` and
+`coltex update` as the version they check out) and `COLTEX_EDITION`. Both
+services keep their `build:` sections: `coltex deploy` pulls, and builds
+from the checked-out sources when the pull fails (no images for that
+version) or when `.env` has `COLTEX_BUILD=1` (`install.sh --build`). After
+a deploy it removes the images the containers ran before. The packages must
+be public on GitHub (package settings → visibility), or pulls are refused.
 
 ## Storing project files in S3
 

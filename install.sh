@@ -17,7 +17,9 @@
 #   --tailscale             afterwards, put it on your tailnet (prints a sign-in link and QR code)
 #   --cloudflare-quick      afterwards, open a temporary trycloudflare.com address
 #   --cloudflare-token TOK  afterwards, connect a Cloudflare tunnel made in the dashboard
-#   --no-start              get the code and write the settings, but don't build or start
+#   --build                 build the images from the sources here instead of downloading
+#                           the prebuilt ones (kept for updates: COLTEX_BUILD=1 in .env)
+#   --no-start              get the code and write the settings, but don't download or start
 #
 # Run again to update to the latest release: settings and data stay.
 set -euo pipefail
@@ -34,6 +36,7 @@ REPO="$DEFAULT_REPO"
 TAILSCALE=0
 CF_QUICK=0
 CF_TOKEN=""
+BUILD=0
 START=1
 
 while [ $# -gt 0 ]; do
@@ -47,8 +50,9 @@ while [ $# -gt 0 ]; do
     --tailscale) TAILSCALE=1; shift ;;
     --cloudflare-quick) CF_QUICK=1; shift ;;
     --cloudflare-token) CF_TOKEN="$2"; shift 2 ;;
+    --build) BUILD=1; shift ;;
     --no-start) START=0; shift ;;
-    -h | --help) sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -136,6 +140,9 @@ setting() {
 }
 [ -n "$PORT" ] && setting COLTEX_PORT "$PORT"
 [ -n "$EDITION" ] && setting COLTEX_EDITION "$EDITION"
+# The images of the version just checked out (ghcr.io; see docker-compose.yml).
+setting COLTEX_IMAGE_TAG "$VERSION"
+[ "$BUILD" = 1 ] && setting COLTEX_BUILD 1
 if [ -n "$DOMAIN" ]; then
   # HTTPS through the bundled Caddy (compose profile "proxy", which every coltex command then
   # includes); links use the domain; the plain port only answers on this machine.
@@ -166,15 +173,15 @@ fi
 
 if [ "$START" = 0 ]; then
   docker compose config -q
-  say "Ready. Start it with: $CMD start   (the first build downloads TeX Live, several GB)"
+  say "Ready. Start it with: $CMD start   (the first start downloads TeX Live, several GB)"
   exit 0
 fi
 
-# ---- Build and start -------------------------------------------------------------
+# ---- Download (or build) and start --------------------------------------------------
 ED="$(get COLTEX_EDITION)"
 case "${ED:-standard}" in full) SIZE="about 7 GB to download, 20 GB on disk" ;; *) SIZE="about 3 GB to download, 9 GB on disk" ;; esac
-say "Building and starting, ${ED:-standard} edition (the first time downloads TeX Live: $SIZE; this can take a while)"
-docker compose up -d --build
+say "Starting ColTex $VERSION, ${ED:-standard} edition (the first time downloads TeX Live: $SIZE; this can take a while)"
+"$DIR/coltex" deploy
 
 say "Waiting for ColTex to answer on port $PORT"
 for _ in $(seq 1 180); do

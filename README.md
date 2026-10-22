@@ -63,15 +63,15 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 <a id="install"></a>
 ## Install
 
-You need a Linux or macOS machine with Docker (on Linux the installer can set it up), at least 2 CPU cores and 4 GB of memory.
+You need a Linux or macOS machine with Docker (on Linux the installer can set it up), at least 2 CPU cores and 4 GB of memory. The images are prebuilt for x86-64 and ARM64.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-It gets the latest release into `~/coltex`, writes the settings, builds and starts ColTex, and prints the addresses to open. Then open `http://<server>:3690` and create the administrator account.
+It gets the latest release into `~/coltex`, writes the settings, downloads the prebuilt images and starts ColTex, and prints the addresses to open. Then open `http://<server>:3690` and create the administrator account.
 
-The first build downloads TeX Live. Choose an edition:
+The first start downloads TeX Live. Choose an edition:
 
 | Edition | Download | Disk (all of ColTex) | Free space to have |
 | --- | --- | --- | --- |
@@ -91,6 +91,7 @@ Options (add after `bash -s --`):
 | `--edition full` | The full TeX Live edition |
 | `--port 3690` | Another port |
 | `--version v0.0.1` | A specific release (`main` for the development branch) |
+| `--build` | Build the images from the sources on this machine instead of downloading them |
 
 On a server reachable from the internet, don't sign in over plain `http://`: use `--domain`, Tailscale or a Cloudflare tunnel.
 

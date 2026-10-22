@@ -1,6 +1,10 @@
 # ColTex — full stack.
-#   Production:   docker compose up -d --build
-#   With HTTPS:   COLTEX_DOMAIN=tex.example.org docker compose --profile proxy up -d --build
+#   Production:   docker compose pull && docker compose up -d   (prebuilt images, see below)
+#   From source:  docker compose up -d --build
+#   With HTTPS:   COLTEX_DOMAIN=tex.example.org docker compose --profile proxy up -d
+# ColTex's images come from ghcr.io (.github/workflows/images.yml): COLTEX_IMAGE_TAG is the
+# release (v0.0.2, latest) or main; install.sh and `coltex update` set it to the version
+# they check out. Without a published image for it, compose builds from these sources.
 #   Development:  pnpm infra:up   (only valkey + compiler; server/web run on the host)
 name: coltex
 
@@ -35,6 +39,7 @@ services:
       - "127.0.0.1:5432:5432"
 
   compiler:
+    image: ${COLTEX_IMAGES:-ghcr.io/lewen-cai}/coltex-compiler:${COLTEX_IMAGE_TAG:-latest}-${COLTEX_EDITION:-standard}
     build:
       context: .
       dockerfile: services/compiler/Dockerfile
@@ -64,6 +69,7 @@ services:
     depends_on: [valkey]
 
   server:
+    image: ${COLTEX_IMAGES:-ghcr.io/lewen-cai}/coltex-server:${COLTEX_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/server/Dockerfile

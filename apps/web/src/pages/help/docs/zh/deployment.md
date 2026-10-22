@@ -10,7 +10,7 @@ ColTex 正式部署只用一个端口（默认 3690）：网页、接口、实�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-它会检查 Docker（Linux 上没有的话可以帮你装）、把 ColTex 下载到 `~/coltex`、生成配置、构建并启动，最后打印本机和局域网的访问地址。第一次构建要下载 TeX Live，有两个版本：
+它会检查 Docker（Linux 上没有的话可以帮你装）、把 ColTex 下载到 `~/coltex`、生成配置、下载预构建的镜像（x86-64 和 ARM64）并启动，最后打印本机和局域网的访问地址。第一次启动要下载 TeX Live，有两个版本：
 
 | 版本 | 下载量 | 安装后整个 ColTex 占用 | 建议预留空间 |
 | --- | --- | --- | --- |
@@ -32,8 +32,8 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | 命令 | 作用 |
 | --- | --- |
 | `coltex status` / `logs` | 查看状态 / 日志 |
-| `coltex edition [standard\|full]` | 查看或切换 TeX Live 版本（会重新构建编译容器） |
-| `coltex update` | 更新代码并重新构建，数据和设置保留 |
+| `coltex edition [standard\|full]` | 查看或切换 TeX Live 版本（会下载另一个编译镜像） |
+| `coltex update` | 更新到最新版本（下载新镜像），数据和设置保留 |
 | `coltex stop` / `start` | 停止 / 启动 |
 | `coltex tailscale up` | 接入 Tailnet（打印登录链接和二维码） |
 | `coltex cloudflare quick` | 打开一个临时的 Cloudflare 公网地址 |
