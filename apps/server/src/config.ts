@@ -90,8 +90,13 @@ const version =
   process.env.COLTEX_VERSION?.trim() ||
   (JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version
 
+/** The language chosen when installing (install.sh), for the setup page. */
+const lang = process.env.COLTEX_LANG
+const installLanguage: 'en' | 'zh' | null = lang === 'zh' || lang === 'en' ? lang : null
+
 export const config = {
   version,
+  installLanguage,
   port,
   host: process.env.HOST ?? '0.0.0.0',
   /** better-auth's base URL: COLTEX_URL, else this server on localhost. */

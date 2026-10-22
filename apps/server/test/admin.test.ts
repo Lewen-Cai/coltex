@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { MonitorHistory as History, ResourceSample } from '@coltex/shared'
@@ -58,7 +59,8 @@ describe('admin overview', () => {
     assert.ok(s.disk.total > 0)
     assert.equal(s.compiles.total, 0)
     assert.equal(s.live, null, 'nothing sampled yet')
-    assert.equal(s.server.version, '0.0.1')
+    // The release is the server package's version.
+    assert.equal(s.server.version, JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version)
   })
 
   test('the history keeps earlier server processes, shows gaps, and counts builds', async () => {

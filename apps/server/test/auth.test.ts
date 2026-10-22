@@ -22,7 +22,7 @@ describe('accounts and project permissions', () => {
   })
 
   test('first-run setup creates an admin exactly once', async () => {
-    assert.deepEqual((await t.app.inject({ url: '/api/setup' })).json(), { needsSetup: true })
+    assert.deepEqual((await t.app.inject({ url: '/api/setup' })).json(), { needsSetup: true, language: null })
     for (const weak of ['Short-1', 'no-uppercase-1', 'NO-LOWERCASE-1', 'No-digits-here']) {
       const res = await t.app.inject({ method: 'POST', url: '/api/setup', payload: { name: 'Admin', email: 'admin@lab.test', password: weak } })
       assert.equal(res.statusCode, 400, weak)

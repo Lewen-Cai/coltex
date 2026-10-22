@@ -33,6 +33,8 @@ setting() {
   if grep -q "^$1=" .env 2>/dev/null; then sed -i.bak "s|^$1=.*|$1=$2|" .env && rm -f .env.bak; else echo "$1=$2" >>.env; fi
 }
 port() { get COLTEX_PORT; }
+# A message in the language chosen at install (COLTEX_LANG), with a newline: T "English" "中文".
+T() { if [ "$(get COLTEX_LANG)" = zh ]; then echo "$2"; else echo "$1"; fi; }
 # The images ColTex's own containers run now.
 running_images() {
   local id
@@ -49,7 +51,7 @@ deploy() {
   elif compose pull "$@"; then
     compose up -d "$@"
   else
-    echo "No prebuilt images for ColTex $(get COLTEX_IMAGE_TAG); building them from the sources (this takes a while)…"
+    T "No prebuilt images for ColTex $(get COLTEX_IMAGE_TAG); building them from the sources (this takes a while)…" "ColTex $(get COLTEX_IMAGE_TAG) 没有预构建的镜像，改为从源码构建（需要一段时间）…"
     compose up -d --build "$@"
   fi
   after=" $(running_images | tr '\n' ' ') "
@@ -69,7 +71,8 @@ case "${1:-help}" in
   status)
     compose ps
     p="$(port)"; p="${p:-3690}"
-    if curl -fsS "http://localhost:$p/api/health" >/dev/null 2>&1; then echo "ColTex is up: http://localhost:$p"; else echo "ColTex is not answering on port $p"; fi
+    if curl -fsS "http://localhost:$p/api/health" >/dev/null 2>&1; then T "ColTex is up: http://localhost:$p" "ColTex 正在运行：http://localhost:$p"
+    else T "ColTex is not answering on port $p" "ColTex 没有在端口 $p 上响应"; fi
     ;;
   logs) compose logs -f --tail 100 "${2:-server}" ;;
   version)
@@ -82,14 +85,14 @@ case "${1:-help}" in
       # On the main branch (installed with --version main) updates follow main; otherwise releases.
       if git symbolic-ref -q HEAD >/dev/null; then to=main; else to="$(git ls-remote --tags --refs origin 'v*' | sed 's|.*refs/tags/||' | sort -V | tail -1)"; fi
     fi
-    [ -n "$to" ] || { echo "No release found" >&2; exit 1; }
+    [ -n "$to" ] || { T "No release found" "没有找到发布版本" >&2; exit 1; }
     if [ "$to" = main ]; then
       git fetch --depth 1 origin main && git checkout -q -B main FETCH_HEAD
     else
-      if [ "$to" = "$from" ]; then echo "ColTex $from is the latest release"; exit 0; fi
+      if [ "$to" = "$from" ]; then T "ColTex $from is the latest release" "ColTex $from 已经是最新版本"; exit 0; fi
       git fetch --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
     fi
-    echo "Updating ColTex $from → $(current); see the release notes: https://github.com/Lewen-Cai/coltex/releases"
+    T "Updating ColTex $from → $(current); see the release notes: https://github.com/Lewen-Cai/coltex/releases" "正在把 ColTex 从 $from 更新到 $(current)；更新说明：https://github.com/Lewen-Cai/coltex/releases"
     setting COLTEX_IMAGE_TAG "$to"
     deploy
     ;;
@@ -102,15 +105,15 @@ case "${1:-help}" in
     current="$(get COLTEX_EDITION)"
     current="${current:-standard}"
     case "${2:-}" in
-      "") echo "TeX Live edition: $current (standard: without package manuals, about 9 GB; full: with them, about 20 GB)" ;;
+      "") T "TeX Live edition: $current (standard: without package manuals, about 9 GB; full: with them, about 20 GB)" "TeX Live 版本：${current}（standard 标准版：不含宏包手册，约 9 GB；full 完整版：含手册，约 20 GB）" ;;
       standard | full)
-        if [ "$2" = "$current" ]; then echo "Already the $2 edition"; exit 0; fi
+        if [ "$2" = "$current" ]; then T "Already the $2 edition" "已经是 $2 版本"; exit 0; fi
         setting COLTEX_EDITION "$2"
-        echo "Switching to the $2 edition (downloads TeX Live)…"
+        T "Switching to the $2 edition (downloads TeX Live)…" "正在切换到 $2 版本（会下载 TeX Live）…"
         deploy compiler
-        echo "Done."
+        T "Done." "完成。"
         ;;
-      *) echo "Usage: coltex edition [standard | full]" >&2; exit 2 ;;
+      *) T "Usage: coltex edition [standard | full]" "用法：coltex edition [standard | full]" >&2; exit 2 ;;
     esac
     ;;
   tailscale | cloudflare)
@@ -123,6 +126,19 @@ case "${1:-help}" in
     exec_server "$@"
     ;;
   *)
-    sed -n '2,10p' "$self" | sed 's/^# \{0,1\}//'
+    if [ "$(get COLTEX_LANG)" = zh ]; then
+      cat <<'HELP'
+本机上的 ColTex。可以在任何目录运行（install.sh 会把它链接到 ~/.local/bin）：
+
+  coltex start | stop | restart | status | logs [服务] | version
+  coltex update [版本]               更新到最新版本（或指定版本，如 v0.0.2，或 main）
+  coltex edition [standard | full]  查看或切换 TeX Live 版本
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [令牌] | off]
+  coltex cli <命令…>                 服务器的命令行，例如 `coltex cli system-admin <邮箱>`
+HELP
+    else
+      sed -n '2,10p' "$self" | sed 's/^# \{0,1\}//'
+    fi
     ;;
 esac

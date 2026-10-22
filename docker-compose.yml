@@ -95,6 +95,8 @@ services:
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
       S3_PREFIX: ${S3_PREFIX:-}
       S3_PATH_STYLE: ${S3_PATH_STYLE:-}
+      # The language install.sh was run in: the setup page starts in it.
+      COLTEX_LANG: ${COLTEX_LANG:-}
       # The built-in Tailscale's device name (Settings → Network).
       TS_HOSTNAME: ${TS_HOSTNAME:-coltex}
     volumes:

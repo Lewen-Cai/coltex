@@ -53,6 +53,7 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - Providers: API keys (Anthropic, OpenAI, DeepSeek, Google, OpenRouter and more), subscription sign-in (Claude Pro/Max, ChatGPT, GitHub Copilot and more), or your own OpenAI-compatible server (Ollama, vLLM, LM Studio).
 - Automatic model choice (a light or a strong model per message), access per group of people, usage per person, and usage limits per day, week or month.
 - Saved chats per project, the context window shown as you go, and `/compact` to summarise a long chat.
+- Skills: your own and the project's instructions (Agent Skills format) the agent follows, used with `/name`; write them yourself, import them, or create them with the AI in Settings.
 - Your own agent (Claude Code, Codex, Cursor…) over MCP: each project is an MCP server. You choose per project whether its edits become your suggestions, apply directly, or may also delete and move files.
 
 ### Projects and administration
@@ -70,7 +71,7 @@ You need a Linux or macOS machine with Docker (on Linux the installer can set it
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-It gets the latest release into `~/coltex`, writes the settings, downloads the prebuilt images and starts ColTex, and prints the addresses to open. Then open `http://<server>:3690` and create the administrator account.
+It asks for the language, the TeX Live edition and how people will reach ColTex (arrow keys), gets the latest release into `~/coltex`, downloads the prebuilt images with a progress bar, starts ColTex, and prints the addresses to open. The full output goes to `~/coltex/install.log`. Then open `http://<server>:3690` and create the administrator account.
 
 The first start downloads TeX Live. Choose an edition:
 
@@ -81,7 +82,7 @@ The first start downloads TeX Live. Choose an edition:
 
 Both compile the same documents. The full edition also has the package manuals, which the AI agent can then read.
 
-Options (add after `bash -s --`):
+Options answer the questions, or replace them where there is no terminal (add them after `bash -s --`):
 
 | Option | |
 | --- | --- |
@@ -90,6 +91,8 @@ Options (add after `bash -s --`):
 | `--cloudflare-token TOKEN` | Connect a Cloudflare tunnel you created for your own domain |
 | `--cloudflare-quick` | A temporary public `trycloudflare.com` address, for trying it out |
 | `--edition full` | The full TeX Live edition |
+| `--local` | Only this machine and its network |
+| `--lang zh` | Chinese for the installer, `coltex` and the setup page (`en` for English) |
 | `--port 3690` | Another port |
 | `--version v0.0.1` | A specific release (`main` for the development branch) |
 | `--build` | Build the images from the sources on this machine instead of downloading them |

@@ -10,7 +10,7 @@ On Linux or macOS with Docker, one command:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-It checks Docker (on Linux it can install it), gets ColTex into `~/coltex`, writes the settings, downloads the prebuilt images (x86-64 and ARM64) and starts it, and prints the addresses to open on this machine and on your network. The first start downloads TeX Live. There are two editions:
+It asks for the language, the edition and how people will reach ColTex (arrow keys; options such as `--edition`, `--domain` or `--lang` answer them instead), checks Docker (on Linux it can install it), gets ColTex into `~/coltex`, writes the settings, downloads the prebuilt images (x86-64 and ARM64) and starts it, and prints the addresses to open on this machine and on your network. The first start downloads TeX Live. There are two editions:
 
 | Edition | Download | On disk (all of ColTex) | Free space to have |
 | --- | --- | --- | --- |

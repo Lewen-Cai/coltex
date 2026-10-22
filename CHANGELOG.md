@@ -2,6 +2,33 @@
 
 All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTex is at 0.0.x, any release may change things.
 
+## v0.0.2
+
+Prebuilt images, your own AI agents over MCP, skills for the built-in AI agent, literature search, AI usage limits and a new installer.
+
+### Upgrade
+
+Run `coltex update`. Coming from v0.0.1, this first update still builds the images on your machine (the v0.0.1 `coltex` doesn't know about prebuilt images); every later one downloads them. To download right away instead, run the install command again: settings and data stay.
+
+### New
+
+**Install and update**
+- Prebuilt images on ghcr.io for x86-64 and ARM64: installs and updates download them instead of building (`--build` still builds from source). The previous version's images are removed after an update.
+- A new installer: it asks for the language, the TeX Live edition and how people will reach ColTex (arrow keys), shows each step with a progress line and the download with a bar, and keeps the full output in `install.log`. `--lang zh` sets Chinese for the installer, `coltex` and the setup page; `--local` skips the access question.
+
+**AI**
+- Every project is an MCP server for your own agents (Claude Code, Codex, Cursor, …), signed in with a personal token: they read and search files, edit, compile and read the log, see the history, and read, add and answer comments. You choose per project what they may change: **Manual** (their edits become your suggestions, word by word, for review), **Auto** (applied directly) or **Full access** (also delete, move and rename files).
+- Skills: instructions in the Agent Skills format that the AI agent follows, personal or per project, used with `/name` and imported from folders or files. Settings → AI skills lists them and has a skills chat that helps you write one (built on the skill-creator skill).
+- Usage limits per AI group: tokens and/or cost per person per day, week or month. Members see their usage under the message box.
+
+**Writing**
+- References: search Crossref and arXiv by title, authors or keywords and add a paper to a `.bib` file in one click (pasting a DOI or arXiv id still adds it directly).
+- Git: clone, pull and push projects with git, using personal tokens (Settings → Sync services, together with Zotero).
+- The spelling dictionary is in the editor's settings: find or add words, letter headings and an index, import and export; changes reach open editors at once.
+
+### Fixed
+- With S3 storage, a file rewritten with the same size could be missed by the history, so undoing a version could work on stale text.
+
 ## v0.0.1
 
 The first public release of ColTex, a self-hosted collaborative LaTeX editor with a built-in AI agent. It is an early version: please [open an issue](https://github.com/Lewen-Cai/coltex/issues) for anything that breaks or is hard to use.

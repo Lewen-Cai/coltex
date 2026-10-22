@@ -42,6 +42,15 @@ function applyToDocument() {
 }
 applyToDocument()
 
+/** Whether this browser has a language of its own choosing (else it follows the browser's). */
+export function hasSavedLocale(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) !== null
+  } catch {
+    return false
+  }
+}
+
 export function getLocale(): Locale {
   return current
 }
