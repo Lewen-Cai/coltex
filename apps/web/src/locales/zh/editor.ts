@@ -549,6 +549,21 @@ const messages: Record<string, string> = {
   'As a reviewer, your agents can only suggest changes.': '你是审阅者，你的 AI 智能体只能提出修订建议。',
   'As a viewer, your agents can only read and comment.': '你是查看者，你的 AI 智能体只能阅读和评论。',
   'Edited by an AI agent (MCP)': 'AI 智能体通过 MCP 修改',
+  // AI usage limits
+  'Per day': '每天',
+  'Per week': '每周',
+  'Per month': '每月',
+  'This week': '本周',
+  'This month': '本月',
+  '{n} tokens': '{n} tokens',
+  '{amount} a day': '每天 {amount}',
+  '{amount} a week': '每周 {amount}',
+  '{amount} a month': '每月 {amount}',
+  'You have reached your AI usage limit. It resets on {date}.': '你已用完本期的 AI 用量，{date}重置。',
+  'AI usage': 'AI 用量',
+  '{used} of {limit} tokens': '已用 {used} / {limit} tokens',
+  '{used} of {limit}': '已用 {used} / {limit}',
+  'Resets on {date}': '{date}重置',
 }
 
 export default messages

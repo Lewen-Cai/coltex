@@ -254,6 +254,8 @@ export const aiGroups = pgTable('ai_groups', {
   name: text('name').notNull(),
   /** An `AiAccessPolicy`, validated by `AiService`. */
   policy: jsonb('policy').notNull(),
+  /** `AiUsageLimits` for each member. */
+  limits: jsonb('limits').notNull().default({ period: 'month', tokens: null, cost: null }),
   createdAt: timestamps.createdAt,
   updatedAt: timestamps.updatedAt,
 })

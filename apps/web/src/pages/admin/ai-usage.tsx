@@ -3,7 +3,7 @@ import { motion } from 'motion/react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import { ArrowDownToLine, ArrowUpFromLine, ChevronRight, CircleDollarSign, Coins, MessageSquare, Pencil, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { AiAccessPolicy, AiGroup, AiModelInfo, AiProviderStatus, AiUsageReport, AiUserRow } from '@coltex/shared'
+import type { AiAccessPolicy, AiGroup, AiModelInfo, AiUsageLimits, AiProviderStatus, AiUsageReport, AiUserRow } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
 import { ProviderIcon } from '@/components/provider-icon'
 import { PageHeader } from '@/components/shell/app-shell'
@@ -28,6 +28,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { UserAvatar } from '@/components/user-avatar'
 import { api } from '@/lib/api'
+import { PERIOD_LABEL, limitSummary } from '@/lib/ai-limits'
 import { formatNumber, timeAgo } from '@/lib/format'
 import { intlLocale, plural, t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -255,18 +256,28 @@ function GroupDialog({
 }) {
   const [name, setName] = useState('')
   const [policy, setPolicy] = useState<AiAccessPolicy>({ mode: 'all', providers: [], models: [] })
+  const [period, setPeriod] = useState<AiUsageLimits['period']>('month')
+  const [tokenLimit, setTokenLimit] = useState('')
+  const [costLimit, setCostLimit] = useState('')
   const [saving, setSaving] = useState(false)
   useEffect(() => {
     if (!open) return
     setName(group?.name ?? '')
     setPolicy(group?.policy ?? { mode: 'all', providers: [], models: [] })
+    setPeriod(group?.limits.period ?? 'month')
+    setTokenLimit(group?.limits.tokens != null ? String(group.limits.tokens) : '')
+    setCostLimit(group?.limits.cost != null ? String(group.limits.cost) : '')
   }, [open, group])
+  // Empty means no limit.
+  const tokens = tokenLimit.trim() === '' ? null : Number(tokenLimit)
+  const cost = costLimit.trim() === '' ? null : Number(costLimit)
+  const invalid = (tokens !== null && !(Number.isInteger(tokens) && tokens >= 1)) || (cost !== null && !(cost >= 0.01))
 
   const save = async (e: FormEvent) => {
     e.preventDefault()
     setSaving(true)
     try {
-      const body = { name: name.trim(), policy }
+      const body = { name: name.trim(), policy, limits: { period, tokens, cost } }
       if (group) await api.aiUpdateGroup(group.id, body)
       else await api.aiCreateGroup(body)
       toast.success(group ? t('Group updated') : t('Group created'))
@@ -293,11 +304,56 @@ function GroupDialog({
             <FieldLabel>{t('Model access')}</FieldLabel>
             <AccessEditor value={policy} onChange={setPolicy} models={models} providerName={providerName} />
           </Field>
+          <Field>
+            <FieldLabel htmlFor="ai-group-tokens">{t('Usage limit for each member')}</FieldLabel>
+            <div className="grid gap-2 sm:grid-cols-[9rem_1fr_1fr]">
+              <Select value={period} onValueChange={v => setPeriod(v as AiUsageLimits['period'])}>
+                <SelectTrigger className="w-full" aria-label={t('Period')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(['day', 'week', 'month'] as const).map(p => (
+                    <SelectItem key={p} value={p}>
+                      {t(PERIOD_LABEL[p])}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <InputGroup>
+                <InputGroupInput
+                  id="ai-group-tokens"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  value={tokenLimit}
+                  onChange={e => setTokenLimit(e.target.value)}
+                  placeholder={t('No limit')}
+                  aria-label={t('Tokens')}
+                />
+                <InputGroupAddon align="inline-end">{t('tokens')}</InputGroupAddon>
+              </InputGroup>
+              <InputGroup>
+                <InputGroupAddon>$</InputGroupAddon>
+                <InputGroupInput
+                  type="number"
+                  min={0.01}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={costLimit}
+                  onChange={e => setCostLimit(e.target.value)}
+                  placeholder={t('No limit')}
+                  aria-label={t('Cost (US$)')}
+                />
+              </InputGroup>
+            </div>
+            {invalid && <p className="text-xs text-destructive">{t('Tokens are a whole number of at least 1, the cost at least $0.01.')}</p>}
+          </Field>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               {t('Cancel')}
             </Button>
-            <Button type="submit" disabled={saving || !name.trim()}>
+            <Button type="submit" disabled={saving || !name.trim() || invalid}>
               {saving && <Spinner />} {t('Save')}
             </Button>
           </DialogFooter>
@@ -371,7 +427,7 @@ function UserSheet({
                       <SelectItem value={NO_GROUP}>{t('None (no AI agent)')}</SelectItem>
                       {groups.map(g => (
                         <SelectItem key={g.id} value={g.id}>
-                          {g.name} · {policySummary(g.policy)}
+                          {[g.name, policySummary(g.policy), limitSummary(g.limits)].filter(Boolean).join(' · ')}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -460,7 +516,7 @@ function GroupsCard({
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{g.name}</div>
                 <div className="truncate text-xs text-muted-foreground">
-                  {policySummary(g.policy)} · {plural(g.members, '{n} member', '{n} members')}
+                  {[policySummary(g.policy), limitSummary(g.limits), plural(g.members, '{n} member', '{n} members')].filter(Boolean).join(' · ')}
                 </div>
               </div>
               <Button variant="ghost" size="icon-sm" onClick={() => setEditing({ group: g })} aria-label={t('Edit group')}>

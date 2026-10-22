@@ -211,6 +211,13 @@
       "when": 1792679285429,
       "tag": "0029_mcp_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792680189645,
+      "tag": "0030_ai_group_limits",
+      "breakpoints": true
     }
   ]
 }

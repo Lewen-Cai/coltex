@@ -21,6 +21,7 @@ import type {
   AiGroupBody,
   AiPreference,
   AiStatus,
+  AiAllowance,
   AiUsageReport,
   AiUserRow,
   CodePosition,
@@ -329,6 +330,7 @@ export const api = {
 
   // ---- AI assistant ----
   aiStatus: () => request<AiStatus>('/api/ai/status'),
+  aiAllowance: () => request<AiAllowance | null>('/api/ai/allowance'),
   aiSetPreference: (pick: AiPreference) => request<AiStatus>('/api/ai/preference', json('PUT', pick)),
   aiSession: (id: string) => request<AiSessionState>(`/api/projects/${id}/ai/session`),
   aiEventsUrl: (id: string) => `/api/projects/${id}/ai/session/events`,

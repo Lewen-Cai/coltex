@@ -776,10 +776,36 @@ export type AiAccessPolicy = z.infer<typeof AiAccessPolicy>
  * A group of people with the same AI access. Everyone outside a group (other
  * than admins, who have every model) can't use the assistant.
  */
-export const AiGroup = z.object({ id: z.string(), name: z.string(), policy: AiAccessPolicy, members: z.number() })
+/**
+ * How much each member of an AI group may use per day, week or month
+ * (calendar periods in the server's time zone): tokens (input, cached and
+ * output together) and/or cost in US dollars. Null: no limit.
+ */
+export const AiUsageLimits = z.object({
+  period: z.enum(['day', 'week', 'month']).default('month'),
+  tokens: z.number().int().min(1).max(1e12).nullable().default(null),
+  cost: z.number().min(0.01).max(1e6).nullable().default(null),
+})
+export type AiUsageLimits = z.infer<typeof AiUsageLimits>
+export const NO_AI_LIMITS: AiUsageLimits = { period: 'month', tokens: null, cost: null }
+
+export const AiGroup = z.object({ id: z.string(), name: z.string(), policy: AiAccessPolicy, limits: AiUsageLimits, members: z.number() })
 export type AiGroup = z.infer<typeof AiGroup>
 
-export const AiGroupBody = z.object({ name: z.string().trim().min(1).max(60), policy: AiAccessPolicy })
+/** What someone has used of their group's limits this period. */
+export const AiAllowance = z.object({
+  period: AiUsageLimits.shape.period,
+  tokens: z.number().nullable(),
+  cost: z.number().nullable(),
+  usedTokens: z.number(),
+  usedCost: z.number(),
+  /** When the next period starts. */
+  resetsAt: z.string(),
+  exceeded: z.boolean(),
+})
+export type AiAllowance = z.infer<typeof AiAllowance>
+
+export const AiGroupBody = z.object({ name: z.string().trim().min(1).max(60), policy: AiAccessPolicy, limits: AiUsageLimits.default(NO_AI_LIMITS) })
 export type AiGroupBody = z.infer<typeof AiGroupBody>
 
 /**

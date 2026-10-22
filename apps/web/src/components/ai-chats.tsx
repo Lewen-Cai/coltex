@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { compactTokens } from '../lib/ai-limits.ts'
 import { MessageSquare, Pencil, Trash2 } from 'lucide-react'
 import type { AiConversation } from '@coltex/shared'
 import { confirmDialog } from './confirm.tsx'
@@ -13,11 +14,7 @@ import { plural, t } from '../lib/i18n.ts'
 import { cn } from '../lib/utils.ts'
 
 /** 12.3k, 200k, 1M: token counts, the same in every language. */
-export function tokens(n: number): string {
-  if (n < 1000) return String(n)
-  if (n < 1_000_000) return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0).replace(/\.0$/, '')}k`
-  return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
-}
+export const tokens = compactTokens
 
 /** How much of the model's context the conversation takes: a ring and the numbers. */
 export function ContextMeter({ used, window }: { used: number | null; window: number | null }) {

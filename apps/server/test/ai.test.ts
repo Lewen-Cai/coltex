@@ -5,6 +5,7 @@ import { fauxAssistantMessage, fauxProvider, fauxText, fauxToolCall, type FauxPr
 import type { AiSessionState, AiStreamEvent, CompileJob, CompileResult } from '@coltex/shared'
 import { DbCredentialStore, SecretBox } from '../src/ai/credentials.ts'
 import { aiCredentials, aiUsage } from '../src/db/schema.ts'
+import { usagePeriod } from '../src/ai/service.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -508,6 +509,62 @@ describe('AI agent', () => {
     assert.equal(s.changes.files.length, 0)
     assert.equal((await api('POST', `/projects/${projectId}/ai/session/apply`, viewer, { files: [{ path: 'main.tex', content: 'x' }] })).statusCode, 403)
     assert.equal((await api('POST', `/projects/${projectId}/ai/session/undo`, viewer)).statusCode, 403)
+  })
+
+  test('AI groups limit what each member uses per period', async () => {
+    const users = (await api('GET', '/admin/ai/users?days=30', admin)).json()
+    const viewerId = users.find((u: { email: string }) => u.email === 'viewer@lab.test').userId
+    const policy = { mode: 'all', providers: [], models: [] }
+    assert.equal((await api('GET', '/ai/allowance', viewer)).json(), null, 'no limits, nothing to show')
+
+    // Usage so far (earlier tests), read with limits nobody reaches.
+    await api('PUT', `/admin/ai/groups/${everyone}`, admin, { name: 'Everyone', policy, limits: { period: 'month', tokens: 1e9, cost: 1e5 } })
+    try {
+      const baseline = (await api('GET', '/ai/allowance', viewer)).json()
+      const limits = { period: 'month', tokens: baseline.usedTokens + 10_000, cost: baseline.usedCost + 2 }
+      const limited = await api('PUT', `/admin/ai/groups/${everyone}`, admin, { name: 'Everyone', policy, limits })
+      assert.equal(limited.statusCode, 200, limited.body)
+      assert.deepEqual(limited.json().limits, limits)
+      const usage = (input: number, output: number, cost: number) => ({
+        input,
+        output,
+        cacheRead: 0,
+        cacheWrite: 0,
+        totalTokens: input + output,
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: cost },
+      })
+      await t.ai.recordUsage({ userId: viewerId, projectId: null, provider: 'faux', model: 'faux-1', usage: usage(6000, 3000, 0.5) })
+      const before = (await api('GET', '/ai/allowance', viewer)).json()
+      assert.equal(before.exceeded, false)
+      assert.equal(before.usedTokens, baseline.usedTokens + 9000)
+      assert.ok(new Date(before.resetsAt) > new Date())
+
+      // Crossing the cost limit stops the next message, with when it resets.
+      await t.ai.recordUsage({ userId: viewerId, projectId: null, provider: 'faux', model: 'faux-1', usage: usage(10, 10, 1.6) })
+      assert.equal((await api('GET', '/ai/allowance', viewer)).json().exceeded, true)
+      const refused = await api('POST', `/projects/${projectId}/ai/session/messages`, viewer, { text: 'One more question' })
+      assert.equal(refused.statusCode, 403)
+      assert.match(refused.json().error, /reached your AI usage limit for this month\. It resets on \d{4}-\d{2}-\d{2}/)
+      // Admins have no limits.
+      assert.equal((await api('GET', '/ai/allowance', admin)).json(), null)
+    } finally {
+      await api('PUT', `/admin/ai/groups/${everyone}`, admin, { name: 'Everyone', policy })
+    }
+    assert.equal((await api('GET', '/ai/allowance', viewer)).json(), null)
+    assert.equal((await api('PUT', `/admin/ai/groups/${everyone}`, admin, { name: 'Everyone', policy, limits: { period: 'year', tokens: 1 } })).statusCode, 400)
+  })
+
+  test('usage periods are calendar days, weeks from Monday and months', () => {
+    const at = new Date(2026, 9, 22, 15, 30) // Thursday 22 October 2026
+    const day = usagePeriod('day', at)
+    assert.deepEqual([day.start, day.end], [new Date(2026, 9, 22), new Date(2026, 9, 23)])
+    const week = usagePeriod('week', at)
+    assert.deepEqual([week.start, week.end], [new Date(2026, 9, 19), new Date(2026, 9, 26)])
+    const sunday = usagePeriod('week', new Date(2026, 9, 25, 23))
+    assert.deepEqual(sunday.start, new Date(2026, 9, 19))
+    const month = usagePeriod('month', at)
+    assert.deepEqual([month.start, month.end], [new Date(2026, 9, 1), new Date(2026, 10, 1)])
+    assert.deepEqual(usagePeriod('month', new Date(2026, 11, 31)).end, new Date(2027, 0, 1))
   })
 
   test('auto routing asks the judge, and short follow-ups keep the tier', async () => {

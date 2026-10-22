@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { ArrowUp, BookOpen, Loader2, PenLine, Sparkles, Square, SquarePen, Wand2 } from 'lucide-react'
 import { aiPick, useAiStatus, useSkillChat } from '@/lib/ai'
+import { useAiAllowance } from '@/lib/ai-limits'
 import { t } from '@/lib/i18n'
 import { Item, ModelPicker, SessionStatus } from '@/components/AiPanel'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
   const scroller = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLTextAreaElement>(null)
   const running = state?.running ?? false
+  const allowance = useAiAllowance(running)
 
   // "Improve in chat" on a skill: start the message for them.
   useEffect(() => {
@@ -133,7 +135,7 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
               )}
             </div>
           </div>
-          {status && <SessionStatus status={status} state={state} />}
+          {status && <SessionStatus status={status} state={state} allowance={allowance} />}
         </div>
       </div>
     </div>

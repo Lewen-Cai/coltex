@@ -1,0 +1,1 @@
+ALTER TABLE "ai_groups" ADD COLUMN "limits" jsonb DEFAULT '{"period":"month","tokens":null,"cost":null}'::jsonb NOT NULL;

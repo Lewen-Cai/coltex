@@ -19,6 +19,9 @@ import { builtinProviders } from '@earendil-works/pi-ai/providers/all'
 import { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy'
 import {
   AiAccessPolicy,
+  AiUsageLimits,
+  NO_AI_LIMITS,
+  type AiAllowance,
   AiSettings,
   ThinkingLevel,
   type AiAdminState,
@@ -428,6 +431,11 @@ export class AiService {
     previous: Tier | undefined,
     record: (model: Model<Api>, usage: Usage) => void,
   ): Promise<MessagePlan | undefined> {
+    // A limit is checked before each message; the message that crosses it still finishes.
+    const allowance = await this.allowanceFor(u)
+    if (allowance?.exceeded) {
+      throw new ForbiddenError(`You have reached your AI usage limit for this ${allowance.period}. It resets on ${allowance.resetsAt.slice(0, 10)}.`)
+    }
     const allowed = await this.allowedModels(u)
     const preference = pick ?? (await this.savedPreference(u.id))
     const notices: string[] = []
@@ -477,13 +485,14 @@ export class AiService {
       .groupBy(aiUserGroups.groupId)
       .as('members')
     const rows = await this.db
-      .select({ id: aiGroups.id, name: aiGroups.name, policy: aiGroups.policy, members: members.n })
+      .select({ id: aiGroups.id, name: aiGroups.name, policy: aiGroups.policy, limits: aiGroups.limits, members: members.n })
       .from(aiGroups)
       .leftJoin(members, eq(members.groupId, aiGroups.id))
       .orderBy(asc(aiGroups.name))
     return rows.flatMap(r => {
       const policy = AiAccessPolicy.safeParse(r.policy)
-      return policy.success ? [{ id: r.id, name: r.name, policy: policy.data, members: r.members ?? 0 }] : []
+      const limits = AiUsageLimits.safeParse(r.limits)
+      return policy.success ? [{ id: r.id, name: r.name, policy: policy.data, limits: limits.success ? limits.data : NO_AI_LIMITS, members: r.members ?? 0 }] : []
     })
   }
 
@@ -495,12 +504,12 @@ export class AiService {
 
   async createGroup(body: AiGroupBody): Promise<AiGroup> {
     const id = crypto.randomUUID()
-    await this.db.insert(aiGroups).values({ id, name: body.name, policy: body.policy })
+    await this.db.insert(aiGroups).values({ id, name: body.name, policy: body.policy, limits: body.limits })
     return this.group(id)
   }
 
   async updateGroup(id: string, body: AiGroupBody): Promise<AiGroup> {
-    const updated = await this.db.update(aiGroups).set({ name: body.name, policy: body.policy, updatedAt: new Date() }).where(eq(aiGroups.id, id)).returning()
+    const updated = await this.db.update(aiGroups).set({ name: body.name, policy: body.policy, limits: body.limits, updatedAt: new Date() }).where(eq(aiGroups.id, id)).returning()
     if (!updated.length) throw new NotFoundError('AI group not found')
     return this.group(id)
   }
@@ -509,6 +518,41 @@ export class AiService {
   async deleteGroup(id: string): Promise<void> {
     const deleted = await this.db.delete(aiGroups).where(eq(aiGroups.id, id)).returning()
     if (!deleted.length) throw new NotFoundError('AI group not found')
+  }
+
+  /**
+   * What this person has used of their group's limits in the current period;
+   * null without limits (admins have none).
+   */
+  async allowanceFor(u: SessionUser, now = new Date()): Promise<AiAllowance | null> {
+    if (u.role === 'admin') return null
+    const [row] = await this.db
+      .select({ limits: aiGroups.limits })
+      .from(aiUserGroups)
+      .innerJoin(aiGroups, eq(aiGroups.id, aiUserGroups.groupId))
+      .where(eq(aiUserGroups.userId, u.id))
+    const parsed = row && AiUsageLimits.safeParse(row.limits)
+    const limits = parsed?.success ? parsed.data : undefined
+    if (!limits || (limits.tokens === null && limits.cost === null)) return null
+    const { start, end } = usagePeriod(limits.period, now)
+    const [used] = await this.db
+      .select({
+        tokens: sql<number>`coalesce(sum(${aiUsage.inputTokens} + ${aiUsage.cacheReadTokens} + ${aiUsage.cacheWriteTokens} + ${aiUsage.outputTokens}), 0)::float8`,
+        cost: sql<number>`coalesce(sum(${aiUsage.cost}), 0)::float8`,
+      })
+      .from(aiUsage)
+      .where(and(eq(aiUsage.userId, u.id), gte(aiUsage.createdAt, start)))
+    const usedTokens = used?.tokens ?? 0
+    const usedCost = used?.cost ?? 0
+    return {
+      period: limits.period,
+      tokens: limits.tokens,
+      cost: limits.cost,
+      usedTokens,
+      usedCost,
+      resetsAt: end.toISOString(),
+      exceeded: (limits.tokens !== null && usedTokens >= limits.tokens) || (limits.cost !== null && usedCost >= limits.cost),
+    }
   }
 
   /** Put someone in a group, or with null in none. */
@@ -731,4 +775,16 @@ export class AiService {
       }
     })
   }
+}
+
+/** The calendar day, week (from Monday) or month containing `now`, in the server's time zone. */
+export function usagePeriod(period: AiUsageLimits['period'], now: Date): { start: Date; end: Date } {
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  if (period === 'week') start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+  if (period === 'month') start.setDate(1)
+  const end = new Date(start)
+  if (period === 'day') end.setDate(end.getDate() + 1)
+  else if (period === 'week') end.setDate(end.getDate() + 7)
+  else end.setMonth(end.getMonth() + 1)
+  return { start, end }
 }

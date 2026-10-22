@@ -167,6 +167,13 @@ const messages: Record<string, string> = {
   'No groups yet: only the system administrator can use the AI agent.': '还没有用户组：目前只有系统管理员能使用 AI 智能体。',
   '{n} member': '{n} 位成员',
   '{n} members': '{n} 位成员',
+  // Usage limits
+  'Usage limit for each member': '每人用量上限',
+  Period: '周期',
+  'No limit': '不限',
+  tokens: 'tokens',
+  'Cost (US$)': '费用（美元）',
+  'Tokens are a whole number of at least 1, the cost at least $0.01.': 'Tokens 须为不小于 1 的整数，费用不少于 0.01 美元。',
 }
 
 export default messages

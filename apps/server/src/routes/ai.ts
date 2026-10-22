@@ -20,6 +20,7 @@ import {
   AiSettingsPatch,
   AiPreference,
   AiStatus,
+  AiAllowance,
   AiUsageReport,
   AiUserRow,
   CompileResult,
@@ -55,6 +56,9 @@ export const aiRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, aiSession
   }
 
   app.get('/ai/status', { schema: { response: { 200: AiStatus } } }, async req => ai.statusFor(requireUser(req)))
+
+  // What the person has used of their AI group's limits (null: no limits).
+  app.get('/ai/allowance', { schema: { response: { 200: AiAllowance.nullable() } } }, async req => ai.allowanceFor(requireUser(req)))
 
   // The model and thinking level picked in the assistant panel, kept for next time.
   app.put('/ai/preference', { schema: { body: AiPreference, response: { 200: AiStatus } } }, async req => {

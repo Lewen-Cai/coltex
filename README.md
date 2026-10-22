@@ -51,7 +51,7 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - Ask about LaTeX, your project or your writing, or let it fix compile errors. It drafts changes in a private copy, test-compiles them and shows a diff; you apply all or part of it.
 - Applying saves a version first and recompiles; if the build gets worse, the change is rolled back automatically.
 - Providers: API keys (Anthropic, OpenAI, DeepSeek, Google, OpenRouter and more), subscription sign-in (Claude Pro/Max, ChatGPT, GitHub Copilot and more), or your own OpenAI-compatible server (Ollama, vLLM, LM Studio).
-- Automatic model choice (a light or a strong model per message), access per group of people, usage per person.
+- Automatic model choice (a light or a strong model per message), access per group of people, usage per person, and usage limits per day, week or month.
 - Saved chats per project, the context window shown as you go, and `/compact` to summarise a long chat.
 - Your own agent (Claude Code, Codex, Cursor…) over MCP: each project is an MCP server. You choose per project whether its edits become your suggestions, apply directly, or may also delete and move files.
 

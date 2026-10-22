@@ -31,6 +31,7 @@ Viewers and reviewers can ask the AI agent but can't apply changes.
 
 - Conversations are saved for you, per project (others never see them). **New chat** starts another; **Chats** lists the previous ones: open, rename or delete them. Reopening a chat continues it where it stopped; a draft that wasn't applied is not kept, so switching away from one asks first.
 - The ring under the message box shows how much of the model's context window the chat uses (e.g. `12k / 200k`). It turns amber at 70% and red at 90%.
+- If your AI group has a usage limit, a bar beside it shows what you've used this day, week or month (hover for details). Once you reach it, messages wait until the next period.
 - Type `/` in the message box for commands:
   - `/compact`: summarise the chat so far and continue from the summary, freeing the context. The messages stay visible; the AI agent remembers them through the summary.
   - `/new`: start a new chat.

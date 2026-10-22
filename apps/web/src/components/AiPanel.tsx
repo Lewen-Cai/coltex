@@ -26,12 +26,13 @@ import {
   Wand2,
   } from 'lucide-react'
 import { motion } from 'motion/react'
-import type { AiItem, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillScope, SkillSource, ThinkingLevel } from '@coltex/shared'
+import type { AiAllowance, AiItem, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillScope, SkillSource, ThinkingLevel } from '@coltex/shared'
 import { aiPick, type AiSessionHandle } from '../lib/ai.ts'
+import { CURRENT_PERIOD, allowanceShare, compactTokens, dollars, useAiAllowance } from '../lib/ai-limits.ts'
 import { ApiError } from '../lib/api.ts'
 import { ChatsDialog, ContextMeter, tokens } from './ai-chats.tsx'
 import { confirmDialog } from './confirm.tsx'
-import { plural, t, tk, translateServerMessage } from '../lib/i18n.ts'
+import { intlLocale, plural, t, tk, translateServerMessage } from '../lib/i18n.ts'
 import { cn } from '../lib/utils.ts'
 import { AiReview, type ReviewScope } from './AiReview.tsx'
 import { Markdown } from './Markdown.tsx'
@@ -81,6 +82,9 @@ export function AiPanel(props: Props) {
   const [withSelection, setWithSelection] = useState(true)
   const scroller = useRef<HTMLDivElement>(null)
   const running = state?.running ?? false
+  // Asked again after each answer, so the meter follows.
+  const allowance = useAiAllowance(running)
+  const limited = !!allowance?.exceeded
   const changes = state?.changes
   const changed = changes?.files.length ?? 0
   const latestTurnCard = state?.items.findLast(i => i.kind === 'changes')?.id
@@ -137,7 +141,7 @@ export function AiPanel(props: Props) {
 
   const submit = (message = text) => {
     const trimmed = message.trim()
-    if (!trimmed || running) return
+    if (!trimmed || running || limited) return
     const typed = commands.find(c => `/${c.name}` === trimmed.toLowerCase())
     if (typed) return typed.run()
     // `/skill the rest`: the skill's instructions go with the rest of the message.
@@ -310,13 +314,13 @@ export function AiPanel(props: Props) {
                 <Square className="fill-current" />
               </Button>
             ) : (
-              <Button size="icon-sm" onClick={() => submit()} disabled={!text.trim() || busy} aria-label={t('Send')}>
+              <Button size="icon-sm" onClick={() => submit()} disabled={!text.trim() || busy || limited} aria-label={t('Send')}>
                 <ArrowUp />
               </Button>
             )}
           </div>
         </div>
-        <SessionStatus status={status} state={state} />
+        <SessionStatus status={status} state={state} allowance={allowance} />
       </div>
     </div>
   )
@@ -336,16 +340,23 @@ const SLASH_COMMANDS: { name: 'compact' | 'new' | 'chats'; label: string; whileR
  * Auto, which picks per message) and how full the context is. The picker
  * above shows the model only.
  */
-export function SessionStatus({ status, state }: { status: AiStatus; state: AiSessionState | undefined }) {
+export function SessionStatus({ status, state, allowance }: { status: AiStatus; state: AiSessionState | undefined; allowance?: AiAllowance | null }) {
   const auto = status.auto.on
   const model = status.model
   const thinking = !auto && !!model && model.thinkingLevels.length >= 2
   // The model the conversation last used; else the one the next message goes to.
   const window = state?.model?.contextWindow ?? (auto ? status.auto.strong?.contextWindow : model?.contextWindow) ?? null
   const used = state?.contextTokens ?? (state && state.items.length === 0 ? 0 : null)
-  if (!thinking && !window) return null
+  if (!thinking && !window && !allowance) return null
   return (
-    <div className="flex items-center gap-3 px-1 pt-1.5 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pt-1.5 text-xs text-muted-foreground">
+      {allowance?.exceeded && (
+        <span className="basis-full text-destructive">
+          {t('You have reached your AI usage limit. It resets on {date}.', {
+            date: new Date(allowance.resetsAt).toLocaleDateString(intlLocale(), { month: 'short', day: 'numeric' }),
+          })}
+        </span>
+      )}
       {thinking && (
         <span className="flex items-center gap-1">
           <Brain className="size-3" />
@@ -353,8 +364,36 @@ export function SessionStatus({ status, state }: { status: AiStatus; state: AiSe
         </span>
       )}
       <span className="flex-1" />
+      {allowance && <AllowanceMeter allowance={allowance} />}
       <ContextMeter used={used} window={window} />
     </div>
+  )
+}
+
+/** What the person has used of their AI group's limit this period: a small bar and the tighter of the two. */
+function AllowanceMeter({ allowance: a }: { allowance: AiAllowance }) {
+  const share = allowanceShare(a)
+  const tone = a.exceeded || share >= 0.9 ? 'bg-destructive' : share >= 0.7 ? 'bg-amber-500' : 'bg-primary'
+  const byCost = a.cost !== null && (a.tokens === null || a.usedCost / a.cost >= a.usedTokens / a.tokens)
+  const resets = new Date(a.resetsAt).toLocaleDateString(intlLocale(), { month: 'short', day: 'numeric' })
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-1.5 tabular-nums" aria-label={t('AI usage')}>
+          {t(CURRENT_PERIOD[a.period])}
+          <span className="h-1.5 w-8 overflow-hidden rounded-full bg-muted">
+            <span className={cn('block h-full rounded-full', tone)} style={{ width: `${Math.max(4, share * 100)}%` }} />
+          </span>
+          {byCost ? `${dollars(a.usedCost)} / ${dollars(a.cost!)}` : `${compactTokens(a.usedTokens)} / ${compactTokens(a.tokens!)}`}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="grid gap-0.5">
+        <span>{t('AI usage')}</span>
+        {a.tokens !== null && <span>{t('{used} of {limit} tokens', { used: a.usedTokens.toLocaleString(intlLocale()), limit: a.tokens.toLocaleString(intlLocale()) })}</span>}
+        {a.cost !== null && <span>{t('{used} of {limit}', { used: dollars(a.usedCost), limit: dollars(a.cost) })}</span>}
+        <span>{t('Resets on {date}', { date: resets })}</span>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
