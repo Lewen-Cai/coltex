@@ -6,6 +6,7 @@ import {
   type AiCompileSummary,
   type AiItem,
   type AiMessageBody,
+  type AiPermission,
   type AiPreference,
   type AiSaveProposedSkill,
   type AiSessionState,
@@ -20,13 +21,17 @@ import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '.
 import type { HistoryService } from '../history/service.ts'
 import { mergeText } from '../history/snapshots.ts'
 import { engineFor } from '../projects/engine.ts'
+import { deletePath, movePath } from '../projects/file-ops.ts'
+import type { LinkedFileService } from '../projects/linked-files.ts'
 import type { ProjectService } from '../projects/service.ts'
+import type { ReferenceService } from '../references/service.ts'
+import { cleanPath } from '../storage/paths.ts'
 import type { ProjectStore } from '../storage/types.ts'
-import { Changeset } from './changeset.ts'
+import { Changeset, type TurnFile } from './changeset.ts'
 import { AgentChat, shortId } from './chat.ts'
 import { COMPACT_SYSTEM_PROMPT, compactedTranscript, estimateTokens, renderTranscript } from './compact.ts'
 import { conversationTitle, type ConversationStore, type SavedConversation } from './conversations.ts'
-import { systemPrompt, userMessage } from './prompt.ts'
+import { permissionNote, systemPrompt, userMessage } from './prompt.ts'
 import { modelInfo, type AiService } from './service.ts'
 import { saveDraftedSkill, type SkillStore } from './skills.ts'
 import { createTools, errorCount, type ToolContext } from './tools.ts'
@@ -44,6 +49,9 @@ export type AiDeps = {
   collab: CollabHooks
   history: HistoryService
   projects: ProjectService
+  /** Deleting and moving files keeps Zotero links and linked files in step. */
+  references: Pick<ReferenceService, 'followMove'>
+  linkedFiles: Pick<LinkedFileService, 'followMove' | 'forget'>
   outputsDir: string
   conversations: ConversationStore
   skills: SkillStore
@@ -75,6 +83,14 @@ export class AiSession extends AgentChat {
   private notes: string[] = []
   private authorBuild?: string
   private lastApplied?: { snapshot: string; at: string; files: AppliedFile[] }
+  /** The permission the agent was last told about (it changes between messages). */
+  private told?: AiPermission
+  /** Files deleted or moved this turn (full access), for the turn's card. */
+  private turnOps: TurnFile[] = []
+  /** Whether this turn already kept a version before deleting or moving. */
+  private turnCheckpoint = false
+  /** The author stopped this turn: its draft is not applied automatically. */
+  private stopped = false
 
   /** Editors draft changes; other members get a read-only assistant that answers questions. */
   readonly canEdit: boolean
@@ -93,6 +109,8 @@ export class AiSession extends AgentChat {
       queue: deps.queue,
       outputsDir: deps.outputsDir,
       canEdit,
+      permission: 'manual',
+      files: { delete: p => this.deleteNow(p), move: (from, to) => this.moveNow(from, to) },
       authorBuild: () => this.authorBuild,
       skills: () => this.skills,
       onProposeSkill: skill => this.upsert({ kind: 'skill', id: shortId(), ...skill, saved: null }),
@@ -110,7 +128,7 @@ export class AiSession extends AgentChat {
   }
 
   protected override afterTool(name: string): void {
-    if (['edit_file', 'create_file', 'revert_file', 'compile'].includes(name)) this.emitChanges()
+    if (['edit_file', 'create_file', 'revert_file', 'compile', 'delete_file', 'move_file'].includes(name)) this.emitChanges()
   }
 
   private emitChanges(): void {
@@ -200,7 +218,15 @@ export class AiSession extends AgentChat {
     this.skills = await this.deps.skills.available(this.userId, this.projectId)
     const skill = body.skill ? this.skills.find(s => s.name === body.skill) : undefined
     if (body.skill && !skill) throw new BadRequestError(`There is no skill named ${body.skill}`)
+    const permission = this.canEdit ? await this.deps.ai.permission(this.userId) : undefined
+    if (permission) this.toolContext.permission = permission
     const { agent, notices } = await this.ensureAgent(user, body)
+    if (permission && permission !== this.told) {
+      // Tools follow the setting (full access adds delete_file and move_file).
+      agent.state.tools = createTools(this.toolContext)
+      this.notes.push(permissionNote(permission))
+      this.told = permission
+    }
     const { text, attachments } = userMessage(body, this.notes, skill)
     this.notes = []
     this.upsert({ kind: 'user', id: shortId(), text: body.text.trim(), attachments, ...(skill ? { skill: skill.name } : {}) })
@@ -210,6 +236,9 @@ export class AiSession extends AgentChat {
     this.emit({ type: 'running', running: true })
     this.toolCalls = 0
     this.compiles = 0
+    this.turnOps = []
+    this.turnCheckpoint = false
+    this.stopped = false
     agent.beforeToolCall = async ({ toolCall }) => {
       if (++this.toolCalls > MAX_TOOL_CALLS) {
         return { block: true, reason: 'Tool call limit for this message reached. Stop and summarise your progress for the author.', terminate: true }
@@ -228,8 +257,9 @@ export class AiSession extends AgentChat {
       .catch((err: unknown) => this.notice('error', err instanceof Error ? err.message : String(err)))
       .then(async () => {
         // A card after the reply listing what this turn changed in the draft.
-        const files = await this.changeset.endTurn().catch(() => [])
+        const files = [...this.turnOps, ...(await this.changeset.endTurn().catch(() => []))]
         if (files.length) this.upsert({ kind: 'changes', id: shortId(), files })
+        if (permission && permission !== 'manual' && this.changeset.size && !this.stopped) await this.autoApply(project, user)
       })
       .finally(() => {
         this.running = false
@@ -300,6 +330,7 @@ export class AiSession extends AgentChat {
   }
 
   override abort(): void {
+    this.stopped = true
     super.abort()
     this.compacting?.abort()
   }
@@ -314,6 +345,66 @@ export class AiSession extends AgentChat {
   }
 
   // ---- Apply and undo -----------------------------------------------------------
+
+  /** Auto and full access: the whole draft, applied as the turn ends (rolled back if the build got worse). */
+  private async autoApply(project: ProjectMeta, user: SessionUser): Promise<void> {
+    const files = this.changeset.paths().map(path => ({ path, content: this.changeset.get(path)!.proposed }))
+    try {
+      const result = await this.applyDraft({ files }, project, user, true)
+      if (result.compile) this.emit({ type: 'built', compile: result.compile })
+    } catch (err) {
+      // A clash with someone's edits: the draft stays, for the author to look at.
+      this.notice('error', err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  /** Before the first deletion or move of a turn, the state before it becomes a version of its own. */
+  private async beforeFileChange(): Promise<void> {
+    if (this.turnCheckpoint) return
+    await this.deps.collab.flushProject(this.projectId)
+    await this.deps.history.checkpoint(this.projectId)
+    this.turnCheckpoint = true
+  }
+
+  private async inProject(path: string): Promise<boolean> {
+    const { files, folders } = await this.deps.store.listTree(this.projectId)
+    return folders.includes(path) || files.some(f => f.path === path)
+  }
+
+  /** delete_file (full access): at once, outside the draft. */
+  private async deleteNow(raw: string): Promise<string> {
+    const path = cleanPath(raw)
+    if (!(await this.inProject(path))) {
+      if (!this.changeset.has(path)) throw new NotFoundError(`${path} does not exist`)
+      this.changeset.forget(path)
+      return `${path} was only in your draft; dropped it there.`
+    }
+    await this.beforeFileChange()
+    const { folder } = await deletePath(this.deps, this.projectId, path)
+    this.changeset.forget(path)
+    this.deps.history.noteChange(this.projectId, this.userId, 'ai')
+    this.turnOps.push({ path: folder ? `${path}/` : path, kind: 'deleted', added: 0, removed: 0 })
+    return `Deleted ${path}${folder ? '/ and everything in it' : ''} from the project.`
+  }
+
+  /** move_file (full access): at once, outside the draft; drafts of the moved files follow. */
+  private async moveNow(rawFrom: string, rawTo: string): Promise<string> {
+    const from = cleanPath(rawFrom)
+    const to = cleanPath(rawTo)
+    if (!(await this.inProject(from))) {
+      const entry = this.changeset.get(from)
+      if (entry?.kind !== 'created') throw new NotFoundError(`${from} does not exist`)
+      if ((await this.inProject(to)) || this.changeset.has(to)) throw new ConflictError(`${to} already exists`)
+      this.changeset.rename(from, to)
+      return `Moved ${from} to ${to} in your draft (it is not in the project yet).`
+    }
+    await this.beforeFileChange()
+    await movePath(this.deps, this.projectId, from, to)
+    this.changeset.rename(from, to)
+    this.deps.history.noteChange(this.projectId, this.userId, 'ai')
+    this.turnOps.push({ path: from, kind: 'moved', to, added: 0, removed: 0 })
+    return `Moved ${from} to ${to} in the project.`
+  }
 
   private async compileProject(project: ProjectMeta): Promise<CompileResult> {
     const engine = await engineFor(this.deps.store, project)
@@ -350,6 +441,7 @@ export class AiSession extends AgentChat {
    * build got worse.
    */
   async apply(body: AiApplyBody, project: ProjectMeta, user: SessionUser): Promise<AiApplyResult> {
+    if (this.running) throw new ConflictError('Wait for the assistant to finish first')
     try {
       return await this.applyDraft(body, project, user)
     } finally {
@@ -357,8 +449,7 @@ export class AiSession extends AgentChat {
     }
   }
 
-  private async applyDraft(body: AiApplyBody, project: ProjectMeta, user: SessionUser): Promise<AiApplyResult> {
-    if (this.running) throw new ConflictError('Wait for the assistant to finish first')
+  private async applyDraft(body: AiApplyBody, project: ProjectMeta, user: SessionUser, auto = false): Promise<AiApplyResult> {
     const accepted = body.files.map(f => {
       const entry = this.changeset.get(f.path)
       if (!entry) throw new BadRequestError(`${f.path} is not part of the AI agent's changes`)
@@ -410,7 +501,7 @@ export class AiSession extends AgentChat {
       this.lastApplied = { snapshot, at: new Date().toISOString(), files: applied }
       const reverted = await this.revertApplied()
       const message = `The changes made the build worse (${errorCount(before.diagnostics)} → ${errorCount(after.diagnostics)} errors), so they were rolled back${reverted.conflicts.length ? `, except ${reverted.conflicts.join(', ')} which changed meanwhile` : ''}.`
-      this.notes.push(`The author applied your changes but they made the real build worse, so ColTex rolled them back. ${compileNote(after)}`)
+      this.notes.push(`${auto ? 'Your draft was applied' : 'The author applied your changes'} but they made the real build worse, so ColTex rolled them back. ${compileNote(after)}`)
       this.notice('error', message)
       const compile = await this.compileProject(project)
       return { outcome: 'reverted', before: summary(before), after: summary(after), compile, message }
@@ -418,7 +509,9 @@ export class AiSession extends AgentChat {
 
     this.lastApplied = { snapshot, at: new Date().toISOString(), files: applied }
     this.notes.push(
-      partial
+      auto
+        ? `Your draft was applied to the project (${files.join(', ')}). ${compileNote(after)}`
+        : partial
         ? `The author applied part of your draft (${files.join(', ')}); hunks they left out were discarded. ${compileNote(after)}`
         : `The author applied all your changes (${files.join(', ')}). ${compileNote(after)}`,
     )

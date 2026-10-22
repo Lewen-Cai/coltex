@@ -805,6 +805,14 @@ export const AiAllowance = z.object({
 })
 export type AiAllowance = z.infer<typeof AiAllowance>
 
+/**
+ * One person's own AI settings, set by the system admin in the usage page:
+ * each replaces their group's when set (null: the group's). Custom access
+ * gives someone AI even without a group.
+ */
+export const AiUserCustom = z.object({ policy: AiAccessPolicy.nullable(), limits: AiUsageLimits.nullable() })
+export type AiUserCustom = z.infer<typeof AiUserCustom>
+
 export const AiGroupBody = z.object({ name: z.string().trim().min(1).max(60), policy: AiAccessPolicy, limits: AiUsageLimits.default(NO_AI_LIMITS) })
 export type AiGroupBody = z.infer<typeof AiGroupBody>
 
@@ -936,6 +944,7 @@ export const AiUserRow = AiUsageTotals.extend({
   banned: z.boolean(),
   lastUsedAt: z.string().nullable(),
   groupId: z.string().nullable(),
+  custom: AiUserCustom,
 })
 export type AiUserRow = z.infer<typeof AiUserRow>
 
@@ -993,7 +1002,17 @@ export const AiItem = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('changes'),
     id: z.string(),
-    files: z.array(z.object({ path: z.string(), kind: z.enum(['modified', 'created', 'reverted']), added: z.number(), removed: z.number() })),
+    files: z.array(
+      z.object({
+        path: z.string(),
+        /** deleted and moved: done at once (full access), never part of the draft. */
+        kind: z.enum(['modified', 'created', 'reverted', 'deleted', 'moved']),
+        /** Where a moved file or folder went. */
+        to: z.string().optional(),
+        added: z.number(),
+        removed: z.number(),
+      }),
+    ),
   }),
   /** The conversation was summarised to free its context (`/compact`): tokens before and after. */
   z.object({ kind: z.literal('compacted'), id: z.string(), before: z.number().nullable(), after: z.number().nullable() }),
@@ -1077,6 +1096,8 @@ export const AiStreamEvent = z.discriminatedUnion('type', [
   z.object({ type: z.literal('delta'), id: z.string(), text: z.string() }),
   z.object({ type: z.literal('changes'), changes: AiChanges }),
   z.object({ type: z.literal('running'), running: z.boolean() }),
+  /** The project was built after the draft was applied automatically, for the PDF viewer. */
+  z.object({ type: z.literal('built'), compile: CompileResult }),
 ])
 export type AiStreamEvent = z.infer<typeof AiStreamEvent>
 
@@ -1664,37 +1685,66 @@ export type LiteratureSearchResult = z.infer<typeof LiteratureSearchResult>
 
 // --- Git bridge --------------------------------------------------------------
 
+/**
+ * Personal access tokens, for the Git bridge and for AI tools over MCP.
+ * Each says what it is for (`uses`), whether it may only read, which
+ * projects it reaches (null: all of the person's) and when it expires.
+ */
+export const TokenUse = z.enum(['git', 'mcp'])
+export type TokenUse = z.infer<typeof TokenUse>
+
 export const GitToken = z.object({
   id: z.string(),
   name: z.string(),
+  uses: z.array(TokenUse),
+  readOnly: z.boolean(),
+  /** null: every project of the person's; otherwise these (deleted ones left out). */
+  projects: z.array(z.object({ id: z.string(), name: z.string() })).nullable(),
+  expiresAt: z.string().nullable(),
   createdAt: z.string(),
   lastUsedAt: z.string().nullable(),
 })
 export type GitToken = z.infer<typeof GitToken>
 
-export const CreateGitTokenBody = z.object({ name: z.string().trim().min(1).max(100) })
+export const CreateGitTokenBody = z.object({
+  name: z.string().trim().min(1).max(100),
+  uses: z
+    .array(TokenUse)
+    .min(1)
+    .default(['git', 'mcp'])
+    .transform(u => [...new Set(u)]),
+  readOnly: z.boolean().default(false),
+  projectIds: z.array(ProjectId).min(1).max(200).nullable().default(null),
+  expiresInDays: z.number().int().min(1).max(366).nullable().default(null),
+})
+export type CreateGitTokenBody = z.input<typeof CreateGitTokenBody>
 /** The token itself is only in this response. */
 export const CreatedGitToken = GitToken.extend({ token: z.string() })
 export type CreatedGitToken = z.infer<typeof CreatedGitToken>
 
-// --- MCP ---------------------------------------------------------------------
+// --- AI permissions --------------------------------------------------------
 
 /**
- * How much an external AI agent (connected over MCP with the person's Git
- * token) may change in a project: `manual` edits become the person's tracked
- * suggestions, `auto` writes them directly, `full` may also delete and move
- * files. Reviewers only get `manual`; viewers only read and comment.
+ * What AI agents may change for someone, the built-in AI agent and agents
+ * connected over MCP alike (one setting per person, user's decision
+ * 2026-10-23). `manual`: the built-in agent's edits wait in its draft until
+ * the person applies them, an MCP agent's become the person's tracked
+ * suggestions. `auto`: applied directly (the built-in agent's draft when its
+ * turn ends). `full`: like auto, and files can be deleted and moved. The
+ * person's role in each project caps it (see `permissionInProject`).
  */
-export const McpMode = z.enum(['manual', 'auto', 'full'])
-export type McpMode = z.infer<typeof McpMode>
+export const AiPermission = z.enum(['manual', 'auto', 'full'])
+export type AiPermission = z.infer<typeof AiPermission>
 
-export const McpSettings = z.object({
-  /** null: the person's role only lets an agent read (and comment). */
-  mode: McpMode.nullable(),
-  /** The modes this person's role allows. */
-  modes: z.array(McpMode),
-})
-export type McpSettings = z.infer<typeof McpSettings>
+export const AiPermissionBody = z.object({ permission: AiPermission })
+export type AiPermissionBody = z.infer<typeof AiPermissionBody>
 
-export const McpSettingsBody = z.object({ mode: McpMode })
-export type McpSettingsBody = z.infer<typeof McpSettingsBody>
+/**
+ * The permission that applies in a project: editors and owners get what they
+ * chose, reviewers only suggestions, viewers nothing (null: read and comment).
+ */
+export function permissionInProject(chosen: AiPermission, role: ProjectRole): AiPermission | null {
+  if (role === 'owner' || role === 'editor') return chosen
+  if (role === 'reviewer') return 'manual'
+  return null
+}

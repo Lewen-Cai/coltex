@@ -1,6 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import {
+  AiUserCustom,
+  AiPermissionBody,
   AiAdminState,
   AiGroup,
   AiGroupBody,
@@ -59,6 +61,17 @@ export const aiRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, aiSession
 
   // What the person has used of their AI group's limits (null: no limits).
   app.get('/ai/allowance', { schema: { response: { 200: AiAllowance.nullable() } } }, async req => ai.allowanceFor(requireUser(req)))
+
+  // The person's own usage over the last days (Settings → AI agent).
+  app.get('/ai/usage', { schema: { querystring: z.object({ days: z.coerce.number().int().min(1).max(366).default(30) }), response: { 200: AiUsageReport } } }, async req =>
+    ai.usageReport(req.query.days, requireUser(req).id),
+  )
+
+  // What AI agents (built-in and MCP) may change for the person; no AI access needed (MCP agents bring their own model).
+  app.get('/ai/permission', { schema: { response: { 200: AiPermissionBody } } }, async req => ({ permission: await ai.permission(requireUser(req).id) }))
+  app.put('/ai/permission', { schema: { body: AiPermissionBody, response: { 200: AiPermissionBody } } }, async req => ({
+    permission: await ai.setPermission(requireUser(req).id, req.body.permission),
+  }))
 
   // The model and thinking level picked in the assistant panel, kept for next time.
   app.put('/ai/preference', { schema: { body: AiPreference, response: { 200: AiStatus } } }, async req => {
@@ -269,6 +282,17 @@ export const aiRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, aiSession
     requireAdmin(req)
     return ai.userRows(req.query.days)
   })
+
+  // One person's own model access and usage limit, replacing their group's.
+  app.put(
+    '/admin/ai/users/:userId/custom',
+    { schema: { params: z.object({ userId: z.string().min(1) }), body: AiUserCustom, response: { 200: Ok } } },
+    async req => {
+      requireAdmin(req)
+      await ai.setUserCustom(req.params.userId, req.body)
+      return { ok: true as const }
+    },
+  )
 
   // AI groups: what their members may use. People in none can't use the assistant (admins always can).
   app.get('/admin/ai/groups', { schema: { response: { 200: z.array(AiGroup) } } }, async req => {

@@ -22,6 +22,8 @@ The system administrator sees the Administration pages under **Settings** in the
 
   A group can also limit how much each of its members uses per day, week or month: tokens, cost (at list prices), or both. A message is refused once a member has reached the limit, until the next period starts (calendar days, weeks from Monday, months, in the server's time zone); the message that crosses it still finishes. Members see what they've used under the AI agent's message box. The system admin has no limits.
 
+  To adjust one person, open them in the list: under **Customise**, **Own model access** and **Own usage limit** replace their group's while switched on (own access works without a group too). The list marks them **Customised**.
+
 ## Storage and backups
 
 - Project files are kept on the local disk or in S3-compatible storage, set when the server starts (`STORAGE` and `S3_*`). History, build output and the compiler's working copies stay in the data directory.

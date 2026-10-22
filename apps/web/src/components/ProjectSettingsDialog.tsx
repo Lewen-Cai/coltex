@@ -20,7 +20,6 @@ import { Switch } from './ui/switch.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog.tsx'
 import { DictionaryManager } from './dictionary-manager.tsx'
 import { LinkList } from './link-list.tsx'
-import { McpSettings } from './mcp-settings.tsx'
 
 type Props = {
   open: boolean
@@ -343,7 +342,6 @@ const SECTIONS = [
   { id: 'dictionary', label: tk('Dictionary') },
   { id: 'shortcuts', label: tk('Keyboard shortcuts') },
   { id: 'skills', label: tk('AI skills') },
-  { id: 'mcp', label: tk('MCP') },
   { id: 'actions', label: tk('Actions') },
 ] as const
 type SectionId = (typeof SECTIONS)[number]['id']
@@ -351,8 +349,7 @@ type SectionId = (typeof SECTIONS)[number]['id']
 /**
  * Project settings, opened from the bottom of the editor's rail as in
  * Overleaf: the project's own settings (compiler, main document, spell
- * checking, Git), the person's editor settings and keys, their AI agents'
- * access over MCP, and project
+ * checking, Git), the person's editor settings and keys, and project
  * actions, one category at a time beside a list of categories.
  */
 export function ProjectSettingsDialog(props: Props) {
@@ -450,7 +447,6 @@ export function ProjectSettingsDialog(props: Props) {
                 <SkillLibrary base={`/api/projects/${project.id}/ai/skills`} canEdit={canEdit} />
               </div>
             )}
-            {current.id === 'mcp' && project && <McpSettings projectId={project.id} />}
             {current.id === 'actions' && (
               <div className="grid gap-1">
                 <button type="button" className={itemClass} onClick={act(props.onWordCount)}>

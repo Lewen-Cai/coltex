@@ -100,7 +100,6 @@ const backup = new BackupService(
 backup.start()
 const skills = new SkillStore(db)
 const skillChats = new SkillWorkshops({ ai, skills, chats: new SkillChatStore(db) })
-const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
 const accounts = new AccountService(db, auth, box)
 const gitBridge = new GitBridgeService({ db, store, collab, history, projects, dir: config.gitBridgeDir })
 const builds = new CompileCoalescer()
@@ -113,8 +112,10 @@ const linkedFiles = new LinkedFileService({
   outputsDir: config.outputsDir,
   compile: (projectId, userId) => buildProject({ projects, store, queue, collab, builds }, projectId, userId),
 })
+const references = new ReferenceService({ db, box, store, collab, history, projects })
+const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
 const app = await buildApp(
-  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references: new ReferenceService({ db, box, store, collab, history, projects }), gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
   { handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
 )
 

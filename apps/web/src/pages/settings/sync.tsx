@@ -8,9 +8,9 @@ export function SyncSettingsPage() {
   return (
     <>
       <PageHeader title={t('Sync services')} />
-      <div className="grid gap-6">
-        <ZoteroCard />
+      <div className="grid items-start gap-6 xl:grid-cols-2">
         <GitTokensCard />
+        <ZoteroCard />
       </div>
     </>
   )

@@ -54,7 +54,8 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - Automatic model choice (a light or a strong model per message), access per group of people, usage per person, and usage limits per day, week or month.
 - Saved chats per project, the context window shown as you go, and `/compact` to summarise a long chat.
 - Skills: your own and the project's instructions (Agent Skills format) the agent follows, used with `/name`; write them yourself, import them, or create them with the AI in Settings.
-- Your own agent (Claude Code, Codex, Cursor…) over MCP: each project is an MCP server. You choose per project whether its edits become your suggestions, apply directly, or may also delete and move files.
+- Permissions like Claude Code's: the AI agent's changes wait for your review (Manual), apply when it finishes (Auto), or it may also delete and move files (Full access).
+- Your own agent (Claude Code, Codex, Cursor…) over MCP: one address for all your projects, with the same permissions (in Manual its edits become your suggestions).
 
 ### Projects and administration
 - Templates for IEEE, ACM, Springer LNCS, Elsevier, REVTeX and arXiv, and conversion of a paper from one journal template to another.

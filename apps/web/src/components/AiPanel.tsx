@@ -20,15 +20,19 @@ import {
   CircleAlert,
   Copy,
   type LucideIcon,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
   Sparkles,
   Square,
   Undo2,
   Wand2,
   } from 'lucide-react'
 import { motion } from 'motion/react'
-import type { AiAllowance, AiItem, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillScope, SkillSource, ThinkingLevel } from '@coltex/shared'
+import type { AiAllowance, AiItem, AiPermission, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillScope, SkillSource, ThinkingLevel } from '@coltex/shared'
 import { aiPick, type AiSessionHandle } from '../lib/ai.ts'
 import { CURRENT_PERIOD, allowanceShare, compactTokens, dollars, useAiAllowance } from '../lib/ai-limits.ts'
+import { PERMISSIONS, PERMISSION_TITLE, useAiPermission } from '../lib/ai-permission.ts'
 import { ApiError } from '../lib/api.ts'
 import { ChatsDialog, ContextMeter, tokens } from './ai-chats.tsx'
 import { confirmDialog } from './confirm.tsx'
@@ -84,6 +88,8 @@ export function AiPanel(props: Props) {
   const running = state?.running ?? false
   // Asked again after each answer, so the meter follows.
   const allowance = useAiAllowance(running)
+  const [permission, setPermission] = useAiPermission()
+  const permissionChoice: PermissionChoice | undefined = props.canEdit && permission ? { value: permission, onChoose: p => void setPermission(p) } : undefined
   const limited = !!allowance?.exceeded
   const changes = state?.changes
   const changed = changes?.files.length ?? 0
@@ -307,7 +313,7 @@ export function AiPanel(props: Props) {
             className="block min-h-0 w-full resize-none bg-transparent px-2.5 pt-2 text-sm outline-none"
           />
           <div className="flex items-center gap-1 px-1.5 pb-1.5">
-            <ModelPicker status={status} onChoose={props.onChoose} />
+            <ModelPicker status={status} onChoose={props.onChoose} permission={permissionChoice} />
             <span className="flex-1" />
             {running ? (
               <Button variant="secondary" size="icon-sm" onClick={() => void session.abort()} aria-label={t('Stop')}>
@@ -320,7 +326,7 @@ export function AiPanel(props: Props) {
             )}
           </div>
         </div>
-        <SessionStatus status={status} state={state} allowance={allowance} />
+        <SessionStatus status={status} state={state} allowance={allowance} permission={permissionChoice?.value} />
       </div>
     </div>
   )
@@ -340,14 +346,25 @@ const SLASH_COMMANDS: { name: 'compact' | 'new' | 'chats'; label: string; whileR
  * Auto, which picks per message) and how full the context is. The picker
  * above shows the model only.
  */
-export function SessionStatus({ status, state, allowance }: { status: AiStatus; state: AiSessionState | undefined; allowance?: AiAllowance | null }) {
+export function SessionStatus({
+  status,
+  state,
+  allowance,
+  permission,
+}: {
+  status: AiStatus
+  state: AiSessionState | undefined
+  allowance?: AiAllowance | null
+  permission?: AiPermission
+}) {
   const auto = status.auto.on
   const model = status.model
   const thinking = !auto && !!model && model.thinkingLevels.length >= 2
   // The model the conversation last used; else the one the next message goes to.
   const window = state?.model?.contextWindow ?? (auto ? status.auto.strong?.contextWindow : model?.contextWindow) ?? null
   const used = state?.contextTokens ?? (state && state.items.length === 0 ? 0 : null)
-  if (!thinking && !window && !allowance) return null
+  if (!thinking && !window && !allowance && !permission) return null
+  const PermissionIcon = permission && PERMISSION_ICON[permission]
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pt-1.5 text-xs text-muted-foreground">
       {allowance?.exceeded && (
@@ -361,6 +378,12 @@ export function SessionStatus({ status, state, allowance }: { status: AiStatus; 
         <span className="flex items-center gap-1">
           <Brain className="size-3" />
           {t('Thinking: {level}', { level: t(THINKING_LABEL[status.thinkingLevel]) })}
+        </span>
+      )}
+      {permission && PermissionIcon && (
+        <span className={cn('flex items-center gap-1', permission === 'full' && 'text-amber-700 dark:text-amber-400')}>
+          <PermissionIcon className="size-3" />
+          {t('Permission: {permission}', { permission: t(PERMISSION_TITLE[permission]) })}
         </span>
       )}
       <span className="flex-1" />
@@ -518,14 +541,22 @@ function DraftCard(props: { state: AiSessionState; running: boolean; busy: boole
   )
 }
 
-/** What one turn changed in the draft: files with lines added and removed. */
+/**
+ * What one turn changed: files in the draft with lines added and removed,
+ * and files deleted or moved in the project (full access).
+ */
 function TurnCard({ item, onOpenFile, onReview }: { item: Extract<AiItem, { kind: 'changes' }>; onOpenFile: (path: string) => void; onReview?: () => void }) {
-  const label = { modified: '', created: t('new file'), reverted: t('undone') }
+  const label = { modified: '', created: t('new file'), reverted: t('undone'), deleted: t('deleted'), moved: t('moved') }
+  const inDraft = item.files.every(f => f.kind !== 'deleted' && f.kind !== 'moved')
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border bg-card text-sm">
       <div className="flex items-center gap-2 border-b px-3 py-2">
         <FileDiff className="size-4 text-muted-foreground" />
-        <span className="flex-1 font-medium">{plural(item.files.length, 'Changed {n} file in the draft', 'Changed {n} files in the draft')}</span>
+        <span className="flex-1 font-medium">
+          {inDraft
+            ? plural(item.files.length, 'Changed {n} file in the draft', 'Changed {n} files in the draft')
+            : plural(item.files.length, 'Changed {n} file', 'Changed {n} files')}
+        </span>
         {onReview && (
           <Button variant="ghost" size="xs" className="text-primary" onClick={onReview}>
             {t('View diff')}
@@ -534,13 +565,21 @@ function TurnCard({ item, onOpenFile, onReview }: { item: Extract<AiItem, { kind
       </div>
       <ul className="divide-y">
         {item.files.map(f => (
-          <li key={f.path} className="flex items-center gap-2 px-3 py-1.5">
-            <button type="button" className="min-w-0 flex-1 truncate text-left font-mono text-[13px] hover:underline" onClick={() => onOpenFile(f.path)}>
-              {f.path}
-            </button>
+          <li key={`${f.kind}:${f.path}`} className="flex items-center gap-2 px-3 py-1.5">
+            {f.kind === 'deleted' ? (
+              <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-muted-foreground line-through">{f.path}</span>
+            ) : (
+              <button type="button" className="min-w-0 flex-1 truncate text-left font-mono text-[13px] hover:underline" onClick={() => onOpenFile(f.to ?? f.path)}>
+                {f.kind === 'moved' ? `${f.path} → ${f.to}` : f.path}
+              </button>
+            )}
             {label[f.kind] && <span className="text-[13px] text-muted-foreground">{label[f.kind]}</span>}
-            <span className="font-mono text-[13px] tabular-nums text-emerald-600 dark:text-emerald-400">+{f.added}</span>
-            <span className="font-mono text-[13px] tabular-nums text-red-600 dark:text-red-400">−{f.removed}</span>
+            {f.kind !== 'deleted' && f.kind !== 'moved' && (
+              <>
+                <span className="font-mono text-[13px] tabular-nums text-emerald-600 dark:text-emerald-400">+{f.added}</span>
+                <span className="font-mono text-[13px] tabular-nums text-red-600 dark:text-red-400">−{f.removed}</span>
+              </>
+            )}
           </li>
         ))}
       </ul>
@@ -774,7 +813,12 @@ function AssistantReply({ text }: { text: string }) {
  * lets this person use, and the thinking levels pi-ai lists for the picked
  * one. Auto routing sets the thinking level per message.
  */
-export function ModelPicker({ status, onChoose }: { status: AiStatus; onChoose: (pick: AiPreference) => void }) {
+const PERMISSION_ICON: Record<AiPermission, LucideIcon> = { manual: ShieldCheck, auto: Shield, full: ShieldAlert }
+
+/** The permission choice inside the model picker (editors only): what the agent may change. */
+export type PermissionChoice = { value: AiPermission; onChoose: (p: AiPermission) => void }
+
+export function ModelPicker({ status, onChoose, permission }: { status: AiStatus; onChoose: (pick: AiPreference) => void; permission?: PermissionChoice }) {
   const [open, setOpen] = useState(false)
   const model = status.model
   const auto = status.auto.on
@@ -791,10 +835,10 @@ export function ModelPicker({ status, onChoose }: { status: AiStatus; onChoose: 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button type="button" className={pickerButton} aria-label={t('Model')} disabled={!choosable && !thinking}>
+        <button type="button" className={pickerButton} aria-label={t('Model')} disabled={!choosable && !thinking && !permission}>
           {auto ? <Wand2 className="size-3.5 shrink-0" /> : model && <ProviderIcon provider={model.provider} className="size-3.5 shrink-0" />}
           <span className="truncate">{auto ? t('Auto') : (model?.name ?? t('No model'))}</span>
-          {(choosable || thinking) && <ChevronDown className="size-3 shrink-0 opacity-60" />}
+          {(choosable || thinking || permission) && <ChevronDown className="size-3 shrink-0 opacity-60" />}
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" side="top" className="w-80 p-0">
@@ -872,6 +916,40 @@ export function ModelPicker({ status, onChoose }: { status: AiStatus; onChoose: 
                   {t(THINKING_LABEL[level])}
                 </button>
               ))}
+            </div>
+          </div>
+        )}
+        {permission && (
+          <div className={cn('grid gap-2 p-3', (choosable || thinking) && 'border-t')}>
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <Shield className="size-3.5" /> {t('Permissions')}
+            </span>
+            <div className="flex flex-wrap gap-1" role="radiogroup" aria-label={t('Permissions')}>
+              {PERMISSIONS.map(p => {
+                const Icon = PERMISSION_ICON[p.value]
+                return (
+                  <Tooltip key={p.value}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={permission.value === p.value}
+                        onClick={() => permission.onChoose(p.value)}
+                        className={cn(
+                          'flex h-7 items-center gap-1 rounded-md border px-2.5 text-xs transition-colors',
+                          permission.value === p.value ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted',
+                        )}
+                      >
+                        <Icon className="size-3.5" />
+                        {t(p.title)}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-64">
+                      {t(p.description)}
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              })}
             </div>
           </div>
         )}

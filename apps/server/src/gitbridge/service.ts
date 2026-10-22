@@ -4,12 +4,13 @@ import fs from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import path from 'node:path'
 import type { Readable } from 'node:stream'
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { customAlphabet } from 'nanoid'
-import type { CreatedGitToken, GitToken } from '@coltex/shared'
+import type { z } from 'zod'
+import type { CreatedGitToken, CreateGitTokenBody, GitToken, TokenUse } from '@coltex/shared'
 import type { CollabHooks } from '../collab/server.ts'
 import type { Db } from '../db/client.ts'
-import { gitTokens } from '../db/schema.ts'
+import { gitTokens, projects as projectsTable } from '../db/schema.ts'
 import { NotFoundError } from '../errors.ts'
 import type { HistoryService } from '../history/service.ts'
 import { git, gitOk, mergeText, SnapshotService } from '../history/snapshots.ts'
@@ -42,6 +43,12 @@ export type GitRequest = {
   body?: Readable
   remoteAddress?: string
 }
+
+/** What a token lets its holder do: act as this person, perhaps only reading, perhaps only in some projects. */
+export type TokenGrant = { userId: string; readOnly: boolean; projectIds: string[] | null }
+
+/** Whether a token reaches this project (its list, if it has one; the person's role is checked separately). */
+export const grantReaches = (grant: TokenGrant, projectId: string) => !grant.projectIds || grant.projectIds.includes(projectId)
 
 const hashToken = (token: string) => crypto.createHash('sha256').update(token).digest('hex')
 
@@ -76,16 +83,48 @@ export class GitBridgeService {
 
   // --- tokens --------------------------------------------------------------
 
-  async createToken(userId: string, name: string): Promise<CreatedGitToken> {
+  async createToken(userId: string, body: z.output<typeof CreateGitTokenBody>): Promise<CreatedGitToken> {
+    // Only the person's own projects (NotFound otherwise, as everywhere).
+    for (const id of body.projectIds ?? []) await this.projects.requireAccess(id, userId, 'viewer')
     const token = `coltex_${crypto.randomBytes(24).toString('base64url')}`
     const id = newId()
-    const [row] = await this.db.insert(gitTokens).values({ id, userId, name, tokenHash: hashToken(token) }).returning()
-    return { id, name, createdAt: row!.createdAt.toISOString(), lastUsedAt: null, token }
+    const [row] = await this.db
+      .insert(gitTokens)
+      .values({
+        id,
+        userId,
+        name: body.name,
+        tokenHash: hashToken(token),
+        uses: body.uses,
+        readOnly: body.readOnly,
+        projectIds: body.projectIds ? [...new Set(body.projectIds)] : null,
+        expiresAt: body.expiresInDays === null ? null : new Date(Date.now() + body.expiresInDays * 86_400_000),
+      })
+      .returning()
+    const [shown] = await this.describe([row!])
+    return { ...shown!, token }
   }
 
   async listTokens(userId: string): Promise<GitToken[]> {
-    const rows = await this.db.select().from(gitTokens).where(eq(gitTokens.userId, userId)).orderBy(desc(gitTokens.createdAt))
-    return rows.map(r => ({ id: r.id, name: r.name, createdAt: r.createdAt.toISOString(), lastUsedAt: r.lastUsedAt?.toISOString() ?? null }))
+    return this.describe(await this.db.select().from(gitTokens).where(eq(gitTokens.userId, userId)).orderBy(desc(gitTokens.createdAt)))
+  }
+
+  /** Rows as the settings pages show them, with the names of the projects they reach. */
+  private async describe(rows: (typeof gitTokens.$inferSelect)[]): Promise<GitToken[]> {
+    const ids = [...new Set(rows.flatMap(r => r.projectIds ?? []))]
+    const names = new Map(
+      ids.length ? (await this.db.select({ id: projectsTable.id, name: projectsTable.name }).from(projectsTable).where(inArray(projectsTable.id, ids))).map(p => [p.id, p.name]) : [],
+    )
+    return rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      uses: r.uses,
+      readOnly: r.readOnly,
+      projects: r.projectIds && r.projectIds.flatMap(id => (names.has(id) ? [{ id, name: names.get(id)! }] : [])),
+      expiresAt: r.expiresAt?.toISOString() ?? null,
+      createdAt: r.createdAt.toISOString(),
+      lastUsedAt: r.lastUsedAt?.toISOString() ?? null,
+    }))
   }
 
   async revokeToken(userId: string, id: string): Promise<void> {
@@ -94,10 +133,12 @@ export class GitBridgeService {
   }
 
   /**
-   * The user a token belongs to: Basic auth for git (the user name is ignored,
-   * as on Overleaf), or a Bearer token for MCP clients.
+   * Whose token this is and what it may do there: Basic auth for git (the
+   * user name is ignored, as on Overleaf), or a Bearer token for MCP
+   * clients. Undefined for an unknown or expired token, or one not made for
+   * this use.
    */
-  async authenticate(authorization: string | undefined): Promise<string | undefined> {
+  async authenticate(authorization: string | undefined, use: TokenUse): Promise<TokenGrant | undefined> {
     let token: string
     const bearer = /^Bearer\s+(\S+)$/i.exec(authorization ?? '')
     const basic = /^Basic\s+(\S+)$/i.exec(authorization ?? '')
@@ -108,12 +149,12 @@ export class GitBridgeService {
     } else return undefined
     if (!token.startsWith('coltex_')) return undefined
     const [row] = await this.db.select().from(gitTokens).where(eq(gitTokens.tokenHash, hashToken(token)))
-    if (!row) return undefined
+    if (!row || !row.uses.includes(use) || (row.expiresAt && row.expiresAt.getTime() <= Date.now())) return undefined
     // Note the use, at most once a minute.
     if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > 60_000) {
       await this.db.update(gitTokens).set({ lastUsedAt: new Date() }).where(eq(gitTokens.id, row.id))
     }
-    return row.userId
+    return { userId: row.userId, readOnly: row.readOnly, projectIds: row.projectIds }
   }
 
   // --- repositories ----------------------------------------------------------

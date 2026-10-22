@@ -160,7 +160,6 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   const monitor = new MonitorHistory(db, () => queue.stats().then(s => s.containers))
   const skills = new SkillStore(db, options.builtinSkills ?? path.join(dataDir, 'no-builtin-skills'))
   const skillChats = new SkillWorkshops({ ai, skills, chats: new SkillChatStore(db) })
-  const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, outputsDir, conversations: new ConversationStore(db), skills })
   // Not started either; there is no pg_dump here, so the dump is a stand-in tests can replace.
   const dumps = { dump: async (file: string) => fs.writeFile(file, '-- test dump\n') }
   const backup = new BackupService(
@@ -212,6 +211,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     compile: (projectId, userId) => buildProject({ projects, store, queue, collab, builds }, projectId, userId),
     fetchUrl: url => linkedFakes.url(url),
   })
+  const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir, conversations: new ConversationStore(db), skills })
   const accounts = new AccountService(db, auth, box)
   const app = await buildApp(
     { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },

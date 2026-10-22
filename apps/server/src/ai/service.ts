@@ -31,16 +31,18 @@ import {
   type AiLoginState,
   type AiModelInfo,
   type AiModelRef,
+  type AiPermission,
   type AiPreference,
   type AiProviderStatus,
   type AiStatus,
   type AiUsageReport,
+  type AiUserCustom,
   type AiUserRow,
   type CustomAiProvider,
 } from '@coltex/shared'
 import type { SessionUser } from '../auth/auth.ts'
 import type { Db } from '../db/client.ts'
-import { aiGroups, aiPreferences, aiUsage, aiUserGroups, appSettings, user } from '../db/schema.ts'
+import { aiGroups, aiPermissions, aiPreferences, aiUsage, aiUserGroups, aiUserSettings, appSettings, user } from '../db/schema.ts'
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../errors.ts'
 import { ProviderHealth } from './health.ts'
 import { judgePrompt, parseTier, type Tier } from './routing.ts'
@@ -307,10 +309,33 @@ export class AiService {
     return parsed?.success ? parsed.data : null
   }
 
-  /** Admins may use every model; everyone else what their AI group allows, and nothing without one. */
+  /** A person's own settings (null where their group's apply). */
+  async userCustom(userId: string): Promise<AiUserCustom> {
+    const [row] = await this.db.select().from(aiUserSettings).where(eq(aiUserSettings.userId, userId))
+    const policy = row?.policy == null ? null : AiAccessPolicy.safeParse(row.policy)
+    const limits = row?.limits == null ? null : AiUsageLimits.safeParse(row.limits)
+    return { policy: policy?.success ? policy.data : null, limits: limits?.success ? limits.data : null }
+  }
+
+  /** Set (or with both null, clear) a person's own model access and usage limit. */
+  async setUserCustom(userId: string, custom: AiUserCustom): Promise<void> {
+    const [exists] = await this.db.select({ id: user.id }).from(user).where(eq(user.id, userId))
+    if (!exists) throw new NotFoundError('User not found')
+    if (!custom.policy && !custom.limits) {
+      await this.db.delete(aiUserSettings).where(eq(aiUserSettings.userId, userId))
+      return
+    }
+    const values = { policy: custom.policy, limits: custom.limits, updatedAt: new Date() }
+    await this.db.insert(aiUserSettings).values({ userId, ...values }).onConflictDoUpdate({ target: aiUserSettings.userId, set: values })
+  }
+
+  /**
+   * Admins may use every model; everyone else their own access if the admin
+   * set one, else what their AI group allows, and nothing without either.
+   */
   async policyFor(u: SessionUser): Promise<AiAccessPolicy> {
     if (u.role === 'admin') return { mode: 'all', providers: [], models: [] }
-    return (await this.groupPolicy(u.id)) ?? { mode: 'none', providers: [], models: [] }
+    return (await this.userCustom(u.id)).policy ?? (await this.groupPolicy(u.id)) ?? { mode: 'none', providers: [], models: [] }
   }
 
   /** Models of configured providers that this person may use. */
@@ -358,6 +383,20 @@ export class AiService {
       .values({ userId: u.id, ...values })
       .onConflictDoUpdate({ target: aiPreferences.userId, set: values })
     return this.statusFor(u)
+  }
+
+  /** What AI agents may change for this person (AiPermission); manual until they choose. */
+  async permission(userId: string): Promise<AiPermission> {
+    const [row] = await this.db.select({ permission: aiPermissions.permission }).from(aiPermissions).where(eq(aiPermissions.userId, userId))
+    return row?.permission ?? 'manual'
+  }
+
+  async setPermission(userId: string, permission: AiPermission): Promise<AiPermission> {
+    await this.db
+      .insert(aiPermissions)
+      .values({ userId, permission })
+      .onConflictDoUpdate({ target: aiPermissions.userId, set: { permission, updatedAt: new Date() } })
+    return permission
   }
 
   async statusFor(u: SessionUser): Promise<AiStatus> {
@@ -521,18 +560,22 @@ export class AiService {
   }
 
   /**
-   * What this person has used of their group's limits in the current period;
-   * null without limits (admins have none).
+   * What this person has used of their limits in the current period (their
+   * own if the admin set one, else their group's); null without limits
+   * (admins have none).
    */
   async allowanceFor(u: SessionUser, now = new Date()): Promise<AiAllowance | null> {
     if (u.role === 'admin') return null
-    const [row] = await this.db
-      .select({ limits: aiGroups.limits })
-      .from(aiUserGroups)
-      .innerJoin(aiGroups, eq(aiGroups.id, aiUserGroups.groupId))
-      .where(eq(aiUserGroups.userId, u.id))
-    const parsed = row && AiUsageLimits.safeParse(row.limits)
-    const limits = parsed?.success ? parsed.data : undefined
+    let limits = (await this.userCustom(u.id)).limits ?? undefined
+    if (!limits) {
+      const [row] = await this.db
+        .select({ limits: aiGroups.limits })
+        .from(aiUserGroups)
+        .innerJoin(aiGroups, eq(aiGroups.id, aiUserGroups.groupId))
+        .where(eq(aiUserGroups.userId, u.id))
+      const parsed = row && AiUsageLimits.safeParse(row.limits)
+      limits = parsed?.success ? parsed.data : undefined
+    }
     if (!limits || (limits.tokens === null && limits.cost === null)) return null
     const { start, end } = usagePeriod(limits.period, now)
     const [used] = await this.db
@@ -754,10 +797,13 @@ export class AiService {
         cost: usage.cost,
         lastUsedAt: usage.lastUsedAt,
         groupId: aiUserGroups.groupId,
+        customPolicy: aiUserSettings.policy,
+        customLimits: aiUserSettings.limits,
       })
       .from(user)
       .leftJoin(usage, eq(usage.userId, user.id))
       .leftJoin(aiUserGroups, eq(aiUserGroups.userId, user.id))
+      .leftJoin(aiUserSettings, eq(aiUserSettings.userId, user.id))
       .orderBy(desc(sql`coalesce(${usage.requests}, 0)`), user.name)
     return rows.map(r => {
       return {
@@ -772,6 +818,10 @@ export class AiService {
         cost: r.cost ?? 0,
         lastUsedAt: r.lastUsedAt ? new Date(r.lastUsedAt).toISOString() : null,
         groupId: r.groupId ?? null,
+        custom: {
+          policy: r.customPolicy == null ? null : (AiAccessPolicy.safeParse(r.customPolicy).data ?? null),
+          limits: r.customLimits == null ? null : (AiUsageLimits.safeParse(r.customLimits).data ?? null),
+        },
       }
     })
   }

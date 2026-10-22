@@ -39,6 +39,12 @@ const LOGOS: Record<string, () => Promise<{ default: string }>> = {
   ollama: () => import('@lobehub/icons-static-svg/icons/ollama.svg?raw'),
   vllm: () => import('@lobehub/icons-static-svg/icons/vllm-color.svg?raw'),
   lmstudio: () => import('@lobehub/icons-static-svg/icons/lmstudio.svg?raw'),
+  // AI tools that connect over MCP (Settings → AI agent).
+  claudecode: () => import('@lobehub/icons-static-svg/icons/claudecode-color.svg?raw'),
+  cursor: () => import('@lobehub/icons-static-svg/icons/cursor.svg?raw'),
+  windsurf: () => import('@lobehub/icons-static-svg/icons/windsurf.svg?raw'),
+  geminicli: () => import('@lobehub/icons-static-svg/icons/geminicli-color.svg?raw'),
+  cline: () => import('@lobehub/icons-static-svg/icons/cline.svg?raw'),
 }
 
 /** Pi provider id → logo. */
@@ -91,11 +97,17 @@ const cache = new Map<string, string>()
 /** Guess a logo for a self-hosted endpoint from its name or URL. */
 function logoFor(provider: string, hint?: string): string | undefined {
   if (PROVIDER_LOGO[provider]) return PROVIDER_LOGO[provider]
+  if (provider.startsWith('logo:') && LOGOS[provider.slice(5)]) return provider.slice(5)
   const text = `${provider} ${hint ?? ''}`.toLowerCase()
   if (text.includes('ollama') || text.includes(':11434')) return 'ollama'
   if (text.includes('vllm')) return 'vllm'
   if (text.includes('lm studio') || text.includes('lmstudio') || text.includes(':1234')) return 'lmstudio'
   return undefined
+}
+
+/** An AI tool's logo by its LobeHub name (Settings → AI agent). */
+export function ToolIcon({ logo, className }: { logo: string; className?: string }) {
+  return <ProviderIcon provider={`logo:${logo}`} className={className} />
 }
 
 /** A provider's logo, or a generic bot icon for providers without one. */

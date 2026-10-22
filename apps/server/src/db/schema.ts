@@ -159,8 +159,6 @@ export const projectMembers = pgTable(
     /** Archived or in the trash, for this member only (like Overleaf); at most one is set. */
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     trashedAt: timestamp('trashed_at', { withTimezone: true }),
-    /** What an AI agent this member connects over MCP may change (McpMode); capped by the role. */
-    mcpMode: text('mcp_mode', { enum: ['manual', 'auto', 'full'] }).notNull().default('manual'),
   },
   t => [primaryKey({ columns: [t.projectId, t.userId] }), index('project_members_user_id_idx').on(t.userId)],
 )
@@ -283,6 +281,25 @@ export const aiPreferences = pgTable('ai_preferences', {
   model: text('model').notNull(),
   thinkingLevel: text('thinking_level').notNull(),
   auto: boolean('auto').notNull().default(false),
+  updatedAt: timestamps.updatedAt,
+})
+
+/** A person's own model access and usage limit (AiUserCustom), each replacing their group's when not null. */
+export const aiUserSettings = pgTable('ai_user_settings', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  policy: jsonb('policy'),
+  limits: jsonb('limits'),
+  updatedAt: timestamps.updatedAt,
+})
+
+/** What AI agents may change for a person (AiPermission); no row: manual. */
+export const aiPermissions = pgTable('ai_permissions', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  permission: text('permission', { enum: ['manual', 'auto', 'full'] }).notNull(),
   updatedAt: timestamps.updatedAt,
 })
 
@@ -591,8 +608,8 @@ export const referenceLinks = pgTable(
 )
 
 /**
- * Personal access tokens for the Git bridge (git clone/pull/push over HTTP).
- * Only a SHA-256 of the token is kept; it is shown once when created.
+ * Personal access tokens for the Git bridge (git clone/pull/push over HTTP)
+ * and AI tools over MCP. Only a SHA-256 of the token is kept; it is shown once when created.
  */
 export const gitTokens = pgTable(
   'git_tokens',
@@ -603,6 +620,13 @@ export const gitTokens = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     tokenHash: text('token_hash').notNull(),
+    /** What it is for: the Git bridge, MCP, or both (tokens made before these existed: both). */
+    uses: jsonb('uses').$type<('git' | 'mcp')[]>().notNull().default(['git', 'mcp']),
+    /** Clone and pull only; MCP tools that change nothing (not even comments). */
+    readOnly: boolean('read_only').notNull().default(false),
+    /** null: every project of the person's. */
+    projectIds: jsonb('project_ids').$type<string[]>(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
     createdAt: timestamps.createdAt,
   },

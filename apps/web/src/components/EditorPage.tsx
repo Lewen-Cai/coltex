@@ -845,7 +845,7 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
   }
   // Every member can ask the assistant; only editors can apply what it proposes.
   const aiAvailable = !!aiStatus?.available
-  const ai = useAiSession(projectId, aiAvailable && aiStarted)
+  const ai = useAiSession(projectId, aiAvailable && aiStarted, showBuild)
 
   const openAi = () => {
     setAiStarted(true)

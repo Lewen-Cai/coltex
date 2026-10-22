@@ -17,7 +17,10 @@ Run `coltex update`. Coming from v0.0.1, this first update still builds the imag
 - A new installer: it asks for the language, the TeX Live edition and how people will reach ColTex (arrow keys), shows each step with a progress line and the download with a bar, and keeps the full output in `install.log`. `--lang zh` sets Chinese for the installer, `coltex` and the setup page; `--local` skips the access question.
 
 **AI**
-- Every project is an MCP server for your own agents (Claude Code, Codex, Cursor, …), signed in with a personal token: they read and search files, edit, compile and read the log, see the history, and read, add and answer comments. You choose per project what they may change: **Manual** (their edits become your suggestions, word by word, for review), **Auto** (applied directly) or **Full access** (also delete, move and rename files).
+- Permissions for AI agents, in Settings → AI agent or in the panel's model picker: **Manual** (the AI agent's draft waits for your review, as before), **Auto** (its draft is applied when it finishes, still compiled first and rolled back if the build gets worse) or **Full access** (also delete, move and rename files).
+- ColTex is an MCP server for your own agents (Claude Code, Codex, Cursor, …): one address for all your projects, signed in with a personal token. They list your projects, read and search files, edit, compile and read the log, see the history, and read, add and answer comments. Your permission applies to them too; with Manual their edits become your suggestions, word by word, for review. Settings → AI agent creates the token and shows the configuration for each agent.
+- Settings → AI agent shows your AI usage over the last 7, 30 or 90 days (per day and per model) and what is left of your limit.
+- Personal tokens say what they are for (Git, MCP or both), can be read only, limited to some projects, and expire (30 days, 90 days, a year, or never).
 - Skills: instructions in the Agent Skills format that the AI agent follows, personal or per project, used with `/name` and imported from folders or files. Settings → AI skills lists them and has a skills chat that helps you write one (built on the skill-creator skill).
 - Usage limits per AI group: tokens and/or cost per person per day, week or month. Members see their usage under the message box.
 

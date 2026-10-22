@@ -5,6 +5,7 @@ import { CreatedGitToken, CreateGitTokenBody, GitToken, ProjectId } from '@colte
 import { requireUser } from '../auth/fastify.ts'
 import type { Deps } from '../deps.ts'
 import { NotFoundError } from '../errors.ts'
+import { grantReaches } from '../gitbridge/service.ts'
 
 const GIT_BODY_TYPES = ['application/x-git-upload-pack-request', 'application/x-git-receive-pack-request']
 
@@ -17,7 +18,7 @@ export const gitRoutes: FastifyPluginAsyncZod<Deps> = async (app, { gitBridge, p
   app.get('/me/git-tokens', { schema: { response: { 200: z.array(GitToken) } } }, async req => gitBridge.listTokens(requireUser(req).id))
 
   app.post('/me/git-tokens', { schema: { body: CreateGitTokenBody, response: { 201: CreatedGitToken } } }, async (req, reply) =>
-    reply.code(201).send(await gitBridge.createToken(requireUser(req).id, req.body.name)),
+    reply.code(201).send(await gitBridge.createToken(requireUser(req).id, req.body)),
   )
 
   app.delete('/me/git-tokens/:tokenId', { schema: { params: z.object({ tokenId: z.string().min(1) }) } }, async (req, reply) => {
@@ -45,21 +46,25 @@ export const gitRoutes: FastifyPluginAsyncZod<Deps> = async (app, { gitBridge, p
       }
       const writing = service === 'git-receive-pack' || /(^|&)service=git-receive-pack(&|$)/.test(query)
 
-      const userId = await gitBridge.authenticate(req.headers.authorization)
-      if (!userId) {
+      const grant = await gitBridge.authenticate(req.headers.authorization, 'git')
+      if (!grant) {
         return reply
           .code(401)
           .header('WWW-Authenticate', 'Basic realm="ColTex", charset="UTF-8"')
           .type('text/plain')
-          .send('Use a Git token from ColTex (Settings → Git) as the password.\n')
+          .send('Use a Git token from ColTex (Settings → Sync services) as the password.\n')
       }
+      const userId = grant.userId
       let role: string
       try {
+        // A token limited to other projects doesn't learn that this one exists.
+        if (!grantReaches(grant, projectId)) throw new NotFoundError('Project not found')
         role = (await projects.requireAccess(projectId, userId, 'viewer')).role
       } catch (err) {
         if (err instanceof NotFoundError) return reply.code(404).type('text/plain').send('Repository not found\n')
         throw err
       }
+      if (writing && grant.readOnly) return reply.code(403).type('text/plain').send('This token can only clone and pull.\n')
       // Reviewers suggest changes in the editor; a push would bypass that.
       if (writing && role !== 'owner' && role !== 'editor') {
         return reply.code(403).type('text/plain').send('You can read this project but not push to it.\n')

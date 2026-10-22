@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Type, type Static, type TSchema } from '@earendil-works/pi-ai'
 import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
-import { AiSkillBody, OUTPUT, TexLookupJob, type CompileResult, type Diagnostic, type ProjectMeta } from '@coltex/shared'
+import { AiSkillBody, OUTPUT, TexLookupJob, type AiPermission, type CompileResult, type Diagnostic, type ProjectMeta } from '@coltex/shared'
 import type { CompileQueue } from '../compile-queue.ts'
 import { BadRequestError } from '../errors.ts'
 import { engineFor } from '../projects/engine.ts'
@@ -23,6 +23,10 @@ export type ToolContext = {
   outputsDir: string
   /** Editors get the drafting tools; everyone else gets a read-only assistant. */
   canEdit: boolean
+  /** The person's AI permission (editors): with full access, files can be deleted and moved. */
+  permission: AiPermission
+  /** Deleting and moving files at once (full access); they answer the agent. */
+  files: { delete: (path: string) => Promise<string>; move: (from: string, to: string) => Promise<string> }
   /** The author's build the conversation is about, if any. */
   authorBuild: () => string | undefined
   /** Called after each trial compile. */
@@ -176,6 +180,10 @@ export function describeToolCall(name: string, args: Record<string, unknown>): s
       return `Create ${p}`
     case 'revert_file':
       return `Undo draft changes to ${p}`
+    case 'delete_file':
+      return `Delete ${p}`
+    case 'move_file':
+      return `Move ${String(args.from ?? '')} to ${String(args.to ?? '')}`
     case 'compile':
       return 'Compile with proposed changes'
     case 'read_log':
@@ -195,6 +203,8 @@ export function describeToolCall(name: string, args: Record<string, unknown>): s
 
 /** Tools that build a draft for the author to apply. */
 const DRAFT_TOOLS = new Set(['edit_file', 'create_file', 'revert_file', 'compile'])
+/** Only with full access: they change the project at once, outside the draft. */
+const FILE_TOOLS = new Set(['delete_file', 'move_file'])
 
 /** A TeX Live file or manual, read or searched by the compiler (also for MCP). */
 export async function lookup(queue: Pick<CompileQueue, 'texLookup'>, job: TexLookupJob): Promise<string> {
@@ -363,6 +373,24 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
     }),
 
     tool({
+      name: 'delete_file',
+      label: 'Delete file',
+      description:
+        'Delete a file, or a folder with everything in it, from the project. Unlike edits this happens at once, not in your draft; the project history keeps the version before. Only when the author asked for it or it is clearly part of the task.',
+      parameters: Type.Object({ path: Type.String() }),
+      execute: async ({ path: p }) => ctx.files.delete(p),
+    }),
+
+    tool({
+      name: 'move_file',
+      label: 'Move file',
+      description:
+        'Move or rename a file or folder in the project, at once (not in your draft); your draft edits to it follow. Never overwrites. Update \\input, \\include and \\includegraphics paths that pointed to it with edit_file.',
+      parameters: Type.Object({ from: Type.String(), to: Type.String() }),
+      execute: async ({ from, to }) => ctx.files.move(from, to),
+    }),
+
+    tool({
       name: 'compile',
       label: 'Compile',
       description:
@@ -428,5 +456,10 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
   ]
   // Without edit rights the assistant answers questions only: no draft, no trial builds.
   // The standard edition has no manuals: texdoc would find nothing.
-  return tools.filter(t => (ctx.canEdit || !DRAFT_TOOLS.has(t.name)) && (ctx.manuals !== false || t.name !== 'texlive_doc'))
+  return tools.filter(
+    t =>
+      (ctx.canEdit || !DRAFT_TOOLS.has(t.name)) &&
+      (!FILE_TOOLS.has(t.name) || (ctx.canEdit && ctx.permission === 'full')) &&
+      (ctx.manuals !== false || t.name !== 'texlive_doc'),
+  )
 }

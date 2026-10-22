@@ -218,6 +218,27 @@
       "when": 1792680189645,
       "tag": "0030_ai_group_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792690701508,
+      "tag": "0031_ai_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792692896322,
+      "tag": "0032_ai_user_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792698962597,
+      "tag": "0033_token_limits",
+      "breakpoints": true
     }
   ]
 }

@@ -6,10 +6,11 @@ export const PERSONAL: SettingsItem[] = [
   { title: tk('Account'), href: '#/settings', route: '/settings' },
   { title: tk('Appearance'), href: '#/settings/appearance', route: '/settings/appearance' },
   { title: tk('Sync services'), href: '#/settings/sync', route: '/settings/sync' },
+  { title: tk('AI agent'), href: '#/settings/ai', route: '/settings/ai' },
   { title: tk('AI skills'), href: '#/settings/skills', route: '/settings/skills' },
 ]
 
-/** Only people who have the AI agent see its skills page. */
+/** Only people who have the AI agent see its skills page (Settings → AI is for everyone: MCP agents bring their own model). */
 export const AI_ROUTES = new Set(['/settings/skills'])
 
 /** The personal pages someone sees (the AI ones only with AI access). */

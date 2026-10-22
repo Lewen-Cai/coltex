@@ -23,6 +23,9 @@ function countLines(before: string, after: string): { added: number; removed: nu
 }
 
 
+/** `path` is `root` or inside the folder `root`. */
+const under = (path: string, root: string) => path === root || path.startsWith(`${root}/`)
+
 /**
  * The assistant's private draft: proposed contents of the files it edited,
  * each with the content it started from. Nothing here touches the project
@@ -114,6 +117,29 @@ export class Changeset {
     const removed = this.files.delete(cleanPath(rawPath))
     if (removed) this.trial = null
     return removed
+  }
+
+  /** A file or folder was deleted from the project (full access): drop its drafts. */
+  forget(path: string): void {
+    for (const p of [...this.files.keys()]) if (under(p, path)) this.files.delete(p)
+    for (const p of [...(this.turnStart?.keys() ?? [])]) if (under(p, path)) this.turnStart!.delete(p)
+    this.trial = null
+  }
+
+  /** A file or folder was moved in the project (full access): its drafts follow. */
+  rename(from: string, to: string): void {
+    const moved = (p: string) => to + p.slice(from.length)
+    for (const [p, f] of [...this.files]) {
+      if (!under(p, from)) continue
+      this.files.delete(p)
+      this.files.set(moved(p), f)
+    }
+    for (const [p, text] of [...(this.turnStart ?? [])]) {
+      if (!under(p, from)) continue
+      this.turnStart!.delete(p)
+      this.turnStart!.set(moved(p), text)
+    }
+    this.trial = null
   }
 
   private set(path: string, entry: ChangedFile, proposed: string): void {

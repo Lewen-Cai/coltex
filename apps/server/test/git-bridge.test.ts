@@ -4,6 +4,8 @@ import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { eq } from 'drizzle-orm'
+import { gitTokens } from '../src/db/schema.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -150,6 +152,41 @@ describe('Git bridge', () => {
     const hidden = await gitCli(['ls-remote', `${base.replace('://', `://git:${bobToken}@`)}/api/git/${other}.git`], tmp)
     assert.notEqual(hidden.code, 0)
     assert.match(hidden.out, /not found|404/i)
+  })
+
+  test('tokens can be read-only, for some projects, for MCP only, or expire', async () => {
+    const make = async (body: Record<string, unknown>) => {
+      const res = await api('POST', '/me/git-tokens', { name: 'limited', ...body })
+      assert.equal(res.statusCode, 201, res.body)
+      return res.json()
+    }
+    const readOnly = await make({ uses: ['git'], readOnly: true, projectIds: [id], expiresInDays: 30 })
+    assert.deepEqual(readOnly.uses, ['git'])
+    assert.deepEqual(readOnly.projects, [{ id, name: 'Thesis' }])
+    assert.ok(Date.parse(readOnly.expiresAt) > Date.now() + 29 * 86_400_000)
+    const work = path.join(tmp, 'readonly')
+    assert.equal((await gitCli(['clone', remote(readOnly.token), work], tmp)).code, 0)
+    await fs.writeFile(path.join(work, 'ro.tex'), 'x')
+    await gitCli(['add', '-A'], work)
+    await gitCli(['commit', '-m', 'Read-only'], work)
+    const push = await gitCli(['push', 'origin', 'main'], work)
+    assert.notEqual(push.code, 0)
+    assert.match(push.out, /403|only clone and pull/)
+
+    // Limited to another project: this one isn't there.
+    const other = (await api('POST', '/projects', { name: 'Elsewhere' })).json().id
+    const elsewhere = await make({ uses: ['git'], projectIds: [other] })
+    assert.match((await gitCli(['ls-remote', remote(elsewhere.token)], tmp)).out, /not found|404/i)
+    // Projects the person can't open are refused when the token is made.
+    const bobs = (await api('POST', '/projects', { name: 'Bob only' }, bob)).json().id
+    assert.equal((await api('POST', '/me/git-tokens', { name: 'x', projectIds: [bobs] })).statusCode, 404)
+
+    const mcpOnly = await make({ uses: ['mcp'] })
+    assert.notEqual((await gitCli(['ls-remote', remote(mcpOnly.token)], tmp)).code, 0)
+
+    const expired = await make({ uses: ['git'] })
+    await t.db.update(gitTokens).set({ expiresAt: new Date(Date.now() - 1000) }).where(eq(gitTokens.id, expired.id))
+    assert.match((await gitCli(['ls-remote', remote(expired.token)], tmp)).out, /401|Authentication failed|could not read/)
   })
 
   test('deleting the project removes its repository', async () => {

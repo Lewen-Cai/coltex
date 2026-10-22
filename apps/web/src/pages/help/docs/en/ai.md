@@ -11,16 +11,19 @@
 
 The open file, the selection and recent compile errors are attached to your message; click an attachment to leave it out.
 
-## Changes are reviewed first
+## Permissions
 
-> The AI agent never edits your files directly. Its changes go into a draft:
+What the AI agent may change is up to you: choose in **Settings → AI agent**, or in the model picker at the bottom of the panel (under the thinking level); the line under the message box shows it. The same choice applies to your own agents connected over MCP (see below).
 
-1. When it's done, the draft is test-compiled and you're told whether it adds errors.
-2. **Review changes** shows the diff per file; you can apply only some of it.
-3. **Apply** writes the changes into the project and compiles; if the build gets worse, it's rolled back. A version is saved before applying.
-4. After applying, **Undo** reverts the changes and keeps edits other people made in the meantime.
+- **Manual** (the default): the AI agent's changes go into a draft, and nothing changes until you apply it.
+  1. When it's done, the draft is test-compiled and you're told whether it adds errors.
+  2. **Review changes** shows the diff per file; you can apply only some of it.
+  3. **Apply** writes the changes into the project and compiles; if the build gets worse, it's rolled back. A version is saved before applying.
+  4. After applying, **Undo** reverts the changes and keeps edits other people made in the meantime.
+- **Auto**: the draft is applied as soon as the AI agent finishes its answer, with the same safeguards: a version is saved first, the project is compiled, a worse build is rolled back, and **Undo** is there afterwards. If someone changed the same lines meanwhile, nothing is applied and the draft waits for you. When you stop the AI agent, its draft also waits for you.
+- **Full access**: as Auto, and the AI agent can also delete, move and rename files. These happen at once, not in the draft; a version is saved before the first one in each answer. The answer lists them with the files it changed.
 
-Viewers and reviewers can ask the AI agent but can't apply changes.
+Viewers and reviewers can ask the AI agent, but it can't change anything for them.
 
 ## Models and thinking
 
@@ -31,7 +34,7 @@ Viewers and reviewers can ask the AI agent but can't apply changes.
 
 - Conversations are saved for you, per project (others never see them). **New chat** starts another; **Chats** lists the previous ones: open, rename or delete them. Reopening a chat continues it where it stopped; a draft that wasn't applied is not kept, so switching away from one asks first.
 - The ring under the message box shows how much of the model's context window the chat uses (e.g. `12k / 200k`). It turns amber at 70% and red at 90%.
-- If your AI group has a usage limit, a bar beside it shows what you've used this day, week or month (hover for details). Once you reach it, messages wait until the next period.
+- If your AI group has a usage limit, a bar beside it shows what you've used this day, week or month (hover for details). Once you reach it, messages wait until the next period. **Settings → AI agent** shows your usage over the last 30 days and what is left.
 - Type `/` in the message box for commands:
   - `/compact`: summarise the chat so far and continue from the summary, freeing the context. The messages stay visible; the AI agent remembers them through the summary.
   - `/new`: start a new chat.
@@ -49,36 +52,26 @@ A skill is a set of instructions for a task you do again and again, for example 
 - ColTex comes with built-in skills (listed under **Built-in**), such as **skill-creator**. You can read and download them but not change them; a skill of your own with the same name is used instead.
 - When one of your skills has the same name as a project skill, yours is used.
 
-## Your own AI agent (MCP)
+## Your own AI tools (MCP)
 
-AI agents such as Claude Code, Codex, Cursor or VS Code can work on a project directly: read and search its files, edit them, compile and read the log, see the history, and read, add and answer comments. Every project is an MCP server for them.
+AI tools such as Claude Code, Codex, Cursor, VS Code (Copilot), Windsurf, Gemini CLI, Cline or OpenCode can work on your projects directly: list them, read and search their files, edit them, compile and read the log, see the history, and read, add and answer comments. ColTex is an MCP server for them, with one address for all your projects; the tool names the project it works on.
 
-1. Create a token in **Settings → Sync services** (the same tokens as for Git).
-2. Copy the MCP address from the project settings (**MCP**).
-3. Add it to your agent, with the token as a Bearer token. For Claude Code:
+In **Settings → AI agent**, under **Your AI tools (MCP)**, pick your tool on the left and follow the three steps: the address, a token (**Create token**; it's shown once), and the configuration to copy, with both filled in. Any other tool that connects to MCP servers over HTTP with a header for the token works too (**Other**). Apps that only accept servers signing in through OAuth (such as Claude's or ChatGPT's custom connectors) can't connect yet.
 
-   ```sh
-   claude mcp add --transport http coltex <address> --header "Authorization: Bearer <token>"
-   ```
-
-   For Codex, in `~/.codex/config.toml` (with the token in the `COLTEX_TOKEN` environment variable):
-
-   ```toml
-   [mcp_servers.coltex]
-   url = "<address>"
-   bearer_token_env_var = "COLTEX_TOKEN"
-   ```
-
-   For Cursor (`.cursor/mcp.json`) and others that take JSON:
-
-   ```json
-   { "mcpServers": { "coltex": { "url": "<address>", "headers": { "Authorization": "Bearer <token>" } } } }
-   ```
-
-What your agents may change is your choice per project, in the project settings under **MCP**:
+What your tools may change follows your permission in **Settings → AI agent**:
 
 - **Manual** (the default): their edits become your suggestions, which you and your collaborators accept or reject in **Review**. New files are created directly.
 - **Auto**: their edits are applied directly, as your own. If track changes is on for you, they are suggestions anyway.
 - **Full access**: as Auto, and they may also delete, move and rename files.
 
-Before an agent's first change in a while, the project's state is saved as a version, so you can go back. Reviewers' agents can only suggest changes, viewers' agents can only read and comment. Anyone with your token acts as you: revoke it in **Settings → Sync services** when you no longer need it.
+Before a tool's first change in a while, the project's state is saved as a version, so you can go back. Reviewers' tools can only suggest changes, viewers' tools can only read and comment.
+
+### Safety
+
+- Anyone with your token acts as you: keep it like a password, and revoke it in the token list when you no longer need it (one token per tool or computer makes that easy). Give each token only what it needs when you create it:
+  - **Used for**: Git, MCP, or both. A token made only for MCP can't clone or push, and the other way round.
+  - **Access**: **Read only** lets a tool list, read, search and compile, but not change files or comments (and lets git clone and pull, not push), whatever your permission.
+  - **Projects**: all your projects, or only the ones you pick; the others don't exist for the token.
+  - **Expires**: after 30 days, 90 days, a year, or never. An expired token stops working; revoke it and create a new one.
+- ColTex only answers your tool; it never connects to other MCP servers. What else your tool can do (a browser through Playwright MCP, a terminal, other services) is up to the tool and its own settings. A project's text, comments and logs can be written by your collaborators, so a tool that reads them could be asked, in that text, to do something with its other abilities. ColTex tells tools to treat project content as content, not instructions, but only your tool can enforce it: keep its own confirmations on for actions outside ColTex, and use **Manual** when a tool also has a browser or a terminal.
+- A tool with a browser that is signed in to ColTex acts with your full rights through the web pages, not through MCP, so the permission above doesn't limit it there. Let such tools use a browser profile that isn't signed in.

@@ -72,8 +72,9 @@ import type {
   ZoteroLibrary,
   ZoteroStatus,
   CreatedGitToken,
-  McpMode,
-  McpSettings,
+  CreateGitTokenBody,
+  AiPermission,
+  AiUserCustom,
   GitToken,
   PdfPosition,
   Invite,
@@ -246,10 +247,8 @@ export const api = {
     request<ProjectSources>(`/api/projects/${id}/sources${include === 'text' ? '?include=text' : ''}`),
   // Git bridge tokens (the token itself only comes back when created).
   gitTokens: () => request<GitToken[]>('/api/me/git-tokens'),
-  createGitToken: (name: string) => request<CreatedGitToken>('/api/me/git-tokens', json('POST', { name })),
+  createGitToken: (body: CreateGitTokenBody) => request<CreatedGitToken>('/api/me/git-tokens', json('POST', body)),
   revokeGitToken: (id: string) => request<void>(`/api/me/git-tokens/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  mcpSettings: (projectId: string) => request<McpSettings>(`/api/projects/${projectId}/mcp/settings`),
-  setMcpMode: (projectId: string, mode: McpMode) => request<McpSettings>(`/api/projects/${projectId}/mcp/settings`, json('PUT', { mode })),
   // References: the person's Zotero connection, and a project's .bib files from Zotero or DOIs.
   zoteroStatus: () => request<ZoteroStatus>('/api/me/zotero'),
   connectZotero: (apiKey: string) => request<ZoteroStatus>('/api/me/zotero', json('PUT', { apiKey })),
@@ -331,6 +330,10 @@ export const api = {
   // ---- AI assistant ----
   aiStatus: () => request<AiStatus>('/api/ai/status'),
   aiAllowance: () => request<AiAllowance | null>('/api/ai/allowance'),
+  /** The person's own usage (Settings → AI). */
+  myAiUsage: (days = 30) => request<AiUsageReport>(`/api/ai/usage?days=${days}`),
+  aiPermission: () => request<{ permission: AiPermission }>('/api/ai/permission'),
+  setAiPermission: (permission: AiPermission) => request<{ permission: AiPermission }>('/api/ai/permission', json('PUT', { permission })),
   aiSetPreference: (pick: AiPreference) => request<AiStatus>('/api/ai/preference', json('PUT', pick)),
   aiSession: (id: string) => request<AiSessionState>(`/api/projects/${id}/ai/session`),
   aiEventsUrl: (id: string) => `/api/projects/${id}/ai/session/events`,
@@ -408,6 +411,8 @@ export const api = {
   aiDeleteGroup: (id: string) => request<void>(`/api/admin/ai/groups/${id}`, { method: 'DELETE' }),
   aiSetUserGroup: (userId: string, groupId: string | null) =>
     request<{ ok: true }>(`/api/admin/ai/users/${encodeURIComponent(userId)}/group`, json('PUT', { groupId })),
+  aiSetUserCustom: (userId: string, custom: AiUserCustom) =>
+    request<{ ok: true }>(`/api/admin/ai/users/${encodeURIComponent(userId)}/custom`, json('PUT', custom)),
 
   // ---- Version history ----
   history: (id: string, before?: string) =>

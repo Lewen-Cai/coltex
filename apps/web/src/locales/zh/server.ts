@@ -57,6 +57,8 @@ const messages: Record<string, string> = {
   'Undo draft changes to {path}': '撤销对 {path} 的草稿修改',
   'Edit {path}': '编辑 {path}',
   'Create {path}': '创建 {path}',
+  'Delete {path}': '删除 {path}',
+  'Move {from} to {to}': '把 {from} 移动到 {to}',
   'Use skill “{name}”': '使用技能“{name}”',
   'Read {path} of skill “{name}”': '读取技能“{name}”的 {path}',
   'Draft skill “{name}”': '起草技能“{name}”',

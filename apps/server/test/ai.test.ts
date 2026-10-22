@@ -1,7 +1,7 @@
 import { after, before, beforeEach, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { AddressInfo } from 'node:net'
-import { fauxAssistantMessage, fauxProvider, fauxText, fauxToolCall, type FauxProviderHandle } from '@earendil-works/pi-ai'
+import { fauxAssistantMessage, fauxProvider, fauxText, fauxToolCall, getCurrentTools, type FauxProviderHandle, type Message } from '@earendil-works/pi-ai'
 import type { AiSessionState, AiStreamEvent, CompileJob, CompileResult } from '@coltex/shared'
 import { DbCredentialStore, SecretBox } from '../src/ai/credentials.ts'
 import { aiCredentials, aiUsage } from '../src/db/schema.ts'
@@ -292,6 +292,67 @@ describe('AI agent', () => {
     assert.ok(!(await readMain()).includes(FIXED_LINE))
   })
 
+  test('auto applies the draft when the turn ends; full access also deletes and moves at once', async () => {
+    const put = (path: string, content: string) =>
+      t.app.inject({ method: 'PUT', url: `/api/projects/${projectId}/files/${path}`, headers: { cookie: admin, 'content-type': 'text/plain' }, payload: content })
+    const seen: { tools: string[]; text: string }[] = []
+    // The tools the model may call are declared by the transcript's system messages.
+    const watch = (reply: ReturnType<typeof fauxAssistantMessage>) => (context: { messages: Message[] }) => {
+      const last = context.messages.findLast(m => m.role === 'user')
+      seen.push({ tools: getCurrentTools(context.messages).map(x => x.name), text: JSON.stringify(last?.content ?? '') })
+      return reply
+    }
+    try {
+      assert.deepEqual((await api('PUT', '/ai/permission', admin, { permission: 'auto' })).json(), { permission: 'auto' })
+      await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+      faux.setResponses([
+        watch(fauxAssistantMessage(fauxToolCall('edit_file', { path: 'main.tex', old_text: ORIGINAL_LINE, new_text: FIXED_LINE }), { stopReason: 'toolUse' })),
+        fauxAssistantMessage(fauxText('Done.')),
+      ])
+      await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'Make ColTex bold' })
+      await idle()
+      let s = await state()
+      assert.equal(s.changes.files.length, 0, 'nothing left in the draft')
+      assert.ok((await readMain()).includes(FIXED_LINE), 'applied without review')
+      assert.deepEqual(s.lastApplied?.files, ['main.tex'])
+      assert.match(seen[0]!.text, /Permission: auto/)
+      assert.ok(seen[0]!.tools.includes('edit_file') && !seen[0]!.tools.includes('delete_file'))
+
+      await put('old.tex', 'Old text.\n')
+      await put('figs/a.tex', 'A\n')
+      await api('PUT', '/ai/permission', admin, { permission: 'full' })
+      faux.setResponses([
+        watch(fauxAssistantMessage(fauxToolCall('edit_file', { path: 'old.tex', old_text: 'Old text.', new_text: 'New text.' }), { stopReason: 'toolUse' })),
+        fauxAssistantMessage(fauxToolCall('move_file', { from: 'old.tex', to: 'chapters/one.tex' }), { stopReason: 'toolUse' }),
+        fauxAssistantMessage(fauxToolCall('delete_file', { path: 'figs' }), { stopReason: 'toolUse' }),
+        fauxAssistantMessage(fauxText('Tidied up.')),
+      ])
+      await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'Tidy the files' })
+      await idle()
+      assert.match(seen[1]!.text, /Permission: full access/)
+      assert.ok(seen[1]!.tools.includes('delete_file') && seen[1]!.tools.includes('move_file'))
+      const file = (p: string) => api('GET', `/projects/${projectId}/files/${p}`, admin)
+      assert.equal((await file('chapters/one.tex')).body, 'New text.\n', 'moved, and the draft edit followed and was applied')
+      assert.equal((await file('old.tex')).statusCode, 404)
+      assert.equal((await file('figs/a.tex')).statusCode, 404)
+      s = await state()
+      const card = s.items.findLast(i => i.kind === 'changes')
+      assert.ok(card?.kind === 'changes')
+      assert.deepEqual(
+        card.files.map(f => [f.kind, f.path, f.to]),
+        [
+          ['moved', 'old.tex', 'chapters/one.tex'],
+          ['deleted', 'figs/', undefined],
+          ['modified', 'chapters/one.tex', undefined],
+        ],
+      )
+    } finally {
+      await api('PUT', '/ai/permission', admin, { permission: 'manual' })
+      for (const p of ['chapters', 'figs', 'old.tex']) await api('DELETE', `/projects/${projectId}/${p.endsWith('.tex') ? 'files' : 'folders'}/${p}`, admin)
+      await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    }
+  })
+
   test('discarding drops the draft and tells the assistant next time', async () => {
     await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
     await askForFix()
@@ -552,6 +613,43 @@ describe('AI agent', () => {
     }
     assert.equal((await api('GET', '/ai/allowance', viewer)).json(), null)
     assert.equal((await api('PUT', `/admin/ai/groups/${everyone}`, admin, { name: 'Everyone', policy, limits: { period: 'year', tokens: 1 } })).statusCode, 400)
+  })
+
+  test('one person’s own model access and limit replace their group’s', async () => {
+    const users = (await api('GET', '/admin/ai/users?days=30', admin)).json()
+    const viewerId = users.find((u: { email: string }) => u.email === 'viewer@lab.test').userId
+    const custom = (body: unknown) => api('PUT', `/admin/ai/users/${viewerId}/custom`, admin, body)
+    try {
+      const used = { input: 5, output: 5, cacheRead: 0, cacheWrite: 0, totalTokens: 10, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } }
+      await t.ai.recordUsage({ userId: viewerId, projectId: null, provider: 'faux', model: 'faux-1', usage: used })
+      // Only faux-think, and a tiny limit already reached, while the group allows everything without limits.
+      const set = await custom({ policy: { mode: 'selected', providers: [], models: [{ provider: 'faux', id: 'faux-think' }] }, limits: { period: 'day', tokens: 1, cost: null } })
+      assert.equal(set.statusCode, 200, set.body)
+      assert.deepEqual((await api('GET', '/ai/status', viewer)).json().models.map((m: { id: string }) => m.id), ['faux-think'])
+      const allowance = (await api('GET', '/ai/allowance', viewer)).json()
+      assert.deepEqual([allowance.period, allowance.tokens, allowance.exceeded], ['day', 1, true])
+      const row = (await api('GET', '/admin/ai/users?days=30', admin)).json().find((u: { userId: string }) => u.userId === viewerId)
+      assert.equal(row.custom.limits.tokens, 1)
+      assert.equal(row.custom.policy.mode, 'selected')
+
+      // Only the limit: the group's models again. No limit at all overrides a group's limit too.
+      await custom({ policy: null, limits: { period: 'month', tokens: null, cost: null } })
+      assert.equal((await api('GET', '/ai/status', viewer)).json().models.length, 2)
+      assert.equal((await api('GET', '/ai/allowance', viewer)).json(), null)
+
+      // Custom access works without a group.
+      await api('PUT', `/admin/ai/users/${viewerId}/group`, admin, { groupId: null })
+      assert.equal((await api('GET', '/ai/status', viewer)).json().available, false)
+      await custom({ policy: { mode: 'all', providers: [], models: [] }, limits: null })
+      assert.equal((await api('GET', '/ai/status', viewer)).json().available, true)
+      assert.equal((await custom({ policy: null, limits: null })).statusCode, 200)
+      assert.equal((await api('GET', '/ai/status', viewer)).json().available, false)
+      assert.equal((await api('PUT', '/admin/ai/users/nobody/custom', admin, { policy: null, limits: null })).statusCode, 404)
+      assert.equal((await api('PUT', `/admin/ai/users/${viewerId}/custom`, viewer, { policy: null, limits: null })).statusCode, 403)
+    } finally {
+      await custom({ policy: null, limits: null })
+      await api('PUT', `/admin/ai/users/${viewerId}/group`, admin, { groupId: everyone })
+    }
   })
 
   test('usage periods are calendar days, weeks from Monday and months', () => {

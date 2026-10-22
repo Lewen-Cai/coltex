@@ -17,14 +17,15 @@ describe('MCP server', () => {
   const api = (method: 'GET' | 'PUT' | 'POST' | 'DELETE', url: string, payload?: unknown, cookie = admin) =>
     t.app.inject({ method, url: `/api${url}`, headers: { cookie }, ...(payload === undefined ? {} : { payload: payload as string }) })
   const post = (body: unknown, token = tokens.admin!, headers: Record<string, string> = {}) =>
-    t.app.inject({ method: 'POST', url: `/api/projects/${id}/mcp`, headers: { authorization: `Bearer ${token}`, ...headers }, payload: body as string })
+    t.app.inject({ method: 'POST', url: '/api/mcp', headers: { authorization: `Bearer ${token}`, ...headers }, payload: body as string })
   const rpc = async (method: string, params: Record<string, unknown> = {}, token?: string) => {
     const res = await post({ jsonrpc: '2.0', id: nextId++, method, params }, token)
     assert.equal(res.statusCode, 200, res.body)
     return res.json()
   }
+  /** A tool about the test project (unless args name another). */
   const call = async (name: string, args: Record<string, unknown> = {}, token?: string) => {
-    const { result, error } = await rpc('tools/call', { name, arguments: args }, token)
+    const { result, error } = await rpc('tools/call', { name, arguments: name === 'list_projects' ? args : { project: id, ...args } }, token)
     assert.equal(error, undefined)
     return { text: result.content[0].text as string, isError: !!result.isError }
   }
@@ -34,6 +35,7 @@ describe('MCP server', () => {
     return (await api('GET', `/projects/${id}/files/${p}`)).body
   }
   const review = async () => (await api('GET', `/projects/${id}/review`)).json()
+  const setPermission = (permission: string, cookie = admin) => api('PUT', '/ai/permission', { permission }, cookie)
 
   before(async () => {
     t = await createTestApp()
@@ -62,18 +64,19 @@ describe('MCP server', () => {
   })
   after(() => t?.close())
 
-  test('needs a token of a member, POST only, and no foreign origin', async () => {
+  test('needs a token, POST only, no foreign origin, and only the person’s projects', async () => {
     assert.equal((await post({ jsonrpc: '2.0', id: 1, method: 'ping' }, 'coltex_wrong')).statusCode, 401)
-    assert.equal((await t.app.inject({ method: 'POST', url: `/api/projects/${id}/mcp`, payload: {} })).statusCode, 401)
+    assert.equal((await t.app.inject({ method: 'POST', url: '/api/mcp', payload: {} })).statusCode, 401)
     const other = (await api('POST', '/projects', { name: 'Other' }, bob)).json().id
-    const res = await t.app.inject({
-      method: 'POST',
-      url: `/api/projects/${other}/mcp`,
-      headers: { authorization: `Bearer ${tokens.carol}` },
-      payload: { jsonrpc: '2.0', id: 1, method: 'ping' },
-    })
-    assert.equal(res.statusCode, 404)
-    assert.equal((await t.app.inject({ method: 'GET', url: `/api/projects/${id}/mcp`, headers: { authorization: `Bearer ${tokens.admin}` } })).statusCode, 405)
+    const foreign = await call('list_files', { project: other }, tokens.carol)
+    assert.ok(foreign.isError)
+    assert.match(foreign.text, /There is no project/)
+    assert.match((await call('list_files', { project: 'Other' }, tokens.carol)).text, /There is no project “Other”/)
+    assert.match((await call('list_projects', {}, tokens.carol)).text, new RegExp(`^${id} “Thesis” \\(viewer; main document main\\.tex; .*\\): read and comment$`))
+    assert.ok((await call('list_files', {}, tokens.bob)).text.includes('main.tex'))
+    // By name, ignoring case.
+    assert.match((await call('list_files', { project: 'thesis' })).text, /main\.tex/)
+    assert.equal((await t.app.inject({ method: 'GET', url: '/api/mcp', headers: { authorization: `Bearer ${tokens.admin}` } })).statusCode, 405)
     assert.equal((await post({ jsonrpc: '2.0', id: 1, method: 'ping' }, tokens.admin, { origin: 'https://evil.example' })).statusCode, 403)
   })
 
@@ -81,7 +84,7 @@ describe('MCP server', () => {
     const init = await rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1' } })
     assert.equal(init.result.protocolVersion, '2025-06-18')
     assert.equal(init.result.serverInfo.name, 'coltex')
-    assert.match(init.result.instructions, /Thesis/)
+    assert.match(init.result.instructions, /list_projects/)
     assert.match(init.result.instructions, /suggestions/)
     assert.equal((await rpc('initialize', { protocolVersion: '1999-01-01' })).result.protocolVersion, '2025-11-25')
     assert.equal((await post({ jsonrpc: '2.0', method: 'notifications/initialized' })).statusCode, 202)
@@ -108,8 +111,8 @@ describe('MCP server', () => {
     assert.ok(!(await call('read_log')).isError)
   })
 
-  test('manual mode: edits become the person’s suggestions; deleting needs full access', async () => {
-    assert.deepEqual((await api('GET', `/projects/${id}/mcp/settings`)).json(), { mode: 'manual', modes: ['manual', 'auto', 'full'] })
+  test('manual: edits become the person’s suggestions; deleting needs full access', async () => {
+    assert.deepEqual((await api('GET', '/ai/permission')).json(), { permission: 'manual' })
     const names = await tools()
     assert.ok(names.includes('edit_file') && names.includes('write_file'))
     assert.ok(!names.includes('delete_file') && !names.includes('move_file'))
@@ -135,8 +138,8 @@ describe('MCP server', () => {
     assert.match(ambiguous.text, /occurs 2 times/)
   })
 
-  test('auto mode writes directly (unless the project tracks the person); full access deletes and moves', async () => {
-    assert.equal((await api('PUT', `/projects/${id}/mcp/settings`, { mode: 'auto' })).json().mode, 'auto')
+  test('auto writes directly (unless the project tracks the person); full access deletes and moves', async () => {
+    assert.deepEqual((await setPermission('auto')).json(), { permission: 'auto' })
     const before = (await review()).changes.length
     assert.match((await call('edit_file', { path: 'main.tex', old_text: 'Hello world.', new_text: 'Hello, world.' })).text, /^Edited main\.tex at line 1\.$/)
     assert.match(await read('main.tex'), /^Hello, world\./)
@@ -150,7 +153,8 @@ describe('MCP server', () => {
     assert.equal((await review()).changes.length, before + 2)
     await api('PUT', `/projects/${id}/review/track-changes`, { everyone: false, users: [] })
 
-    await api('PUT', `/projects/${id}/mcp/settings`, { mode: 'full' })
+    await setPermission('full')
+    assert.match((await call('list_projects')).text, /\(owner; .*\): edits are applied; may delete and move files/)
     assert.ok((await tools()).includes('delete_file'))
     assert.equal((await call('move_file', { from: 'notes.tex', to: 'chapters/notes.tex' })).text, 'Moved notes.tex to chapters/notes.tex.')
     assert.equal((await call('delete_file', { path: 'chapters' })).text, 'Deleted chapters/.')
@@ -162,16 +166,16 @@ describe('MCP server', () => {
   })
 
   test('reviewers only suggest, viewers only read and comment', async () => {
-    assert.deepEqual((await api('GET', `/projects/${id}/mcp/settings`, undefined, bob)).json(), { mode: 'manual', modes: ['manual'] })
-    assert.equal((await api('PUT', `/projects/${id}/mcp/settings`, { mode: 'auto' }, bob)).statusCode, 400)
+    // Full access chosen, but a reviewer here: suggestions only.
+    await setPermission('full', bob)
+    assert.match((await call('list_projects', {}, tokens.bob)).text, /\(reviewer; .*\): edits become suggestions/)
+    assert.match((await call('delete_file', { path: 'main.tex' }, tokens.bob)).text, /only lets an agent suggest changes/)
     assert.match((await call('edit_file', { path: 'main.tex', old_text: 'Hello, world.', new_text: 'Hello there.' }, tokens.bob)).text, /as a suggestion/)
     assert.match((await review()).changes.map((c: { name: string }) => c.name).join(), /Bob/)
     const create = await call('write_file', { path: 'bob.tex', content: 'x' }, tokens.bob)
     assert.ok(create.isError)
 
-    assert.deepEqual((await api('GET', `/projects/${id}/mcp/settings`, undefined, carol)).json(), { mode: null, modes: [] })
-    const names = await tools(tokens.carol)
-    assert.ok(!names.includes('edit_file') && names.includes('add_comment'))
+    assert.ok((await tools(tokens.carol)).includes('add_comment'))
     const edit = await call('edit_file', { path: 'main.tex', old_text: 'x', new_text: 'y' }, tokens.carol)
     assert.match(edit.text, /only lets an agent read and comment/)
 
@@ -183,6 +187,28 @@ describe('MCP server', () => {
     await call('resolve_comment', { id: threadId })
     assert.equal((await call('list_comments')).text, 'No comments.')
     assert.match((await call('list_comments', { include_resolved: true })).text, /\(resolved\)[\s\S]*Admin: Done\./)
+  })
+
+  test('a read-only token offers only reading tools; a limited one sees only its projects; a Git-only one is refused', async () => {
+    const make = async (body: Record<string, unknown>) => (await api('POST', '/me/git-tokens', { name: 'limited', ...body })).json().token as string
+    const readOnly = await make({ uses: ['mcp'], readOnly: true })
+    const names = await tools(readOnly)
+    assert.ok(names.includes('read_file') && names.includes('compile'))
+    assert.ok(!names.includes('edit_file') && !names.includes('add_comment') && !names.includes('delete_file'))
+    assert.match((await rpc('initialize', {}, readOnly)).result.instructions, /can only read/)
+    assert.match((await call('list_projects', {}, readOnly)).text, /read only \(this token\)/)
+    const refused = await call('edit_file', { path: 'main.tex', old_text: 'Hello', new_text: 'Hi' }, readOnly)
+    assert.ok(refused.isError)
+    assert.match(refused.text, /can only read/)
+
+    const other = (await api('POST', '/projects', { name: 'Side project' })).json().id
+    const limited = await make({ uses: ['mcp'], projectIds: [other] })
+    assert.match((await call('list_projects', {}, limited)).text, /^\S+ “Side project”/)
+    assert.doesNotMatch((await call('list_projects', {}, limited)).text, /Thesis/)
+    assert.match((await call('list_files', { project: id }, limited)).text, /There is no project/)
+
+    const gitOnly = await make({ uses: ['git'] })
+    assert.equal((await post({ jsonrpc: '2.0', id: 1, method: 'ping' }, gitOnly)).statusCode, 401)
   })
 
   test('list_versions shows the history', async () => {

@@ -22,7 +22,7 @@ A linked file comes from elsewhere and can be refreshed from its source at any t
 
 Every project can be cloned, pulled and pushed with git:
 
-1. Create a token in **Settings → Sync services** (it's shown once; keep it).
+1. Create a token in **Settings → Sync services** for Git (it's shown once; keep it). A **Read only** token can clone and pull but not push.
 2. Copy the clone address from the project settings and run `git clone <address>`. When git asks, use any user name and the token as the password.
 3. Commit locally and `git push`: the changes go into the project at once, where collaborators see them.
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AiApplyBody, AiItem, AiMessageBody, AiPreference, AiSaveProposedSkill, AiSessionState, AiStatus, AiStreamEvent, CompileResult } from '@coltex/shared'
 import { toast } from 'sonner'
 import { api } from './api.ts'
@@ -84,6 +84,8 @@ function reduce(prev: AiSessionState | undefined, e: AiStreamEvent): AiSessionSt
       return { ...prev, changes: e.changes }
     case 'running':
       return { ...prev, running: e.running }
+    case 'built':
+      return prev
   }
 }
 
@@ -92,17 +94,25 @@ function reduce(prev: AiSessionState | undefined, e: AiStreamEvent): AiSessionSt
  * arrive over server-sent events; the first event is always a full snapshot,
  * so reconnecting (EventSource retries on its own) resynchronises.
  */
-export function useAiSession(projectId: string, enabled: boolean) {
+export function useAiSession(projectId: string, enabled: boolean, onBuilt?: (compile: CompileResult) => void) {
   const [state, setState] = useState<AiSessionState>()
   const [error, setError] = useState<string>()
   const [busy, setBusy] = useState(false)
   // Bumped after "new chat": the server replaced the session, so resubscribe.
   const [epoch, setEpoch] = useState(0)
 
+  // The draft was applied on its own (auto, full access): its build goes to the PDF viewer.
+  const built = useRef(onBuilt)
+  built.current = onBuilt
+
   useEffect(() => {
     if (!enabled) return
     const source = new EventSource(api.aiEventsUrl(projectId))
-    source.onmessage = ev => setState(prev => reduce(prev, JSON.parse(ev.data) as AiStreamEvent))
+    source.onmessage = ev => {
+      const event = JSON.parse(ev.data) as AiStreamEvent
+      if (event.type === 'built') built.current?.(event.compile)
+      else setState(prev => reduce(prev, event))
+    }
     return () => source.close()
   }, [projectId, enabled, epoch])
 

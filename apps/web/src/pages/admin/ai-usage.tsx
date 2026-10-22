@@ -1,28 +1,26 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { motion } from 'motion/react'
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import { ArrowDownToLine, ArrowUpFromLine, ChevronRight, CircleDollarSign, Coins, MessageSquare, Pencil, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { AiAccessPolicy, AiGroup, AiModelInfo, AiUsageLimits, AiProviderStatus, AiUsageReport, AiUserRow } from '@coltex/shared'
+import type { AiAccessPolicy, AiGroup, AiModelInfo, AiUsageLimits, AiProviderStatus, AiUsageReport, AiUserCustom, AiUserRow } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
 import { ProviderIcon } from '@/components/provider-icon'
 import { PageHeader } from '@/components/shell/app-shell'
 import { StatCard } from '@/components/stat-card'
+import { ByModel, PeriodTabs, UsageChart, formatCost, type Period } from '@/components/usage-chart'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -33,71 +31,8 @@ import { formatNumber, timeAgo } from '@/lib/format'
 import { intlLocale, plural, t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-const PERIODS = [7, 30, 90] as const
-type Period = (typeof PERIODS)[number]
-
 const EMPTY_SELECTION: AiAccessPolicy = { mode: 'selected', providers: [], models: [] }
 
-const formatCost = (n: number) => (n > 0 && n < 0.01 ? '< $0.01' : `$${n.toFixed(2)}`)
-
-export function UsageChart({ data, metric }: { data: AiUsageReport['byDay']; metric: 'requests' | 'tokens' }) {
-  // Built at render: the label follows the interface language.
-  const config = {
-    requests: { label: t('Requests'), color: 'var(--chart-1)' },
-    tokens: { label: t('Tokens'), color: 'var(--chart-3)' },
-  } satisfies ChartConfig
-  return (
-    <ChartContainer config={config} className="aspect-auto h-56 w-full">
-      <AreaChart data={data} margin={{ left: 4, right: 4, top: 8 }}>
-        <defs>
-          <linearGradient id={`fill-${metric}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={`var(--color-${metric})`} stopOpacity={0.45} />
-            <stop offset="95%" stopColor={`var(--color-${metric})`} stopOpacity={0.02} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid vertical={false} strokeDasharray="3 3" />
-        <XAxis
-          dataKey="date"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={28}
-          tickFormatter={d => new Date(d).toLocaleDateString(intlLocale(), { month: 'short', day: 'numeric' })}
-        />
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent labelFormatter={d => new Date(String(d)).toLocaleDateString(intlLocale(), { dateStyle: 'medium' })} indicator="dot" />}
-        />
-        <Area dataKey={metric} type="monotone" fill={`url(#fill-${metric})`} stroke={`var(--color-${metric})`} strokeWidth={2} />
-      </AreaChart>
-    </ChartContainer>
-  )
-}
-
-function ByModel({ report, providerName }: { report: AiUsageReport; providerName: (id: string) => string }) {
-  const max = Math.max(1, ...report.byModel.map(m => m.requests))
-  if (report.byModel.length === 0) return <p className="py-8 text-center text-sm text-muted-foreground">{t('No requests in this period.')}</p>
-  return (
-    <div className="grid gap-3">
-      {report.byModel.map((m, i) => (
-        <motion.div key={`${m.provider}/${m.model}`} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} className="grid gap-1.5">
-          <div className="flex items-center gap-2 text-sm">
-            <ProviderIcon provider={m.provider} className="size-4 shrink-0" />
-            <span className="min-w-0 flex-1 truncate font-medium">{m.model}</span>
-            <span className="tabular-nums text-muted-foreground">{plural(m.requests, '{n} request', '{n} requests', { n: formatNumber(m.requests) })}</span>
-          </div>
-          <Progress value={(m.requests / max) * 100} className="h-1.5" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span className="truncate">
-              {providerName(m.provider)} · {t('{tokens} tokens', { tokens: formatNumber(m.inputTokens + m.outputTokens) })}
-            </span>
-            {m.cost > 0 && <span>{formatCost(m.cost)}</span>}
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  )
-}
 
 /** What a group's policy allows, in a few words. */
 function policySummary(policy: AiAccessPolicy): string {
@@ -113,11 +48,89 @@ function policySummary(policy: AiAccessPolicy): string {
   )
 }
 
-/** A person's AI access in a table cell: their group, or none. */
-function GroupBadge({ group, isAdmin }: { group: AiGroup | undefined; isAdmin: boolean }) {
+/** A person's AI access in a table cell: their group, or none, and whether the admin customised it. */
+function GroupBadge({ group, isAdmin, custom }: { group: AiGroup | undefined; isAdmin: boolean; custom: AiUserCustom }) {
   if (isAdmin) return <Badge variant="secondary">{t('All models (system admin)')}</Badge>
-  if (!group) return <Badge variant="outline" className="text-muted-foreground">{t('No AI')}</Badge>
-  return <Badge>{group.name}</Badge>
+  const customised = !!custom.policy || !!custom.limits
+  return (
+    <span className="flex items-center gap-1">
+      {group ? (
+        <Badge>{group.name}</Badge>
+      ) : !custom.policy ? (
+        <Badge variant="outline" className="text-muted-foreground">
+          {t('No AI')}
+        </Badge>
+      ) : null}
+      {customised && <Badge variant="outline">{t('Customised')}</Badge>}
+    </span>
+  )
+}
+
+/** A usage limit as typed: empty fields mean no limit. */
+type LimitDraft = { period: AiUsageLimits['period']; tokens: string; cost: string }
+const limitDraft = (limits: AiUsageLimits | null | undefined): LimitDraft => ({
+  period: limits?.period ?? 'month',
+  tokens: limits?.tokens != null ? String(limits.tokens) : '',
+  cost: limits?.cost != null ? String(limits.cost) : '',
+})
+const draftLimits = (d: LimitDraft): AiUsageLimits => ({
+  period: d.period,
+  tokens: d.tokens.trim() === '' ? null : Number(d.tokens),
+  cost: d.cost.trim() === '' ? null : Number(d.cost),
+})
+const limitInvalid = (d: LimitDraft) => {
+  const { tokens, cost } = draftLimits(d)
+  return (tokens !== null && !(Number.isInteger(tokens) && tokens >= 1)) || (cost !== null && !(cost >= 0.01))
+}
+
+/** Period, tokens and cost of a usage limit (a group's, or one person's). */
+function LimitFields({ id, value, onChange, narrow }: { id: string; value: LimitDraft; onChange: (next: LimitDraft) => void; narrow?: boolean }) {
+  return (
+    <>
+      <div className={cn('grid gap-2', narrow ? 'grid-cols-2' : 'sm:grid-cols-[9rem_1fr_1fr]')}>
+        <Select value={value.period} onValueChange={v => onChange({ ...value, period: v as AiUsageLimits['period'] })}>
+          <SelectTrigger className={cn('w-full', narrow && 'col-span-2')} aria-label={t('Period')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(['day', 'week', 'month'] as const).map(p => (
+              <SelectItem key={p} value={p}>
+                {t(PERIOD_LABEL[p])}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <InputGroup>
+          <InputGroupInput
+            id={id}
+            type="number"
+            min={1}
+            step={1}
+            inputMode="numeric"
+            value={value.tokens}
+            onChange={e => onChange({ ...value, tokens: e.target.value })}
+            placeholder={t('No limit')}
+            aria-label={t('Tokens')}
+          />
+          <InputGroupAddon align="inline-end">{t('tokens')}</InputGroupAddon>
+        </InputGroup>
+        <InputGroup>
+          <InputGroupAddon>$</InputGroupAddon>
+          <InputGroupInput
+            type="number"
+            min={0.01}
+            step={0.01}
+            inputMode="decimal"
+            value={value.cost}
+            onChange={e => onChange({ ...value, cost: e.target.value })}
+            placeholder={t('No limit')}
+            aria-label={t('Cost (US$)')}
+          />
+        </InputGroup>
+      </div>
+      {limitInvalid(value) && <p className="text-xs text-destructive">{t('Tokens are a whole number of at least 1, the cost at least $0.01.')}</p>}
+    </>
+  )
 }
 
 /**
@@ -256,28 +269,21 @@ function GroupDialog({
 }) {
   const [name, setName] = useState('')
   const [policy, setPolicy] = useState<AiAccessPolicy>({ mode: 'all', providers: [], models: [] })
-  const [period, setPeriod] = useState<AiUsageLimits['period']>('month')
-  const [tokenLimit, setTokenLimit] = useState('')
-  const [costLimit, setCostLimit] = useState('')
+  const [limits, setLimits] = useState<LimitDraft>(limitDraft(null))
   const [saving, setSaving] = useState(false)
   useEffect(() => {
     if (!open) return
     setName(group?.name ?? '')
     setPolicy(group?.policy ?? { mode: 'all', providers: [], models: [] })
-    setPeriod(group?.limits.period ?? 'month')
-    setTokenLimit(group?.limits.tokens != null ? String(group.limits.tokens) : '')
-    setCostLimit(group?.limits.cost != null ? String(group.limits.cost) : '')
+    setLimits(limitDraft(group?.limits))
   }, [open, group])
-  // Empty means no limit.
-  const tokens = tokenLimit.trim() === '' ? null : Number(tokenLimit)
-  const cost = costLimit.trim() === '' ? null : Number(costLimit)
-  const invalid = (tokens !== null && !(Number.isInteger(tokens) && tokens >= 1)) || (cost !== null && !(cost >= 0.01))
+  const invalid = limitInvalid(limits)
 
   const save = async (e: FormEvent) => {
     e.preventDefault()
     setSaving(true)
     try {
-      const body = { name: name.trim(), policy, limits: { period, tokens, cost } }
+      const body = { name: name.trim(), policy, limits: draftLimits(limits) }
       if (group) await api.aiUpdateGroup(group.id, body)
       else await api.aiCreateGroup(body)
       toast.success(group ? t('Group updated') : t('Group created'))
@@ -306,48 +312,7 @@ function GroupDialog({
           </Field>
           <Field>
             <FieldLabel htmlFor="ai-group-tokens">{t('Usage limit for each member')}</FieldLabel>
-            <div className="grid gap-2 sm:grid-cols-[9rem_1fr_1fr]">
-              <Select value={period} onValueChange={v => setPeriod(v as AiUsageLimits['period'])}>
-                <SelectTrigger className="w-full" aria-label={t('Period')}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(['day', 'week', 'month'] as const).map(p => (
-                    <SelectItem key={p} value={p}>
-                      {t(PERIOD_LABEL[p])}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <InputGroup>
-                <InputGroupInput
-                  id="ai-group-tokens"
-                  type="number"
-                  min={1}
-                  step={1}
-                  inputMode="numeric"
-                  value={tokenLimit}
-                  onChange={e => setTokenLimit(e.target.value)}
-                  placeholder={t('No limit')}
-                  aria-label={t('Tokens')}
-                />
-                <InputGroupAddon align="inline-end">{t('tokens')}</InputGroupAddon>
-              </InputGroup>
-              <InputGroup>
-                <InputGroupAddon>$</InputGroupAddon>
-                <InputGroupInput
-                  type="number"
-                  min={0.01}
-                  step={0.01}
-                  inputMode="decimal"
-                  value={costLimit}
-                  onChange={e => setCostLimit(e.target.value)}
-                  placeholder={t('No limit')}
-                  aria-label={t('Cost (US$)')}
-                />
-              </InputGroup>
-            </div>
-            {invalid && <p className="text-xs text-destructive">{t('Tokens are a whole number of at least 1, the cost at least $0.01.')}</p>}
+            <LimitFields id="ai-group-tokens" value={limits} onChange={setLimits} />
           </Field>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -368,6 +333,7 @@ function UserSheet({
   row,
   days,
   groups,
+  models,
   providerName,
   onClose,
   onSaved,
@@ -375,6 +341,7 @@ function UserSheet({
   row: AiUserRow | undefined
   days: Period
   groups: AiGroup[]
+  models: AiModelInfo[]
   providerName: (id: string) => string
   onClose: () => void
   onSaved: () => void
@@ -434,6 +401,7 @@ function UserSheet({
                   </Select>
                 )}
               </section>
+              {!isAdmin && <CustomSection row={row} models={models} providerName={providerName} onSaved={onSaved} />}
               <section className="grid gap-3">
                 <h3 className="text-sm font-semibold">{plural(days, 'Usage, last {n} day', 'Usage, last {n} days')}</h3>
                 <div className="grid grid-cols-3 gap-2 text-center">
@@ -466,6 +434,63 @@ function UserSheet({
 }
 
 /** The groups and what each may use; people outside every group have no AI (admins always have every model). */
+/** One person's own model access and usage limit, each replacing their group's while switched on. */
+function CustomSection({ row, models, providerName, onSaved }: { row: AiUserRow; models: AiModelInfo[]; providerName: (id: string) => string; onSaved: () => void }) {
+  const [policyOn, setPolicyOn] = useState(false)
+  const [policy, setPolicy] = useState<AiAccessPolicy>({ mode: 'all', providers: [], models: [] })
+  const [limitsOn, setLimitsOn] = useState(false)
+  const [limits, setLimits] = useState<LimitDraft>(limitDraft(null))
+  const [saving, setSaving] = useState(false)
+  useEffect(() => {
+    setPolicyOn(!!row.custom.policy)
+    setPolicy(row.custom.policy ?? { mode: 'all', providers: [], models: [] })
+    setLimitsOn(!!row.custom.limits)
+    setLimits(limitDraft(row.custom.limits))
+  }, [row])
+  const next: AiUserCustom = { policy: policyOn ? policy : null, limits: limitsOn ? draftLimits(limits) : null }
+  const changed = JSON.stringify(next) !== JSON.stringify(row.custom)
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      await api.aiSetUserCustom(row.userId, next)
+      toast.success(t('Saved'))
+      onSaved()
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <section className="grid gap-4">
+      <h3 className="text-sm font-semibold">{t('Customise')}</h3>
+      <div className="grid gap-3">
+        <label className="flex items-center justify-between gap-3 text-sm">
+          {t('Own model access')}
+          <Switch checked={policyOn} onCheckedChange={setPolicyOn} />
+        </label>
+        {policyOn && <AccessEditor value={policy} onChange={setPolicy} models={models} providerName={providerName} />}
+      </div>
+      <div className="grid gap-3">
+        <label className="flex items-center justify-between gap-3 text-sm">
+          {t('Own usage limit')}
+          <Switch checked={limitsOn} onCheckedChange={setLimitsOn} />
+        </label>
+        {limitsOn && <LimitFields id={`ai-user-tokens-${row.userId}`} value={limits} onChange={setLimits} narrow />}
+      </div>
+      {changed && (
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => void save()} disabled={saving || (limitsOn && limitInvalid(limits))}>
+            {saving && <Spinner />} {t('Save')}
+          </Button>
+        </div>
+      )}
+    </section>
+  )
+}
+
 function GroupsCard({
   groups,
   models,
@@ -589,15 +614,7 @@ export function AdminAiUsagePage() {
       <PageHeader
         title={t('AI usage & access')}
         actions={
-          <Tabs value={String(days)} onValueChange={v => setDays(Number(v) as Period)}>
-            <TabsList>
-              {PERIODS.map(p => (
-                <TabsTrigger key={p} value={String(p)}>
-                  {plural(p, '{n} day', '{n} days')}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+<PeriodTabs value={days} onChange={setDays} />
         }
       />
 
@@ -684,7 +701,7 @@ export function AdminAiUsagePage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <GroupBadge group={groups?.find(g => g.id === u.groupId)} isAdmin={u.role === 'admin'} />
+                        <GroupBadge group={groups?.find(g => g.id === u.groupId)} isAdmin={u.role === 'admin'} custom={u.custom} />
                       </TableCell>
                       <TableCell className="text-right tabular-nums @max-sm:hidden">{formatNumber(u.requests)}</TableCell>
                       <TableCell className="text-right tabular-nums @max-md:hidden">{formatNumber(u.inputTokens + u.outputTokens)}</TableCell>
@@ -705,6 +722,7 @@ export function AdminAiUsagePage() {
         row={users?.find(u => u.userId === openUser)}
         days={days}
         groups={groups ?? []}
+        models={models}
         providerName={providerName}
         onClose={() => setOpenUser(undefined)}
         onSaved={() => void loadUsage(days)}
