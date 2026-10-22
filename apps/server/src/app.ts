@@ -28,6 +28,7 @@ import { fileRoutes } from './routes/files.ts'
 import { historyRoutes } from './routes/history.ts'
 import { meRoutes } from './routes/me.ts'
 import { referenceRoutes } from './routes/references.ts'
+import { mcpRoutes } from './routes/mcp.ts'
 import { gitRoutes } from './routes/git.ts'
 import { templateRoutes } from './routes/templates.ts'
 import { linkedFileRoutes } from './routes/linked-files.ts'
@@ -102,6 +103,7 @@ export async function buildApp(
       await api.register(backupRoutes, deps)
       await api.register(referenceRoutes, deps)
       await api.register(gitRoutes, deps)
+      await api.register(mcpRoutes, deps)
     },
     { prefix: '/api' },
   )

@@ -159,6 +159,8 @@ export const projectMembers = pgTable(
     /** Archived or in the trash, for this member only (like Overleaf); at most one is set. */
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     trashedAt: timestamp('trashed_at', { withTimezone: true }),
+    /** What an AI agent this member connects over MCP may change (McpMode); capped by the role. */
+    mcpMode: text('mcp_mode', { enum: ['manual', 'auto', 'full'] }).notNull().default('manual'),
   },
   t => [primaryKey({ columns: [t.projectId, t.userId] }), index('project_members_user_id_idx').on(t.userId)],
 )

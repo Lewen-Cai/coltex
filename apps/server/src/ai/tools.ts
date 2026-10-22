@@ -86,6 +86,78 @@ export function compileSummary(result: CompileResult): string {
   return [head, body, result.message ? `Compiler message: ${result.message.slice(-1500)}` : ''].filter(Boolean).join('\n')
 }
 
+/**
+ * A text file with line numbers, as the agents read it (also for MCP). At
+ * most MAX_READ_LINES lines; the header says how to read on.
+ */
+export function numberedLines(p: string, content: string, opts: { start_line?: number; end_line?: number; note?: string } = {}): string {
+  const lines = content.split('\n')
+  const from = Math.max(1, opts.start_line ?? 1)
+  const to = Math.min(lines.length, opts.end_line ?? from + MAX_READ_LINES - 1, from + MAX_READ_LINES - 1)
+  const width = String(to).length
+  const body = lines
+    .slice(from - 1, to)
+    .map((l, i) => `${String(from + i).padStart(width)}| ${l}`)
+    .join('\n')
+  const note = [opts.note ?? '', to < lines.length ? `(lines ${from}–${to} of ${lines.length}; read more with start_line=${to + 1})` : '']
+    .filter(Boolean)
+    .join(' ')
+  return `${p}${note ? ` ${note}` : ''}\n${body}`
+}
+
+/** Lines matching a string or regular expression in the given files, as path:line: text (also for MCP). */
+export async function searchFiles(
+  paths: string[],
+  read: (p: string) => Promise<string | undefined>,
+  { query, regex, path: within }: { query: string; regex?: boolean; path?: string },
+): Promise<string> {
+  let re: RegExp
+  try {
+    re = regex ? new RegExp(query) : new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  } catch (err) {
+    throw new BadRequestError(`Invalid regular expression: ${(err as Error).message}`)
+  }
+  const scope = within ? cleanPath(within) : undefined
+  const results: string[] = []
+  let total = 0
+  for (const p of [...paths].sort()) {
+    if (scope && p !== scope && !p.startsWith(`${scope}/`)) continue
+    const content = await read(p)
+    if (content === undefined) continue
+    content.split('\n').forEach((line, i) => {
+      if (!re.test(line)) return
+      total++
+      if (results.length < MAX_SEARCH_RESULTS) results.push(`${p}:${i + 1}: ${line.trim().slice(0, 200)}`)
+    })
+  }
+  if (!total) return 'No matches.'
+  return results.join('\n') + (total > results.length ? `\n… ${total - results.length} more matches` : '')
+}
+
+/** A build's raw log: the lines around each match of `query`, or the last lines (also for MCP). */
+export async function readLog(file: string, query?: string): Promise<string> {
+  const log = await fs.readFile(file, 'utf8').catch(() => undefined)
+  if (log === undefined) return 'The log for that build is no longer available. Run compile.'
+  const lines = log.split('\n')
+  if (!query) return lines.slice(-MAX_LOG_LINES).join('\n')
+  const needle = query.toLowerCase()
+  const keep = new Set<number>()
+  lines.forEach((l, i) => {
+    if (!l.toLowerCase().includes(needle)) return
+    for (let j = Math.max(0, i - 4); j <= Math.min(lines.length - 1, i + 6); j++) keep.add(j)
+  })
+  if (!keep.size) return `“${query}” does not occur in the log.`
+  const out: string[] = []
+  let prev = -2
+  for (const i of [...keep].sort((a, b) => a - b)) {
+    if (out.length >= MAX_LOG_LINES) break
+    if (i !== prev + 1) out.push('…')
+    out.push(lines[i]!)
+    prev = i
+  }
+  return out.join('\n')
+}
+
 /** One-line description of a tool call for the chat transcript. */
 export function describeToolCall(name: string, args: Record<string, unknown>): string {
   const p = typeof args.path === 'string' ? args.path : ''
@@ -124,10 +196,11 @@ export function describeToolCall(name: string, args: Record<string, unknown>): s
 /** Tools that build a draft for the author to apply. */
 const DRAFT_TOOLS = new Set(['edit_file', 'create_file', 'revert_file', 'compile'])
 
-async function lookup(ctx: ToolContext, job: TexLookupJob): Promise<string> {
+/** A TeX Live file or manual, read or searched by the compiler (also for MCP). */
+export async function lookup(queue: Pick<CompileQueue, 'texLookup'>, job: TexLookupJob): Promise<string> {
   const parsed = TexLookupJob.safeParse(job)
   if (!parsed.success) return `Invalid lookup: ${parsed.error.issues[0]?.message ?? 'bad input'}`
-  const r = await ctx.queue.texLookup(parsed.data)
+  const r = await queue.texLookup(parsed.data)
   if (!r.found) return r.text
   return `${r.file} (${r.totalLines} lines)\n${r.text}`
 }
@@ -224,21 +297,7 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
         if (!isTextPath(p)) throw new BadRequestError(`${p} is not a text file`)
         const content = await changeset.read(p)
         if (content === undefined) throw new BadRequestError(`${p} does not exist`)
-        const lines = content.split('\n')
-        const from = Math.max(1, start_line ?? 1)
-        const to = Math.min(lines.length, end_line ?? from + MAX_READ_LINES - 1, from + MAX_READ_LINES - 1)
-        const width = String(to).length
-        const body = lines
-          .slice(from - 1, to)
-          .map((l, i) => `${String(from + i).padStart(width)}| ${l}`)
-          .join('\n')
-        const note = [
-          changeset.has(p) ? '(your draft version)' : '',
-          to < lines.length ? `(lines ${from}–${to} of ${lines.length}; read more with start_line=${to + 1})` : '',
-        ]
-          .filter(Boolean)
-          .join(' ')
-        return `${p}${note ? ` ${note}` : ''}\n${body}`
+        return numberedLines(p, content, { start_line, end_line, note: changeset.has(p) ? '(your draft version)' : '' })
       },
     }),
 
@@ -253,30 +312,10 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
         path: Type.Optional(Type.String({ description: 'Limit to this file or folder' })),
       }),
       execute: async ({ query, regex, path: within }) => {
-        let re: RegExp
-        try {
-          re = regex ? new RegExp(query) : new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-        } catch (err) {
-          throw new BadRequestError(`Invalid regular expression: ${(err as Error).message}`)
-        }
-        const scope = within ? cleanPath(within) : undefined
         const { files } = await store.listTree(ctx.project.id)
         const paths = new Set(files.filter(f => !f.binary && isTextPath(f.path)).map(f => f.path))
         for (const p of changeset.paths()) paths.add(p)
-        const results: string[] = []
-        let total = 0
-        for (const p of [...paths].sort()) {
-          if (scope && p !== scope && !p.startsWith(`${scope}/`)) continue
-          const content = await changeset.read(p)
-          if (content === undefined) continue
-          content.split('\n').forEach((line, i) => {
-            if (!re.test(line)) return
-            total++
-            if (results.length < MAX_SEARCH_RESULTS) results.push(`${p}:${i + 1}: ${line.trim().slice(0, 200)}`)
-          })
-        }
-        if (!total) return 'No matches.'
-        return results.join('\n') + (total > results.length ? `\n… ${total - results.length} more matches` : '')
+        return searchFiles([...paths], p => changeset.read(p), { query, regex, path: within })
       },
     }),
 
@@ -355,27 +394,7 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
       execute: async ({ query }) => {
         const build = lastTrialBuild ?? ctx.authorBuild()
         if (!build) return 'No compile log is available yet. Run compile first.'
-        const file = path.join(ctx.outputsDir, ctx.project.id, build, OUTPUT.log)
-        const log = await fs.readFile(file, 'utf8').catch(() => undefined)
-        if (log === undefined) return 'The log for that build is no longer available. Run compile.'
-        const lines = log.split('\n')
-        if (!query) return lines.slice(-MAX_LOG_LINES).join('\n')
-        const needle = query.toLowerCase()
-        const keep = new Set<number>()
-        lines.forEach((l, i) => {
-          if (!l.toLowerCase().includes(needle)) return
-          for (let j = Math.max(0, i - 4); j <= Math.min(lines.length - 1, i + 6); j++) keep.add(j)
-        })
-        if (!keep.size) return `“${query}” does not occur in the log.`
-        const out: string[] = []
-        let prev = -2
-        for (const i of [...keep].sort((a, b) => a - b)) {
-          if (out.length >= MAX_LOG_LINES) break
-          if (i !== prev + 1) out.push('…')
-          out.push(lines[i]!)
-          prev = i
-        }
-        return out.join('\n')
+        return readLog(path.join(ctx.outputsDir, ctx.project.id, build, OUTPUT.log), query)
       },
     }),
 
@@ -389,7 +408,7 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
         query: Type.Optional(Type.String({ description: 'Case-insensitive text to find, e.g. "\\DeclareOption" or a command name' })),
         fromLine: Type.Optional(Type.Integer({ minimum: 1, description: 'Without query: the first line to show' })),
       }),
-      execute: async ({ name, query, fromLine }) => lookup(ctx, { kind: 'source', name, query, fromLine }),
+      execute: async ({ name, query, fromLine }) => lookup(ctx.queue, { kind: 'source', name, query, fromLine }),
     }),
 
     tool({
@@ -402,7 +421,7 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
         query: Type.Optional(Type.String({ description: 'Case-insensitive text to find' })),
         fromLine: Type.Optional(Type.Integer({ minimum: 1, description: 'Without query: the first line to show' })),
       }),
-      execute: async ({ name, query, fromLine }) => lookup(ctx, { kind: 'doc', name, query, fromLine }),
+      execute: async ({ name, query, fromLine }) => lookup(ctx.queue, { kind: 'doc', name, query, fromLine }),
     }),
 
     ...skillTools(ctx),

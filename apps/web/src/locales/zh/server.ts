@@ -18,6 +18,7 @@ const messages: Record<string, string> = {
   'Converted to a journal template': '转换为期刊模板',
   'Copied from another project': '从其他项目复制而来',
   'Applied changes from the AI agent': '应用了 AI 智能体的修改',
+  'Edited by an AI agent over MCP': 'AI 智能体通过 MCP 修改',
   'Accepted or rejected tracked changes': '接受或拒绝了修订',
   'Restored an earlier version': '恢复了早期版本',
   'Deleted user': '已删除的用户',

@@ -1,0 +1,1 @@
+ALTER TABLE "project_members" ADD COLUMN "mcp_mode" text DEFAULT 'manual' NOT NULL;

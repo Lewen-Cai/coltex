@@ -53,6 +53,7 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 - 模型服务：API Key（Anthropic、OpenAI、DeepSeek、Google、OpenRouter 等）、订阅账号登录（Claude Pro/Max、ChatGPT、GitHub Copilot 等），或者自己部署的 OpenAI 兼容服务（Ollama、vLLM、LM Studio）。
 - 自动选择模型（每条消息在轻量模型和强模型之间选择）、按用户组分配权限、按人统计用量。
 - 按项目保存历史对话，实时显示上下文占用，用 `/compact` 压缩过长的对话。
+- 通过 MCP 接入你自己的智能体（Claude Code、Codex、Cursor 等）：每个项目都是一个 MCP 服务器。每个项目可以分别选择它的修改记为你的修订建议、直接生效，还是也可以删除和移动文件。
 
 ### 项目与管理
 - IEEE、ACM、Springer LNCS、Elsevier、REVTeX 和 arXiv 模板，以及把论文从一种期刊模板转换成另一种。

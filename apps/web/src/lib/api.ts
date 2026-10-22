@@ -70,6 +70,8 @@ import type {
   ZoteroLibrary,
   ZoteroStatus,
   CreatedGitToken,
+  McpMode,
+  McpSettings,
   GitToken,
   PdfPosition,
   Invite,
@@ -244,6 +246,8 @@ export const api = {
   gitTokens: () => request<GitToken[]>('/api/me/git-tokens'),
   createGitToken: (name: string) => request<CreatedGitToken>('/api/me/git-tokens', json('POST', { name })),
   revokeGitToken: (id: string) => request<void>(`/api/me/git-tokens/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  mcpSettings: (projectId: string) => request<McpSettings>(`/api/projects/${projectId}/mcp/settings`),
+  setMcpMode: (projectId: string, mode: McpMode) => request<McpSettings>(`/api/projects/${projectId}/mcp/settings`, json('PUT', { mode })),
   // References: the person's Zotero connection, and a project's .bib files from Zotero or DOIs.
   zoteroStatus: () => request<ZoteroStatus>('/api/me/zotero'),
   connectZotero: (apiKey: string) => request<ZoteroStatus>('/api/me/zotero', json('PUT', { apiKey })),

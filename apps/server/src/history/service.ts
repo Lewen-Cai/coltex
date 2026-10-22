@@ -10,7 +10,7 @@ import type { ProjectStore } from '../storage/types.ts'
 import { mergeText, type Snapshot, type SnapshotService } from './snapshots.ts'
 
 /** What kind of change wins when several are pending (most notable first). */
-const KIND_PRIORITY = ['restore', 'import', 'convert', 'copy', 'create', 'ai', 'review', 'edit']
+const KIND_PRIORITY = ['restore', 'import', 'convert', 'copy', 'create', 'ai', 'mcp', 'review', 'edit']
 
 const MESSAGES: Record<string, string> = {
   initial: 'Initial version',
@@ -20,6 +20,7 @@ const MESSAGES: Record<string, string> = {
   copy: 'Copied from another project',
   edit: 'Edited',
   ai: 'Applied changes from the AI agent',
+  mcp: 'Edited by an AI agent over MCP',
   review: 'Accepted or rejected tracked changes',
   restore: 'Restored an earlier version',
   revert: 'Reverted a version',

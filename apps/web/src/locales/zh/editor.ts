@@ -531,6 +531,20 @@ const messages: Record<string, string> = {
   'Back to {hash}': '恢复到 {hash}',
   'View changes': '查看改动',
   'Revert these changes': '撤销这些改动',
+  // MCP
+  MCP: 'MCP',
+  Address: '地址',
+  'Agents sign in with a Git token as a Bearer token ({settings}).': 'AI 智能体用 Git 令牌作为 Bearer 令牌登录（{settings}）。',
+  'What your agents may change': '你的 AI 智能体可以修改的范围',
+  Manual: '手动',
+  Auto: '自动',
+  'Full access': '完全访问',
+  'Edits become your suggestions, to accept or reject in Review.': '修改记为你的修订建议，在审阅中接受或拒绝。',
+  'Edits are applied directly, as your own.': '修改直接生效，和你自己改的一样。',
+  'Edits are applied directly, and files can be deleted, moved and renamed.': '修改直接生效，还可以删除、移动和重命名文件。',
+  'As a reviewer, your agents can only suggest changes.': '你是审阅者，你的 AI 智能体只能提出修订建议。',
+  'As a viewer, your agents can only read and comment.': '你是查看者，你的 AI 智能体只能阅读和评论。',
+  'Edited by an AI agent (MCP)': 'AI 智能体通过 MCP 修改',
 }
 
 export default messages

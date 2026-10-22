@@ -47,3 +47,37 @@ A skill is a set of instructions for a task you do again and again, for example 
 - In **Settings → AI skills**, your skills are listed on the left; pick one to read its instructions and reference files, or **Create with AI** to open a chat with the AI agent for writing skills (**Improve in chat** on a skill starts a message about it). The chat follows the built-in **skill-creator** skill: it asks how you would use the skill, drafts it (with reference files when they help), and can try a draft on text you paste. Drafts are saved only when you save them; saving one under a name you already use asks before replacing it. The chat is kept until you start a new one.
 - ColTex comes with built-in skills (listed under **Built-in**), such as **skill-creator**. You can read and download them but not change them; a skill of your own with the same name is used instead.
 - When one of your skills has the same name as a project skill, yours is used.
+
+## Your own AI agent (MCP)
+
+AI agents such as Claude Code, Codex, Cursor or VS Code can work on a project directly: read and search its files, edit them, compile and read the log, see the history, and read, add and answer comments. Every project is an MCP server for them.
+
+1. Create a token in **Settings → Sync services** (the same tokens as for Git).
+2. Copy the MCP address from the project settings (**MCP**).
+3. Add it to your agent, with the token as a Bearer token. For Claude Code:
+
+   ```sh
+   claude mcp add --transport http coltex <address> --header "Authorization: Bearer <token>"
+   ```
+
+   For Codex, in `~/.codex/config.toml` (with the token in the `COLTEX_TOKEN` environment variable):
+
+   ```toml
+   [mcp_servers.coltex]
+   url = "<address>"
+   bearer_token_env_var = "COLTEX_TOKEN"
+   ```
+
+   For Cursor (`.cursor/mcp.json`) and others that take JSON:
+
+   ```json
+   { "mcpServers": { "coltex": { "url": "<address>", "headers": { "Authorization": "Bearer <token>" } } } }
+   ```
+
+What your agents may change is your choice per project, in the project settings under **MCP**:
+
+- **Manual** (the default): their edits become your suggestions, which you and your collaborators accept or reject in **Review**. New files are created directly.
+- **Auto**: their edits are applied directly, as your own. If track changes is on for you, they are suggestions anyway.
+- **Full access**: as Auto, and they may also delete, move and rename files.
+
+Before an agent's first change in a while, the project's state is saved as a version, so you can go back. Reviewers' agents can only suggest changes, viewers' agents can only read and comment. Anyone with your token acts as you: revoke it in **Settings → Sync services** when you no longer need it.

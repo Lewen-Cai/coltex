@@ -21,6 +21,7 @@ const KIND_LABEL: Record<string, string> = {
   convert: tk('Converted to a template'),
   edit: tk('Edited'),
   ai: tk('Applied AI changes'),
+  mcp: tk('Edited by an AI agent (MCP)'),
   review: tk('Reviewed changes'),
   restore: tk('Restored an earlier version'),
   revert: tk('Reverted a version'),

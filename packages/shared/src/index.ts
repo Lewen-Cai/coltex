@@ -1631,3 +1631,25 @@ export const CreateGitTokenBody = z.object({ name: z.string().trim().min(1).max(
 /** The token itself is only in this response. */
 export const CreatedGitToken = GitToken.extend({ token: z.string() })
 export type CreatedGitToken = z.infer<typeof CreatedGitToken>
+
+// --- MCP ---------------------------------------------------------------------
+
+/**
+ * How much an external AI agent (connected over MCP with the person's Git
+ * token) may change in a project: `manual` edits become the person's tracked
+ * suggestions, `auto` writes them directly, `full` may also delete and move
+ * files. Reviewers only get `manual`; viewers only read and comment.
+ */
+export const McpMode = z.enum(['manual', 'auto', 'full'])
+export type McpMode = z.infer<typeof McpMode>
+
+export const McpSettings = z.object({
+  /** null: the person's role only lets an agent read (and comment). */
+  mode: McpMode.nullable(),
+  /** The modes this person's role allows. */
+  modes: z.array(McpMode),
+})
+export type McpSettings = z.infer<typeof McpSettings>
+
+export const McpSettingsBody = z.object({ mode: McpMode })
+export type McpSettingsBody = z.infer<typeof McpSettingsBody>

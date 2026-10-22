@@ -204,6 +204,13 @@
       "when": 1792592920190,
       "tag": "0028_git_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792679285429,
+      "tag": "0029_mcp_mode",
+      "breakpoints": true
     }
   ]
 }

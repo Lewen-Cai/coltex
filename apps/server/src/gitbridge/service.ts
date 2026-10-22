@@ -93,12 +93,19 @@ export class GitBridgeService {
     if (!rows.length) throw new NotFoundError('Token not found')
   }
 
-  /** The user a Basic-auth header's token belongs to (the user name is ignored, as on Overleaf). */
+  /**
+   * The user a token belongs to: Basic auth for git (the user name is ignored,
+   * as on Overleaf), or a Bearer token for MCP clients.
+   */
   async authenticate(authorization: string | undefined): Promise<string | undefined> {
-    const m = /^Basic\s+(\S+)$/i.exec(authorization ?? '')
-    if (!m) return undefined
-    const decoded = Buffer.from(m[1]!, 'base64').toString('utf8')
-    const token = decoded.slice(decoded.indexOf(':') + 1)
+    let token: string
+    const bearer = /^Bearer\s+(\S+)$/i.exec(authorization ?? '')
+    const basic = /^Basic\s+(\S+)$/i.exec(authorization ?? '')
+    if (bearer) token = bearer[1]!
+    else if (basic) {
+      const decoded = Buffer.from(basic[1]!, 'base64').toString('utf8')
+      token = decoded.slice(decoded.indexOf(':') + 1)
+    } else return undefined
     if (!token.startsWith('coltex_')) return undefined
     const [row] = await this.db.select().from(gitTokens).where(eq(gitTokens.tokenHash, hashToken(token)))
     if (!row) return undefined
