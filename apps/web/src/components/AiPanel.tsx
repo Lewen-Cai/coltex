@@ -6,6 +6,7 @@ import {
   Brain,
   Check,
   ChevronDown,
+  ChevronRight,
   CircleHelp,
   FolderTree,
   Languages,
@@ -209,17 +210,22 @@ export function AiPanel(props: Props) {
             onPick={prompt => submit(prompt)}
           />
         )}
-        {state?.items.map(item => (
-          <Item
-            key={item.id}
-            item={item}
-            skillScopes={props.canEdit ? ['personal', 'project'] : ['personal']}
-            onSaveSkill={(body, scope, replace) => session.saveSkill(item.id, { ...body, scope, replace }).then(() => undefined)}
-            onOpenFile={props.onOpenFile}
-            // Only the latest card can show its diff: the draft has moved on since older turns.
-            onReviewTurn={item.id === latestTurnCard && changed && state.changes.turn ? () => review('turn') : undefined}
-          />
-        ))}
+        {state &&
+          groupItems(state.items).map(entry =>
+            entry.kind === 'tools' ? (
+              <ToolGroup key={entry.id} items={entry.items} onOpenFile={props.onOpenFile} />
+            ) : (
+              <Item
+                key={entry.item.id}
+                item={entry.item}
+                skillScopes={props.canEdit ? ['personal', 'project'] : ['personal']}
+                onSaveSkill={(body, scope, replace) => session.saveSkill(entry.item.id, { ...body, scope, replace }).then(() => undefined)}
+                onOpenFile={props.onOpenFile}
+                // Only the latest card can show its diff: the draft has moved on since older turns.
+                onReviewTurn={entry.item.id === latestTurnCard && changed && state.changes.turn ? () => review('turn') : undefined}
+              />
+            ),
+          )}
         {running && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-3.5 animate-spin" /> {t('Working…')}
@@ -705,7 +711,7 @@ export function Item({
         <motion.div
           initial={{ opacity: 0, y: 6, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="ml-8 rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground"
+          className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground"
         >
           {item.skill && (
             <span className="mb-0.5 inline-block rounded-full bg-white/20 px-2 py-0.5 font-mono text-[13px]">/{item.skill}</span>
@@ -715,7 +721,8 @@ export function Item({
             <div className="mt-1 flex flex-wrap gap-1">
               {item.attachments.map(a => (
                 <span key={a} className="rounded-full bg-white/20 px-2 py-0.5 text-[13px] text-primary-foreground">
-                  {a}
+                  {/* Made by the server in English ("3 compile errors", "main.tex L10–14"). */}
+                  {translateServerMessage(a)}
                 </span>
               ))}
             </div>
@@ -724,39 +731,8 @@ export function Item({
       )
     case 'assistant':
       return <AssistantReply text={item.text} />
-    case 'tool': {
-      const icon =
-        item.status === 'running' ? (
-          <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-        ) : item.status === 'ok' ? (
-          <Check className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-        ) : (
-          <AlertTriangle className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-        )
-      // Labels come from the server in English; the path is found there and then in the translated label.
-      const label = translateServerMessage(item.label)
-      const found = /^(?:Read|Edit|Create) (\S+)/.exec(item.label)?.[1]
-      const path = found && onOpenFile && label.includes(found) ? found : undefined
-      return (
-        <div className="text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            {icon}
-            {path ? (
-              <span>
-                {label.slice(0, label.indexOf(path))}
-                <button className="font-mono hover:underline" onClick={() => onOpenFile?.(path)}>
-                  {path}
-                </button>
-                {label.slice(label.indexOf(path) + path.length)}
-              </span>
-            ) : (
-              <span>{label}</span>
-            )}
-          </div>
-          {item.result && <div className="ml-5 mt-0.5 whitespace-pre-wrap break-words text-muted-foreground">{item.status === 'ok' ? translateServerMessage(item.result) : item.result}</div>}
-        </div>
-      )
-    }
+    case 'tool':
+      return <ToolStep item={item} onOpenFile={onOpenFile} />
     case 'notice': {
       const style = {
         info: 'bg-muted text-foreground/80 border-border',
@@ -766,6 +742,86 @@ export function Item({
       return <div className={`rounded border px-2 py-1.5 text-sm ${style}`}>{item.level === 'error' ? item.text : translateServerMessage(item.text)}</div>
     }
   }
+}
+
+type ToolItem = Extract<AiItem, { kind: 'tool' }>
+
+/** A conversation's items with each run of two or more tool steps in a row gathered into one group. */
+export function groupItems(items: AiItem[]): ({ kind: 'item'; item: AiItem } | { kind: 'tools'; id: string; items: ToolItem[] })[] {
+  const out: ({ kind: 'item'; item: AiItem } | { kind: 'tools'; id: string; items: ToolItem[] })[] = []
+  for (const item of items) {
+    const last = out.at(-1)
+    if (item.kind === 'tool' && last?.kind === 'tools') last.items.push(item)
+    else if (item.kind === 'tool' && last?.kind === 'item' && last.item.kind === 'tool') out[out.length - 1] = { kind: 'tools', id: last.item.id, items: [last.item, item] }
+    else out.push({ kind: 'item', item })
+  }
+  return out
+}
+
+function stepIcon(status: ToolItem['status']) {
+  if (status === 'running') return <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+  if (status === 'ok') return <Check className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+  return <AlertTriangle className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+}
+
+/** One tool step: what the agent did (a file it read opens in the editor), and its result. */
+function ToolStep({ item, onOpenFile }: { item: ToolItem; onOpenFile?: (path: string) => void }) {
+  // Labels come from the server in English; the path is found there and then in the translated label.
+  const label = translateServerMessage(item.label)
+  const found = /^(?:Read|Edit|Create) (\S+)/.exec(item.label)?.[1]
+  const path = found && onOpenFile && label.includes(found) ? found : undefined
+  return (
+    <div className="text-sm text-muted-foreground">
+      <div className="flex items-start gap-1.5">
+        {/* On the first line when a long label wraps. */}
+        <span className="flex h-5 items-center">{stepIcon(item.status)}</span>
+        {path ? (
+          <span className="min-w-0 break-words">
+            {label.slice(0, label.indexOf(path))}
+            <button className="text-left font-mono break-all hover:underline" onClick={() => onOpenFile?.(path)}>
+              {path}
+            </button>
+            {label.slice(label.indexOf(path) + path.length)}
+          </span>
+        ) : (
+          <span className="min-w-0 break-words">{label}</span>
+        )}
+      </div>
+      {item.result && <div className="ml-5 mt-0.5 whitespace-pre-wrap break-words text-muted-foreground">{item.status === 'ok' ? translateServerMessage(item.result) : item.result}</div>}
+    </div>
+  )
+}
+
+/**
+ * Tool steps in a row, folded into one line (how many, and the latest one)
+ * so a busy turn doesn't flood the conversation; opened, it lists them all.
+ */
+export function ToolGroup({ items, onOpenFile }: { items: ToolItem[]; onOpenFile?: (path: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const status = items.some(i => i.status === 'running') ? 'running' : items.some(i => i.status === 'error') ? 'error' : 'ok'
+  const latest = items.at(-1)!
+  return (
+    <div className="text-sm text-muted-foreground">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        className="flex w-full min-w-0 items-center gap-1.5 text-left transition-colors hover:text-foreground"
+      >
+        {stepIcon(status)}
+        <span className="shrink-0">{plural(items.length, '{n} step', '{n} steps')}</span>
+        {!open && <span className="min-w-0 truncate">· {translateServerMessage(latest.label)}</span>}
+        <ChevronRight className={cn('size-3.5 shrink-0 transition-transform', open && 'rotate-90')} />
+      </button>
+      {open && (
+        <div className="mt-1.5 ml-1.5 space-y-1.5 border-l pl-3">
+          {items.map(i => (
+            <ToolStep key={i.id} item={i} onOpenFile={onOpenFile} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 const THINKING_LABEL: Record<ThinkingLevel, string> = {

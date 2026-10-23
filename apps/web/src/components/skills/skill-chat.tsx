@@ -4,7 +4,7 @@ import { ArrowUp, BookOpen, Loader2, PenLine, Sparkles, Square, SquarePen, Wand2
 import { aiPick, useAiStatus, useSkillChat } from '@/lib/ai'
 import { useAiAllowance } from '@/lib/ai-limits'
 import { t } from '@/lib/i18n'
-import { Item, ModelPicker, SessionStatus } from '@/components/AiPanel'
+import { Item, ModelPicker, SessionStatus, ToolGroup, groupItems } from '@/components/AiPanel'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -83,17 +83,22 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
               </div>
             </div>
           )}
-          {state?.items.map(item => (
-            <Item
-              key={item.id}
-              item={item}
-              skillScopes={['personal']}
-              onSaveSkill={async (body, scope, replace) => {
-                await chat.saveSkill(item.id, { ...body, scope, replace })
-                onSaved()
-              }}
-            />
-          ))}
+          {state &&
+            groupItems(state.items).map(entry =>
+              entry.kind === 'tools' ? (
+                <ToolGroup key={entry.id} items={entry.items} />
+              ) : (
+                <Item
+                  key={entry.item.id}
+                  item={entry.item}
+                  skillScopes={['personal']}
+                  onSaveSkill={async (body, scope, replace) => {
+                    await chat.saveSkill(entry.item.id, { ...body, scope, replace })
+                    onSaved()
+                  }}
+                />
+              ),
+            )}
           {running && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> {t('Working…')}
