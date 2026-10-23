@@ -14,7 +14,7 @@ Run `coltex update`. Coming from v0.0.1, this first update still builds the imag
 
 **Install and update**
 - Prebuilt images on ghcr.io for x86-64 and ARM64: installs and updates download them instead of building (`--build` still builds from source). The previous version's images are removed after an update.
-- A new installer: it asks for the language (14 of them), the TeX Live edition and how people will reach ColTex (arrow keys), shows each step with a progress line and the download with a bar, and keeps the full output in `install.log`. `--lang` (e.g. `--lang ja`) answers the language for the installer, `coltex` and the setup page; `--local` skips the access question.
+- A new installer: it asks for the language (14 of them), the TeX Live edition and how people will reach ColTex (arrow keys), shows each step with a progress line and the download with a bar (its full size known from the start, with the time it has taken), and keeps the full output in `install.log`. A download that fails for any reason but missing images stops with an error instead of building the images locally (also in `coltex update`). `--lang` (e.g. `--lang ja`) answers the language for the installer, `coltex` and the setup page; `--local` skips the access question.
 
 **AI**
 - Permissions for AI agents, in Settings → AI agent or in the panel's model picker: **Manual** (the AI agent's draft waits for your review, as before), **Auto** (its draft is applied when it finishes, still compiled first and rolled back if the build gets worse) or **Full access** (also delete, move and rename files).

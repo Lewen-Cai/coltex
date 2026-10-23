@@ -93,15 +93,15 @@ TTY=0
 if [ -t 1 ] && { : </dev/tty; } 2>/dev/null; then TTY=1; fi
 COLS="$(tput cols 2>/dev/null || echo 80)"
 ESC=$'\033'
-RESET="" BOLD="" DIM="" BLUE="" WHITE="" GREEN="" RED="" AMBER=""
+RESET="" BOLD="" DIM="" BLUE="" WHITE="" GREEN="" RED="" AMBER="" BG_BLUE="" BG_WHITE=""
 if [ "$TTY" = 1 ] && [ -z "${NO_COLOR:-}" ]; then
   RESET="${ESC}[0m" BOLD="${ESC}[1m" DIM="${ESC}[2m"
   case "${COLORTERM:-}" in
     truecolor | 24bit)
       BLUE="${ESC}[38;2;37;99;235m" WHITE="${ESC}[38;2;255;255;255m" GREEN="${ESC}[38;2;22;163;74m"
-      RED="${ESC}[38;2;220;38;38m" AMBER="${ESC}[38;2;217;119;6m" ;;
+      RED="${ESC}[38;2;220;38;38m" AMBER="${ESC}[38;2;217;119;6m" BG_BLUE="${ESC}[48;2;37;99;235m" BG_WHITE="${ESC}[48;2;255;255;255m" ;;
     *)
-      BLUE="${ESC}[38;5;27m" WHITE="${ESC}[38;5;231m" GREEN="${ESC}[38;5;34m" RED="${ESC}[38;5;160m" AMBER="${ESC}[38;5;172m" ;;
+      BLUE="${ESC}[38;5;27m" WHITE="${ESC}[38;5;231m" GREEN="${ESC}[38;5;34m" RED="${ESC}[38;5;160m" AMBER="${ESC}[38;5;172m" BG_BLUE="${ESC}[48;5;27m" BG_WHITE="${ESC}[48;5;231m" ;;
   esac
 fi
 cursor_hide() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25l" || true; }
@@ -146,6 +146,8 @@ msg_en() {
     language) M='Language' ;;
     full_output) M='Full output: {log}' ;;
     downloading) M='Downloading' ;;
+    download_note) M='The images are several GB, so the download can take a while.' ;;
+    pull_failed) M='Downloading the images failed. Check the network connection and run this again.' ;;
     docker_install_q) M='Docker is not installed. Install it now with Docker’s script (get.docker.com, needs sudo)?' ;;
     docker_install) M='Install Docker' ;;
     cancel) M='Cancel' ;;
@@ -192,6 +194,8 @@ msg_zh_CN() {
     language) M='语言' ;;
     full_output) M='完整输出：{log}' ;;
     downloading) M='下载镜像' ;;
+    download_note) M='镜像有几 GB，下载需要一段时间。' ;;
+    pull_failed) M='下载镜像失败。请检查网络连接后重新运行。' ;;
     docker_install_q) M='没有安装 Docker。现在用 Docker 的官方脚本（get.docker.com，需要 sudo）安装吗？' ;;
     docker_install) M='安装 Docker' ;;
     cancel) M='取消' ;;
@@ -238,6 +242,8 @@ msg_zh_TW() {
     language) M='語言' ;;
     full_output) M='完整輸出：{log}' ;;
     downloading) M='下載映像檔' ;;
+    download_note) M='映像檔有好幾 GB，下載需要一段時間。' ;;
+    pull_failed) M='下載映像檔失敗。請檢查網路連線後重新執行。' ;;
     docker_install_q) M='尚未安裝 Docker。要現在用 Docker 的官方指令碼（get.docker.com，需要 sudo）安裝嗎？' ;;
     docker_install) M='安裝 Docker' ;;
     cancel) M='取消' ;;
@@ -284,6 +290,8 @@ msg_ja() {
     language) M='言語' ;;
     full_output) M='出力の全文：{log}' ;;
     downloading) M='ダウンロード中' ;;
+    download_note) M='イメージは数 GB あるため、ダウンロードには時間がかかります。' ;;
+    pull_failed) M='イメージのダウンロードに失敗しました。ネットワーク接続を確認して、もう一度実行してください。' ;;
     docker_install_q) M='Docker がインストールされていません。Docker の公式スクリプト（get.docker.com、sudo が必要）で今すぐインストールしますか？' ;;
     docker_install) M='Docker をインストール' ;;
     cancel) M='キャンセル' ;;
@@ -330,6 +338,8 @@ msg_ko() {
     language) M='언어' ;;
     full_output) M='전체 출력: {log}' ;;
     downloading) M='다운로드 중' ;;
+    download_note) M='이미지가 몇 GB라서 내려받는 데 시간이 걸립니다.' ;;
+    pull_failed) M='이미지를 내려받지 못했습니다. 네트워크 연결을 확인한 뒤 다시 실행하세요.' ;;
     docker_install_q) M='Docker가 설치되어 있지 않습니다. 지금 Docker 설치 스크립트(get.docker.com, sudo 필요)로 설치할까요?' ;;
     docker_install) M='Docker 설치' ;;
     cancel) M='취소' ;;
@@ -376,6 +386,8 @@ msg_es() {
     language) M='Idioma' ;;
     full_output) M='Salida completa: {log}' ;;
     downloading) M='Descargando' ;;
+    download_note) M='Las imágenes ocupan varios GB, así que la descarga puede tardar.' ;;
+    pull_failed) M='No se pudieron descargar las imágenes. Revisa la conexión de red y vuelve a ejecutar esto.' ;;
     docker_install_q) M='Docker no está instalado. ¿Instalarlo ahora con el script de Docker (get.docker.com, requiere sudo)?' ;;
     docker_install) M='Instalar Docker' ;;
     cancel) M='Cancelar' ;;
@@ -422,6 +434,8 @@ msg_fr() {
     language) M='Langue' ;;
     full_output) M='Sortie complète : {log}' ;;
     downloading) M='Téléchargement' ;;
+    download_note) M='Les images font plusieurs GB : le téléchargement peut prendre un moment.' ;;
+    pull_failed) M='Le téléchargement des images a échoué. Vérifiez la connexion réseau et relancez la commande.' ;;
     docker_install_q) M='Docker n’est pas installé. L’installer maintenant avec le script de Docker (get.docker.com, nécessite sudo) ?' ;;
     docker_install) M='Installer Docker' ;;
     cancel) M='Annuler' ;;
@@ -468,6 +482,8 @@ msg_de() {
     language) M='Sprache' ;;
     full_output) M='Vollständige Ausgabe: {log}' ;;
     downloading) M='Wird heruntergeladen' ;;
+    download_note) M='Die Images sind mehrere GB groß, der Download kann eine Weile dauern.' ;;
+    pull_failed) M='Die Images konnten nicht heruntergeladen werden. Prüfen Sie die Netzwerkverbindung und starten Sie den Befehl erneut.' ;;
     docker_install_q) M='Docker ist nicht installiert. Jetzt mit dem Skript von Docker installieren (get.docker.com, benötigt sudo)?' ;;
     docker_install) M='Docker installieren' ;;
     cancel) M='Abbrechen' ;;
@@ -514,6 +530,8 @@ msg_pt_BR() {
     language) M='Idioma' ;;
     full_output) M='Saída completa: {log}' ;;
     downloading) M='Baixando' ;;
+    download_note) M='As imagens têm vários GB, então o download pode demorar.' ;;
+    pull_failed) M='Não foi possível baixar as imagens. Verifique a conexão de rede e execute de novo.' ;;
     docker_install_q) M='O Docker não está instalado. Instalar agora com o script do Docker (get.docker.com, requer sudo)?' ;;
     docker_install) M='Instalar o Docker' ;;
     cancel) M='Cancelar' ;;
@@ -560,6 +578,8 @@ msg_it() {
     language) M='Lingua' ;;
     full_output) M='Output completo: {log}' ;;
     downloading) M='Download in corso' ;;
+    download_note) M='Le immagini pesano diversi GB, quindi il download può richiedere un po’ di tempo.' ;;
+    pull_failed) M='Il download delle immagini non è riuscito. Controlla la connessione di rete ed esegui di nuovo il comando.' ;;
     docker_install_q) M='Docker non è installato. Vuoi installarlo ora con lo script di Docker (get.docker.com, richiede sudo)?' ;;
     docker_install) M='Installa Docker' ;;
     cancel) M='Annulla' ;;
@@ -606,6 +626,8 @@ msg_ru() {
     language) M='Язык' ;;
     full_output) M='Полный вывод: {log}' ;;
     downloading) M='Загрузка' ;;
+    download_note) M='Образы занимают несколько GB, загрузка может занять время.' ;;
+    pull_failed) M='Не удалось загрузить образы. Проверьте подключение к сети и запустите команду снова.' ;;
     docker_install_q) M='Docker не установлен. Установить его сейчас скриптом Docker (get.docker.com, нужен sudo)?' ;;
     docker_install) M='Установить Docker' ;;
     cancel) M='Отмена' ;;
@@ -652,6 +674,8 @@ msg_tr() {
     language) M='Dil' ;;
     full_output) M='Çıktının tamamı: {log}' ;;
     downloading) M='İndiriliyor' ;;
+    download_note) M='İmajlar birkaç GB olduğundan indirme biraz zaman alabilir.' ;;
+    pull_failed) M='İmajlar indirilemedi. Ağ bağlantısını kontrol edip komutu yeniden çalıştırın.' ;;
     docker_install_q) M='Docker yüklü değil. Docker’ın betiğiyle (get.docker.com, sudo gerekir) şimdi kurulsun mu?' ;;
     docker_install) M='Docker’ı kur' ;;
     cancel) M='İptal' ;;
@@ -698,6 +722,8 @@ msg_vi() {
     language) M='Ngôn ngữ' ;;
     full_output) M='Toàn bộ đầu ra: {log}' ;;
     downloading) M='Đang tải xuống' ;;
+    download_note) M='Các image nặng vài GB nên việc tải xuống có thể mất một lúc.' ;;
+    pull_failed) M='Không tải được các image. Hãy kiểm tra kết nối mạng rồi chạy lại.' ;;
     docker_install_q) M='Docker chưa được cài đặt. Cài ngay bằng script của Docker (get.docker.com, cần sudo)?' ;;
     docker_install) M='Cài Docker' ;;
     cancel) M='Hủy' ;;
@@ -744,6 +770,8 @@ msg_id() {
     language) M='Bahasa' ;;
     full_output) M='Keluaran lengkap: {log}' ;;
     downloading) M='Mengunduh' ;;
+    download_note) M='Image berukuran beberapa GB, jadi pengunduhan bisa memakan waktu.' ;;
+    pull_failed) M='Gagal mengunduh image. Periksa koneksi jaringan lalu jalankan lagi.' ;;
     docker_install_q) M='Docker belum terpasang. Pasang sekarang dengan skrip Docker (get.docker.com, memerlukan sudo)?' ;;
     docker_install) M='Pasang Docker' ;;
     cancel) M='Batal' ;;
@@ -853,8 +881,9 @@ if [ -z "$LANGUAGE" ]; then
 fi
 
 # ---- The mark ------------------------------------------------------------------------
-# A white sigma on a blue tile with rounded corners (" " = outside the tile), each cell two
-# columns wide so the pixels come out square; the sigma is drawn in pen order.
+# A white sigma on a blue tile with rounded corners (" " = outside the tile), drawn with half
+# blocks: each character cell holds two pixels, one above the other, so the pixels come out
+# square and the mark takes 11 columns and 6 lines. The sigma is drawn in pen order.
 LOGO=(
   " bbbbbbbbb "
   "bbbbbbbbbbb"
@@ -871,33 +900,48 @@ LOGO=(
 STROKE="2,8 2,7 2,6 2,5 2,4 2,3 2,2 3,3 4,4 5,5 6,4 7,3 8,2 8,3 8,4 8,5 8,6 8,7 8,8 3,8 7,8"
 TAGLINE="$(T tagline)"
 
+# The colour of pixel $1,$2 in C: " " outside, W once the pen has drawn it, b (blue) otherwise.
+cell() {
+  C=" "
+  [ "$1" -lt ${#LOGO[@]} ] && C="${LOGO[$1]:$2:1}"
+  if [ "$C" = W ] && [[ "$SHOWN" != *" $1,$2 "* ]]; then C=b; fi
+  return 0
+}
+
 draw_logo() { # $1 = how many stroke cells are white
-  local shown=" " row col ch line
-  [ "$1" -gt 0 ] && shown=" $(echo "$STROKE" | cut -d' ' -f1-"$1") "
-  for row in "${!LOGO[@]}"; do
+  local row col top fore back under line
+  SHOWN=" "
+  [ "$1" -gt 0 ] && SHOWN=" $(echo "$STROKE" | cut -d' ' -f1-"$1") "
+  for ((row = 0; row < ${#LOGO[@]}; row += 2)); do
     line="  "
-    for ((col = 0; col < ${#LOGO[row]}; col++)); do
-      ch="${LOGO[row]:col:1}"
-      if [ "$ch" = " " ]; then line+="  "
-      elif [ "$1" -gt 0 ] && [[ "$shown" == *" $row,$col "* ]]; then line+="${WHITE}██"
-      else line+="${BLUE}██"; fi
+    for ((col = 0; col < ${#LOGO[0]}; col++)); do
+      cell "$row" "$col"; top="$C"
+      cell $((row + 1)) "$col"
+      # The upper pixel is the character's colour, the lower one its background.
+      if [ "$top" = W ]; then fore="$WHITE"; else fore="$BLUE"; fi
+      if [ "$C" = W ]; then back="$BG_WHITE"; under="$WHITE"; else back="$BG_BLUE"; under="$BLUE"; fi
+      if [ "$top" = " " ] && [ "$C" = " " ]; then line+=" "
+      elif [ "$top" = " " ]; then line+="${under}▄"
+      elif [ "$C" = " " ]; then line+="${fore}▀"
+      elif [ "$top" = "$C" ]; then line+="${fore}█"
+      else line+="${fore}${back}▀${RESET}"; fi
     done
     case "$row" in
-      4) line+="${RESET}    ${BOLD}ColTex${RESET}" ;;
-      5) line+="${RESET}    ${DIM}${TAGLINE}${RESET}" ;;
+      4) line+="${RESET}   ${BOLD}ColTex${RESET}" ;;
+      6) line+="${RESET}   ${DIM}${TAGLINE}${RESET}" ;;
     esac
     printf '%s%s\n' "$line" "$RESET"
   done
 }
 
 header() {
-  if [ "$TTY" = 1 ] && [ "$COLS" -ge 64 ] && [ -n "$BLUE" ]; then
+  if [ "$TTY" = 1 ] && [ "$COLS" -ge 60 ] && [ -n "$BLUE" ]; then
     echo
     cursor_hide
     draw_logo 0
     for n in $(seq 1 21); do
       sleep 0.03
-      printf '%s' "${ESC}[11A"
+      printf '%s' "${ESC}[6A"
       draw_logo "$n"
     done
     cursor_show
@@ -961,47 +1005,83 @@ step() {
 # Bytes as "1.2 GB" or "340 MB".
 size() { awk -v b="$1" 'BEGIN { if (b >= 1e9) printf "%.1f GB", b / 1e9; else printf "%.0f MB", b / 1e6 }'; }
 
-# `docker compose pull` with a download bar from compose's JSON progress (the layers'
-# sizes become known as each starts downloading, so the total can grow).
+# The compressed size of every layer the pull will download, as "<short id> <bytes>" lines (shared
+# layers once), asked of the registries before it starts (`docker manifest inspect`: each image's
+# layers for this machine's platform), so the bar's total is right from the start. Images already
+# here are left out; nothing when the registries can't be asked (offline, an older Docker).
+layer_sizes() {
+  local arch img
+  arch="$(docker version -f '{{.Server.Arch}}' 2>/dev/null || true)"
+  for img in $(docker compose config --images 2>/dev/null); do
+    docker image inspect "$img" >/dev/null 2>&1 && continue
+    docker manifest inspect -v "$img" 2>/dev/null | awk -v arch="$arch" '
+      /"Ref":/ { platform = "" }
+      /"architecture":/ { v = $0; gsub(/.*: *"|".*/, "", v); platform = v }
+      /"layers": *\[/ { layers = 1; next }
+      layers && /^[ \t]*\]/ { layers = 0 }
+      layers && /"digest":/ { d = $0; gsub(/.*sha256:|".*/, "", d) }
+      layers && /"size":/ { n = $0; gsub(/[^0-9]/, "", n); if (platform == "" || arch == "" || platform == arch) print substr(d, 1, 12), n }
+    ' || true
+  done | sort -u
+}
+
+# `docker compose pull` with a download bar from compose's JSON progress. The total comes from
+# layer_sizes (less the layers compose finds already here); without it, from the layers' sizes
+# as each starts, and the percentage never goes back. Every byte count stays in awk (printed
+# with %.0f: some awks print large numbers as 7.23839e+09, which bash can't count with), and
+# drawing runs apart from the pull, so nothing that goes wrong on screen interrupts the download.
 pull_with_bar() {
-  local label="$1" cur tot pct filled bar k i=0 rc
+  local label="$1" sizes rc start=$SECONDS
   printf '\n==> %s\n' "$label" >>"$LOG"
   if [ "$TTY" != 1 ]; then
     printf '==> %s\n' "$label"
     docker compose pull >>"$LOG" 2>&1
     return
   fi
+  note "$(T download_note)"
   cursor_hide
   printf '\r  %s %s' "${BLUE}${SPIN[0]}${RESET}" "$label"
+  # Asking the registries takes a few seconds; the line above is already there meanwhile.
+  sizes="$(mktemp "${TMPDIR:-/tmp}/coltex-layers.XXXXXX")"
+  layer_sizes >"$sizes" 2>/dev/null || true
   set +e
-  docker compose --progress json pull 2>&1 | tee -a "$LOG" | awk '
+  docker compose --progress json pull 2>&1 | tee -a "$LOG" | awk -v sizes="$sizes" '
+    BEGIN { while ((getline line < sizes) > 0) { split(line, f, " "); want[f[1]] = f[2] + 0; known += f[2] + 0 } last = -1 }
     !/"parent_id"/ { next }
     {
       id = ""; if (match($0, /"id":"[^"]*"/)) id = substr($0, RSTART + 6, RLENGTH - 7)
-      if (match($0, /"total":[0-9]+/)) total[id] = substr($0, RSTART + 8, RLENGTH - 8) + 0
+      if ($0 ~ /"text":"Already exists"/) { if ((id in want) && !(id in here)) { here[id] = 1; known -= want[id] } next }
+      if (!(id in want) && match($0, /"total":[0-9]+/)) extra[id] = substr($0, RSTART + 8, RLENGTH - 8) + 0
       if ($0 ~ /"text":"Downloading"/ && match($0, /"current":[0-9]+/)) got[id] = substr($0, RSTART + 10, RLENGTH - 10) + 0
-      if ($0 ~ /"text":"(Download complete|Pull complete)"/ && (id in total)) got[id] = total[id]
-      s = 0; t = 0
-      for (k in total) { t += total[k]; s += got[k] }
-      step = t > 0 ? int(s * 400 / t) : -1
-      if (t > 0 && (step != last || t != lastt)) { print s, t; fflush(); last = step; lastt = t }
-    }' | while read -r cur tot; do
-    pct=$((cur * 100 / tot))
-    filled=$((cur * 24 / tot))
-    bar=""
-    for ((k = 0; k < 24; k++)); do if [ "$k" -lt "$filled" ]; then bar+="━"; else bar+="${DIM}━${RESET}${BLUE}"; fi; done
-    printf '\r%s  %s %s %s%s%s %3d%%  %s' "${ESC}[2K" "${BLUE}${SPIN[i % 10]}${RESET}" "$(pad "$label" 20)" "$BLUE" "$bar" "$RESET" "$pct" "${DIM}$(size "$cur") / $(size "$tot")${RESET}"
-    i=$((i + 1))
-  done
+      if ($0 ~ /"text":"(Download complete|Pull complete)"/) { if (id in want) got[id] = want[id]; else if (id in extra) got[id] = extra[id] }
+      s = 0; t = known
+      for (k in got) s += got[k]
+      for (k in extra) t += extra[k]
+      if (t <= 0) next
+      if (s > t) s = t
+      p = int(s * 100 / t); if (p < last) p = last
+      if (p != last || t != lastt) { printf "%d %d %.0f %.0f\n", p, int(p * 20 / 100), s, t; fflush(); last = p; lastt = t }
+    }' | {
+    ( i=0
+      while read -r pct filled cur tot; do
+        bar=""
+        for ((k = 0; k < 20; k++)); do if [ "$k" -lt "$filled" ]; then bar+="━"; else bar+="${DIM}━${RESET}${BLUE}"; fi; done
+        e=$((SECONDS - start))
+        printf '\r%s  %s %s %s%s%s %3d%%  %s' "${ESC}[2K" "${BLUE}${SPIN[i % 10]}${RESET}" "$(pad "$label" 16)" "$BLUE" "$bar" "$RESET" "$pct" \
+          "${DIM}$(size "$cur") / $(size "$tot") · $((e / 60)):$(printf '%02d' $((e % 60)))${RESET}"
+        i=$((i + 1))
+      done ) 2>/dev/null
+    cat >/dev/null
+  }
   rc=${PIPESTATUS[0]}
   set -e
+  rm -f "$sizes"
   cursor_show
   if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
   return "$rc"
 }
 
-# The images: pulled with a bar, or plainly when this Compose has no JSON progress; false
-# when there are none for this version.
+# The images: pulled with a bar, or plainly when this Compose has no JSON progress.
 pull_images() {
   local label
   label="$(T downloading)"
@@ -1010,6 +1090,10 @@ pull_images() {
   if tail -n 3 "$LOG" | grep -qi 'progress'; then spin "$label" docker compose pull && return 0; fi
   return 1
 }
+
+# Whether the pull failed because there are no prebuilt images for this version (then they are
+# built here), rather than for the network or the registry (then that is the error).
+images_missing() { tail -n 40 "$LOG" | grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found'; }
 
 # ---- Docker --------------------------------------------------------------------------
 if ! have docker; then
@@ -1167,6 +1251,7 @@ fi
 if [ "$(get COLTEX_BUILD)" = 1 ]; then
   step "$(T building)" docker compose build
 elif ! pull_images; then
+  images_missing || die "$(T pull_failed)"
   note "$(T no_prebuilt version="$VERSION")"
   step "$(T building)" docker compose build
 fi

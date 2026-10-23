@@ -52,6 +52,7 @@ T() {
 msg_en() {
   case "$1" in
     no_prebuilt) M='No prebuilt images for ColTex {version}; building them from the sources (this takes a while)…' ;;
+    pull_failed) M='Downloading the images failed. Check the network connection and try again.' ;;
     up) M='ColTex is up: {url}' ;;
     not_answering) M='ColTex is not answering on port {port}' ;;
     no_release) M='No release found' ;;
@@ -75,6 +76,7 @@ msg_en() {
 msg_zh_CN() {
   case "$1" in
     no_prebuilt) M='ColTex {version} 没有预构建的镜像，改为从源码构建（需要一段时间）…' ;;
+    pull_failed) M='下载镜像失败。请检查网络连接后重试。' ;;
     up) M='ColTex 正在运行：{url}' ;;
     not_answering) M='ColTex 没有在端口 {port} 上响应' ;;
     no_release) M='没有找到发布版本' ;;
@@ -98,6 +100,7 @@ msg_zh_CN() {
 msg_zh_TW() {
   case "$1" in
     no_prebuilt) M='ColTex {version} 沒有預先建置的映像檔，改為從原始碼建置（需要一段時間）…' ;;
+    pull_failed) M='下載映像檔失敗。請檢查網路連線後再試一次。' ;;
     up) M='ColTex 正在執行：{url}' ;;
     not_answering) M='ColTex 沒有在連接埠 {port} 上回應' ;;
     no_release) M='找不到發佈版本' ;;
@@ -121,6 +124,7 @@ msg_zh_TW() {
 msg_ja() {
   case "$1" in
     no_prebuilt) M='ColTex {version} のビルド済みイメージがないため、ソースからビルドします（しばらくかかります）…' ;;
+    pull_failed) M='イメージのダウンロードに失敗しました。ネットワーク接続を確認して、もう一度お試しください。' ;;
     up) M='ColTex は稼働中です：{url}' ;;
     not_answering) M='ColTex がポート {port} で応答していません' ;;
     no_release) M='リリースが見つかりません' ;;
@@ -144,6 +148,7 @@ msg_ja() {
 msg_ko() {
   case "$1" in
     no_prebuilt) M='ColTex {version}용으로 미리 빌드된 이미지가 없어 소스에서 빌드합니다(시간이 좀 걸립니다)…' ;;
+    pull_failed) M='이미지를 내려받지 못했습니다. 네트워크 연결을 확인한 뒤 다시 시도하세요.' ;;
     up) M='ColTex 실행 중: {url}' ;;
     not_answering) M='ColTex가 포트 {port}에서 응답하지 않습니다' ;;
     no_release) M='릴리스를 찾을 수 없습니다' ;;
@@ -167,6 +172,7 @@ msg_ko() {
 msg_es() {
   case "$1" in
     no_prebuilt) M='No hay imágenes precompiladas para ColTex {version}; se compilarán a partir del código fuente (tarda un rato)…' ;;
+    pull_failed) M='No se pudieron descargar las imágenes. Revisa la conexión de red e inténtalo de nuevo.' ;;
     up) M='ColTex está en marcha: {url}' ;;
     not_answering) M='ColTex no responde en el puerto {port}' ;;
     no_release) M='No se encontró ninguna versión' ;;
@@ -190,6 +196,7 @@ msg_es() {
 msg_fr() {
   case "$1" in
     no_prebuilt) M='Pas d’images précompilées pour ColTex {version} ; construction à partir des sources (cela prend un moment)…' ;;
+    pull_failed) M='Le téléchargement des images a échoué. Vérifiez la connexion réseau et réessayez.' ;;
     up) M='ColTex est en marche : {url}' ;;
     not_answering) M='ColTex ne répond pas sur le port {port}' ;;
     no_release) M='Aucune version publiée trouvée' ;;
@@ -213,6 +220,7 @@ msg_fr() {
 msg_de() {
   case "$1" in
     no_prebuilt) M='Keine vorgefertigten Images für ColTex {version}; sie werden aus den Quellen gebaut (das dauert eine Weile)…' ;;
+    pull_failed) M='Die Images konnten nicht heruntergeladen werden. Prüfen Sie die Netzwerkverbindung und versuchen Sie es erneut.' ;;
     up) M='ColTex läuft: {url}' ;;
     not_answering) M='ColTex antwortet nicht auf Port {port}' ;;
     no_release) M='Keine Version gefunden' ;;
@@ -236,6 +244,7 @@ msg_de() {
 msg_pt_BR() {
   case "$1" in
     no_prebuilt) M='Não há imagens pré-compiladas para o ColTex {version}; compilando a partir do código-fonte (isso demora um pouco)…' ;;
+    pull_failed) M='Não foi possível baixar as imagens. Verifique a conexão de rede e tente de novo.' ;;
     up) M='O ColTex está no ar: {url}' ;;
     not_answering) M='O ColTex não está respondendo na porta {port}' ;;
     no_release) M='Nenhuma versão encontrada' ;;
@@ -259,6 +268,7 @@ msg_pt_BR() {
 msg_it() {
   case "$1" in
     no_prebuilt) M='Nessuna immagine precompilata per ColTex {version}; vengono compilate dai sorgenti (ci vuole un po’)…' ;;
+    pull_failed) M='Il download delle immagini non è riuscito. Controlla la connessione di rete e riprova.' ;;
     up) M='ColTex è attivo: {url}' ;;
     not_answering) M='ColTex non risponde sulla porta {port}' ;;
     no_release) M='Nessuna release trovata' ;;
@@ -282,6 +292,7 @@ msg_it() {
 msg_ru() {
   case "$1" in
     no_prebuilt) M='Для ColTex {version} нет готовых образов; они собираются из исходного кода (это займёт время)…' ;;
+    pull_failed) M='Не удалось загрузить образы. Проверьте подключение к сети и попробуйте снова.' ;;
     up) M='ColTex работает: {url}' ;;
     not_answering) M='ColTex не отвечает на порту {port}' ;;
     no_release) M='Выпуск не найден' ;;
@@ -305,6 +316,7 @@ msg_ru() {
 msg_tr() {
   case "$1" in
     no_prebuilt) M='ColTex {version} için hazır imaj yok; kaynaklardan derleniyor (biraz sürer)…' ;;
+    pull_failed) M='İmajlar indirilemedi. Ağ bağlantısını kontrol edip yeniden deneyin.' ;;
     up) M='ColTex çalışıyor: {url}' ;;
     not_answering) M='ColTex {port} numaralı bağlantı noktasında yanıt vermiyor' ;;
     no_release) M='Sürüm bulunamadı' ;;
@@ -328,6 +340,7 @@ msg_tr() {
 msg_vi() {
   case "$1" in
     no_prebuilt) M='Không có image dựng sẵn cho ColTex {version}; đang dựng từ mã nguồn (sẽ mất một lúc)…' ;;
+    pull_failed) M='Không tải được các image. Hãy kiểm tra kết nối mạng rồi thử lại.' ;;
     up) M='ColTex đã chạy: {url}' ;;
     not_answering) M='ColTex không phản hồi trên cổng {port}' ;;
     no_release) M='Không tìm thấy bản phát hành nào' ;;
@@ -351,6 +364,7 @@ msg_vi() {
 msg_id() {
   case "$1" in
     no_prebuilt) M='Tidak ada image siap pakai untuk ColTex {version}; membangunnya dari kode sumber (ini butuh waktu)…' ;;
+    pull_failed) M='Gagal mengunduh image. Periksa koneksi jaringan lalu coba lagi.' ;;
     up) M='ColTex sudah aktif: {url}' ;;
     not_answering) M='ColTex tidak merespons di port {port}' ;;
     no_release) M='Tidak ada rilis' ;;
@@ -385,16 +399,32 @@ deploy() {
   before="$(running_images)"
   if [ "$(get COLTEX_BUILD)" = 1 ]; then
     compose up -d --build "$@"
-  elif compose pull "$@"; then
+  elif pull "$@"; then
     compose up -d "$@"
-  else
+  elif grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found' "$PULLED"; then
+    # Only when there are none for this version; a network or registry error is not a reason
+    # to build TeX Live here.
     T no_prebuilt version="$(get COLTEX_IMAGE_TAG)"
     compose up -d --build "$@"
+  else
+    T pull_failed >&2
+    exit 1
   fi
   after=" $(running_images | tr '\n' ' ') "
   for old in $before; do
     case "$after" in *" $old "*) ;; *) docker image rm "$old" >/dev/null 2>&1 || true ;; esac
   done
+}
+# `docker compose pull`, shown as it goes and kept in $PULLED, so a failure can say why.
+PULLED="$(mktemp "${TMPDIR:-/tmp}/coltex-pull.XXXXXX")"
+trap 'rm -f "$PULLED"' EXIT
+pull() {
+  local rc
+  set +e
+  compose pull "$@" 2>&1 | tee "$PULLED"
+  rc=${PIPESTATUS[0]}
+  set -e
+  return "$rc"
 }
 # `docker compose exec` with a terminal when there is one (the cloudflare token prompt needs it).
 exec_server() {

@@ -99,7 +99,11 @@ run in a terminal on a fresh install (arrow-key menus; options answer them;
 older installs meaning `zh-CN` — also sets `coltex`'s language and the setup
 page's first language; each language's messages are a `msg_<id>` function
 at the top of `install.sh` and of `coltex`), shows each step with a spinner and the image download
-with a bar (from `docker compose --progress json pull`), keeps the full
+with a bar (from `docker compose --progress json pull`; its total is asked of the
+registries first with `docker manifest inspect -v`, less the layers already here, and every
+byte count stays in awk, printed with `%.0f`, because some awks print large numbers in
+exponent form; a pull that fails for anything but missing images stops with an error rather
+than building TeX Live locally, in `install.sh` and `coltex deploy` alike), keeps the full
 output in `install.log`, and on failure prints its end. It checks Docker (offers get.docker.com on Linux),
 clones the repository (`DEFAULT_REPO` at the top; `--repo` or `COLTEX_REPO`
 for a fork) into `~/coltex` or pulls it when
