@@ -20,15 +20,19 @@ type Props = {
   canEdit: boolean
 }
 
-/** A list of skills with new, import, edit, download and delete (the project settings' AI skills). */
+/** A list of skills with import, edit, download and delete (the project settings' AI skills). */
 export function SkillLibrary({ base, canEdit }: Props) {
   const skills = useSkills(base)
-  const [editing, setEditing] = useState<AiSkill | 'new'>()
+  const [editing, setEditing] = useState<AiSkill>()
   const list = skills.skills
 
   return (
     <div className="grid gap-3">
-      {canEdit && <SkillActions skills={skills} onNew={() => setEditing('new')} />}
+      {canEdit && (
+        <div>
+          <SkillActions skills={skills} />
+        </div>
+      )}
       {!list ? (
         <div className="flex justify-center py-10 text-muted-foreground">
           <Spinner className="size-5" />
@@ -98,11 +102,11 @@ export function SkillLibrary({ base, canEdit }: Props) {
       <SkillEditor
         open={!!editing}
         onOpenChange={open => !open && setEditing(undefined)}
-        title={editing === 'new' ? t('New skill') : canEdit && editing?.scope !== 'builtin' ? t('Edit skill') : t('Skill')}
-        initial={editing === 'new' ? undefined : editing}
-        files={editing === 'new' ? undefined : editing?.files}
-        readOnly={!canEdit || (editing !== 'new' && editing?.scope === 'builtin')}
-        onSave={async body => void (await skills.save(body, editing === 'new' ? undefined : editing?.name))}
+        title={canEdit && editing?.scope !== 'builtin' ? t('Edit skill') : t('Skill')}
+        initial={editing}
+        files={editing?.files}
+        readOnly={!canEdit || editing?.scope === 'builtin'}
+        onSave={async body => void (await skills.save(body, editing?.name))}
       />
     </div>
   )

@@ -90,7 +90,6 @@ export function AdminBackupsPage() {
   if (!state || !form) {
     return (
       <>
-        <PageHeader title={t('Storage & backups')} />
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-[26rem_minmax(0,1fr)]">
           <Skeleton className="h-[34rem] rounded-xl" />
           <Skeleton className="h-64 rounded-xl" />
@@ -164,7 +163,6 @@ export function AdminBackupsPage() {
   return (
     <>
       <PageHeader
-        title={t('Storage & backups')}
         actions={
           <Button onClick={() => void runNow()} disabled={!config.url || running || starting || dirty}>
             {(running || starting) && <Spinner />} {running ? t('Backing up…') : t('Back up now')}

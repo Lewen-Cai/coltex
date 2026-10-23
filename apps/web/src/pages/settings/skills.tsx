@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Sparkles, Upload } from 'lucide-react'
 import type { AiSkill } from '@coltex/shared'
-import { PageHeader } from '@/components/shell/app-shell'
 import { SkillActions } from '@/components/skills/skill-actions'
 import { SkillChat } from '@/components/skills/skill-chat'
 import { SkillDetail, SkillMeta } from '@/components/skills/skill-detail'
@@ -29,7 +28,7 @@ export function SkillsSettingsPage() {
   const [selection, setSelection] = useState<Selection>({ kind: 'chat' })
   // Narrow screens: whether the right side (chat or skill) is showing instead of the list.
   const [opened, setOpened] = useState(false)
-  const [editing, setEditing] = useState<AiSkill | 'new'>()
+  const [editing, setEditing] = useState<AiSkill>()
   const [prefill, setPrefill] = useState<{ text: string; key: number }>()
   const wide = useMediaQuery('(min-width: 1024px)')
 
@@ -44,10 +43,7 @@ export function SkillsSettingsPage() {
   }
 
   const improve = (skill: AiSkill) => {
-    const text =
-      skill.scope === 'builtin'
-        ? t('Help me make my own version of the built-in skill “{name}”: ', { name: skill.name })
-        : t('Help me improve my skill “{name}”: ', { name: skill.name })
+    const text = t('Help me improve my skill “{name}”: ', { name: skill.name })
     setPrefill(p => ({ text, key: (p?.key ?? 0) + 1 }))
     select({ kind: 'chat' })
   }
@@ -57,8 +53,7 @@ export function SkillsSettingsPage() {
 
   return (
     <>
-      <PageHeader title={t('AI skills')} actions={<SkillActions skills={skills} onNew={() => setEditing('new')} align="end" />} />
-      <div className="flex h-[calc(100dvh-10rem)] min-h-[520px] overflow-hidden rounded-xl border bg-card">
+      <div className="flex h-[calc(100dvh-6.25rem)] min-h-[520px] overflow-hidden rounded-xl border bg-card">
         {showList && (
           <nav className={cn('flex min-h-0 flex-col overflow-y-auto p-2', wide ? 'w-72 shrink-0 border-r' : 'w-full')}>
             <ListButton selected={wide && selection.kind === 'chat'} onClick={() => select({ kind: 'chat' })}>
@@ -66,6 +61,16 @@ export function SkillsSettingsPage() {
                 <Sparkles className="size-4 text-primary" /> {t('Create with AI')}
               </span>
             </ListButton>
+            <SkillActions
+              skills={skills}
+              trigger={
+                <button type="button" className="w-full rounded-md px-2.5 py-2 text-left transition-colors hover:bg-accent disabled:opacity-60">
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    {skills.importing ? <Spinner className="size-4" /> : <Upload className="size-4 text-primary" />} {t('Import')}
+                  </span>
+                </button>
+              }
+            />
 
             <GroupLabel>{t('My skills')}</GroupLabel>
             {!list ? (
@@ -121,11 +126,11 @@ export function SkillsSettingsPage() {
       <SkillEditor
         open={!!editing}
         onOpenChange={open => !open && setEditing(undefined)}
-        title={editing === 'new' ? t('New skill') : t('Edit skill')}
-        initial={editing === 'new' ? undefined : editing}
-        files={editing === 'new' ? undefined : editing?.files}
+        title={t('Edit skill')}
+        initial={editing}
+        files={editing?.files}
         onSave={async body => {
-          const skill = await skills.save(body, editing === 'new' ? undefined : editing?.name)
+          const skill = await skills.save(body, editing?.name)
           select({ kind: 'skill', name: skill.name })
         }}
       />

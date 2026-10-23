@@ -25,7 +25,6 @@ import type {
 } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
 import { ProviderIcon } from '@/components/provider-icon'
-import { PageHeader } from '@/components/shell/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -134,7 +133,6 @@ export function AdminAiPage() {
   if (!state) {
     return (
       <>
-        <PageHeader title={t('AI services')} description={t('Loading…')} />
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           <Skeleton className="h-64 lg:col-span-2" />
           <Skeleton className="h-64" />
@@ -150,10 +148,6 @@ export function AdminAiPage() {
 
   return (
     <>
-      <PageHeader
-        title={t('AI services')}
-      />
-
       {/* Providers and the auto choice side by side (one height); the endpoints below, full width. */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         <div className="grid lg:col-span-2 [&>[data-slot=card]]:h-full">

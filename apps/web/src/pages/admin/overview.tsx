@@ -340,7 +340,6 @@ export function AdminOverviewPage() {
   return (
     <>
       <PageHeader
-        title={t('Overview')}
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="outline" className="gap-2 px-3 py-1 text-xs font-normal text-muted-foreground">

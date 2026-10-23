@@ -612,7 +612,6 @@ export function AdminAiUsagePage() {
   return (
     <>
       <PageHeader
-        title={t('AI usage & access')}
         actions={
 <PeriodTabs value={days} onChange={setDays} />
         }

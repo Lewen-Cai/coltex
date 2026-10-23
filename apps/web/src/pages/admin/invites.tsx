@@ -3,7 +3,6 @@ import { Link2, MailPlus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AiGroup, Invite, InviteRole } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
-import { PageHeader } from '@/components/shell/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -99,10 +98,6 @@ export function AdminInvitesPage({ user }: { user: SessionUser }) {
 
   return (
     <>
-      <PageHeader
-        title={t('Invitations')}
-      />
-
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="grid h-fit gap-6">
           <Card className="h-fit">

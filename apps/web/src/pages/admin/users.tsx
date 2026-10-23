@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { passwordProblem, type InviteRole, type ManagedUser } from '@coltex/shared'
 import { PasswordStrength } from '@/components/auth/PasswordStrength'
 import { confirmDialog } from '@/components/confirm'
-import { PageHeader } from '@/components/shell/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -103,7 +102,6 @@ export function AdminUsersPage({ user: me }: { user: SessionUser }) {
 
   return (
     <>
-      <PageHeader title={t('Manage users')} />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <InputGroup className="w-full max-w-xs bg-card">

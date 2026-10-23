@@ -7,7 +7,6 @@ import type { CloudflareBody, CloudflareState, NetworkInfo, TailscaleState } fro
 import { confirmDialog } from '@/components/confirm'
 import { choiceLabel } from '@/components/link-list'
 import { ProviderIcon } from '@/components/provider-icon'
-import { PageHeader } from '@/components/shell/app-shell'
 import { TailscaleLogo } from '@/components/tailscale-logo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -178,7 +177,6 @@ export function AdminNetworkPage() {
 
   return (
     <>
-      <PageHeader title={t('Network')} />
       {!info ? (
         <div className="grid gap-6">
           <Skeleton className="h-36 rounded-xl" />

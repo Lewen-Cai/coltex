@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { passwordProblem } from '@coltex/shared'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { PasswordStrength } from '@/components/auth/PasswordStrength'
-import { PageHeader } from '@/components/shell/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -153,7 +152,6 @@ function PasswordCard() {
 export function AccountSettingsPage({ user }: { user: SessionUser }) {
   return (
     <>
-      <PageHeader title={t('Account')} />
       {/* Side by side, one height: the shorter card keeps its button at the bottom. */}
       <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
         <ProfileCard user={user} />

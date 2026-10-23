@@ -60,6 +60,7 @@ import { inView, useProjects } from '@/pages/projects-data'
 import { TagDialogHost, deleteTag, openTagDialog } from '@/components/tag-dialog'
 import { ProjectDialogs } from './project-dialogs'
 import { ROLE_NAME } from '@/lib/roles'
+import { cn } from '@/lib/utils'
 
 type NavItem = { title: string; href: string; match: (route: string) => boolean; unread?: boolean }
 
@@ -367,13 +368,21 @@ export function AppShell({ user, route, children }: { user: SessionUser; route: 
 }
 
 /** Title row at the top of a console page. */
-export function PageHeader({ title, description, actions }: { title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
+/**
+ * A page's title and its actions. Settings and administration pages pass
+ * no title (the sidebar and the breadcrumb already name them; user's
+ * decision 2026-10-23), only their actions, which then sit on the right.
+ */
+export function PageHeader({ title, description, actions }: { title?: ReactNode; description?: ReactNode; actions?: ReactNode }) {
+  if (!title && !actions) return null
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-      </div>
+    <div className={cn('mb-6 flex flex-wrap items-end gap-4', title ? 'justify-between' : 'justify-end')}>
+      {title && (
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+        </div>
+      )}
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   )
