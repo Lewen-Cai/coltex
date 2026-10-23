@@ -91,8 +91,9 @@ const version =
   (JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version
 
 /** The language chosen when installing (install.sh), for the setup page. */
-const lang = process.env.COLTEX_LANG
-const installLanguage: 'en' | 'zh' | null = lang === 'zh' || lang === 'en' ? lang : null
+// The language chosen at install (install.sh --lang): the setup page starts in it. The web app
+// maps it to one of its languages (old installs say zh).
+const installLanguage = process.env.COLTEX_LANG?.trim() || null
 
 export const config = {
   version,

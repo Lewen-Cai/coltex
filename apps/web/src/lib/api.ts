@@ -128,7 +128,7 @@ const filesUrl = (id: string, path: string) => `/api/projects/${id}/files/${enco
 
 export const api = {
   // ---- Accounts ----
-  setupStatus: () => request<{ needsSetup: boolean; language: 'en' | 'zh' | null }>('/api/setup'),
+  setupStatus: () => request<{ needsSetup: boolean; language: string | null }>('/api/setup'),
   setup: (body: { name: string; email: string; password: string }) => request<unknown>('/api/setup', json('POST', body)),
   inviteInfo: (token: string) => request<InviteInfo>(`/api/invites/${encodeURIComponent(token)}`),
   acceptInvite: (token: string, body: { name: string; email: string; password: string }) =>

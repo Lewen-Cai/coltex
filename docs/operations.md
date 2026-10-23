@@ -95,8 +95,10 @@ hostnames). cloudflared forwards from loopback with `X-Forwarded-For` and
 
 `install.sh` (Linux/macOS): asks for the language, edition and access when
 run in a terminal on a fresh install (arrow-key menus; options answer them;
-`COLTEX_LANG` in `.env` also sets `coltex`'s language and the setup page's
-first language), shows each step with a spinner and the image download
+`COLTEX_LANG` in `.env` — one of the web app's 14 language ids, `zh` from
+older installs meaning `zh-CN` — also sets `coltex`'s language and the setup
+page's first language; each language's messages are a `msg_<id>` function
+at the top of `install.sh` and of `coltex`), shows each step with a spinner and the image download
 with a bar (from `docker compose --progress json pull`), keeps the full
 output in `install.log`, and on failure prints its end. It checks Docker (offers get.docker.com on Linux),
 clones the repository (`DEFAULT_REPO` at the top; `--repo` or `COLTEX_REPO`

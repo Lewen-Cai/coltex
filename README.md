@@ -7,6 +7,18 @@
 <p align="center">
   <a href="./README.md"><kbd><b>English</b></kbd></a>
   <a href="./readmes/zh-CN.md"><kbd>简体中文</kbd></a>
+  <a href="./readmes/zh-TW.md"><kbd>繁體中文</kbd></a>
+  <a href="./readmes/ja.md"><kbd>日本語</kbd></a>
+  <a href="./readmes/ko.md"><kbd>한국어</kbd></a>
+  <a href="./readmes/es.md"><kbd>Español</kbd></a>
+  <a href="./readmes/fr.md"><kbd>Français</kbd></a><br>
+  <a href="./readmes/de.md"><kbd>Deutsch</kbd></a>
+  <a href="./readmes/pt-BR.md"><kbd>Português (Brasil)</kbd></a>
+  <a href="./readmes/it.md"><kbd>Italiano</kbd></a>
+  <a href="./readmes/ru.md"><kbd>Русский</kbd></a>
+  <a href="./readmes/tr.md"><kbd>Türkçe</kbd></a>
+  <a href="./readmes/vi.md"><kbd>Tiếng Việt</kbd></a>
+  <a href="./readmes/id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
   <a href="#install">Install</a> · <a href="#configure">Configure</a> · <a href="./CHANGELOG.md">Changelog</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
@@ -61,7 +73,7 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - Templates for IEEE, ACM, Springer LNCS, Elsevier, REVTeX and arXiv, and conversion of a paper from one journal template to another.
 - Overleaf zip import and export, files linked from a URL or another project, tags, archive and trash.
 - No public sign-up: accounts come from invitation links. One system administrator, and admins who each manage the team they invited.
-- Monitoring, WebDAV backups (optionally encrypted), local or S3-compatible storage, light and dark themes, English and Chinese interface.
+- Monitoring, WebDAV backups (optionally encrypted), local or S3-compatible storage, light and dark themes, and an interface in 14 languages (English, Chinese, Japanese, Korean, Spanish, French, German, Portuguese, Italian, Russian, Turkish, Vietnamese and Indonesian).
 
 <a id="install"></a>
 ## Install
@@ -93,7 +105,7 @@ Options answer the questions, or replace them where there is no terminal (add th
 | `--cloudflare-quick` | A temporary public `trycloudflare.com` address, for trying it out |
 | `--edition full` | The full TeX Live edition |
 | `--local` | Only this machine and its network |
-| `--lang zh` | Chinese for the installer, `coltex` and the setup page (`en` for English) |
+| `--lang LANG` | The language of the installer, `coltex` and the setup page: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi` or `id` (asked when not given) |
 | `--port 3690` | Another port |
 | `--version v0.0.1` | A specific release (`main` for the development branch) |
 | `--build` | Build the images from the sources on this machine instead of downloading them |

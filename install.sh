@@ -6,7 +6,8 @@
 #
 # Without options, it asks for the language, the TeX Live edition and how to reach ColTex
 # (arrow keys). Options answer those questions, or replace them where there is no terminal:
-#   --lang LANG             en or zh, for the installer, `coltex` and the setup page
+#   --lang LANG             the language of the installer, `coltex` and the setup page:
+#                           en, zh-CN, zh-TW, ja, ko, es, fr, de, pt-BR, it, ru, tr, vi, id
 #   --dir DIR               where it goes (default ~/coltex)
 #   --port PORT             the port (default 3690)
 #   --edition EDITION       standard (default, TeX Live without package manuals, about 9 GB)
@@ -60,13 +61,29 @@ while [ $# -gt 0 ]; do
     --local) ACCESS_GIVEN=1; shift ;;
     --build) BUILD=1; shift ;;
     --no-start) START=0; shift ;;
-    -h | --help) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
 
 case "$EDITION" in "" | standard | full) ;; *) echo "--edition is standard or full" >&2; exit 2 ;; esac
-case "$LANGUAGE" in "" | en | zh) ;; *) echo "--lang is en or zh" >&2; exit 2 ;; esac
+# A language setting or a locale (ja_JP.UTF-8, and zh from before there were more) as one of
+# ColTex's interface languages (the web app's lib/locales.ts), or nothing.
+lang_id() {
+  case "$1" in
+    zh_TW* | zh_HK* | zh_MO* | zh-TW | zh-HK | zh-MO | zh-Hant* | zh_Hant*) echo zh-TW ;;
+    zh*) echo zh-CN ;;
+    pt*) echo pt-BR ;;
+    *) case "${1%%[_.@-]*}" in en | ja | ko | es | fr | de | it | ru | tr | vi | id) echo "${1%%[_.@-]*}" ;; esac ;;
+  esac
+}
+LANGS=(zh-CN zh-TW en ja ko es fr de pt-BR it ru tr vi id)
+LANG_NAMES=("简体中文" "繁體中文" "English" "日本語" "한국어" "Español" "Français" "Deutsch" "Português (Brasil)" "Italiano" "Русский" "Türkçe" "Tiếng Việt" "Bahasa Indonesia")
+if [ -n "$LANGUAGE" ]; then
+  given="$LANGUAGE"
+  LANGUAGE="$(lang_id "$given")"
+  [ -n "$LANGUAGE" ] || { echo "--lang is one of: ${LANGS[*]} (not $given)" >&2; exit 2; }
+fi
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -92,12 +109,15 @@ cursor_show() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25h" || true; }
 trap 'cursor_show; printf "%s\n" "$RESET"; exit 130' INT TERM
 trap 'cursor_show' EXIT
 
-# Columns a string takes: CJK characters (3 bytes in UTF-8) take two.
+# Columns a string takes: one per character (UTF-8 continuation bytes don't count), two for
+# CJK and Hangul (lead bytes E3-ED) and full-width forms (EF BC/BD).
 width() {
-  local s="$1" bytes ascii
+  local s="$1" bytes cont wide full
   bytes=$(printf '%s' "$s" | LC_ALL=C wc -c | tr -d ' ')
-  ascii=$(printf '%s' "$s" | LC_ALL=C tr -d '\200-\377' | LC_ALL=C wc -c | tr -d ' ')
-  echo $((ascii + (bytes - ascii) * 2 / 3))
+  cont=$(printf '%s' "$s" | LC_ALL=C tr -cd '\200-\277' | LC_ALL=C wc -c | tr -d ' ')
+  wide=$(printf '%s' "$s" | LC_ALL=C tr -cd '\343-\355' | LC_ALL=C wc -c | tr -d ' ')
+  full=$( (printf '%s' "$s" | LC_ALL=C grep -o $'\357[\274\275]' || true) | wc -l | tr -d ' ')
+  echo $((bytes - cont + wide + full))
 }
 # The string padded with spaces to $2 columns.
 pad() {
@@ -107,8 +127,664 @@ pad() {
 }
 
 # ---- Language -------------------------------------------------------------------------
-# A string in the chosen language: T "English" "中文".
-T() { if [ "$LANGUAGE" = zh ]; then printf '%s' "$2"; else printf '%s' "$1"; fi; }
+# A message in the chosen language: T key [name=value…], each {name} in it replaced by the
+# value. Each language is a function below (msg_en, msg_zh_CN, …) setting M; a missing one
+# falls back to English.
+T() {
+  local key="$1" kv
+  shift
+  M=""
+  if declare -F "msg_${LANGUAGE//-/_}" >/dev/null; then "msg_${LANGUAGE//-/_}" "$key"; fi
+  [ -n "$M" ] || msg_en "$key"
+  for kv in "$@"; do M="${M//\{${kv%%=*}\}/${kv#*=}}"; done
+  printf '%s' "$M"
+}
+# >>> messages (one function per language; keep the keys the same in all of them)
+msg_en() {
+  case "$1" in
+    tagline) M='A self-hosted collaborative LaTeX editor' ;;
+    language) M='Language' ;;
+    full_output) M='Full output: {log}' ;;
+    downloading) M='Downloading' ;;
+    docker_install_q) M='Docker is not installed. Install it now with Docker’s script (get.docker.com, needs sudo)?' ;;
+    docker_install) M='Install Docker' ;;
+    cancel) M='Cancel' ;;
+    docker_needed) M='Docker is needed: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker installed. If the next step says permission denied, log out and back in (docker group), then run this again.' ;;
+    docker_needed_mac) M='Docker is needed: https://docs.docker.com/engine/install/ (Docker Desktop on macOS)' ;;
+    checking_docker) M='Checking Docker' ;;
+    no_release) M='No release found in {repo} (pass --version main for the development branch)' ;;
+    edition_q) M='TeX Live edition' ;;
+    edition_standard) M='Standard: everything compiles; about 3 GB to download, 12 GB on disk' ;;
+    edition_full) M='Full: also the package manuals for the AI agent; about 8 GB, 23 GB on disk' ;;
+    access_q) M='How will people reach ColTex?' ;;
+    access_local) M='On this machine and its network' ;;
+    access_domain) M='A domain of mine, with HTTPS' ;;
+    access_tailscale) M='Tailscale (my tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel with my domain' ;;
+    access_cf_quick) M='A temporary public link (trycloudflare.com)' ;;
+    ask_domain) M='Domain (its DNS must point here; ports 80 and 443 open):' ;;
+    ask_token) M='Tunnel token (from the Cloudflare dashboard):' ;;
+    updating_to) M='Updating ColTex to {version}' ;;
+    getting) M='Getting ColTex {version}' ;;
+    writing_settings) M='Writing settings' ;;
+    ready_start) M='Ready. Start it with:' ;;
+    building) M='Building the images (several minutes; TeX Live is large)' ;;
+    no_prebuilt) M='No prebuilt images for {version}; building them from the sources.' ;;
+    starting) M='Starting the services' ;;
+    waiting) M='Waiting for ColTex' ;;
+    tailscale_signin) M='Tailscale: sign this server in to your tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel (temporary link)' ;;
+    running_fresh) M='ColTex is running. Open it and create the administrator account:' ;;
+    running_version) M='ColTex {version} is running:' ;;
+    first_visit) M='(the first visit can take a minute while Caddy gets the certificate)' ;;
+    this_machine) M='(on this machine)' ;;
+    your_network) M='(on your network)' ;;
+    public_address) M='(public address)' ;;
+    public_warning) M='This server is reachable from the internet: for real use don’t sign in over plain http. Use --domain (HTTPS), Tailscale or a Cloudflare tunnel.' ;;
+    manage) M='Manage it:' ;;
+    remote_later) M='Remote access later:' ;;
+  esac
+}
+msg_zh_CN() {
+  case "$1" in
+    tagline) M='自托管的协作 LaTeX 编辑器' ;;
+    language) M='语言' ;;
+    full_output) M='完整输出：{log}' ;;
+    downloading) M='下载镜像' ;;
+    docker_install_q) M='没有安装 Docker。现在用 Docker 的官方脚本（get.docker.com，需要 sudo）安装吗？' ;;
+    docker_install) M='安装 Docker' ;;
+    cancel) M='取消' ;;
+    docker_needed) M='需要 Docker：https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker 已安装。如果下一步提示权限不足，请注销后重新登录（docker 用户组），再运行一次。' ;;
+    docker_needed_mac) M='需要 Docker：https://docs.docker.com/engine/install/（macOS 上用 Docker Desktop）' ;;
+    checking_docker) M='检查 Docker' ;;
+    no_release) M='在 {repo} 里没有找到发布版本（开发分支请加 --version main）' ;;
+    edition_q) M='TeX Live 版本' ;;
+    edition_standard) M='标准版：能编译的文档完全一样；下载约 3 GB，占用约 12 GB' ;;
+    edition_full) M='完整版：另含宏包手册，供 AI 智能体查阅；下载约 8 GB，占用约 23 GB' ;;
+    access_q) M='大家怎样访问 ColTex？' ;;
+    access_local) M='本机和局域网' ;;
+    access_domain) M='我自己的域名，启用 HTTPS' ;;
+    access_tailscale) M='Tailscale（我的 tailnet）' ;;
+    access_cf_token) M='Cloudflare Tunnel，用我的域名' ;;
+    access_cf_quick) M='临时公网链接（trycloudflare.com）' ;;
+    ask_domain) M='域名（DNS 要解析到这台机器，并开放 80 和 443 端口）：' ;;
+    ask_token) M='隧道令牌（在 Cloudflare 控制台里）：' ;;
+    updating_to) M='更新 ColTex 到 {version}' ;;
+    getting) M='获取 ColTex {version}' ;;
+    writing_settings) M='写入设置' ;;
+    ready_start) M='准备好了。启动：' ;;
+    building) M='构建镜像（需要几分钟，TeX Live 很大）' ;;
+    no_prebuilt) M='{version} 没有预构建的镜像，改为从源码构建。' ;;
+    starting) M='启动服务' ;;
+    waiting) M='等待 ColTex 就绪' ;;
+    tailscale_signin) M='Tailscale：把这台服务器登录到你的 tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel（临时链接）' ;;
+    running_fresh) M='ColTex 已启动。打开下面的地址，创建管理员账号：' ;;
+    running_version) M='ColTex {version} 已启动：' ;;
+    first_visit) M='（第一次访问时 Caddy 要申请证书，可能需要一分钟）' ;;
+    this_machine) M='（本机）' ;;
+    your_network) M='（局域网）' ;;
+    public_address) M='（公网地址）' ;;
+    public_warning) M='这台服务器能从公网访问：正式使用时不要通过明文 http 登录，请用 --domain（HTTPS）、Tailscale 或 Cloudflare 隧道。' ;;
+    manage) M='管理：' ;;
+    remote_later) M='之后开启远程访问：' ;;
+  esac
+}
+msg_zh_TW() {
+  case "$1" in
+    tagline) M='自行架設的協作 LaTeX 編輯器' ;;
+    language) M='語言' ;;
+    full_output) M='完整輸出：{log}' ;;
+    downloading) M='下載映像檔' ;;
+    docker_install_q) M='尚未安裝 Docker。要現在用 Docker 的官方指令碼（get.docker.com，需要 sudo）安裝嗎？' ;;
+    docker_install) M='安裝 Docker' ;;
+    cancel) M='取消' ;;
+    docker_needed) M='需要 Docker：https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker 已安裝。如果下一步出現 permission denied，請登出後重新登入（docker group），再執行一次。' ;;
+    docker_needed_mac) M='需要 Docker：https://docs.docker.com/engine/install/（macOS 上請用 Docker Desktop）' ;;
+    checking_docker) M='檢查 Docker' ;;
+    no_release) M='在 {repo} 中找不到發佈版本（開發分支請加上 --version main）' ;;
+    edition_q) M='TeX Live 版本' ;;
+    edition_standard) M='標準版：能編譯的文件完全相同；下載約 3 GB，磁碟占用約 12 GB' ;;
+    edition_full) M='完整版：另含套件手冊，供 AI 代理閱讀；下載約 8 GB，磁碟占用約 23 GB' ;;
+    access_q) M='其他人要如何連線到 ColTex？' ;;
+    access_local) M='本機及其所在網路' ;;
+    access_domain) M='我自己的網域，啟用 HTTPS' ;;
+    access_tailscale) M='Tailscale（我的 tailnet）' ;;
+    access_cf_token) M='Cloudflare Tunnel，使用我的網域' ;;
+    access_cf_quick) M='臨時公開連結（trycloudflare.com）' ;;
+    ask_domain) M='網域（DNS 必須指向這台機器，並開放連接埠 80 和 443）：' ;;
+    ask_token) M='通道權杖（在 Cloudflare 主控台中）：' ;;
+    updating_to) M='將 ColTex 更新到 {version}' ;;
+    getting) M='取得 ColTex {version}' ;;
+    writing_settings) M='寫入設定' ;;
+    ready_start) M='準備完成。啟動方式：' ;;
+    building) M='建置映像檔（需要幾分鐘，TeX Live 很大）' ;;
+    no_prebuilt) M='{version} 沒有預先建置的映像檔，改為從原始碼建置。' ;;
+    starting) M='啟動服務' ;;
+    waiting) M='等待 ColTex 就緒' ;;
+    tailscale_signin) M='Tailscale：將這台伺服器登入你的 tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel（臨時連結）' ;;
+    running_fresh) M='ColTex 已啟動。請開啟以下網址，建立管理員帳號：' ;;
+    running_version) M='ColTex {version} 已啟動：' ;;
+    first_visit) M='（第一次連線時 Caddy 需要取得憑證，可能要等一分鐘）' ;;
+    this_machine) M='（本機）' ;;
+    your_network) M='（你的網路）' ;;
+    public_address) M='（公開位址）' ;;
+    public_warning) M='這台伺服器可以從網際網路連線：正式使用時請不要透過未加密的 http 登入，請改用 --domain（HTTPS）、Tailscale 或 Cloudflare 通道。' ;;
+    manage) M='管理：' ;;
+    remote_later) M='之後開啟遠端存取：' ;;
+  esac
+}
+msg_ja() {
+  case "$1" in
+    tagline) M='セルフホスト型の共同編集 LaTeX エディター' ;;
+    language) M='言語' ;;
+    full_output) M='出力の全文：{log}' ;;
+    downloading) M='ダウンロード中' ;;
+    docker_install_q) M='Docker がインストールされていません。Docker の公式スクリプト（get.docker.com、sudo が必要）で今すぐインストールしますか？' ;;
+    docker_install) M='Docker をインストール' ;;
+    cancel) M='キャンセル' ;;
+    docker_needed) M='Docker が必要です：https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker をインストールしました。次の手順で permission denied と表示された場合は、一度ログアウトしてログインし直し（docker group）、もう一度実行してください。' ;;
+    docker_needed_mac) M='Docker が必要です：https://docs.docker.com/engine/install/（macOS では Docker Desktop）' ;;
+    checking_docker) M='Docker を確認中' ;;
+    no_release) M='{repo} にリリースが見つかりません（開発ブランチを使うには --version main を指定してください）' ;;
+    edition_q) M='TeX Live のエディション' ;;
+    edition_standard) M='standard：すべての文書をコンパイル可能。ダウンロード約 3 GB、ディスク使用量 12 GB' ;;
+    edition_full) M='full：AI エージェント用のパッケージマニュアルも含む。ダウンロード約 8 GB、ディスク使用量 23 GB' ;;
+    access_q) M='ColTex へのアクセス方法は？' ;;
+    access_local) M='このマシンとそのネットワークから' ;;
+    access_domain) M='独自ドメイン（HTTPS）' ;;
+    access_tailscale) M='Tailscale（自分の tailnet）' ;;
+    access_cf_token) M='独自ドメインの Cloudflare Tunnel' ;;
+    access_cf_quick) M='一時的な公開リンク（trycloudflare.com）' ;;
+    ask_domain) M='ドメイン（DNS がこのマシンを指し、ポート 80 と 443 が開いている必要があります）：' ;;
+    ask_token) M='トンネルトークン（Cloudflare のダッシュボードで取得）：' ;;
+    updating_to) M='ColTex を {version} に更新中' ;;
+    getting) M='ColTex {version} を取得中' ;;
+    writing_settings) M='設定を書き込み中' ;;
+    ready_start) M='準備ができました。次のコマンドで起動します：' ;;
+    building) M='イメージをビルド中（TeX Live が大きいため数分かかります）' ;;
+    no_prebuilt) M='{version} のビルド済みイメージがないため、ソースからビルドします。' ;;
+    starting) M='サービスを起動中' ;;
+    waiting) M='ColTex の起動を待機中' ;;
+    tailscale_signin) M='Tailscale：このサーバーを tailnet にログインさせてください' ;;
+    cf_temporary) M='Cloudflare Tunnel（一時リンク）' ;;
+    running_fresh) M='ColTex が起動しました。次のアドレスを開いて管理者アカウントを作成してください：' ;;
+    running_version) M='ColTex {version} が起動しています：' ;;
+    first_visit) M='（初回のアクセスは、Caddy が証明書を取得するまで 1 分ほどかかることがあります）' ;;
+    this_machine) M='（このマシン）' ;;
+    your_network) M='（ネットワーク内）' ;;
+    public_address) M='（公開アドレス）' ;;
+    public_warning) M='このサーバーはインターネットからアクセスできます。本番で使う場合は暗号化されていない http でログインしないでください。--domain（HTTPS）、Tailscale、または Cloudflare Tunnel を使ってください。' ;;
+    manage) M='管理：' ;;
+    remote_later) M='後からリモートアクセスを有効にするには：' ;;
+  esac
+}
+msg_ko() {
+  case "$1" in
+    tagline) M='자체 호스팅 협업 LaTeX 편집기' ;;
+    language) M='언어' ;;
+    full_output) M='전체 출력: {log}' ;;
+    downloading) M='다운로드 중' ;;
+    docker_install_q) M='Docker가 설치되어 있지 않습니다. 지금 Docker 설치 스크립트(get.docker.com, sudo 필요)로 설치할까요?' ;;
+    docker_install) M='Docker 설치' ;;
+    cancel) M='취소' ;;
+    docker_needed) M='Docker가 필요합니다: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker를 설치했습니다. 다음 단계에서 permission denied가 나오면 로그아웃했다가 다시 로그인(docker group)한 뒤 이 명령을 다시 실행하세요.' ;;
+    docker_needed_mac) M='Docker가 필요합니다: https://docs.docker.com/engine/install/ (macOS에서는 Docker Desktop)' ;;
+    checking_docker) M='Docker 확인 중' ;;
+    no_release) M='{repo}에서 릴리스를 찾을 수 없습니다(개발 브랜치를 쓰려면 --version main을 지정하세요)' ;;
+    edition_q) M='TeX Live 에디션' ;;
+    edition_standard) M='standard: 모든 문서를 컴파일할 수 있음, 다운로드 약 3 GB, 디스크 12 GB' ;;
+    edition_full) M='full: AI 에이전트용 패키지 매뉴얼 포함, 다운로드 약 8 GB, 디스크 23 GB' ;;
+    access_q) M='사람들이 ColTex에 어떻게 접속하나요?' ;;
+    access_local) M='이 컴퓨터와 그 네트워크에서' ;;
+    access_domain) M='내 도메인으로, HTTPS 사용' ;;
+    access_tailscale) M='Tailscale(내 tailnet)' ;;
+    access_cf_token) M='내 도메인을 쓰는 Cloudflare Tunnel' ;;
+    access_cf_quick) M='임시 공개 링크(trycloudflare.com)' ;;
+    ask_domain) M='도메인(DNS가 이 서버를 가리키고 포트 80과 443이 열려 있어야 함):' ;;
+    ask_token) M='터널 토큰(Cloudflare 대시보드에서 확인):' ;;
+    updating_to) M='ColTex를 {version}(으)로 업데이트하는 중' ;;
+    getting) M='ColTex {version} 내려받는 중' ;;
+    writing_settings) M='설정 쓰는 중' ;;
+    ready_start) M='준비되었습니다. 다음 명령으로 시작하세요:' ;;
+    building) M='이미지 빌드 중(몇 분 걸립니다. TeX Live는 용량이 큽니다)' ;;
+    no_prebuilt) M='{version}용으로 미리 빌드된 이미지가 없어 소스에서 빌드합니다.' ;;
+    starting) M='서비스 시작 중' ;;
+    waiting) M='ColTex를 기다리는 중' ;;
+    tailscale_signin) M='Tailscale: 이 서버를 tailnet에 로그인하세요' ;;
+    cf_temporary) M='Cloudflare Tunnel(임시 링크)' ;;
+    running_fresh) M='ColTex가 실행 중입니다. 열어서 관리자 계정을 만드세요:' ;;
+    running_version) M='ColTex {version} 실행 중:' ;;
+    first_visit) M='(Caddy가 인증서를 받는 동안 첫 접속에 1분 정도 걸릴 수 있습니다)' ;;
+    this_machine) M='(이 컴퓨터에서)' ;;
+    your_network) M='(내 네트워크에서)' ;;
+    public_address) M='(공개 주소)' ;;
+    public_warning) M='이 서버는 인터넷에서 접속할 수 있습니다. 실제로 사용할 때는 암호화되지 않은 http로 로그인하지 마세요. --domain(HTTPS), Tailscale 또는 Cloudflare 터널을 사용하세요.' ;;
+    manage) M='관리:' ;;
+    remote_later) M='나중에 원격 접속을 켜려면:' ;;
+  esac
+}
+msg_es() {
+  case "$1" in
+    tagline) M='Un editor de LaTeX colaborativo y autoalojado' ;;
+    language) M='Idioma' ;;
+    full_output) M='Salida completa: {log}' ;;
+    downloading) M='Descargando' ;;
+    docker_install_q) M='Docker no está instalado. ¿Instalarlo ahora con el script de Docker (get.docker.com, requiere sudo)?' ;;
+    docker_install) M='Instalar Docker' ;;
+    cancel) M='Cancelar' ;;
+    docker_needed) M='Se necesita Docker: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker instalado. Si el siguiente paso dice permission denied, cierra la sesión y vuelve a entrar (docker group) y ejecuta esto de nuevo.' ;;
+    docker_needed_mac) M='Se necesita Docker: https://docs.docker.com/engine/install/ (Docker Desktop en macOS)' ;;
+    checking_docker) M='Comprobando Docker' ;;
+    no_release) M='No se encontró ninguna versión en {repo} (usa --version main para la rama de desarrollo)' ;;
+    edition_q) M='Edición de TeX Live' ;;
+    edition_standard) M='Standard: compila todo; unos 3 GB de descarga, 12 GB en disco' ;;
+    edition_full) M='Full: incluye también los manuales de los paquetes para el agente de IA; unos 8 GB, 23 GB en disco' ;;
+    access_q) M='¿Cómo accederán las personas a ColTex?' ;;
+    access_local) M='En esta máquina y su red' ;;
+    access_domain) M='Un dominio propio, con HTTPS' ;;
+    access_tailscale) M='Tailscale (mi tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel con mi dominio' ;;
+    access_cf_quick) M='Un enlace público temporal (trycloudflare.com)' ;;
+    ask_domain) M='Dominio (su DNS debe apuntar aquí; puertos 80 y 443 abiertos):' ;;
+    ask_token) M='Token del túnel (del panel de Cloudflare):' ;;
+    updating_to) M='Actualizando ColTex a {version}' ;;
+    getting) M='Descargando ColTex {version}' ;;
+    writing_settings) M='Escribiendo la configuración' ;;
+    ready_start) M='Listo. Inícialo con:' ;;
+    building) M='Compilando las imágenes (varios minutos; TeX Live es grande)' ;;
+    no_prebuilt) M='No hay imágenes precompiladas para {version}; se compilarán a partir del código fuente.' ;;
+    starting) M='Iniciando los servicios' ;;
+    waiting) M='Esperando a ColTex' ;;
+    tailscale_signin) M='Tailscale: conecta este servidor a tu tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel (enlace temporal)' ;;
+    running_fresh) M='ColTex está en marcha. Ábrelo y crea la cuenta de administrador:' ;;
+    running_version) M='ColTex {version} está en marcha:' ;;
+    first_visit) M='(la primera visita puede tardar un minuto mientras Caddy obtiene el certificado)' ;;
+    this_machine) M='(en esta máquina)' ;;
+    your_network) M='(en tu red)' ;;
+    public_address) M='(dirección pública)' ;;
+    public_warning) M='Este servidor es accesible desde internet: para un uso real, no inicies sesión por http sin cifrar. Usa --domain (HTTPS), Tailscale o un túnel de Cloudflare.' ;;
+    manage) M='Gestión:' ;;
+    remote_later) M='Acceso remoto más adelante:' ;;
+  esac
+}
+msg_fr() {
+  case "$1" in
+    tagline) M='Un éditeur LaTeX collaboratif auto-hébergé' ;;
+    language) M='Langue' ;;
+    full_output) M='Sortie complète : {log}' ;;
+    downloading) M='Téléchargement' ;;
+    docker_install_q) M='Docker n’est pas installé. L’installer maintenant avec le script de Docker (get.docker.com, nécessite sudo) ?' ;;
+    docker_install) M='Installer Docker' ;;
+    cancel) M='Annuler' ;;
+    docker_needed) M='Docker est nécessaire : https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker est installé. Si l’étape suivante indique « permission denied », déconnectez-vous puis reconnectez-vous (docker group), puis relancez cette commande.' ;;
+    docker_needed_mac) M='Docker est nécessaire : https://docs.docker.com/engine/install/ (Docker Desktop sur macOS)' ;;
+    checking_docker) M='Vérification de Docker' ;;
+    no_release) M='Aucune version publiée trouvée dans {repo} (indiquez --version main pour la branche de développement)' ;;
+    edition_q) M='Édition de TeX Live' ;;
+    edition_standard) M='Standard : tout compile ; environ 3 GB à télécharger, 12 GB sur le disque' ;;
+    edition_full) M='Full : avec en plus les manuels des packages pour l’agent IA ; environ 8 GB, 23 GB sur le disque' ;;
+    access_q) M='Comment les gens accéderont-ils à ColTex ?' ;;
+    access_local) M='Sur cette machine et son réseau' ;;
+    access_domain) M='Un domaine à moi, avec HTTPS' ;;
+    access_tailscale) M='Tailscale (mon tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel avec mon domaine' ;;
+    access_cf_quick) M='Un lien public temporaire (trycloudflare.com)' ;;
+    ask_domain) M='Domaine (son DNS doit pointer ici ; ports 80 et 443 ouverts) :' ;;
+    ask_token) M='Jeton du tunnel (depuis le tableau de bord Cloudflare) :' ;;
+    updating_to) M='Mise à jour de ColTex vers {version}' ;;
+    getting) M='Récupération de ColTex {version}' ;;
+    writing_settings) M='Écriture des réglages' ;;
+    ready_start) M='Prêt. Démarrez-le avec :' ;;
+    building) M='Construction des images (plusieurs minutes ; TeX Live est volumineux)' ;;
+    no_prebuilt) M='Pas d’images précompilées pour {version} ; construction à partir des sources.' ;;
+    starting) M='Démarrage des services' ;;
+    waiting) M='En attente de ColTex' ;;
+    tailscale_signin) M='Tailscale : connectez ce serveur à votre tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel (lien temporaire)' ;;
+    running_fresh) M='ColTex est en marche. Ouvrez-le et créez le compte administrateur :' ;;
+    running_version) M='ColTex {version} est en marche :' ;;
+    first_visit) M='(la première visite peut prendre une minute, le temps que Caddy obtienne le certificat)' ;;
+    this_machine) M='(sur cette machine)' ;;
+    your_network) M='(sur votre réseau)' ;;
+    public_address) M='(adresse publique)' ;;
+    public_warning) M='Ce serveur est joignable depuis Internet : pour un usage réel, ne vous connectez pas en simple http. Utilisez --domain (HTTPS), Tailscale ou un tunnel Cloudflare.' ;;
+    manage) M='Pour le gérer :' ;;
+    remote_later) M='Accès à distance plus tard :' ;;
+  esac
+}
+msg_de() {
+  case "$1" in
+    tagline) M='Ein selbst gehosteter kollaborativer LaTeX-Editor' ;;
+    language) M='Sprache' ;;
+    full_output) M='Vollständige Ausgabe: {log}' ;;
+    downloading) M='Wird heruntergeladen' ;;
+    docker_install_q) M='Docker ist nicht installiert. Jetzt mit dem Skript von Docker installieren (get.docker.com, benötigt sudo)?' ;;
+    docker_install) M='Docker installieren' ;;
+    cancel) M='Abbrechen' ;;
+    docker_needed) M='Docker wird benötigt: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker ist installiert. Meldet der nächste Schritt „permission denied“, melden Sie sich ab und wieder an (docker group) und führen Sie dies erneut aus.' ;;
+    docker_needed_mac) M='Docker wird benötigt: https://docs.docker.com/engine/install/ (Docker Desktop unter macOS)' ;;
+    checking_docker) M='Docker wird geprüft' ;;
+    no_release) M='Keine Version in {repo} gefunden (mit --version main erhalten Sie den Entwicklungszweig)' ;;
+    edition_q) M='TeX-Live-Edition' ;;
+    edition_standard) M='Standard: alles kompiliert; etwa 3 GB Download, 12 GB auf der Festplatte' ;;
+    edition_full) M='Full: zusätzlich die Paket-Handbücher für den KI-Agenten; etwa 8 GB, 23 GB auf der Festplatte' ;;
+    access_q) M='Wie sollen Personen ColTex erreichen?' ;;
+    access_local) M='Auf diesem Rechner und in seinem Netzwerk' ;;
+    access_domain) M='Über eine eigene Domain, mit HTTPS' ;;
+    access_tailscale) M='Tailscale (mein tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel mit meiner Domain' ;;
+    access_cf_quick) M='Ein temporärer öffentlicher Link (trycloudflare.com)' ;;
+    ask_domain) M='Domain (ihr DNS-Eintrag muss hierher zeigen; Ports 80 und 443 offen):' ;;
+    ask_token) M='Tunnel-Token (aus dem Cloudflare-Dashboard):' ;;
+    updating_to) M='ColTex wird auf {version} aktualisiert' ;;
+    getting) M='ColTex {version} wird geholt' ;;
+    writing_settings) M='Einstellungen werden geschrieben' ;;
+    ready_start) M='Fertig. Starten Sie es mit:' ;;
+    building) M='Images werden gebaut (mehrere Minuten; TeX Live ist groß)' ;;
+    no_prebuilt) M='Keine vorgefertigten Images für {version}; sie werden aus den Quellen gebaut.' ;;
+    starting) M='Dienste werden gestartet' ;;
+    waiting) M='Warten auf ColTex' ;;
+    tailscale_signin) M='Tailscale: Melden Sie diesen Server in Ihrem tailnet an' ;;
+    cf_temporary) M='Cloudflare Tunnel (temporärer Link)' ;;
+    running_fresh) M='ColTex läuft. Öffnen Sie es und erstellen Sie das Administratorkonto:' ;;
+    running_version) M='ColTex {version} läuft:' ;;
+    first_visit) M='(der erste Aufruf kann eine Minute dauern, während Caddy das Zertifikat holt)' ;;
+    this_machine) M='(auf diesem Rechner)' ;;
+    your_network) M='(in Ihrem Netzwerk)' ;;
+    public_address) M='(öffentliche Adresse)' ;;
+    public_warning) M='Dieser Server ist aus dem Internet erreichbar: Melden Sie sich im echten Betrieb nicht über unverschlüsseltes http an. Verwenden Sie --domain (HTTPS), Tailscale oder einen Cloudflare Tunnel.' ;;
+    manage) M='Verwaltung:' ;;
+    remote_later) M='Fernzugriff später:' ;;
+  esac
+}
+msg_pt_BR() {
+  case "$1" in
+    tagline) M='Um editor de LaTeX colaborativo e auto-hospedado' ;;
+    language) M='Idioma' ;;
+    full_output) M='Saída completa: {log}' ;;
+    downloading) M='Baixando' ;;
+    docker_install_q) M='O Docker não está instalado. Instalar agora com o script do Docker (get.docker.com, requer sudo)?' ;;
+    docker_install) M='Instalar o Docker' ;;
+    cancel) M='Cancelar' ;;
+    docker_needed) M='O Docker é necessário: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker instalado. Se o próximo passo disser permission denied, saia da sessão e entre de novo (docker group) e execute isto outra vez.' ;;
+    docker_needed_mac) M='O Docker é necessário: https://docs.docker.com/engine/install/ (Docker Desktop no macOS)' ;;
+    checking_docker) M='Verificando o Docker' ;;
+    no_release) M='Nenhuma versão encontrada em {repo} (use --version main para o branch de desenvolvimento)' ;;
+    edition_q) M='Edição do TeX Live' ;;
+    edition_standard) M='Standard: compila tudo; cerca de 3 GB para baixar, 12 GB em disco' ;;
+    edition_full) M='Full: inclui também os manuais dos pacotes para o agente de IA; cerca de 8 GB, 23 GB em disco' ;;
+    access_q) M='Como as pessoas vão acessar o ColTex?' ;;
+    access_local) M='Nesta máquina e na rede dela' ;;
+    access_domain) M='Um domínio meu, com HTTPS' ;;
+    access_tailscale) M='Tailscale (minha tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel com meu domínio' ;;
+    access_cf_quick) M='Um link público temporário (trycloudflare.com)' ;;
+    ask_domain) M='Domínio (o DNS dele deve apontar para cá; portas 80 e 443 abertas):' ;;
+    ask_token) M='Token do túnel (do painel da Cloudflare):' ;;
+    updating_to) M='Atualizando o ColTex para {version}' ;;
+    getting) M='Obtendo o ColTex {version}' ;;
+    writing_settings) M='Gravando as configurações' ;;
+    ready_start) M='Pronto. Inicie com:' ;;
+    building) M='Compilando as imagens (vários minutos; o TeX Live é grande)' ;;
+    no_prebuilt) M='Não há imagens pré-compiladas para {version}; compilando a partir do código-fonte.' ;;
+    starting) M='Iniciando os serviços' ;;
+    waiting) M='Aguardando o ColTex' ;;
+    tailscale_signin) M='Tailscale: conecte este servidor à sua tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel (link temporário)' ;;
+    running_fresh) M='O ColTex está em execução. Abra-o e crie a conta de administrador:' ;;
+    running_version) M='O ColTex {version} está em execução:' ;;
+    first_visit) M='(o primeiro acesso pode levar um minuto enquanto o Caddy obtém o certificado)' ;;
+    this_machine) M='(nesta máquina)' ;;
+    your_network) M='(na sua rede)' ;;
+    public_address) M='(endereço público)' ;;
+    public_warning) M='Este servidor é acessível pela internet: para uso real, não faça login por http simples. Use --domain (HTTPS), Tailscale ou um Cloudflare Tunnel.' ;;
+    manage) M='Para gerenciar:' ;;
+    remote_later) M='Acesso remoto depois:' ;;
+  esac
+}
+msg_it() {
+  case "$1" in
+    tagline) M='Un editor LaTeX collaborativo self-hosted' ;;
+    language) M='Lingua' ;;
+    full_output) M='Output completo: {log}' ;;
+    downloading) M='Download in corso' ;;
+    docker_install_q) M='Docker non è installato. Vuoi installarlo ora con lo script di Docker (get.docker.com, richiede sudo)?' ;;
+    docker_install) M='Installa Docker' ;;
+    cancel) M='Annulla' ;;
+    docker_needed) M='Serve Docker: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker installato. Se il passaggio successivo dice permission denied, esci e rientra (docker group), poi esegui di nuovo questo comando.' ;;
+    docker_needed_mac) M='Serve Docker: https://docs.docker.com/engine/install/ (Docker Desktop su macOS)' ;;
+    checking_docker) M='Controllo di Docker' ;;
+    no_release) M='Nessuna release trovata in {repo} (usa --version main per il branch di sviluppo)' ;;
+    edition_q) M='Edizione di TeX Live' ;;
+    edition_standard) M='Standard: compila tutto; circa 3 GB da scaricare, 12 GB su disco' ;;
+    edition_full) M='Full: anche i manuali dei pacchetti per l’agente IA; circa 8 GB, 23 GB su disco' ;;
+    access_q) M='Come raggiungeranno ColTex le persone?' ;;
+    access_local) M='Da questa macchina e dalla sua rete' ;;
+    access_domain) M='Un mio dominio, con HTTPS' ;;
+    access_tailscale) M='Tailscale (la mia tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel con il mio dominio' ;;
+    access_cf_quick) M='Un link pubblico temporaneo (trycloudflare.com)' ;;
+    ask_domain) M='Dominio (il suo DNS deve puntare qui; porte 80 e 443 aperte):' ;;
+    ask_token) M='Token del tunnel (dalla dashboard di Cloudflare):' ;;
+    updating_to) M='Aggiornamento di ColTex a {version}' ;;
+    getting) M='Download di ColTex {version}' ;;
+    writing_settings) M='Scrittura delle impostazioni' ;;
+    ready_start) M='Pronto. Avvialo con:' ;;
+    building) M='Compilazione delle immagini (diversi minuti; TeX Live è grande)' ;;
+    no_prebuilt) M='Nessuna immagine precompilata per {version}; vengono compilate dai sorgenti.' ;;
+    starting) M='Avvio dei servizi' ;;
+    waiting) M='In attesa di ColTex' ;;
+    tailscale_signin) M='Tailscale: collega questo server alla tua tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel (link temporaneo)' ;;
+    running_fresh) M='ColTex è in esecuzione. Aprilo e crea l’account amministratore:' ;;
+    running_version) M='ColTex {version} è in esecuzione:' ;;
+    first_visit) M='(la prima visita può richiedere un minuto mentre Caddy ottiene il certificato)' ;;
+    this_machine) M='(su questa macchina)' ;;
+    your_network) M='(nella tua rete)' ;;
+    public_address) M='(indirizzo pubblico)' ;;
+    public_warning) M='Questo server è raggiungibile da internet: per l’uso reale non accedere tramite http in chiaro. Usa --domain (HTTPS), Tailscale o un tunnel Cloudflare.' ;;
+    manage) M='Per gestirlo:' ;;
+    remote_later) M='Accesso remoto in seguito:' ;;
+  esac
+}
+msg_ru() {
+  case "$1" in
+    tagline) M='Совместный LaTeX-редактор на своём сервере' ;;
+    language) M='Язык' ;;
+    full_output) M='Полный вывод: {log}' ;;
+    downloading) M='Загрузка' ;;
+    docker_install_q) M='Docker не установлен. Установить его сейчас скриптом Docker (get.docker.com, нужен sudo)?' ;;
+    docker_install) M='Установить Docker' ;;
+    cancel) M='Отмена' ;;
+    docker_needed) M='Нужен Docker: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker установлен. Если следующий шаг сообщит permission denied, выйдите из системы и войдите снова (docker group), затем запустите это ещё раз.' ;;
+    docker_needed_mac) M='Нужен Docker: https://docs.docker.com/engine/install/ (Docker Desktop на macOS)' ;;
+    checking_docker) M='Проверка Docker' ;;
+    no_release) M='В {repo} не найдено ни одного выпуска (укажите --version main для ветки разработки)' ;;
+    edition_q) M='Редакция TeX Live' ;;
+    edition_standard) M='Standard: компилируется всё; загрузка около 3 GB, на диске 12 GB' ;;
+    edition_full) M='Full: ещё и руководства пакетов для ИИ-агента; около 8 GB, на диске 23 GB' ;;
+    access_q) M='Как люди будут открывать ColTex?' ;;
+    access_local) M='На этой машине и в её сети' ;;
+    access_domain) M='Мой домен, с HTTPS' ;;
+    access_tailscale) M='Tailscale (мой tailnet)' ;;
+    access_cf_token) M='Cloudflare Tunnel с моим доменом' ;;
+    access_cf_quick) M='Временная публичная ссылка (trycloudflare.com)' ;;
+    ask_domain) M='Домен (его DNS должен указывать сюда; порты 80 и 443 открыты):' ;;
+    ask_token) M='Токен туннеля (из панели Cloudflare):' ;;
+    updating_to) M='Обновление ColTex до {version}' ;;
+    getting) M='Загрузка ColTex {version}' ;;
+    writing_settings) M='Запись настроек' ;;
+    ready_start) M='Готово. Запустите командой:' ;;
+    building) M='Сборка образов (несколько минут; TeX Live большой)' ;;
+    no_prebuilt) M='Для {version} нет готовых образов; они будут собраны из исходного кода.' ;;
+    starting) M='Запуск сервисов' ;;
+    waiting) M='Ожидание ColTex' ;;
+    tailscale_signin) M='Tailscale: подключите этот сервер к своему tailnet' ;;
+    cf_temporary) M='Cloudflare Tunnel (временная ссылка)' ;;
+    running_fresh) M='ColTex запущен. Откройте его и создайте учётную запись администратора:' ;;
+    running_version) M='ColTex {version} запущен:' ;;
+    first_visit) M='(первое открытие может занять минуту, пока Caddy получает сертификат)' ;;
+    this_machine) M='(на этой машине)' ;;
+    your_network) M='(в вашей сети)' ;;
+    public_address) M='(публичный адрес)' ;;
+    public_warning) M='Этот сервер доступен из интернета: при реальной работе не входите по открытому http. Используйте --domain (HTTPS), Tailscale или туннель Cloudflare.' ;;
+    manage) M='Управление:' ;;
+    remote_later) M='Удалённый доступ позже:' ;;
+  esac
+}
+msg_tr() {
+  case "$1" in
+    tagline) M='Kendi sunucunuzda ortak LaTeX düzenleyicisi' ;;
+    language) M='Dil' ;;
+    full_output) M='Çıktının tamamı: {log}' ;;
+    downloading) M='İndiriliyor' ;;
+    docker_install_q) M='Docker yüklü değil. Docker’ın betiğiyle (get.docker.com, sudo gerekir) şimdi kurulsun mu?' ;;
+    docker_install) M='Docker’ı kur' ;;
+    cancel) M='İptal' ;;
+    docker_needed) M='Docker gerekli: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker kuruldu. Sonraki adım permission denied derse oturumu kapatıp yeniden açın (docker group), ardından bunu yeniden çalıştırın.' ;;
+    docker_needed_mac) M='Docker gerekli: https://docs.docker.com/engine/install/ (macOS’ta Docker Desktop)' ;;
+    checking_docker) M='Docker denetleniyor' ;;
+    no_release) M='{repo} içinde sürüm bulunamadı (geliştirme dalı için --version main kullanın)' ;;
+    edition_q) M='TeX Live sürümü (edition)' ;;
+    edition_standard) M='Standard: her şey derlenir; yaklaşık 3 GB indirme, diskte 12 GB' ;;
+    edition_full) M='Full: YZ ajanı için paket kılavuzları da; yaklaşık 8 GB, diskte 23 GB' ;;
+    access_q) M='Kişiler ColTex’e nasıl erişecek?' ;;
+    access_local) M='Bu makinede ve ağında' ;;
+    access_domain) M='Kendi alan adımla, HTTPS ile' ;;
+    access_tailscale) M='Tailscale (tailnet’im)' ;;
+    access_cf_token) M='Kendi alan adımla Cloudflare Tunnel' ;;
+    access_cf_quick) M='Geçici bir genel bağlantı (trycloudflare.com)' ;;
+    ask_domain) M='Alan adı (DNS kaydı buraya yönlenmeli; 80 ve 443 numaralı bağlantı noktaları açık olmalı):' ;;
+    ask_token) M='Tünel belirteci (Cloudflare panelinden):' ;;
+    updating_to) M='ColTex güncelleniyor: {version}' ;;
+    getting) M='ColTex alınıyor: {version}' ;;
+    writing_settings) M='Ayarlar yazılıyor' ;;
+    ready_start) M='Hazır. Şununla başlatın:' ;;
+    building) M='İmajlar derleniyor (birkaç dakika sürer; TeX Live büyüktür)' ;;
+    no_prebuilt) M='{version} için hazır imaj yok; kaynaklardan derleniyor.' ;;
+    starting) M='Hizmetler başlatılıyor' ;;
+    waiting) M='ColTex bekleniyor' ;;
+    tailscale_signin) M='Tailscale: bu sunucuyu tailnet’inize bağlayın' ;;
+    cf_temporary) M='Cloudflare Tunnel (geçici bağlantı)' ;;
+    running_fresh) M='ColTex çalışıyor. Açın ve yönetici hesabını oluşturun:' ;;
+    running_version) M='ColTex {version} çalışıyor:' ;;
+    first_visit) M='(Caddy sertifikayı alırken ilk ziyaret bir dakika sürebilir)' ;;
+    this_machine) M='(bu makinede)' ;;
+    your_network) M='(ağınızda)' ;;
+    public_address) M='(genel adres)' ;;
+    public_warning) M='Bu sunucuya internetten erişilebiliyor: gerçek kullanımda düz http üzerinden oturum açmayın. --domain (HTTPS), Tailscale veya bir Cloudflare tüneli kullanın.' ;;
+    manage) M='Yönetmek için:' ;;
+    remote_later) M='Daha sonra uzaktan erişim:' ;;
+  esac
+}
+msg_vi() {
+  case "$1" in
+    tagline) M='Trình soạn thảo LaTeX cộng tác tự lưu trữ' ;;
+    language) M='Ngôn ngữ' ;;
+    full_output) M='Toàn bộ đầu ra: {log}' ;;
+    downloading) M='Đang tải xuống' ;;
+    docker_install_q) M='Docker chưa được cài đặt. Cài ngay bằng script của Docker (get.docker.com, cần sudo)?' ;;
+    docker_install) M='Cài Docker' ;;
+    cancel) M='Hủy' ;;
+    docker_needed) M='Cần có Docker: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Đã cài Docker. Nếu bước tiếp theo báo permission denied, hãy đăng xuất rồi đăng nhập lại (docker group), sau đó chạy lại lệnh này.' ;;
+    docker_needed_mac) M='Cần có Docker: https://docs.docker.com/engine/install/ (Docker Desktop trên macOS)' ;;
+    checking_docker) M='Đang kiểm tra Docker' ;;
+    no_release) M='Không tìm thấy bản phát hành nào trong {repo} (dùng --version main cho nhánh phát triển)' ;;
+    edition_q) M='Phiên bản TeX Live' ;;
+    edition_standard) M='Standard: biên dịch được mọi thứ; tải khoảng 3 GB, chiếm 12 GB trên ổ đĩa' ;;
+    edition_full) M='Full: có thêm tài liệu hướng dẫn của các gói cho tác tử AI; khoảng 8 GB, chiếm 23 GB trên ổ đĩa' ;;
+    access_q) M='Mọi người sẽ truy cập ColTex bằng cách nào?' ;;
+    access_local) M='Trên máy này và mạng của nó' ;;
+    access_domain) M='Tên miền của tôi, có HTTPS' ;;
+    access_tailscale) M='Tailscale (tailnet của tôi)' ;;
+    access_cf_token) M='Cloudflare Tunnel với tên miền của tôi' ;;
+    access_cf_quick) M='Một liên kết công khai tạm thời (trycloudflare.com)' ;;
+    ask_domain) M='Tên miền (DNS phải trỏ về máy này; mở cổng 80 và 443):' ;;
+    ask_token) M='Token của tunnel (từ bảng điều khiển Cloudflare):' ;;
+    updating_to) M='Đang cập nhật ColTex lên {version}' ;;
+    getting) M='Đang tải ColTex {version}' ;;
+    writing_settings) M='Đang ghi cài đặt' ;;
+    ready_start) M='Đã sẵn sàng. Khởi động bằng:' ;;
+    building) M='Đang dựng các image (mất vài phút; TeX Live rất lớn)' ;;
+    no_prebuilt) M='Không có image dựng sẵn cho {version}; đang dựng từ mã nguồn.' ;;
+    starting) M='Đang khởi động các dịch vụ' ;;
+    waiting) M='Đang chờ ColTex' ;;
+    tailscale_signin) M='Tailscale: đăng nhập máy chủ này vào tailnet của bạn' ;;
+    cf_temporary) M='Cloudflare Tunnel (liên kết tạm thời)' ;;
+    running_fresh) M='ColTex đang chạy. Hãy mở nó và tạo tài khoản quản trị viên:' ;;
+    running_version) M='ColTex {version} đang chạy:' ;;
+    first_visit) M='(lần truy cập đầu tiên có thể mất một phút trong lúc Caddy lấy chứng chỉ)' ;;
+    this_machine) M='(trên máy này)' ;;
+    your_network) M='(trong mạng của bạn)' ;;
+    public_address) M='(địa chỉ công khai)' ;;
+    public_warning) M='Máy chủ này truy cập được từ internet: khi dùng thật, đừng đăng nhập qua http thuần. Hãy dùng --domain (HTTPS), Tailscale hoặc Cloudflare tunnel.' ;;
+    manage) M='Quản lý:' ;;
+    remote_later) M='Truy cập từ xa sau này:' ;;
+  esac
+}
+msg_id() {
+  case "$1" in
+    tagline) M='Editor LaTeX kolaboratif yang di-hosting sendiri' ;;
+    language) M='Bahasa' ;;
+    full_output) M='Keluaran lengkap: {log}' ;;
+    downloading) M='Mengunduh' ;;
+    docker_install_q) M='Docker belum terpasang. Pasang sekarang dengan skrip Docker (get.docker.com, memerlukan sudo)?' ;;
+    docker_install) M='Pasang Docker' ;;
+    cancel) M='Batal' ;;
+    docker_needed) M='Docker diperlukan: https://docs.docker.com/engine/install/' ;;
+    docker_installed) M='Docker terpasang. Jika langkah berikutnya menyatakan permission denied, keluar lalu masuk lagi (docker group), kemudian jalankan ini lagi.' ;;
+    docker_needed_mac) M='Docker diperlukan: https://docs.docker.com/engine/install/ (Docker Desktop di macOS)' ;;
+    checking_docker) M='Memeriksa Docker' ;;
+    no_release) M='Tidak ada rilis di {repo} (gunakan --version main untuk cabang pengembangan)' ;;
+    edition_q) M='Edisi TeX Live' ;;
+    edition_standard) M='Standard: semua dapat dikompilasi; unduhan sekitar 3 GB, 12 GB di disk' ;;
+    edition_full) M='Full: ditambah manual paket untuk agen AI; sekitar 8 GB, 23 GB di disk' ;;
+    access_q) M='Bagaimana orang akan menjangkau ColTex?' ;;
+    access_local) M='Di mesin ini dan jaringannya' ;;
+    access_domain) M='Domain saya sendiri, dengan HTTPS' ;;
+    access_tailscale) M='Tailscale (tailnet saya)' ;;
+    access_cf_token) M='Cloudflare Tunnel dengan domain saya' ;;
+    access_cf_quick) M='Tautan publik sementara (trycloudflare.com)' ;;
+    ask_domain) M='Domain (DNS-nya harus mengarah ke sini; port 80 dan 443 terbuka):' ;;
+    ask_token) M='Token terowongan (dari dasbor Cloudflare):' ;;
+    updating_to) M='Memperbarui ColTex ke {version}' ;;
+    getting) M='Mengambil ColTex {version}' ;;
+    writing_settings) M='Menulis pengaturan' ;;
+    ready_start) M='Siap. Jalankan dengan:' ;;
+    building) M='Membangun image (beberapa menit; TeX Live berukuran besar)' ;;
+    no_prebuilt) M='Tidak ada image siap pakai untuk {version}; membangunnya dari kode sumber.' ;;
+    starting) M='Menjalankan layanan' ;;
+    waiting) M='Menunggu ColTex' ;;
+    tailscale_signin) M='Tailscale: masukkan server ini ke tailnet Anda' ;;
+    cf_temporary) M='Cloudflare Tunnel (tautan sementara)' ;;
+    running_fresh) M='ColTex sudah berjalan. Buka dan buat akun administrator:' ;;
+    running_version) M='ColTex {version} sudah berjalan:' ;;
+    first_visit) M='(kunjungan pertama dapat memakan waktu sekitar satu menit selagi Caddy mendapatkan sertifikat)' ;;
+    this_machine) M='(di mesin ini)' ;;
+    your_network) M='(di jaringan Anda)' ;;
+    public_address) M='(alamat publik)' ;;
+    public_warning) M='Server ini dapat dijangkau dari internet: untuk penggunaan sungguhan, jangan masuk melalui http biasa. Gunakan --domain (HTTPS), Tailscale, atau Cloudflare Tunnel.' ;;
+    manage) M='Kelola:' ;;
+    remote_later) M='Akses jarak jauh nanti:' ;;
+  esac
+}
+# <<< messages
 
 # A choice with the arrow keys (or the number keys); the index lands in CHOICE.
 # $1 is the question, the rest are the options; CHOICE's value going in is the default.
@@ -164,11 +840,16 @@ ask_text() {
 if [ -z "$LANGUAGE" ] && [ -f "$DIR/.env" ]; then
   LANGUAGE="$(grep -E '^COLTEX_LANG=' "$DIR/.env" | tail -1 | cut -d= -f2- || true)"
 fi
+LANGUAGE="$(lang_id "$LANGUAGE")"
 if [ -z "$LANGUAGE" ]; then
-  case "${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}" in zh*) CHOICE=1 ;; *) CHOICE=0 ;; esac
-  # The logo follows in the chosen language, so the answer needn't stay on screen.
-  if [ "$TTY" = 1 ]; then QUIET=1 choose "Language / 语言" "English" "简体中文"; fi
-  if [ "$CHOICE" = 1 ]; then LANGUAGE=zh; else LANGUAGE=en; fi
+  # The default is the system's language (else English); the logo follows in the chosen one,
+  # so the answer needn't stay on screen.
+  LANGUAGE="$(lang_id "${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}")"
+  LANGUAGE="${LANGUAGE:-en}"
+  CHOICE=2
+  for i in "${!LANGS[@]}"; do [ "${LANGS[i]}" = "$LANGUAGE" ] && CHOICE=$i; done
+  if [ "$TTY" = 1 ]; then QUIET=1 choose "Language" "${LANG_NAMES[@]}"; fi
+  LANGUAGE="${LANGS[CHOICE]}"
 fi
 
 # ---- The mark ------------------------------------------------------------------------
@@ -188,7 +869,7 @@ LOGO=(
   " bbbbbbbbb "
 )
 STROKE="2,8 2,7 2,6 2,5 2,4 2,3 2,2 3,3 4,4 5,5 6,4 7,3 8,2 8,3 8,4 8,5 8,6 8,7 8,8 3,8 7,8"
-TAGLINE="$(T "A self-hosted collaborative LaTeX editor" "自托管的协作 LaTeX 编辑器")"
+TAGLINE="$(T tagline)"
 
 draw_logo() { # $1 = how many stroke cells are white
   local shown=" " row col ch line
@@ -237,7 +918,7 @@ die() {
   [ -n "$*" ] && printf '\n  %s %s\n' "${RED}✗${RESET}" "${BOLD}$*${RESET}" >&2
   if [ -s "$LOG" ]; then
     printf '\n%s\n' "${DIM}$(tail -n 15 "$LOG" | sed 's/^/    /')${RESET}" >&2
-    printf '\n  %s\n\n' "$(T "Full output: $LOG" "完整输出：$LOG")" >&2
+    printf '\n  %s\n\n' "$(T full_output log="$LOG")" >&2
   fi
   exit 1
 }
@@ -323,7 +1004,7 @@ pull_with_bar() {
 # when there are none for this version.
 pull_images() {
   local label
-  label="$(T "Downloading" "下载镜像")"
+  label="$(T downloading)"
   pull_with_bar "$label" && return 0
   # A Compose without JSON progress said so instead of pulling.
   if tail -n 3 "$LOG" | grep -qi 'progress'; then spin "$label" docker compose pull && return 0; fi
@@ -334,14 +1015,13 @@ pull_images() {
 if ! have docker; then
   if [ "$(uname -s)" = Linux ] && [ "$TTY" = 1 ]; then
     CHOICE=0
-    choose "$(T "Docker is not installed. Install it now with Docker's script (get.docker.com, needs sudo)?" "没有安装 Docker。现在用 Docker 的官方脚本（get.docker.com，需要 sudo）安装吗？")" \
-      "$(T "Install Docker" "安装 Docker")" "$(T "Cancel" "取消")"
-    [ "$CHOICE" = 0 ] || die "$(T "Docker is needed: https://docs.docker.com/engine/install/" "需要 Docker：https://docs.docker.com/engine/install/")"
+    choose "$(T docker_install_q)" "$(T docker_install)" "$(T cancel)"
+    [ "$CHOICE" = 0 ] || die "$(T docker_needed)"
     curl -fsSL https://get.docker.com | sudo sh
     sudo usermod -aG docker "$USER" || true
-    note "$(T "Docker installed. If the next step says permission denied, log out and back in (docker group), then run this again." "Docker 已安装。如果下一步提示权限不足，请注销后重新登录（docker 用户组），再运行一次。")"
+    note "$(T docker_installed)"
   else
-    die "$(T "Docker is needed: https://docs.docker.com/engine/install/ (Docker Desktop on macOS)" "需要 Docker：https://docs.docker.com/engine/install/（macOS 上用 Docker Desktop）")"
+    die "$(T docker_needed_mac)"
   fi
 fi
 check_docker() {
@@ -351,7 +1031,7 @@ check_docker() {
   have curl || { echo "curl is needed"; return 1; }
 }
 echo
-step "$(T "Checking Docker" "检查 Docker")" check_docker
+step "$(T checking_docker)" check_docker
 
 # ---- The code: a release (a vX.Y.Z tag), or the main branch with --version main ----------
 # The newest release tag in a repository (a URL or a local path).
@@ -366,31 +1046,24 @@ fi
 if [ -z "$VERSION" ]; then
   # Installed from main stays on main; otherwise the latest release.
   if [ -d "$DIR/.git" ] && git -C "$DIR" symbolic-ref -q HEAD >/dev/null; then VERSION=main; else VERSION="$(latest_release "$REPO" 2>>"$LOG" || true)"; fi
-  [ -n "$VERSION" ] || die "$(T "No release found in $REPO (pass --version main for the development branch)" "在 $REPO 里没有找到发布版本（开发分支请加 --version main）")"
+  [ -n "$VERSION" ] || die "$(T no_release repo="$REPO")"
 fi
 
 # ---- Questions (a fresh install with a terminal, for what no option answered) ------------
 if [ "$FRESH" = 1 ] && [ "$TTY" = 1 ]; then
   if [ -z "$EDITION" ]; then
     CHOICE=0
-    choose "$(T "TeX Live edition" "TeX Live 版本")" \
-      "$(T "Standard: everything compiles; about 3 GB to download, 12 GB on disk" "标准版：能编译的文档完全一样；下载约 3 GB，占用约 12 GB")" \
-      "$(T "Full: also the package manuals for the AI agent; about 8 GB, 23 GB on disk" "完整版：另含宏包手册，供 AI 智能体查阅；下载约 8 GB，占用约 23 GB")"
+    choose "$(T edition_q)" "$(T edition_standard)" "$(T edition_full)"
     if [ "$CHOICE" = 1 ]; then EDITION=full; else EDITION=standard; fi
   fi
   if [ "$ACCESS_GIVEN" = 0 ]; then
     CHOICE=0
-    choose "$(T "How will people reach ColTex?" "大家怎样访问 ColTex？")" \
-      "$(T "On this machine and its network" "本机和局域网")" \
-      "$(T "A domain of mine, with HTTPS" "我自己的域名，启用 HTTPS")" \
-      "$(T "Tailscale (my tailnet)" "Tailscale（我的 tailnet）")" \
-      "$(T "Cloudflare Tunnel with my domain" "Cloudflare Tunnel，用我的域名")" \
-      "$(T "A temporary public link (trycloudflare.com)" "临时公网链接（trycloudflare.com）")"
+    choose "$(T access_q)" "$(T access_local)" "$(T access_domain)" "$(T access_tailscale)" "$(T access_cf_token)" "$(T access_cf_quick)"
     case "$CHOICE" in
       1)
-        while [ -z "$DOMAIN" ]; do DOMAIN="$(ask_text "$(T "Domain (its DNS must point here; ports 80 and 443 open):" "域名（DNS 要解析到这台机器，并开放 80 和 443 端口）：")")"; done ;;
+        while [ -z "$DOMAIN" ]; do DOMAIN="$(ask_text "$(T ask_domain)")"; done ;;
       2) TAILSCALE=1 ;;
-      3) while [ -z "$CF_TOKEN" ]; do CF_TOKEN="$(ask_text "$(T "Tunnel token (from the Cloudflare dashboard):" "隧道令牌（在 Cloudflare 控制台里）：")" secret)"; done ;;
+      3) while [ -z "$CF_TOKEN" ]; do CF_TOKEN="$(ask_text "$(T ask_token)" secret)"; done ;;
       4) CF_QUICK=1 ;;
     esac
   fi
@@ -408,8 +1081,8 @@ get_code() {
     git -c advice.detachedHead=false clone -q --depth 1 --branch "$VERSION" "$REPO" "$DIR"
   fi
 }
-if [ -d "$DIR/.git" ]; then step "$(T "Updating ColTex to $VERSION" "更新 ColTex 到 $VERSION")" get_code
-else step "$(T "Getting ColTex $VERSION" "获取 ColTex $VERSION")" get_code; fi
+if [ -d "$DIR/.git" ]; then step "$(T updating_to version="$VERSION")" get_code
+else step "$(T getting version="$VERSION")" get_code; fi
 cd "$DIR"
 # From here on the log lives with ColTex.
 cat "$LOG" >>install.log && rm -f "$LOG"
@@ -468,7 +1141,7 @@ EOF
   fi
   docker compose config -q
 }
-step "$(T "Writing settings" "写入设置")" write_settings
+step "$(T writing_settings)" write_settings
 PORT="$(get COLTEX_PORT)"
 PORT="${PORT:-3690}"
 
@@ -486,18 +1159,18 @@ SHOWN_CMD="${CMD/#$HOME/~}"
 SHOWN_LOG="${DIR/#$HOME/~}/install.log"
 
 if [ "$START" = 0 ]; then
-  printf '\n  %s\n\n' "$(T "Ready. Start it with:" "准备好了。启动：") ${BOLD}$SHOWN_CMD start${RESET}"
+  printf '\n  %s\n\n' "$(T ready_start) ${BOLD}$SHOWN_CMD start${RESET}"
   exit 0
 fi
 
 # ---- Download (or build) and start --------------------------------------------------
 if [ "$(get COLTEX_BUILD)" = 1 ]; then
-  step "$(T "Building the images (several minutes; TeX Live is large)" "构建镜像（需要几分钟，TeX Live 很大）")" docker compose build
+  step "$(T building)" docker compose build
 elif ! pull_images; then
-  note "$(T "No prebuilt images for $VERSION; building them from the sources." "$VERSION 没有预构建的镜像，改为从源码构建。")"
-  step "$(T "Building the images (several minutes; TeX Live is large)" "构建镜像（需要几分钟，TeX Live 很大）")" docker compose build
+  note "$(T no_prebuilt version="$VERSION")"
+  step "$(T building)" docker compose build
 fi
-step "$(T "Starting the services" "启动服务")" "$DIR/coltex" deploy
+step "$(T starting)" "$DIR/coltex" deploy
 wait_ready() {
   for _ in $(seq 1 180); do
     curl -fsS "http://localhost:$PORT/api/health" >/dev/null 2>&1 && return 0
@@ -506,18 +1179,18 @@ wait_ready() {
   echo "ColTex did not answer on port $PORT; see: $CMD logs"
   return 1
 }
-step "$(T "Waiting for ColTex" "等待 ColTex 就绪")" wait_ready
+step "$(T waiting)" wait_ready
 
 # ---- Remote access, if asked for (these print links and codes, so they show) -----------
 if [ "$TAILSCALE" = 1 ]; then
-  printf '\n  %s\n' "${BOLD}$(T "Tailscale: sign this server in to your tailnet" "Tailscale：把这台服务器登录到你的 tailnet")${RESET}"
+  printf '\n  %s\n' "${BOLD}$(T tailscale_signin)${RESET}"
   "$DIR/coltex" tailscale up
 fi
 if [ -n "$CF_TOKEN" ]; then
   printf '\n  %s\n' "${BOLD}Cloudflare Tunnel${RESET}"
   CF_TUNNEL_TOKEN="$CF_TOKEN" "$DIR/coltex" cloudflare token
 elif [ "$CF_QUICK" = 1 ]; then
-  printf '\n  %s\n' "${BOLD}$(T "Cloudflare Tunnel (temporary link)" "Cloudflare Tunnel（临时链接）")${RESET}"
+  printf '\n  %s\n' "${BOLD}$(T cf_temporary)${RESET}"
   "$DIR/coltex" cloudflare quick
 fi
 
@@ -532,25 +1205,25 @@ fi
 is_private() { echo "$1" | grep -qE '^(10|172\.(1[6-9]|2[0-9]|3[01])|192\.168|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7]))\.'; }
 address() { printf '    %s  %s\n' "${BLUE}$1${RESET}" "${DIM}$2${RESET}"; }
 if [ "$FRESH" = 1 ]; then
-  printf '\n  %s\n\n' "${BOLD}$(T "ColTex is running. Open it and create the administrator account:" "ColTex 已启动。打开下面的地址，创建管理员账号：")${RESET}"
+  printf '\n  %s\n\n' "${BOLD}$(T running_fresh)${RESET}"
 else
-  printf '\n  %s\n\n' "${BOLD}$(T "ColTex $VERSION is running:" "ColTex $VERSION 已启动：")${RESET}"
+  printf '\n  %s\n\n' "${BOLD}$(T running_version version="$VERSION")${RESET}"
 fi
 DOMAIN="$(get COLTEX_DOMAIN)"
 public=0
 if [ -n "$DOMAIN" ]; then
-  address "https://$DOMAIN" "$(T "(the first visit can take a minute while Caddy gets the certificate)" "（第一次访问时 Caddy 要申请证书，可能需要一分钟）")"
-  address "http://localhost:$PORT" "$(T "(on this machine)" "（本机）")"
+  address "https://$DOMAIN" "$(T first_visit)"
+  address "http://localhost:$PORT" "$(T this_machine)"
 else
-  address "http://localhost:$PORT" "$(T "(on this machine)" "（本机）")"
+  address "http://localhost:$PORT" "$(T this_machine)"
   for ip in $addresses; do
-    if is_private "$ip"; then address "http://$ip:$PORT" "$(T "(on your network)" "（局域网）")"
-    else address "http://$ip:$PORT" "$(T "(public address)" "（公网地址）")"; public=1; fi
+    if is_private "$ip"; then address "http://$ip:$PORT" "$(T your_network)"
+    else address "http://$ip:$PORT" "$(T public_address)"; public=1; fi
   done
 fi
 if [ "$public" = 1 ]; then
-  printf '\n  %s\n' "${AMBER}$(T "This server is reachable from the internet: for real use don't sign in over plain http. Use --domain (HTTPS), Tailscale or a Cloudflare tunnel." "这台服务器能从公网访问：正式使用时不要通过明文 http 登录，请用 --domain（HTTPS）、Tailscale 或 Cloudflare 隧道。")${RESET}"
+  printf '\n  %s\n' "${AMBER}$(T public_warning)${RESET}"
 fi
-printf '\n  %s\n' "$(T "Manage it:" "管理：") ${BOLD}$SHOWN_CMD status | logs | update | stop | start${RESET}"
-printf '  %s\n' "$(T "Remote access later:" "之后开启远程访问：") ${BOLD}$SHOWN_CMD tailscale up${RESET} | ${BOLD}cloudflare quick${RESET} | ${BOLD}cloudflare token${RESET}"
-printf '  %s\n\n' "${DIM}$(T "Full output: $SHOWN_LOG" "完整输出：$SHOWN_LOG")${RESET}"
+printf '\n  %s\n' "$(T manage) ${BOLD}$SHOWN_CMD status | logs | update | stop | start${RESET}"
+printf '  %s\n' "$(T remote_later) ${BOLD}$SHOWN_CMD tailscale up${RESET} | ${BOLD}cloudflare quick${RESET} | ${BOLD}cloudflare token${RESET}"
+printf '  %s\n\n' "${DIM}$(T full_output log="$SHOWN_LOG")${RESET}"

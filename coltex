@@ -2,11 +2,11 @@
 # ColTex on this machine. Run from anywhere (install.sh links it into ~/.local/bin):
 #
 #   coltex start | stop | restart | status | logs [service] | version
-#   coltex update [VERSION]          to the latest release (or VERSION, e.g. v0.0.2, or main)
+#   coltex update [VERSION]           to the latest release (or VERSION, e.g. v0.0.2, or main)
 #   coltex edition [standard | full]  show or switch the TeX Live edition
 #   coltex tailscale [status | up | down | off]
 #   coltex cloudflare [status | quick | token [TOKEN] | off]
-#   coltex cli <command…>          any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
+#   coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
 #
 # The images come prebuilt from ghcr.io for the installed version (COLTEX_IMAGE_TAG in .env);
 # COLTEX_BUILD=1 in .env (install.sh --build) builds them from the sources here instead.
@@ -33,8 +33,345 @@ setting() {
   if grep -q "^$1=" .env 2>/dev/null; then sed -i.bak "s|^$1=.*|$1=$2|" .env && rm -f .env.bak; else echo "$1=$2" >>.env; fi
 }
 port() { get COLTEX_PORT; }
-# A message in the language chosen at install (COLTEX_LANG), with a newline: T "English" "中文".
-T() { if [ "$(get COLTEX_LANG)" = zh ]; then echo "$2"; else echo "$1"; fi; }
+# The language chosen at install (COLTEX_LANG; zh from before there were more is zh-CN).
+LANGUAGE="$(get COLTEX_LANG)"
+case "$LANGUAGE" in zh) LANGUAGE=zh-CN ;; en | zh-CN | zh-TW | ja | ko | es | fr | de | pt-BR | it | ru | tr | vi | id) ;; *) LANGUAGE=en ;; esac
+# A message in that language, with a newline: T key [name=value…], each {name} in it replaced
+# by the value. Each language is a function below (msg_en, msg_zh_CN, …) setting M; a missing
+# one falls back to English.
+T() {
+  local key="$1" kv
+  shift
+  M=""
+  if declare -F "msg_${LANGUAGE//-/_}" >/dev/null; then "msg_${LANGUAGE//-/_}" "$key"; fi
+  [ -n "$M" ] || msg_en "$key"
+  for kv in "$@"; do M="${M//\{${kv%%=*}\}/${kv#*=}}"; done
+  printf '%s\n' "$M"
+}
+# >>> messages (one function per language; keep the keys the same in all of them)
+msg_en() {
+  case "$1" in
+    no_prebuilt) M='No prebuilt images for ColTex {version}; building them from the sources (this takes a while)…' ;;
+    up) M='ColTex is up: {url}' ;;
+    not_answering) M='ColTex is not answering on port {port}' ;;
+    no_release) M='No release found' ;;
+    latest) M='ColTex {version} is the latest release' ;;
+    updating) M='Updating ColTex {from} → {to}; see the release notes: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX Live edition: {edition} (standard: without package manuals, about 9 GB; full: with them, about 20 GB)' ;;
+    edition_already) M='Already the {edition} edition' ;;
+    edition_switching) M='Switching to the {edition} edition (downloads TeX Live)…' ;;
+    done) M='Done.' ;;
+    edition_usage) M='Usage: coltex edition [standard | full]' ;;
+    help) M='ColTex on this machine. Run from anywhere (install.sh links it into ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [service] | version
+  coltex update [VERSION]           to the latest release (or VERSION, e.g. v0.0.2, or main)
+  coltex edition [standard | full]  show or switch the TeX Live edition
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`' ;;
+  esac
+}
+msg_zh_CN() {
+  case "$1" in
+    no_prebuilt) M='ColTex {version} 没有预构建的镜像，改为从源码构建（需要一段时间）…' ;;
+    up) M='ColTex 正在运行：{url}' ;;
+    not_answering) M='ColTex 没有在端口 {port} 上响应' ;;
+    no_release) M='没有找到发布版本' ;;
+    latest) M='ColTex {version} 已经是最新版本' ;;
+    updating) M='正在把 ColTex 从 {from} 更新到 {to}；更新说明：https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX Live 版本：{edition}（standard 标准版：不含宏包手册，约 9 GB；full 完整版：含手册，约 20 GB）' ;;
+    edition_already) M='已经是 {edition} 版本' ;;
+    edition_switching) M='正在切换到 {edition} 版本（会下载 TeX Live）…' ;;
+    done) M='完成。' ;;
+    edition_usage) M='用法：coltex edition [standard | full]' ;;
+    help) M='本机上的 ColTex。可以在任何目录运行（install.sh 会把它链接到 ~/.local/bin）：
+
+  coltex start | stop | restart | status | logs [服务] | version
+  coltex update [版本]               更新到最新版本（或指定版本，如 v0.0.2，或 main）
+  coltex edition [standard | full]  查看或切换 TeX Live 版本
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [令牌] | off]
+  coltex cli <命令…>                 服务器的命令行，例如 `coltex cli system-admin <邮箱>`' ;;
+  esac
+}
+msg_zh_TW() {
+  case "$1" in
+    no_prebuilt) M='ColTex {version} 沒有預先建置的映像檔，改為從原始碼建置（需要一段時間）…' ;;
+    up) M='ColTex 正在執行：{url}' ;;
+    not_answering) M='ColTex 沒有在連接埠 {port} 上回應' ;;
+    no_release) M='找不到發佈版本' ;;
+    latest) M='ColTex {version} 已經是最新版本' ;;
+    updating) M='正在將 ColTex 從 {from} 更新到 {to}；版本資訊：https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX Live 版本：{edition}（standard 標準版：不含套件手冊，約 9 GB；full 完整版：含手冊，約 20 GB）' ;;
+    edition_already) M='已經是 {edition} 版本' ;;
+    edition_switching) M='正在切換到 {edition} 版本（會下載 TeX Live）…' ;;
+    done) M='完成。' ;;
+    edition_usage) M='用法：coltex edition [standard | full]' ;;
+    help) M='本機上的 ColTex。可以在任何目錄執行（install.sh 會將它連結到 ~/.local/bin）：
+
+  coltex start | stop | restart | status | logs [服務] | version
+  coltex update [版本]               更新到最新版本（或指定版本，如 v0.0.2，或 main）
+  coltex edition [standard | full]  查看或切換 TeX Live 版本
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [權杖] | off]
+  coltex cli <指令…>                 任何 `node src/cli.ts` 指令，例如 `coltex cli system-admin <電子郵件>`' ;;
+  esac
+}
+msg_ja() {
+  case "$1" in
+    no_prebuilt) M='ColTex {version} のビルド済みイメージがないため、ソースからビルドします（しばらくかかります）…' ;;
+    up) M='ColTex は稼働中です：{url}' ;;
+    not_answering) M='ColTex がポート {port} で応答していません' ;;
+    no_release) M='リリースが見つかりません' ;;
+    latest) M='ColTex {version} は最新のリリースです' ;;
+    updating) M='ColTex を {from} から {to} に更新中。リリースノート：https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX Live のエディション：{edition}（standard：パッケージマニュアルなし、約 9 GB。full：マニュアルあり、約 20 GB）' ;;
+    edition_already) M='すでに {edition} エディションです' ;;
+    edition_switching) M='{edition} エディションに切り替え中（TeX Live をダウンロードします）…' ;;
+    done) M='完了しました。' ;;
+    edition_usage) M='使い方：coltex edition [standard | full]' ;;
+    help) M='このマシン上の ColTex。どこからでも実行できます（install.sh が ~/.local/bin にリンクします）：
+
+  coltex start | stop | restart | status | logs [サービス] | version
+  coltex update [バージョン]        最新のリリースに更新（または指定したバージョン。例：v0.0.2、main）
+  coltex edition [standard | full]  TeX Live のエディションを表示または切り替え
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [トークン] | off]
+  coltex cli <コマンド…>            任意の `node src/cli.ts` コマンド。例：`coltex cli system-admin <メールアドレス>`' ;;
+  esac
+}
+msg_ko() {
+  case "$1" in
+    no_prebuilt) M='ColTex {version}용으로 미리 빌드된 이미지가 없어 소스에서 빌드합니다(시간이 좀 걸립니다)…' ;;
+    up) M='ColTex 실행 중: {url}' ;;
+    not_answering) M='ColTex가 포트 {port}에서 응답하지 않습니다' ;;
+    no_release) M='릴리스를 찾을 수 없습니다' ;;
+    latest) M='ColTex {version}이(가) 최신 릴리스입니다' ;;
+    updating) M='ColTex {from} → {to} 업데이트 중. 릴리스 노트: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX Live 에디션: {edition} (standard: 패키지 매뉴얼 없음, 약 9 GB; full: 매뉴얼 포함, 약 20 GB)' ;;
+    edition_already) M='이미 {edition} 에디션입니다' ;;
+    edition_switching) M='{edition} 에디션으로 전환하는 중(TeX Live를 다운로드합니다)…' ;;
+    done) M='완료.' ;;
+    edition_usage) M='사용법: coltex edition [standard | full]' ;;
+    help) M='이 컴퓨터의 ColTex. 어디서나 실행할 수 있습니다(install.sh가 ~/.local/bin에 링크합니다):
+
+  coltex start | stop | restart | status | logs [서비스] | version
+  coltex update [버전]             최신 릴리스로 업데이트(또는 버전 지정, 예: v0.0.2 또는 main)
+  coltex edition [standard | full]  TeX Live 에디션 보기 또는 전환
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [토큰] | off]
+  coltex cli <명령…>             모든 `node src/cli.ts` 명령, 예: `coltex cli system-admin <이메일>`' ;;
+  esac
+}
+msg_es() {
+  case "$1" in
+    no_prebuilt) M='No hay imágenes precompiladas para ColTex {version}; se compilarán a partir del código fuente (tarda un rato)…' ;;
+    up) M='ColTex está en marcha: {url}' ;;
+    not_answering) M='ColTex no responde en el puerto {port}' ;;
+    no_release) M='No se encontró ninguna versión' ;;
+    latest) M='ColTex {version} es la última versión' ;;
+    updating) M='Actualizando ColTex {from} → {to}; consulta las notas de la versión: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Edición de TeX Live: {edition} (standard: sin los manuales de los paquetes, unos 9 GB; full: con ellos, unos 20 GB)' ;;
+    edition_already) M='Ya es la edición {edition}' ;;
+    edition_switching) M='Cambiando a la edición {edition} (descarga TeX Live)…' ;;
+    done) M='Listo.' ;;
+    edition_usage) M='Uso: coltex edition [standard | full]' ;;
+    help) M='ColTex en esta máquina. Se puede ejecutar desde cualquier carpeta (install.sh lo enlaza en ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [servicio] | version
+  coltex update [VERSIÓN]           a la última versión (o VERSIÓN, p. ej., v0.0.2, o main)
+  coltex edition [standard | full]  muestra o cambia la edición de TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <comando…>             cualquier comando de `node src/cli.ts`, p. ej., `coltex cli system-admin <correo>`' ;;
+  esac
+}
+msg_fr() {
+  case "$1" in
+    no_prebuilt) M='Pas d’images précompilées pour ColTex {version} ; construction à partir des sources (cela prend un moment)…' ;;
+    up) M='ColTex est en marche : {url}' ;;
+    not_answering) M='ColTex ne répond pas sur le port {port}' ;;
+    no_release) M='Aucune version publiée trouvée' ;;
+    latest) M='ColTex {version} est la dernière version publiée' ;;
+    updating) M='Mise à jour de ColTex {from} → {to} ; notes de version : https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Édition de TeX Live : {edition} (standard : sans les manuels des packages, environ 9 GB ; full : avec, environ 20 GB)' ;;
+    edition_already) M='Déjà en édition {edition}' ;;
+    edition_switching) M='Passage à l’édition {edition} (télécharge TeX Live)…' ;;
+    done) M='Terminé.' ;;
+    edition_usage) M='Utilisation : coltex edition [standard | full]' ;;
+    help) M='ColTex sur cette machine. À lancer depuis n’importe où (install.sh le lie dans ~/.local/bin) :
+
+  coltex start | stop | restart | status | logs [service] | version
+  coltex update [VERSION]           vers la dernière version publiée (ou VERSION, p. ex. v0.0.2, ou main)
+  coltex edition [standard | full]  affiche ou change l’édition de TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [JETON] | off]
+  coltex cli <commande…>            toute commande `node src/cli.ts`, p. ex. `coltex cli system-admin <e-mail>`' ;;
+  esac
+}
+msg_de() {
+  case "$1" in
+    no_prebuilt) M='Keine vorgefertigten Images für ColTex {version}; sie werden aus den Quellen gebaut (das dauert eine Weile)…' ;;
+    up) M='ColTex läuft: {url}' ;;
+    not_answering) M='ColTex antwortet nicht auf Port {port}' ;;
+    no_release) M='Keine Version gefunden' ;;
+    latest) M='ColTex {version} ist die neueste Version' ;;
+    updating) M='ColTex wird aktualisiert: {from} → {to}; Versionshinweise: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX-Live-Edition: {edition} (standard: ohne Paket-Handbücher, etwa 9 GB; full: mit ihnen, etwa 20 GB)' ;;
+    edition_already) M='Bereits die Edition {edition}' ;;
+    edition_switching) M='Wechsel zur Edition {edition} (lädt TeX Live herunter)…' ;;
+    done) M='Fertig.' ;;
+    edition_usage) M='Verwendung: coltex edition [standard | full]' ;;
+    help) M='ColTex auf diesem Rechner. Von überall ausführbar (install.sh verlinkt es nach ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [Dienst] | version
+  coltex update [VERSION]          auf die neueste Version (oder VERSION, z. B. v0.0.2, oder main)
+  coltex edition [standard | full]  die TeX-Live-Edition anzeigen oder wechseln
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <Befehl…>           ein beliebiger `node src/cli.ts`-Befehl, z. B. `coltex cli system-admin <E-Mail>`' ;;
+  esac
+}
+msg_pt_BR() {
+  case "$1" in
+    no_prebuilt) M='Não há imagens pré-compiladas para o ColTex {version}; compilando a partir do código-fonte (isso demora um pouco)…' ;;
+    up) M='O ColTex está no ar: {url}' ;;
+    not_answering) M='O ColTex não está respondendo na porta {port}' ;;
+    no_release) M='Nenhuma versão encontrada' ;;
+    latest) M='O ColTex {version} é a versão mais recente' ;;
+    updating) M='Atualizando o ColTex {from} → {to}; veja as notas da versão: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Edição do TeX Live: {edition} (standard: sem os manuais dos pacotes, cerca de 9 GB; full: com eles, cerca de 20 GB)' ;;
+    edition_already) M='Já está na edição {edition}' ;;
+    edition_switching) M='Mudando para a edição {edition} (baixa o TeX Live)…' ;;
+    done) M='Concluído.' ;;
+    edition_usage) M='Uso: coltex edition [standard | full]' ;;
+    help) M='ColTex nesta máquina. Execute de qualquer lugar (o install.sh cria um link em ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [serviço] | version
+  coltex update [VERSÃO]           atualiza para a versão mais recente (ou VERSÃO, ex.: v0.0.2, ou main)
+  coltex edition [standard | full]  mostra ou troca a edição do TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <comando…>          qualquer comando de `node src/cli.ts`, ex.: `coltex cli system-admin <e-mail>`' ;;
+  esac
+}
+msg_it() {
+  case "$1" in
+    no_prebuilt) M='Nessuna immagine precompilata per ColTex {version}; vengono compilate dai sorgenti (ci vuole un po’)…' ;;
+    up) M='ColTex è attivo: {url}' ;;
+    not_answering) M='ColTex non risponde sulla porta {port}' ;;
+    no_release) M='Nessuna release trovata' ;;
+    latest) M='ColTex {version} è l’ultima release' ;;
+    updating) M='Aggiornamento di ColTex {from} → {to}; vedi le note di rilascio: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Edizione di TeX Live: {edition} (standard: senza manuali dei pacchetti, circa 9 GB; full: con i manuali, circa 20 GB)' ;;
+    edition_already) M='È già l’edizione {edition}' ;;
+    edition_switching) M='Passaggio all’edizione {edition} (scarica TeX Live)…' ;;
+    done) M='Fatto.' ;;
+    edition_usage) M='Uso: coltex edition [standard | full]' ;;
+    help) M='ColTex su questa macchina. Si può eseguire da qualsiasi cartella (install.sh lo collega in ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [servizio] | version
+  coltex update [VERSIONE]         all’ultima release (o a VERSIONE, ad es. v0.0.2, o main)
+  coltex edition [standard | full]  mostra o cambia l’edizione di TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <comando…>          qualsiasi comando `node src/cli.ts`, ad es. `coltex cli system-admin <email>`' ;;
+  esac
+}
+msg_ru() {
+  case "$1" in
+    no_prebuilt) M='Для ColTex {version} нет готовых образов; они собираются из исходного кода (это займёт время)…' ;;
+    up) M='ColTex работает: {url}' ;;
+    not_answering) M='ColTex не отвечает на порту {port}' ;;
+    no_release) M='Выпуск не найден' ;;
+    latest) M='ColTex {version} — последний выпуск' ;;
+    updating) M='Обновление ColTex {from} → {to}; примечания к выпуску: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Редакция TeX Live: {edition} (standard: без руководств пакетов, около 9 GB; full: с ними, около 20 GB)' ;;
+    edition_already) M='Уже установлена редакция {edition}' ;;
+    edition_switching) M='Переключение на редакцию {edition} (загружается TeX Live)…' ;;
+    done) M='Готово.' ;;
+    edition_usage) M='Использование: coltex edition [standard | full]' ;;
+    help) M='ColTex на этой машине. Запускается из любого каталога (install.sh добавляет ссылку в ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [служба] | version
+  coltex update [ВЕРСИЯ]            до последнего выпуска (или до ВЕРСИИ, например v0.0.2, или main)
+  coltex edition [standard | full]  показать или сменить редакцию TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [ТОКЕН] | off]
+  coltex cli <команда…>             любая команда `node src/cli.ts`, например `coltex cli system-admin <почта>`' ;;
+  esac
+}
+msg_tr() {
+  case "$1" in
+    no_prebuilt) M='ColTex {version} için hazır imaj yok; kaynaklardan derleniyor (biraz sürer)…' ;;
+    up) M='ColTex çalışıyor: {url}' ;;
+    not_answering) M='ColTex {port} numaralı bağlantı noktasında yanıt vermiyor' ;;
+    no_release) M='Sürüm bulunamadı' ;;
+    latest) M='ColTex {version} en son sürüm' ;;
+    updating) M='ColTex güncelleniyor: {from} → {to}; sürüm notları: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='TeX Live sürümü: {edition} (standard: paket kılavuzları olmadan, yaklaşık 9 GB; full: kılavuzlarla, yaklaşık 20 GB)' ;;
+    edition_already) M='Zaten bu sürüm kullanılıyor: {edition}' ;;
+    edition_switching) M='Şu sürüme geçiliyor: {edition} (TeX Live indirilir)…' ;;
+    done) M='Bitti.' ;;
+    edition_usage) M='Kullanım: coltex edition [standard | full]' ;;
+    help) M='Bu makinedeki ColTex. Her yerden çalıştırın (install.sh onu ~/.local/bin içine bağlar):
+
+  coltex start | stop | restart | status | logs [hizmet] | version
+  coltex update [SÜRÜM]            en son sürüme (veya SÜRÜM, ör. v0.0.2 ya da main)
+  coltex edition [standard | full]  TeX Live sürümünü göster veya değiştir
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [BELİRTEÇ] | off]
+  coltex cli <komut…>            herhangi bir `node src/cli.ts` komutu, ör. `coltex cli system-admin <e-posta>`' ;;
+  esac
+}
+msg_vi() {
+  case "$1" in
+    no_prebuilt) M='Không có image dựng sẵn cho ColTex {version}; đang dựng từ mã nguồn (sẽ mất một lúc)…' ;;
+    up) M='ColTex đã chạy: {url}' ;;
+    not_answering) M='ColTex không phản hồi trên cổng {port}' ;;
+    no_release) M='Không tìm thấy bản phát hành nào' ;;
+    latest) M='ColTex {version} là bản phát hành mới nhất' ;;
+    updating) M='Đang cập nhật ColTex {from} → {to}; xem ghi chú phát hành: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Phiên bản TeX Live: {edition} (standard: không có tài liệu hướng dẫn của các gói, khoảng 9 GB; full: có tài liệu, khoảng 20 GB)' ;;
+    edition_already) M='Đang dùng phiên bản {edition} rồi' ;;
+    edition_switching) M='Đang chuyển sang phiên bản {edition} (tải TeX Live)…' ;;
+    done) M='Xong.' ;;
+    edition_usage) M='Cách dùng: coltex edition [standard | full]' ;;
+    help) M='ColTex trên máy này. Chạy được từ bất kỳ thư mục nào (install.sh liên kết nó vào ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [dịch vụ] | version
+  coltex update [PHIÊN BẢN]         lên bản phát hành mới nhất (hoặc PHIÊN BẢN, vd. v0.0.2, hoặc main)
+  coltex edition [standard | full]  xem hoặc chuyển phiên bản TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <lệnh…>                bất kỳ lệnh `node src/cli.ts` nào, vd. `coltex cli system-admin <email>`' ;;
+  esac
+}
+msg_id() {
+  case "$1" in
+    no_prebuilt) M='Tidak ada image siap pakai untuk ColTex {version}; membangunnya dari kode sumber (ini butuh waktu)…' ;;
+    up) M='ColTex sudah aktif: {url}' ;;
+    not_answering) M='ColTex tidak merespons di port {port}' ;;
+    no_release) M='Tidak ada rilis' ;;
+    latest) M='ColTex {version} adalah rilis terbaru' ;;
+    updating) M='Memperbarui ColTex {from} → {to}; lihat catatan rilis: https://github.com/Lewen-Cai/coltex/releases' ;;
+    edition_show) M='Edisi TeX Live: {edition} (standard: tanpa manual paket, sekitar 9 GB; full: dengan manual, sekitar 20 GB)' ;;
+    edition_already) M='Sudah menggunakan edisi {edition}' ;;
+    edition_switching) M='Beralih ke edisi {edition} (mengunduh TeX Live)…' ;;
+    done) M='Selesai.' ;;
+    edition_usage) M='Penggunaan: coltex edition [standard | full]' ;;
+    help) M='ColTex di mesin ini. Dapat dijalankan dari mana saja (install.sh menautkannya ke ~/.local/bin):
+
+  coltex start | stop | restart | status | logs [layanan] | version
+  coltex update [VERSI]            ke rilis terbaru (atau VERSI, mis. v0.0.2, atau main)
+  coltex edition [standard | full]  tampilkan atau ganti edisi TeX Live
+  coltex tailscale [status | up | down | off]
+  coltex cloudflare [status | quick | token [TOKEN] | off]
+  coltex cli <perintah…>           perintah `node src/cli.ts` apa pun, mis. `coltex cli system-admin <email>`' ;;
+  esac
+}
+# <<< messages
 # The images ColTex's own containers run now.
 running_images() {
   local id
@@ -51,7 +388,7 @@ deploy() {
   elif compose pull "$@"; then
     compose up -d "$@"
   else
-    T "No prebuilt images for ColTex $(get COLTEX_IMAGE_TAG); building them from the sources (this takes a while)…" "ColTex $(get COLTEX_IMAGE_TAG) 没有预构建的镜像，改为从源码构建（需要一段时间）…"
+    T no_prebuilt version="$(get COLTEX_IMAGE_TAG)"
     compose up -d --build "$@"
   fi
   after=" $(running_images | tr '\n' ' ') "
@@ -71,8 +408,8 @@ case "${1:-help}" in
   status)
     compose ps
     p="$(port)"; p="${p:-3690}"
-    if curl -fsS "http://localhost:$p/api/health" >/dev/null 2>&1; then T "ColTex is up: http://localhost:$p" "ColTex 正在运行：http://localhost:$p"
-    else T "ColTex is not answering on port $p" "ColTex 没有在端口 $p 上响应"; fi
+    if curl -fsS "http://localhost:$p/api/health" >/dev/null 2>&1; then T up url="http://localhost:$p"
+    else T not_answering port="$p"; fi
     ;;
   logs) compose logs -f --tail 100 "${2:-server}" ;;
   version)
@@ -85,14 +422,14 @@ case "${1:-help}" in
       # On the main branch (installed with --version main) updates follow main; otherwise releases.
       if git symbolic-ref -q HEAD >/dev/null; then to=main; else to="$(git ls-remote --tags --refs origin 'v*' | sed 's|.*refs/tags/||' | sort -V | tail -1)"; fi
     fi
-    [ -n "$to" ] || { T "No release found" "没有找到发布版本" >&2; exit 1; }
+    [ -n "$to" ] || { T no_release >&2; exit 1; }
     if [ "$to" = main ]; then
       git fetch --depth 1 origin main && git checkout -q -B main FETCH_HEAD
     else
-      if [ "$to" = "$from" ]; then T "ColTex $from is the latest release" "ColTex $from 已经是最新版本"; exit 0; fi
+      if [ "$to" = "$from" ]; then T latest version="$from"; exit 0; fi
       git fetch --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
     fi
-    T "Updating ColTex $from → $(current); see the release notes: https://github.com/Lewen-Cai/coltex/releases" "正在把 ColTex 从 $from 更新到 $(current)；更新说明：https://github.com/Lewen-Cai/coltex/releases"
+    T updating from="$from" to="$(current)"
     setting COLTEX_IMAGE_TAG "$to"
     deploy
     ;;
@@ -105,15 +442,15 @@ case "${1:-help}" in
     current="$(get COLTEX_EDITION)"
     current="${current:-standard}"
     case "${2:-}" in
-      "") T "TeX Live edition: $current (standard: without package manuals, about 9 GB; full: with them, about 20 GB)" "TeX Live 版本：${current}（standard 标准版：不含宏包手册，约 9 GB；full 完整版：含手册，约 20 GB）" ;;
+      "") T edition_show edition="$current" ;;
       standard | full)
-        if [ "$2" = "$current" ]; then T "Already the $2 edition" "已经是 $2 版本"; exit 0; fi
+        if [ "$2" = "$current" ]; then T edition_already edition="$2"; exit 0; fi
         setting COLTEX_EDITION "$2"
-        T "Switching to the $2 edition (downloads TeX Live)…" "正在切换到 $2 版本（会下载 TeX Live）…"
+        T edition_switching edition="$2"
         deploy compiler
-        T "Done." "完成。"
+        T done
         ;;
-      *) T "Usage: coltex edition [standard | full]" "用法：coltex edition [standard | full]" >&2; exit 2 ;;
+      *) T edition_usage >&2; exit 2 ;;
     esac
     ;;
   tailscale | cloudflare)
@@ -125,20 +462,5 @@ case "${1:-help}" in
     shift
     exec_server "$@"
     ;;
-  *)
-    if [ "$(get COLTEX_LANG)" = zh ]; then
-      cat <<'HELP'
-本机上的 ColTex。可以在任何目录运行（install.sh 会把它链接到 ~/.local/bin）：
-
-  coltex start | stop | restart | status | logs [服务] | version
-  coltex update [版本]               更新到最新版本（或指定版本，如 v0.0.2，或 main）
-  coltex edition [standard | full]  查看或切换 TeX Live 版本
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [令牌] | off]
-  coltex cli <命令…>                 服务器的命令行，例如 `coltex cli system-admin <邮箱>`
-HELP
-    else
-      sed -n '2,10p' "$self" | sed 's/^# \{0,1\}//'
-    fi
-    ;;
+  *) T help ;;
 esac

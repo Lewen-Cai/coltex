@@ -7,6 +7,18 @@
 <p align="center">
   <a href="../README.md"><kbd>English</kbd></a>
   <a href="./zh-CN.md"><kbd><b>简体中文</b></kbd></a>
+  <a href="./zh-TW.md"><kbd>繁體中文</kbd></a>
+  <a href="./ja.md"><kbd>日本語</kbd></a>
+  <a href="./ko.md"><kbd>한국어</kbd></a>
+  <a href="./es.md"><kbd>Español</kbd></a>
+  <a href="./fr.md"><kbd>Français</kbd></a><br>
+  <a href="./de.md"><kbd>Deutsch</kbd></a>
+  <a href="./pt-BR.md"><kbd>Português (Brasil)</kbd></a>
+  <a href="./it.md"><kbd>Italiano</kbd></a>
+  <a href="./ru.md"><kbd>Русский</kbd></a>
+  <a href="./tr.md"><kbd>Türkçe</kbd></a>
+  <a href="./vi.md"><kbd>Tiếng Việt</kbd></a>
+  <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
   <a href="#install">安装</a> · <a href="#configure">配置</a> · <a href="../CHANGELOG.md">更新日志</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
@@ -53,7 +65,7 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 - 模型服务：API Key（Anthropic、OpenAI、DeepSeek、Google、OpenRouter 等）、订阅账号登录（Claude Pro/Max、ChatGPT、GitHub Copilot 等），或者自己部署的 OpenAI 兼容服务（Ollama、vLLM、LM Studio）。
 - 自动选择模型（每条消息在轻量模型和强模型之间选择）、按用户组分配权限、按人统计用量，并可按天、周或月限制每人用量。
 - 按项目保存历史对话，实时显示上下文占用，用 `/compact` 压缩过长的对话。
-- 技能：个人和项目的技能（Agent Skills 格式），AI 智能体照着做，用 `/名称` 调用；可以自己写、导入，也可以在设置里让 AI 帮你创建。
+- Skill：个人和项目的 Skill（Agent Skills 格式），AI 智能体照着做，用 `/名称` 调用；可以自己写、导入，也可以在设置里让 AI 帮你创建。
 - 和 Claude Code 类似的权限：AI 智能体的修改等你审阅后再应用（手动），回答完自动应用（自动），或者还可以删除和移动文件（完全访问）。
 - 通过 MCP 接入你自己的智能体（Claude Code、Codex、Cursor 等）：所有项目共用一个地址，权限设置相同（手动时它的修改记为你的修订建议）。
 
@@ -61,7 +73,7 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 - IEEE、ACM、Springer LNCS、Elsevier、REVTeX 和 arXiv 模板，以及把论文从一种期刊模板转换成另一种。
 - 导入、导出 Overleaf 的 zip，关联来自网址或其他项目的文件，标签、归档和回收站。
 - 不开放注册，只能凭邀请链接创建账号。一个系统管理员，以及各自管理自己所邀请小组的管理员。
-- 运行监控、WebDAV 备份（可加密）、本地或 S3 兼容存储、浅色和深色主题、中英文界面。
+- 运行监控、WebDAV 备份（可加密）、本地或 S3 兼容存储、浅色和深色主题，界面支持 14 种语言（简体和繁体中文、英语、日语、韩语、西班牙语、法语、德语、葡萄牙语、意大利语、俄语、土耳其语、越南语和印尼语）。
 
 <a id="install"></a>
 ## 安装
@@ -93,7 +105,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--cloudflare-quick` | 临时的 `trycloudflare.com` 公网地址，适合试用 |
 | `--edition full` | 完整版 TeX Live |
 | `--local` | 只在本机和局域网访问 |
-| `--lang zh` | 安装脚本、`coltex` 和初始设置页面使用中文（`en` 为英文） |
+| `--lang LANG` | 安装脚本、`coltex` 和初始设置页面的语言：`en`、`zh-CN`、`zh-TW`、`ja`、`ko`、`es`、`fr`、`de`、`pt-BR`、`it`、`ru`、`tr`、`vi` 或 `id`（不指定时会询问） |
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |
 | `--build` | 在本机从源码构建镜像，而不是下载预构建的镜像 |
@@ -103,12 +115,12 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 ### 管理与更新
 
 ```sh
-coltex status          # 是否在运行、访问地址
-coltex logs            # 服务器日志（coltex logs compiler 查看编译服务）
-coltex update          # 更新到最新版本，配置和数据都会保留
+coltex status          # running? at which address
+coltex logs            # the server's log (coltex logs compiler for the compiler)
+coltex update          # to the latest release; your settings and data stay
 coltex version
-coltex edition full    # 切换 TeX Live 版本
-coltex tailscale up    # 或者：coltex cloudflare quick | token
+coltex edition full    # switch the TeX Live edition
+coltex tailscale up    # or: coltex cloudflare quick | token
 coltex stop | start
 ```
 
@@ -139,10 +151,10 @@ ColTex 还很年轻（0.0.x）。虽然每天都在使用和测试，但问题�
 ```sh
 pnpm install
 cp .env.example .env
-pnpm infra:up        # 在 Docker 里启动 Postgres、Valkey 和 TeX Live 编译服务
-pnpm dev             # API 在 :3000，网页在 http://localhost:5173
+pnpm infra:up        # Postgres, Valkey and the TeX Live compiler in Docker
+pnpm dev             # API on :3000, web app on http://localhost:5173
 pnpm -r typecheck
-pnpm -r test         # 服务器测试需要 infra:up 启动的 Postgres
+pnpm -r test         # the server tests need Postgres from infra:up
 ```
 
 | 目录 | |

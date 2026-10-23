@@ -9,7 +9,7 @@ export const accountRoutes: FastifyPluginAsyncZod<Deps> = async (app, { accounts
   // ---- First-run setup (public while no users exist) ----
 
   // `language`: what install.sh was run in, so the setup page starts in it.
-  app.get('/setup', { schema: { response: { 200: z.object({ needsSetup: z.boolean(), language: z.enum(['en', 'zh']).nullable() }) } } }, async () => ({
+  app.get('/setup', { schema: { response: { 200: z.object({ needsSetup: z.boolean(), language: z.string().nullable() }) } } }, async () => ({
     needsSetup: await accounts.needsSetup(),
     language: config.installLanguage,
   }))
