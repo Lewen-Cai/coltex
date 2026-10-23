@@ -215,6 +215,25 @@ export async function lookup(queue: Pick<CompileQueue, 'texLookup'>, job: TexLoo
   return `${r.file} (${r.totalLines} lines)\n${r.text}`
 }
 
+/**
+ * A reference file of a skill. Paths are relative to the skill's folder, as
+ * in an Agent Skills repository, so `../other-skill/core/x.md` is a file of
+ * the sibling skill `other-skill` (skill packages share files that way).
+ */
+export function skillFile(skills: Pick<LoadedSkill, 'name' | 'files'>[], name: string, file: string): string {
+  const wanted = file.trim().replace(/^<(.*)>$/, '$1')
+  const resolved = path.posix.normalize(`${name}/${wanted}`)
+  const slash = resolved.indexOf('/')
+  let text = slash > 0 ? skills.find(s => s.name === resolved.slice(0, slash))?.files[resolved.slice(slash + 1)] : undefined
+  // A link relative to a file in a subfolder (`../core/x.md` from `journal-formats/`, `../../../shared/x.md` from
+  // `static/core/`): the agent doesn't say which file it read it in, so try the skill itself, then a sibling named in it.
+  const parts = path.posix.normalize(wanted).replace(/^(\.\.\/)+/, '').split('/')
+  text ??= skills.find(s => s.name === name)?.files[parts.join('/')]
+  for (let i = parts.length - 2; text === undefined && i >= 0; i--) text = skills.find(s => s.name === parts[i])?.files[parts.slice(i + 1).join('/')]
+  if (text === undefined) throw new BadRequestError(`Skill ${name} has no file ${file}`)
+  return text
+}
+
 /** Reading the person's skills and drafting new ones: in the project panel and the skills chat. */
 export function skillTools(ctx: SkillToolContext): AgentTool<any, undefined>[] {
   return [
@@ -230,11 +249,7 @@ export function skillTools(ctx: SkillToolContext): AgentTool<any, undefined>[] {
       execute: async ({ name, path: file }) => {
         const skill = ctx.skills().find(s => s.name === name)
         if (!skill) throw new BadRequestError(`There is no skill named ${name}`)
-        if (file) {
-          const text = skill.files[file.replace(/^\.?\//, '')]
-          if (text === undefined) throw new BadRequestError(`Skill ${name} has no file ${file}`)
-          return text
-        }
+        if (file) return skillFile(ctx.skills(), name, file)
         const files = Object.keys(skill.files)
         return `# Skill: ${skill.name}\n${skill.body}${files.length ? `\n\nReference files (read with path): ${files.join(', ')}` : ''}`
       },

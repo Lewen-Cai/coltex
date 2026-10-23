@@ -29,7 +29,7 @@ type Props = {
   canEdit: boolean
   onEdit: () => void
   onDelete: () => void
-  /** Continue with this skill in the skills chat. */
+  /** Continue with this skill in the skills chat (not for built-in skills: they can't be changed). */
   onImprove: () => void
 }
 
@@ -61,9 +61,11 @@ export function SkillDetail({ base, skill, canEdit, onEdit, onDelete, onImprove 
               <Pencil /> {t('Edit')}
             </Button>
           )}
-          <Button size="sm" variant="outline" onClick={onImprove}>
-            <Sparkles /> {t('Improve in chat')}
-          </Button>
+          {editable && (
+            <Button size="sm" variant="outline" onClick={onImprove}>
+              <Sparkles /> {t('Improve in chat')}
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-sm" aria-label={t('Actions')}>

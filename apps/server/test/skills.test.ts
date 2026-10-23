@@ -2,7 +2,9 @@ import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { fauxAssistantMessage, fauxProvider, fauxText, fauxToolCall, type FauxProviderHandle } from '@earendil-works/pi-ai'
 import type { AiSessionState, AiSkill } from '@coltex/shared'
-import { parseFrontMatter, parseSkillMarkdown, readSkillZip, skillName } from '../src/ai/skills.ts'
+import { BUILTIN_SKILLS_DIR, loadBuiltinSkills, parseFrontMatter, parseSkillMarkdown, readSkillZip, skillName } from '../src/ai/skills.ts'
+import { skillsSection } from '../src/ai/prompt.ts'
+import { skillFile } from '../src/ai/tools.ts'
 import { buildProjectZip } from '../src/projects/zip.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
@@ -80,6 +82,42 @@ describe('SKILL.md parsing', () => {
     assert.equal(skills.find(s => s.name === 'refs')?.description, 'Check citations', 'named after its folder')
     assert.ok(warnings.some(w => w.includes('logo.png')))
     await assert.rejects(readSkillZip(await zip({ 'README.md': 'hi' }), 'x'), /No SKILL.md/)
+  })
+})
+
+describe('skill files', () => {
+  test('paths are relative to the skill, so ../other-skill/… reads a sibling skill’s file', () => {
+    const skills: { name: string; files: Record<string, string> }[] = [
+      { name: 'writing', files: { 'static/core/stance.md': 'Stance', 'references/a b.md': 'Spaced' } },
+      { name: 'shared', files: { 'core/discipline.md': 'Discipline' } },
+    ]
+    assert.equal(skillFile(skills, 'writing', 'static/core/stance.md'), 'Stance')
+    assert.equal(skillFile(skills, 'writing', './static/core/../core/stance.md'), 'Stance')
+    assert.equal(skillFile(skills, 'writing', '<references/a b.md>'), 'Spaced')
+    assert.equal(skillFile(skills, 'writing', '../shared/core/discipline.md'), 'Discipline')
+    // Written relative to a file in a subfolder.
+    assert.equal(skillFile(skills, 'writing', '../../../shared/core/discipline.md'), 'Discipline')
+    assert.equal(skillFile(skills, 'writing', 'static/core/../shared/core/discipline.md'), 'Discipline')
+    assert.equal(skillFile(skills, 'shared', '../core/discipline.md'), 'Discipline')
+    assert.throws(() => skillFile(skills, 'writing', '../missing/core/discipline.md'), /has no file/)
+    assert.throws(() => skillFile(skills, 'writing', '../../etc/passwd'), /has no file/)
+    assert.throws(() => skillFile(skills, 'writing', 'nope.md'), /has no file/)
+  })
+
+  test('only skill-creator is built in, without its licence file', () => {
+    const skills = loadBuiltinSkills(BUILTIN_SKILLS_DIR)
+    assert.deepEqual(
+      skills.map(s => [s.name, Object.keys(s.files)]),
+      [['skill-creator', ['references/examples.md']]],
+    )
+  })
+
+  test('the prompt tells the agent to check the library first, and says whose each skill is', () => {
+    const section = skillsSection([...loadBuiltinSkills(BUILTIN_SKILLS_DIR), { name: 'shorten', description: 'Shorten it.', scope: 'personal' }])
+    assert.match(section, /Check this library before you start a task/)
+    assert.match(section, /- skill-creator \(built in\): /)
+    assert.match(section, /- shorten \(personal\): Shorten it\./)
+    assert.match(skillsSection([]), /none at the moment/)
   })
 })
 
@@ -283,7 +321,7 @@ describe('AI skills', () => {
       context => {
         const sent = JSON.stringify(context)
         sawNew = sent.includes('shorten (personal): Shorten any paragraph.')
-        sections = sent.split('Skills are instructions for recurring tasks').length - 1
+        sections = sent.split('ColTex gives you a skill library').length - 1
         return fauxAssistantMessage(fauxText('Ok.'))
       },
     ])

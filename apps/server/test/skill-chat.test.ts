@@ -55,11 +55,14 @@ describe('Built-in skills and the skills chat', () => {
 
   test('built-in skills are listed read-only, usable in projects, and replaced by a personal one of the same name', async () => {
     const list = (await api('GET', '/me/ai/skills', admin)).json() as AiSkill[]
+    assert.ok(list.every(s => s.scope === 'builtin'))
     assert.deepEqual(
-      list.map(s => [s.name, s.scope, s.files.map(f => f.path)]),
+      list.filter(s => s.name === 'skill-creator').map(s => [s.name, s.scope, s.files.map(f => f.path)]),
       [['skill-creator', 'builtin', ['references/examples.md']]],
       'the licence file is not a reference file',
     )
+    assert.ok(!list.some(s => s.files.some(f => /LICEN[CS]E/.test(f.path))))
+    const creators = (skills: { name: string; scope: string }[]) => skills.filter(s => s.name === 'skill-creator').map(s => [s.name, s.scope])
     assert.equal((await api('PUT', '/me/ai/skills/skill-creator', admin, { name: 'skill-creator', description: 'x', body: 'y' })).statusCode, 404)
     assert.equal((await api('DELETE', '/me/ai/skills/skill-creator', admin)).statusCode, 404)
     const download = await api('GET', '/me/ai/skills/skill-creator/download', admin)
@@ -73,16 +76,12 @@ describe('Built-in skills and the skills chat', () => {
     assert.equal((await api('GET', '/me/ai/skills/skill-creator/files/references/examples.md', noAi)).statusCode, 403)
 
     const menu = async () => (await api('GET', `/projects/${projectId}/ai/skill-menu`, admin)).json() as { name: string; scope: string }[]
-    assert.deepEqual((await menu()).map(s => [s.name, s.scope]), [['skill-creator', 'builtin']])
+    assert.deepEqual(creators(await menu()), [['skill-creator', 'builtin']])
     await api('POST', '/me/ai/skills', admin, { name: 'skill-creator', description: 'My own way of writing skills.', body: 'Ask less.' })
-    assert.deepEqual((await menu()).map(s => [s.name, s.scope]), [['skill-creator', 'personal']])
-    assert.deepEqual(
-      ((await api('GET', '/me/ai/skills', admin)).json() as AiSkill[]).map(s => s.scope),
-      ['personal'],
-      'only the personal one is listed',
-    )
+    assert.deepEqual(creators(await menu()), [['skill-creator', 'personal']])
+    assert.deepEqual(creators((await api('GET', '/me/ai/skills', admin)).json()), [['skill-creator', 'personal']], 'only the personal one is listed')
     await api('DELETE', '/me/ai/skills/skill-creator', admin)
-    assert.equal(((await api('GET', '/me/ai/skills', admin)).json() as AiSkill[])[0]?.scope, 'builtin')
+    assert.deepEqual(creators((await api('GET', '/me/ai/skills', admin)).json()), [['skill-creator', 'builtin']])
   })
 
   test('the skills chat follows skill-creator, drafts skills with reference files, and saves them to the person’s skills', async () => {
