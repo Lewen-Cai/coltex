@@ -9,7 +9,8 @@
       // Apply the saved theme before the first paint (see src/lib/theme.ts).
       try {
         var c = localStorage.getItem('coltex:theme')
-        if (c === 'dark' || ((c === null || c === 'system') && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark')
+        if (c === 'dark' || c === 'moss' || c === 'espresso') document.documentElement.classList.add('dark')
+        if (c === 'forest' || c === 'moss' || c === 'sepia' || c === 'espresso') document.documentElement.dataset.theme = c
       } catch (e) {}
     </script>
   </head>

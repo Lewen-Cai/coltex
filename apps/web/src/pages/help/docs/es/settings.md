@@ -1,0 +1,11 @@
+# Configuración
+
+Haz clic en tu avatar abajo a la izquierda y elige **Configuración**.
+
+- **Cuenta**: tu nombre visible (lo ven los colaboradores, en los comentarios y en el historial) y tu contraseña. Al cambiar la contraseña puedes cerrar la sesión en tus otros dispositivos. Las contraseñas necesitan 8 caracteres o más, con una mayúscula, una minúscula y un número; los símbolos son opcionales. La valoración que se muestra mientras escribes (débil, aceptable, buena, fuerte) sube con la longitud y los símbolos. El registro y los restablecimientos hechos por un administrador siguen las mismas reglas. El correo electrónico con el que inicias sesión solo lo puede cambiar un administrador.
+- **Apariencia**: el tema (Claro y Oscuro en azul, Bosque y Musgo en verde, Sepia y Espresso en tonos cálidos; Claro por defecto) y el idioma de la interfaz (14 idiomas, entre ellos English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français y Deutsch; empieza en el idioma de tu navegador). Los temas oscuros también se aplican al editor; las páginas del PDF siguen siendo blancas. Se guarda en este navegador.
+- **Servicios de sincronización**: conecta tu cuenta de Zotero (consulta [Referencias](#/help/references)) y crea y revoca tokens de git (consulta [Archivos](#/help/files)): cada uno para Git, MCP o ambos, de lectura y escritura o de solo lectura, para todos tus proyectos o algunos, con una fecha de caducidad. Usa un token por equipo, para poder revocarlo por separado.
+- **Agente de IA**: tu uso de la IA en los últimos 7, 30 o 90 días (solicitudes, tokens, coste, por día y por modelo) y lo que te queda de tu límite (si tienes el agente de IA), lo que los agentes de IA pueden cambiar por ti (**Permisos**), y la conexión de tus propios agentes de IA mediante **MCP**, con sus tokens; consulta [Agente de IA](#/help/ai).
+- **Skills de IA** (si tienes el agente de IA): tus propias skills, las integradas y un chat con el agente de IA para escribir skills; consulta [Agente de IA](#/help/ai).
+
+La configuración del editor (tamaño de fuente, colores, Vim…) está en **Configuración**, en la parte inferior de la barra lateral izquierda del editor; consulta [Editor](#/help/editor).

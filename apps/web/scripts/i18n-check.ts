@@ -1,19 +1,44 @@
-// Checks the Chinese dictionary against the messages used in the source.
+// Checks every language's dictionary against the messages used in the source.
+// Simplified Chinese (zh-CN) is the reference: every other language has the
+// same files with the same keys.
 //
-//   node scripts/i18n-check.ts            errors: missing keys, placeholder mismatches
-//   node scripts/i18n-check.ts --strict   also fails on likely untranslated UI text
-//   node scripts/i18n-check.ts src/pages  limit the untranslated-text report to some paths
+//   node scripts/i18n-check.ts             errors: missing keys, placeholder mismatches
+//   node scripts/i18n-check.ts --strict    also fails on likely untranslated UI text
+//   node scripts/i18n-check.ts src/pages   limit the untranslated-text report to some paths
+//   node scripts/i18n-check.ts --locale ja check one language (and the reference)
 //
 // A line containing `i18n-ignore` is skipped by the untranslated-text heuristic.
 import fs from 'node:fs'
 import path from 'node:path'
-import zh from '../src/locales/zh/index.ts'
-import serverMessages from '../src/locales/zh/server.ts'
+import { LOCALES, type Locale } from '../src/lib/locales.ts'
 
 const root = path.resolve(import.meta.dirname, '..')
 const args = process.argv.slice(2)
 const strict = args.includes('--strict')
-const only = args.filter(a => !a.startsWith('--')).map(a => path.resolve(root, a))
+const localeArg = args.indexOf('--locale')
+const pick = localeArg >= 0 ? args[localeArg + 1] : undefined
+const only = args.filter((a, i) => !a.startsWith('--') && i !== localeArg + 1).map(a => path.resolve(root, a))
+
+const REFERENCE: Locale = 'zh-CN'
+const localesDir = path.join(root, 'src/locales')
+const checked = LOCALES.map(l => l.id).filter(id => id !== 'en' && (!pick || id === pick || id === REFERENCE))
+if (pick && !checked.includes(pick as Locale)) throw new Error(`Unknown locale ${pick}`)
+
+type Messages = Record<string, string>
+/** Each language's messages per area file, and merged. */
+const areas = new Map<Locale, Map<string, Messages>>()
+const dictionaries = new Map<Locale, Messages>()
+for (const id of checked) {
+  const dir = path.join(localesDir, id)
+  const files = new Map<string, Messages>()
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir).filter(f => f !== 'index.ts')) files.set(f, (await import(path.join(dir, f))).default as Messages)
+    dictionaries.set(id, (await import(path.join(dir, 'index.ts'))).default as Messages)
+  } else dictionaries.set(id, {})
+  areas.set(id, files)
+}
+const zh = dictionaries.get(REFERENCE)!
+const serverMessages = areas.get(REFERENCE)!.get('server.ts') ?? {}
 
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
@@ -26,7 +51,7 @@ function walk(dir: string): string[] {
 const STR = String.raw`'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|\x60((?:[^\x60\\$]|\\.)*)\x60`
 const unescape = (s: string) => s.replace(/\\(.)/g, (_, c: string) => (c === 'n' ? '\n' : c))
 const lit = (m: RegExpExecArray, at: number) => unescape(m[at] ?? m[at + 1] ?? m[at + 2] ?? '')
-const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(',')
+const placeholders = (s: string) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort().join(',')
 
 const errors: string[] = []
 const warnings: string[] = []
@@ -34,12 +59,14 @@ const used = new Set<string>()
 
 function need(key: string, where: string, optional = false) {
   used.add(key)
-  const value = zh[key]
-  if (value === undefined) {
-    if (!optional) errors.push(`${where}: missing zh for ${JSON.stringify(key)}`)
-    return
+  for (const [id, dict] of dictionaries) {
+    const value = dict[key]
+    if (value === undefined) {
+      if (!optional) errors.push(`${where}: missing ${id} for ${JSON.stringify(key)}`)
+      continue
+    }
+    if (placeholders(value) !== placeholders(key)) errors.push(`${where}: ${id} placeholders differ for ${JSON.stringify(key)} → ${JSON.stringify(value)}`)
   }
-  if (placeholders(value) !== placeholders(key)) errors.push(`${where}: placeholders differ for ${JSON.stringify(key)} → ${JSON.stringify(value)}`)
 }
 
 const callRe = new RegExp(String.raw`\b(t|tk|tr)\(\s*(?:${STR})`, 'g')
@@ -85,21 +112,42 @@ for (const file of walk(path.join(root, 'src'))) {
 
 // Server messages are looked up by exact match at run time (translateServerMessage).
 // The same English text must read the same everywhere: flag keys defined differently in two area files.
-const dir = path.join(root, 'src/locales/zh')
-const seen = new Map<string, { file: string; value: string }>()
-for (const f of fs.readdirSync(dir).filter(f => f !== 'index.ts')) {
-  const area = (await import(path.join(dir, f))).default as Record<string, string>
-  for (const [k, v] of Object.entries(area)) {
-    const prev = seen.get(k)
-    if (prev && prev.value !== v) errors.push(`locales/zh/${f}: ${JSON.stringify(k)} is ${JSON.stringify(v)} here but ${JSON.stringify(prev.value)} in ${prev.file}`)
-    else if (!prev) seen.set(k, { file: f, value: v })
+for (const [id, files] of areas) {
+  const seen = new Map<string, { file: string; value: string }>()
+  for (const [f, area] of files) {
+    for (const [k, v] of Object.entries(area)) {
+      const prev = seen.get(k)
+      if (prev && prev.value !== v) errors.push(`locales/${id}/${f}: ${JSON.stringify(k)} is ${JSON.stringify(v)} here but ${JSON.stringify(prev.value)} in ${prev.file}`)
+      else if (!prev) seen.set(k, { file: f, value: v })
+      if (!v.trim()) errors.push(`locales/${id}/${f}: empty translation for ${JSON.stringify(k)}`)
+      if (placeholders(v) !== placeholders(k)) errors.push(`locales/${id}/${f}: placeholders differ for ${JSON.stringify(k)} → ${JSON.stringify(v)}`)
+    }
   }
+}
+
+// Every language has the reference's files and keys, no more and no fewer (server messages
+// and plural forms aren't found by scanning the source, so this is what keeps them complete).
+const reference = areas.get(REFERENCE)!
+for (const [id, files] of areas) {
+  if (id === REFERENCE) continue
+  for (const [f, area] of reference) {
+    const mine = files.get(f)
+    if (!mine) {
+      errors.push(`locales/${id}/${f} is missing`)
+      continue
+    }
+    for (const k of Object.keys(area)) if (!(k in mine)) errors.push(`locales/${id}/${f}: missing ${JSON.stringify(k)}`)
+    for (const k of Object.keys(mine)) if (!(k in area)) errors.push(`locales/${id}/${f}: ${JSON.stringify(k)} is not in locales/${REFERENCE}/${f}`)
+  }
+  for (const f of files.keys()) if (!reference.has(f)) errors.push(`locales/${id}/${f} is not in locales/${REFERENCE}`)
 }
 
 const unused = Object.keys(zh).filter(k => !used.has(k) && !(k in serverMessages))
 
 for (const w of warnings) console.log(`untranslated? ${w}`)
-if (unused.length) console.log(`\n${unused.length} zh entries unused:\n  ${unused.map(k => JSON.stringify(k)).join('\n  ')}`)
+if (unused.length) console.log(`\n${unused.length} ${REFERENCE} entries unused:\n  ${unused.map(k => JSON.stringify(k)).join('\n  ')}`)
 for (const e of errors) console.error(`error: ${e}`)
-console.log(`\n${used.size} keys used, ${Object.keys(zh).length} zh entries, ${errors.length} errors, ${warnings.length} possibly untranslated lines`)
+console.log(
+  `\n${used.size} keys used, ${Object.keys(zh).length} entries in ${dictionaries.size} languages (${[...dictionaries.keys()].join(', ')}), ${errors.length} errors, ${warnings.length} possibly untranslated lines`,
+)
 if (errors.length || (strict && warnings.length)) process.exit(1)

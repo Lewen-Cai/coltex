@@ -1,0 +1,11 @@
+# Paramètres
+
+Cliquez sur votre avatar en bas à gauche et choisissez **Paramètres**.
+
+- **Compte** : votre nom affiché (visible par les collaborateurs, dans les commentaires et dans l’historique) et votre mot de passe. Changer le mot de passe peut déconnecter vos autres appareils. Un mot de passe doit comporter au moins 8 caractères, dont une majuscule, une minuscule et un chiffre ; les symboles sont facultatifs. L’évaluation affichée pendant la saisie (faible, moyen, bon, fort) augmente avec la longueur et les symboles. L’inscription et les réinitialisations par un administrateur suivent les mêmes règles. Seul un administrateur peut changer votre e-mail de connexion.
+- **Apparence** : le thème (Clair et Sombre en bleu, Forêt et Mousse en vert, Sépia et Espresso dans des tons chauds ; Clair par défaut), et la langue de l’interface (14 langues, dont English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français et Deutsch ; elle démarre dans la langue de votre navigateur). Les thèmes sombres s’appliquent aussi à l’éditeur ; les pages du PDF restent blanches. Conservé dans ce navigateur.
+- **Services de synchronisation** : connectez votre compte Zotero (voir [Références](#/help/references)), et créez et révoquez des jetons git (voir [Fichiers](#/help/files)) : chacun pour Git, MCP ou les deux, en lecture et écriture ou en lecture seule, pour tous vos projets ou certains, avec une date d’expiration. Utilisez un jeton par ordinateur, pour pouvoir le révoquer séparément.
+- **Agent IA** : votre utilisation de l’IA sur les 7, 30 ou 90 derniers jours (requêtes, jetons, coût, par jour et par modèle) et ce qui reste de votre limite (si vous avez accès à l’agent IA), ce que les agents IA peuvent modifier pour vous (**Autorisations**), et la connexion de vos propres agents IA via **MCP**, avec leurs jetons ; voir [Agent IA](#/help/ai).
+- **Skills IA** (si vous avez accès à l’agent IA) : vos propres skills, les skills intégrés, et une conversation avec l’agent IA pour écrire des skills ; voir [Agent IA](#/help/ai).
+
+Les paramètres de l’éditeur (taille de police, couleurs, Vim…) se trouvent sous **Paramètres** en bas de la barre latérale gauche de l’éditeur ; voir [Éditeur](#/help/editor).

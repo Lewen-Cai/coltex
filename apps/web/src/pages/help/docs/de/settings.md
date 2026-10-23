@@ -1,0 +1,11 @@
+# Einstellungen
+
+Klicken Sie unten links auf Ihren Avatar und wählen Sie **Einstellungen**.
+
+- **Konto**: Ihr Anzeigename (sichtbar für Mitwirkende, in Kommentaren und im Verlauf) und Ihr Passwort. Beim Ändern des Passworts können Sie Ihre anderen Geräte abmelden. Passwörter brauchen mindestens 8 Zeichen mit einem Großbuchstaben, einem Kleinbuchstaben und einer Ziffer; Sonderzeichen sind optional. Die beim Tippen angezeigte Bewertung (schwach, mittel, gut, stark) steigt mit Länge und Sonderzeichen. Für die Registrierung und das Zurücksetzen durch Admins gelten dieselben Regeln. Ihre Anmelde-E-Mail kann nur ein Administrator ändern.
+- **Darstellung**: das Design (Hell und Dunkel in Blau, Wald und Moos in Grün, Sepia und Espresso in warmen Tönen; standardmäßig Hell) und die Sprache der Oberfläche (14 Sprachen, darunter English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français und Deutsch; anfangs die Sprache Ihres Browsers). Dunkle Designs gelten auch für den Editor; PDF-Seiten bleiben weiß. Wird in diesem Browser gespeichert.
+- **Synchronisierung**: Ihr Zotero-Konto verbinden (siehe [Literatur](#/help/references)) sowie Git-Tokens erstellen und widerrufen (siehe [Dateien](#/help/files)): jedes für Git, MCP oder beides, mit Lese- und Schreibzugriff oder schreibgeschützt, für alle Ihre Projekte oder einige, mit Ablaufdatum. Verwenden Sie ein Token pro Computer, damit Sie es einzeln widerrufen können.
+- **KI-Agent**: Ihre KI-Nutzung der letzten 7, 30 oder 90 Tage (Anfragen, Tokens, Kosten, pro Tag und pro Modell) und was von Ihrem Limit übrig ist (wenn Sie den KI-Agenten nutzen können), was KI-Agenten für Sie ändern dürfen (**Berechtigungen**) und die Anbindung Ihrer eigenen KI-Agenten über **MCP** mit ihren Tokens; siehe [KI-Agent](#/help/ai).
+- **KI-Skills** (wenn Sie den KI-Agenten nutzen können): Ihre eigenen Skills, die integrierten und ein Chat mit dem KI-Agenten zum Schreiben von Skills; siehe [KI-Agent](#/help/ai).
+
+Die Editor-Einstellungen (Schriftgröße, Farben, Vim…) finden Sie unter **Einstellungen** unten in der linken Leiste des Editors; siehe [Editor](#/help/editor).

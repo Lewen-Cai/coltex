@@ -16,7 +16,7 @@ import { SetupPage } from './components/auth/SetupPage.tsx'
 import { UNAUTHORIZED_EVENT, api } from './lib/api.ts'
 import { authClient, type SessionUser } from './lib/auth.ts'
 import { useAiAvailable } from './lib/ai.ts'
-import { hasSavedLocale, setLocale, useLocale } from './lib/i18n.ts'
+import { hasSavedLocale, resolveLocale, setLocale, useLocale } from './lib/i18n.ts'
 import { useNotificationStream } from './lib/notifications.ts'
 import { navigate, useHashRoute } from './lib/router.ts'
 
@@ -99,7 +99,7 @@ function Routes() {
     api.setupStatus().then(
       s => {
         // Setting up a new instance: the language it was installed in, unless this browser chose one.
-        if (s.needsSetup && s.language && !hasSavedLocale()) setLocale(s.language)
+        if (s.needsSetup && s.language && !hasSavedLocale()) void setLocale(resolveLocale(s.language))
         setNeedsSetup(s.needsSetup)
       },
       () => setNeedsSetup(false),

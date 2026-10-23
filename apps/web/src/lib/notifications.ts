@@ -2,7 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 import type { Notification, NotificationEvent, ProjectRole } from '@coltex/shared'
 import { api } from './api.ts'
-import { t, tk } from './i18n.ts'
+import { inSentence, t, tk } from './i18n.ts'
 import { mentionsToText } from './mentions.ts'
 import { navigate } from './router.ts'
 
@@ -74,7 +74,7 @@ export function notificationTitle(n: Notification): string {
     case 'reply':
       return t('{name} replied to a comment on {file}', { name, file })
     case 'added':
-      return t('{name} added you to this project ({role})', { name, role: t(ROLE[n.role ?? 'viewer']).toLowerCase() })
+      return t('{name} added you to this project ({role})', { name, role: inSentence(t(ROLE[n.role ?? 'viewer'])) })
     case 'owner':
       return t('{name} made you the owner of this project', { name })
   }

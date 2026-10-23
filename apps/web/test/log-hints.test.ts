@@ -5,21 +5,26 @@ import { packageSuggestionsForCommands, packageSuggestionsForEnvironments } from
 
 // i18n.ts sets the page language when it loads.
 Object.assign(globalThis, { document: { documentElement: {} } })
-const { setLocale, translateServerMessage } = await import('../src/lib/i18n.ts')
+const { LOCALES, addMessages, setLocale, translateServerMessage } = await import('../src/lib/i18n.ts')
 
-test('every compile log hint has a Chinese translation', () => {
-  setLocale('zh')
-  const texts = new Set<string>()
-  for (const hint of Object.values(hints)) {
-    texts.add(hint.text())
-    for (const command of packageSuggestionsForCommands.keys()) texts.add(hint.text([command]))
-    for (const environment of packageSuggestionsForEnvironments.keys()) texts.add(hint.text([environment]))
-  }
-  for (const text of texts) {
-    const zh = translateServerMessage(text)
-    assert.notEqual(zh, text, `no translation for: ${text}`)
-    assert.match(zh, /[一-鿿]/)
-  }
+const texts = new Set<string>()
+for (const hint of Object.values(hints)) {
+  texts.add(hint.text())
+  for (const command of packageSuggestionsForCommands.keys()) texts.add(hint.text([command]))
+  for (const environment of packageSuggestionsForEnvironments.keys()) texts.add(hint.text([environment]))
+}
+
+for (const { id } of LOCALES.filter(l => l.id !== 'en')) {
+  test(`every compile log hint has a translation (${id})`, async () => {
+    addMessages(id, (await import(`../src/locales/${id}/index.ts`)).default)
+    await setLocale(id)
+    for (const text of texts) assert.notEqual(translateServerMessage(text), text, `no ${id} translation for: ${text}`)
+  })
+}
+
+test('compile log hints in Chinese', async () => {
+  await setLocale('zh-CN')
+  for (const text of texts) assert.match(translateServerMessage(text), /[一-鿿]/)
   assert.equal(
     translateServerMessage(hints.hint_undefined_control_sequence!.text(['\\includegraphics'])),
     '可能缺少宏包：需要在导言区加入 \\usepackage{graphicx}，\\includegraphics 命令才能使用。',

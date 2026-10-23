@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 import type { BuildSummary, ConvertAffiliation, ConvertAnalysis, ConvertAuthor, ConvertMetadata, ConvertOptions, ConvertReport, ConvertTarget } from '@coltex/shared'
 import { useAiStatus } from '../lib/ai.ts'
 import { api } from '../lib/api.ts'
-import { getLocale, plural, t, tk, translateServerMessage } from '../lib/i18n.ts'
+import { inSentence, intlLocale, plural, t, tk, translateServerMessage } from '../lib/i18n.ts'
 import { navigate } from '../lib/router.ts'
 import { cn } from '../lib/utils.ts'
 import { Badge } from './ui/badge.tsx'
@@ -108,7 +108,7 @@ function ConvertDialog({ projectId, projectName, open, onOpenChange }: { project
     const out: string[] = []
     if (!meta.title.trim()) out.push(t('a title'))
     if (!meta.authors.length) out.push(t('at least one author'))
-    for (const f of target.fields) if (f.required && !getField(options, f.key)?.trim()) out.push(t(f.label).toLowerCase())
+    for (const f of target.fields) if (f.required && !getField(options, f.key)?.trim()) out.push(inSentence(t(f.label)))
     return out
   }, [meta, target, options])
 
@@ -165,7 +165,7 @@ function ConvertDialog({ projectId, projectName, open, onOpenChange }: { project
               </Button>
             )}
             {step === 'details' && missing.length > 0 && (
-              <span className="text-xs text-muted-foreground">{t('Still needed: {list}', { list: missing.join(getLocale() === 'zh' ? '、' : ', ') })}</span>
+              <span className="text-xs text-muted-foreground">{t('Still needed: {list}', { list: new Intl.ListFormat(intlLocale()).format(missing) })}</span>
             )}
             <div className="ml-auto flex gap-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>

@@ -100,7 +100,7 @@ function LanguageMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {LOCALES.map(x => (
-          <DropdownMenuItem key={x.id} onSelect={() => setLocale(x.id)}>
+          <DropdownMenuItem key={x.id} onSelect={() => void setLocale(x.id)}>
             {x.label}
             {locale === x.id && <Check className="ml-auto" />}
           </DropdownMenuItem>

@@ -4,7 +4,7 @@ import { Crown, Ellipsis, Plus, Search, UserMinus, UserPlus } from 'lucide-react
 import { toast } from 'sonner'
 import type { ProjectMember, ProjectRole, ShareRole, UserMatch } from '@coltex/shared'
 import { api } from '../lib/api.ts'
-import { t, tk } from '../lib/i18n.ts'
+import { inSentence, t, tk } from '../lib/i18n.ts'
 import { cn } from '../lib/utils.ts'
 import { confirmDialog } from './confirm.tsx'
 import { Badge } from './ui/badge.tsx'
@@ -241,7 +241,7 @@ export function ShareDialog({
                 <RoleSelect
                   size="sm"
                   value={m.role as ShareRole}
-                  onChange={r => void run(() => api.setMemberRole(projectId, m.userId, r), t('{name}: {role}', { name: m.name, role: t(ROLE_TEXT[r]).toLowerCase() }))}
+                  onChange={r => void run(() => api.setMemberRole(projectId, m.userId, r), t('{name}: {role}', { name: m.name, role: inSentence(t(ROLE_TEXT[r])) }))}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

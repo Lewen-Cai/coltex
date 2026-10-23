@@ -1,11 +1,13 @@
 import { Fragment, createElement, useSyncExternalStore, type ReactNode } from 'react'
-import zh from '../locales/zh/index.ts'
+import { resolveLocale, type Locale } from './locales.ts'
 
 /**
  * Interface language. Messages are keyed by their English text (gettext
  * style): English needs no dictionary, and a missing translation falls back
- * to readable English. `scripts/i18n-check.ts` checks that every literal key
- * has a Chinese entry with the same placeholders.
+ * to readable English. Each other language is a folder in `src/locales/`
+ * (one file per area, the same files and keys in every language), loaded
+ * when it is first used. `scripts/i18n-check.ts` checks that every literal
+ * key has an entry in every language with the same placeholders.
  *
  * Rules:
  * - Pass string literals: `t('New project')`, `t('Deleted {name}', { name })`.
@@ -14,41 +16,34 @@ import zh from '../locales/zh/index.ts'
  * - Counts: `plural(n, '{n} file', '{n} files')`.
  * - Rich text: `tr('Signed in as {name}', { name: <b>…</b> })`.
  */
-export type Locale = 'en' | 'zh'
 
-export const LOCALES: { id: Locale; label: string }[] = [
-  { id: 'en', label: 'English' },
-  { id: 'zh', label: '简体中文' },
-]
+export { LOCALE_LABELS, LOCALES, isLocale, resolveLocale, type Locale } from './locales.ts'
 
 const STORAGE_KEY = 'coltex:locale'
-const DICTIONARIES: Record<Locale, Record<string, string> | null> = { en: null, zh }
+type Messages = Record<string, string>
+const DICTIONARIES: Partial<Record<Locale, Messages>> = {}
+let loadMessages: (locale: Locale) => Promise<Messages> = () => Promise.resolve({})
 
-function detect(): Locale {
+function saved(): string | null {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved === 'en' || saved === 'zh') return saved
+    return localStorage.getItem(STORAGE_KEY)
   } catch {
     // Storage can be blocked; fall back to the browser language.
+    return null
   }
-  return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
 }
 
-let current: Locale = detect()
+let current: Locale = resolveLocale(saved() ?? navigator.language)
 const listeners = new Set<() => void>()
 
 function applyToDocument() {
-  document.documentElement.lang = current === 'zh' ? 'zh-CN' : 'en'
+  document.documentElement.lang = current
 }
 applyToDocument()
 
 /** Whether this browser has a language of its own choosing (else it follows the browser's). */
 export function hasSavedLocale(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEY) !== null
-  } catch {
-    return false
-  }
+  return saved() !== null
 }
 
 export function getLocale(): Locale {
@@ -57,11 +52,29 @@ export function getLocale(): Locale {
 
 /** BCP 47 tag for `Intl` formatters. */
 export function intlLocale(): string {
-  return current === 'zh' ? 'zh-CN' : 'en-US'
+  return current === 'en' ? 'en-US' : current
 }
 
-export function setLocale(locale: Locale): void {
+/** Add a language's messages (the loader does; tests call it directly). */
+export function addMessages(locale: Locale, messages: Messages): void {
+  DICTIONARIES[locale] = messages
+  patterns.delete(locale)
+}
+
+/** How dictionaries are loaded (`main.tsx` passes the bundler's lazy imports), then load the current one. */
+export async function initLocales(loader: (locale: Locale) => Promise<Messages>): Promise<void> {
+  loadMessages = loader
+  await ensureMessages(current).catch(() => {})
+}
+
+async function ensureMessages(locale: Locale): Promise<void> {
+  if (locale !== 'en' && !DICTIONARIES[locale]) addMessages(locale, await loadMessages(locale))
+}
+
+/** Switch the interface language (once its dictionary is loaded) and remember it in this browser. */
+export async function setLocale(locale: Locale): Promise<void> {
   if (locale === current) return
+  await ensureMessages(locale)
   current = locale
   try {
     localStorage.setItem(STORAGE_KEY, locale)
@@ -98,6 +111,14 @@ export function t(key: string, vars?: Vars): string {
   return fill(lookup(key), vars)
 }
 
+/**
+ * A translated label used inside a sentence ("Left this week", "Bob: editor"):
+ * lower case, except in German, whose nouns keep their capital.
+ */
+export function inSentence(text: string): string {
+  return current === 'de' ? text : text.toLocaleLowerCase(intlLocale())
+}
+
 /** Mark a constant for translation without translating it yet. */
 export function tk<T extends string>(key: T): T {
   return key
@@ -106,7 +127,7 @@ export function tk<T extends string>(key: T): T {
 /** Pick the English singular or plural form; `{n}` is the count. */
 export function plural(n: number, one: string, other: string, vars?: Vars): string {
   const key = n === 1 ? one : other
-  // Chinese has no plural forms: both keys may be translated, the plural one is the fallback.
+  // Languages without plural forms translate both keys alike; the plural one is the fallback.
   const text = current === 'en' ? key : (DICTIONARIES[current]?.[key] ?? DICTIONARIES[current]?.[other] ?? key)
   return fill(text, { n, ...vars })
 }

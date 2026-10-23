@@ -21,7 +21,7 @@ import { PERMISSIONS, useAiPermission } from '@/lib/ai-permission'
 import { api } from '@/lib/api'
 import { copyText } from '@/lib/clipboard'
 import { formatNumber } from '@/lib/format'
-import { intlLocale, plural, t } from '@/lib/i18n'
+import { inSentence, intlLocale, plural, t } from '@/lib/i18n'
 import { useLinkChoices } from '@/lib/public-url'
 import { cn } from '@/lib/utils'
 
@@ -42,7 +42,7 @@ export function AiSettingsPage() {
   const [days, setDays] = useState<Period>(30)
   return (
     <>
-      <PageHeader title={t('AI agent')} actions={available && <PeriodTabs value={days} onChange={setDays} />} />
+      <PageHeader actions={available && <PeriodTabs value={days} onChange={setDays} />} />
       <div className="grid gap-6">
         {available && <Usage days={days} />}
         <PermissionCard />
@@ -127,7 +127,7 @@ function AllowanceCard({ allowance: a }: { allowance: AiAllowance | null | undef
     <Card className="h-full gap-0 py-0">
       <CardContent className="grid gap-1 p-4 sm:p-5">
         <span className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-          {a ? t('Left {period}', { period: t(CURRENT_PERIOD[a.period]).toLowerCase() }) : t('Usage limit')}
+          {a ? t('Left {period}', { period: inSentence(t(CURRENT_PERIOD[a.period])) }) : t('Usage limit')}
           <Gauge className="size-4 opacity-60" />
         </span>
         {!a ? (
