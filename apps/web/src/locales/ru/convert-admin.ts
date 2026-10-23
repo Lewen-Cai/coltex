@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': 'Подключение к Cloudflare…',
   'The tunnel did not connect.': 'Туннель не подключился.',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': 'Публичного имени хоста пока нет: добавьте его туннелю в панели Cloudflare, указав http://localhost:3690.',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} остаются на текущем туннеле: перенесите их на новый в панели Cloudflare, иначе они будут отвечать ошибкой Error 1033.',
   'Changes every time the tunnel starts.': 'Меняется при каждом запуске туннеля.',
   'Cloudflare (temporary)': 'Cloudflare (временная)',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'Ссылку localhost может открыть только этот компьютер. Откройте ColTex по адресу, доступному другим (IP в локальной сети, публичный IP или домен), или включите Tailscale либо Cloudflare Tunnel в разделе «Настройки → Сеть».',

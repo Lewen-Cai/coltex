@@ -38,6 +38,8 @@ Then manage it with `coltex`:
 | `coltex tailscale up` | Join your tailnet (prints a sign-in link and QR code) |
 | `coltex cloudflare quick` | A temporary public Cloudflare address |
 | `coltex cloudflare token` | A Cloudflare tunnel with your own domain (asks for the token) |
+| `coltex reset` | Delete everything (accounts, projects, the database) and start again from the setup page; asks you to type `reset` first |
+| `coltex uninstall` | Remove ColTex from this machine: containers, database, data, images, the `coltex` command and its folder (Docker stays); asks you to type `uninstall` first |
 
 ## Signing in from any address
 
@@ -81,6 +83,8 @@ ColTex also has Cloudflare Tunnel built in, as a tunnel only: people still sign 
 - **My own domain**: with your domain on Cloudflare, create a tunnel under Zero Trust → Networks → Tunnels, copy the command under “Run the following command” (for any system: Windows, macOS, Debian, Red Hat or Docker); ColTex takes the token out of it; add a public hostname to the tunnel (e.g. `tex.example.org`) with the service `http://localhost:3690`.
 
 Turn it on with the switch of the Cloudflare Tunnel card in **Settings → Network**, then pick a temporary link or a tunnel (the saved one, or a new one from the pasted command), or in a terminal with `coltex cloudflare quick` / `coltex cloudflare token`. Once connected, its addresses appear in invitation links by themselves. The token is stored encrypted and never shown again.
+
+If the tunnel can't reach Cloudflare over QUIC (a firewall, or a proxy that drops UDP), ColTex switches it to HTTP/2 by itself. When trycloudflare.com limits temporary links (429 Too Many Requests), ColTex asks again less and less often. When you change the tunnel, move its public hostnames to the new tunnel in the Cloudflare dashboard; until then they answer with Error 1033.
 
 ## Server settings
 

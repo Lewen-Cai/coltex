@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': 'Cloudflare에 연결하는 중…',
   'The tunnel did not connect.': '터널이 연결되지 않았습니다.',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': '아직 공개 호스트 이름이 없습니다. Cloudflare 대시보드에서 이 터널에 http://localhost:3690을 가리키는 호스트 이름을 추가하세요.',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts}은(는) 현재 터널에 남아 있습니다. Cloudflare 대시보드에서 새 터널로 옮기세요. 옮기지 않으면 Error 1033이 표시됩니다.',
   'Changes every time the tunnel starts.': '터널을 시작할 때마다 바뀝니다.',
   'Cloudflare (temporary)': 'Cloudflare(임시)',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'localhost 링크는 이 컴퓨터에서만 열 수 있습니다. 다른 사람이 접속할 수 있는 주소(LAN IP, 공인 IP 또는 도메인)로 ColTex를 열거나, 설정 → 네트워크에서 Tailscale 또는 Cloudflare Tunnel을 켜세요.',

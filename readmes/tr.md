@@ -109,6 +109,7 @@ Seçenekler soruları yanıtlar ya da terminal olmayan yerlerde onların yerini 
 | `--port 3690` | Başka bir bağlantı noktası |
 | `--version v0.0.1` | Belirli bir sürüm (geliştirme dalı için `main`) |
 | `--build` | İmajları indirmek yerine bu makinede kaynaklardan derler |
+| `--images REGISTRY` | İmajları `ghcr.io/lewen-cai` yerine `REGISTRY` adresinden indirir; ör. ghcr.io’nun yavaş olduğu yerlerde onun bir aynası (Docker’ın `registry-mirrors` ayarı ghcr.io için değil, yalnızca Docker Hub için geçerlidir) |
 
 İnternetten erişilebilen bir sunucuda düz `http://` üzerinden oturum açmayın: `--domain`, Tailscale veya bir Cloudflare tüneli kullanın.
 
@@ -122,6 +123,8 @@ coltex version
 coltex edition full    # switch the TeX Live edition
 coltex tailscale up    # or: coltex cloudflare quick | token
 coltex stop | start
+coltex reset           # delete all data and start again from the setup page (asks first)
+coltex uninstall       # remove ColTex from this machine: containers, data, images, this folder (asks first)
 ```
 
 <a id="configure"></a>

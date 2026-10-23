@@ -12,6 +12,7 @@ L’amministratore di sistema vede le pagine di Amministrazione in **Impostazion
 - **Inviti**: link monouso, per una email oppure (lasciando vuota l’email) per chiunque abbia il link, con una scadenza. I link di un invito in sospeso restano nell’elenco (**Link**), uno per ogni indirizzo a cui ColTex è raggiungibile (LAN, Tailscale, Cloudflare). L’amministratore di sistema invita membri o amministratori e sceglie il **Gruppo IA** del nuovo account. Gli amministratori invitano solo membri, nel proprio team; questi membri ricevono il gruppo IA dell’amministratore. Gli amministratori vedono e revocano solo i propri inviti.
 - **Gestisci utenti**: l’amministratore di sistema vede tutti gli account, rende le persone membri o amministratori, sposta i membri tra i team (**Team** nel menu della riga), reimposta le password e sospende o elimina gli account. Un amministratore vede se stesso e il proprio team, e reimposta le password, sospende o elimina solo i membri del proprio team. Eliminando un account si eliminano i progetti di sua proprietà.
 - Per passare il ruolo di amministratore di sistema a qualcun altro (o riaverlo quando quell’account è perso), esegui `coltex cli system-admin <email>` sul server; il precedente amministratore di sistema diventa amministratore.
+- Hai dimenticato una password, anche quella dell’amministratore di sistema? Esegui `coltex cli reset-password <email>` sul server: chiede due volte la nuova password e disconnette quell’account ovunque.
 
 ## Servizi IA
 

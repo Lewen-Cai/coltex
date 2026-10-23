@@ -44,6 +44,8 @@ export class TailscaleDaemon {
       await fs.rm(this.socket, { force: true })
     }
     await this.proc.start(['--tun=userspace-networking', `--statedir=${this.stateDir}`, `--socket=${this.socket}`])
+    // Failed and waiting to start again: its state shows why.
+    if (!this.proc.running()) return
     const until = Date.now() + START_TIMEOUT_MS
     while (Date.now() < until) {
       const ready = await fs.stat(this.socket).then(

@@ -30,16 +30,24 @@
  *   node src/cli.ts system-admin <email>
  *       Make that account the system administrator (the previous one becomes
  *       an admin). Runs next to the server, like tailscale.
+ *
+ *   node src/cli.ts reset-password <email>
+ *       Set a new password for that account (typed in twice, or from
+ *       COLTEX_NEW_PASSWORD) and sign it out everywhere. For a system
+ *       administrator who forgot theirs. Runs next to the server, like tailscale.
  */
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { eq, sql } from 'drizzle-orm'
+import crypto from 'node:crypto'
+import { hash } from '@node-rs/argon2'
+import { and, eq, sql } from 'drizzle-orm'
+import { passwordProblem } from '@coltex/shared'
 import { renderUnicodeCompact } from 'uqr'
 import { decryptArchive, isEncrypted, MANIFEST, readArchive, type BackupManifest } from './backup/archive.ts'
 import { runSqlFile } from './backup/postgres.ts'
 import { config } from './config.ts'
 import { createDb } from './db/client.ts'
-import { projects, user } from './db/schema.ts'
+import { account, projects, session, user } from './db/schema.ts'
 import { NotFoundError } from './errors.ts'
 import { SnapshotService } from './history/snapshots.ts'
 import { createStore } from './storage/index.ts'
@@ -343,6 +351,96 @@ async function systemAdmin(email: string | undefined): Promise<void> {
   }
 }
 
+/** What was piped in beyond the line read so far. */
+let piped = ''
+
+/** A line typed in without showing it (a password); a plain line when stdin isn't a terminal. */
+function askHidden(prompt: string): Promise<string> {
+  process.stdout.write(prompt)
+  const stdin = process.stdin
+  if (!stdin.isTTY) {
+    return new Promise(resolve => {
+      const take = () => {
+        const end = piped.indexOf('\n')
+        if (end < 0) return false
+        resolve(piped.slice(0, end).replace(/\r$/, ''))
+        piped = piped.slice(end + 1)
+        return true
+      }
+      if (take()) return
+      const onData = (d: Buffer) => {
+        piped += d.toString()
+        if (!take()) return
+        stdin.off('data', onData)
+        stdin.pause()
+      }
+      stdin.on('data', onData)
+      stdin.once('end', () => resolve(piped))
+    })
+  }
+  return new Promise((resolve, reject) => {
+    let text = ''
+    stdin.setRawMode(true)
+    stdin.resume()
+    const onData = (d: Buffer) => {
+      for (const ch of d.toString('utf8')) {
+        if (ch === '\r' || ch === '\n') {
+          stdin.off('data', onData)
+          stdin.setRawMode(false)
+          stdin.pause()
+          process.stdout.write('\n')
+          return resolve(text)
+        }
+        if (ch === '\u0003') {
+          stdin.setRawMode(false)
+          process.stdout.write('\n')
+          return reject(new Error('Cancelled'))
+        }
+        if (ch === '\u007f' || ch === '\b') text = [...text].slice(0, -1).join('')
+        else if (ch >= ' ') text += ch
+      }
+    }
+    stdin.on('data', onData)
+  })
+}
+
+/**
+ * A new password for an account, checked by the same rules as everywhere
+ * else, and every session of it ended (whoever knew the old one is out).
+ * Works with the server running.
+ */
+async function resetPassword(email: string | undefined): Promise<void> {
+  if (!email) throw new Error('Usage: node src/cli.ts reset-password <email>')
+  const db = createDb(config.databaseUrl)
+  try {
+    const [target] = await db.select({ id: user.id, name: user.name }).from(user).where(eq(user.email, email.trim().toLowerCase()))
+    if (!target) throw new NotFoundError(`No account with the email ${email}`)
+    let password = process.env.COLTEX_NEW_PASSWORD
+    if (!password) {
+      password = await askHidden(`New password for ${target.name}: `)
+      const problem = passwordProblem(password)
+      if (problem) throw new Error(problem)
+      if ((await askHidden('Again: ')) !== password) throw new Error('The two passwords differ')
+    }
+    const problem = passwordProblem(password)
+    if (problem) throw new Error(problem)
+    const hashed = await hash(password)
+    await db.transaction(async tx => {
+      const updated = await tx
+        .update(account)
+        .set({ password: hashed, updatedAt: new Date() })
+        .where(and(eq(account.userId, target.id), eq(account.providerId, 'credential')))
+        .returning({ id: account.id })
+      // Not expected (every account here signs in with a password), but then it can from now on.
+      if (!updated.length) await tx.insert(account).values({ id: crypto.randomUUID(), accountId: target.id, providerId: 'credential', userId: target.id, password: hashed })
+      await tx.delete(session).where(eq(session.userId, target.id))
+    })
+    console.log(`New password set for ${target.name}; signed out everywhere.`)
+  } finally {
+    await db.$client.end()
+  }
+}
+
 const [command, ...args] = process.argv.slice(2)
 try {
   if (command === 'restore') await restore(args[0])
@@ -350,8 +448,9 @@ try {
   else if (command === 'tailscale') await tailscale(args[0])
   else if (command === 'cloudflare') await cloudflare(args[0], args[1])
   else if (command === 'system-admin') await systemAdmin(args[0])
+  else if (command === 'reset-password') await resetPassword(args[0])
   else {
-    console.error('Commands: restore <backup file>, copy-storage, tailscale [status | up | down | off], cloudflare [status | quick | token [TOKEN] | off], system-admin <email>')
+    console.error('Commands: restore <backup file>, copy-storage, tailscale [status | up | down | off], cloudflare [status | quick | token [TOKEN] | off], system-admin <email>, reset-password <email>')
     process.exitCode = 2
   }
 } catch (err) {

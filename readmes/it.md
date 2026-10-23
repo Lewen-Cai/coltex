@@ -109,6 +109,7 @@ Le opzioni rispondono alle domande, o le sostituiscono dove non c’è un termin
 | `--port 3690` | Un’altra porta |
 | `--version v0.0.1` | Una release specifica (`main` per il branch di sviluppo) |
 | `--build` | Compila le immagini dai sorgenti su questa macchina invece di scaricarle |
+| `--images REGISTRY` | Scarica le immagini da `REGISTRY` invece che da `ghcr.io/lewen-cai`, ad es. un mirror di ghcr.io dove è lento (`registry-mirrors` di Docker vale solo per Docker Hub, non per ghcr.io) |
 
 Su un server raggiungibile da internet, non accedere tramite `http://` in chiaro: usa `--domain`, Tailscale o un tunnel Cloudflare.
 
@@ -122,6 +123,8 @@ coltex version
 coltex edition full    # switch the TeX Live edition
 coltex tailscale up    # or: coltex cloudflare quick | token
 coltex stop | start
+coltex reset           # delete all data and start again from the setup page (asks first)
+coltex uninstall       # remove ColTex from this machine: containers, data, images, this folder (asks first)
 ```
 
 <a id="configure"></a>

@@ -38,6 +38,8 @@ Después se gestiona con `coltex`:
 | `coltex tailscale up` | Se une a tu tailnet (muestra un enlace de inicio de sesión y un código QR) |
 | `coltex cloudflare quick` | Una dirección pública temporal de Cloudflare |
 | `coltex cloudflare token` | Un túnel de Cloudflare con tu propio dominio (pide el token) |
+| `coltex reset` | Borra todo (cuentas, proyectos, la base de datos) y vuelve a empezar desde la página de configuración inicial; antes te pide que escribas `reset` |
+| `coltex uninstall` | Quita ColTex de esta máquina: contenedores, base de datos, datos, imágenes, el comando `coltex` y su carpeta (Docker se queda); antes te pide que escribas `uninstall` |
 
 ## Iniciar sesión desde cualquier dirección
 
@@ -81,6 +83,8 @@ ColTex también lleva Cloudflare Tunnel integrado, solo como túnel: las persona
 - **Mi propio dominio**: con tu dominio en Cloudflare, crea un túnel en Zero Trust → Networks → Tunnels y copia el comando que aparece bajo “Run the following command” (de cualquier sistema: Windows, macOS, Debian, Red Hat o Docker); ColTex extrae el token de él; añade al túnel un nombre de host público (p. ej., `tex.example.org`) con el servicio `http://localhost:3690`.
 
 Actívalo con el interruptor de la tarjeta de Cloudflare Tunnel en **Configuración → Red** y elige después un enlace temporal o un túnel (el guardado, o uno nuevo a partir del comando pegado), o en una terminal con `coltex cloudflare quick` / `coltex cloudflare token`. Una vez conectado, sus direcciones aparecen solas en los enlaces de invitación. El token se guarda cifrado y no se vuelve a mostrar.
+
+Si el túnel no puede llegar a Cloudflare por QUIC (un cortafuegos, o un proxy que descarta UDP), ColTex lo cambia a HTTP/2 por sí solo. Cuando trycloudflare.com limita los enlaces temporales (429 Too Many Requests), ColTex vuelve a pedirlos cada vez con menos frecuencia. Si cambias el túnel, mueve sus nombres de host públicos al nuevo túnel en el panel de Cloudflare; hasta entonces responden con Error 1033.
 
 ## Configuración del servidor
 

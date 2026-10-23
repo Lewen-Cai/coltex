@@ -2,6 +2,29 @@
 
 All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTex is at 0.0.x, any release may change things.
 
+## v0.0.3 (unreleased)
+
+Fixes for the Cloudflare Tunnel, ports, the data folder and downloads, and three new maintenance commands.
+
+### Fixed
+
+- Cloudflare Tunnel: changing the tunnel (or the kind of link) while cloudflared waited to restart could leave two of them running, fighting over the metrics port (`address already in use`). There is now only ever one.
+- Installs no longer publish PostgreSQL (5432) and Valkey (6379) on the host, so they don't clash with a database already running there.
+- A data folder owned by root (Docker recreates it that way after it was deleted) made the server restart over and over (`EACCES … /data/.secret`). `coltex start`, `restart` and `update` now fix the owner first, and the server says which `chown` to run instead of printing a stack trace.
+- `docker compose` commands run by hand no longer warn that `COLTEX_BIND` is not set.
+
+### Improved
+
+- Cloudflare Tunnel: when QUIC can't get through (a firewall, or a proxy that drops UDP), it switches to HTTP/2 by itself. A rate-limited temporary link (429) is asked for again less and less often instead of every 5 seconds. Common errors are explained in plain words, each line once, and changing the tunnel warns that its hostnames stay on the old one (Error 1033).
+- Downloads cut off by the network are tried again (three times in all, keeping the finished layers), in the installer and in `coltex update`. When it still fails, it says how to use a mirror of ghcr.io and which Docker settings help on a poor connection.
+- When `~/.local/bin` isn't in `PATH`, the installer links `coltex` into `/usr/local/bin` if it can, or shows the line that adds it. When this user may not use Docker, it shows the `usermod` command.
+
+### New
+
+- `coltex cli reset-password <email>`: a new password for an account, from the server's terminal, signing it out everywhere.
+- `coltex reset`: deletes all data and starts again from the setup page (asks you to type `reset` first).
+- `coltex uninstall`: removes ColTex from the machine in one go: containers, database, data, images, the `coltex` command and its folder (asks you to type `uninstall` first; Docker stays).
+
 ## v0.0.2
 
 Prebuilt images, your own AI agents over MCP, skills for the built-in AI agent, literature search, AI usage limits, 14 interface languages and a new installer.

@@ -12,6 +12,7 @@ The system administrator sees the Administration pages under **Settings** in the
 - **Invitations**: single-use links, for one email or (with the email left empty) for anyone with the link, with an expiry. A pending invitation's links stay in the list (**Link**), one for every address ColTex can be reached at (LAN, Tailscale, Cloudflare). The system admin invites members or admins and chooses the new account's **AI group**. Admins invite members only, into their own team; those members get the admin's AI group. Admins see and revoke only their own invitations.
 - **Manage users**: the system admin sees every account, makes people members or admins, moves members between teams (**Team** in the row's menu), resets passwords, and suspends or deletes accounts. An admin sees themselves and their team, and resets passwords, suspends or deletes only their team's members. Deleting an account deletes the projects it owns.
 - To hand the system admin role to someone else (or get it back when that account is lost), run `coltex cli system-admin <email>` on the server; the previous system admin becomes an admin.
+- Forgot a password, the system admin's included? Run `coltex cli reset-password <email>` on the server: it asks for the new password twice and signs that account out everywhere.
 
 ## AI services
 

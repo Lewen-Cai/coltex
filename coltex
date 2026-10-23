@@ -7,6 +7,9 @@
 #   coltex tailscale [status | up | down | off]
 #   coltex cloudflare [status | quick | token [TOKEN] | off]
 #   coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
+#   coltex reset                      delete all data and start again from the setup page
+#   coltex uninstall                  remove ColTex from this machine (containers, data, images,
+#                                     this folder); Docker stays
 #
 # The images come prebuilt from ghcr.io for the installed version (COLTEX_IMAGE_TAG in .env);
 # COLTEX_BUILD=1 in .env (install.sh --build) builds them from the sources here instead.
@@ -70,7 +73,19 @@ msg_en() {
   coltex edition [standard | full]  show or switch the TeX Live edition
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`' ;;
+  coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
+  coltex reset                      delete all data and start again from the setup page
+  coltex uninstall                  remove ColTex from this machine (containers, data, images, this folder)' ;;
+    pull_retry) M='The download was cut off; trying again ({n}/{max})…' ;;
+    pull_hint) M='If ghcr.io is slow from here: set COLTEX_IMAGES in .env to a mirror of ghcr.io (registry-mirrors in Docker’s daemon.json only applies to Docker Hub). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json and restart Docker.' ;;
+    fixing_data) M='Giving the data folder to the user the containers run as ({owner})…' ;;
+    reset_warning) M='This deletes everything in this ColTex: accounts, projects and their history, the database, and the data folder (Tailscale’s device keys too). The settings in .env stay. It can’t be undone.' ;;
+    reset_confirm) M='Type reset to go ahead:' ;;
+    reset_cancelled) M='Cancelled; nothing was deleted.' ;;
+    reset_done) M='Reset. ColTex is starting; open it to create the administrator account.' ;;
+    uninstall_warning) M='This removes ColTex from this machine: its containers, the database, the data folder (every project and its history), its images, the coltex command and the ColTex folder. Docker stays. It can’t be undone; make a backup first if you want to keep anything.' ;;
+    uninstall_confirm) M='Type uninstall to go ahead:' ;;
+    uninstall_done) M='ColTex has been removed, {dir} too. Docker itself stays installed.' ;;
   esac
 }
 msg_zh_CN() {
@@ -94,7 +109,19 @@ msg_zh_CN() {
   coltex edition [standard | full]  查看或切换 TeX Live 版本
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [令牌] | off]
-  coltex cli <命令…>                 服务器的命令行，例如 `coltex cli system-admin <邮箱>`' ;;
+  coltex cli <命令…>                 服务器的命令行，例如 `coltex cli system-admin <邮箱>`
+  coltex reset                      删除所有数据，从初始设置页重新开始
+  coltex uninstall                  从这台机器上移除 ColTex（容器、数据、镜像和这个文件夹）' ;;
+    pull_retry) M='下载中断，正在重试（{n}/{max}）…' ;;
+    pull_hint) M='如果从这里访问 ghcr.io 很慢：在 .env 中把 COLTEX_IMAGES 设为一个 ghcr.io 镜像地址（Docker daemon.json 里的 registry-mirrors 只对 Docker Hub 有效）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然后重启 Docker。' ;;
+    fixing_data) M='正在把 data 文件夹交给容器运行时使用的用户（{owner}）…' ;;
+    reset_warning) M='这会删除这个 ColTex 里的一切：账号、项目及其历史、数据库和 data 文件夹（包括 Tailscale 的设备密钥）。.env 里的设置会保留。此操作无法撤销。' ;;
+    reset_confirm) M='输入 reset 继续：' ;;
+    reset_cancelled) M='已取消，没有删除任何内容。' ;;
+    reset_done) M='已重置。ColTex 正在启动，打开它创建管理员账号。' ;;
+    uninstall_warning) M='这会从这台机器上移除 ColTex：容器、数据库、data 文件夹（所有项目及其历史）、镜像、coltex 命令和 ColTex 文件夹。Docker 本身会保留。此操作无法撤销；如有需要保留的内容，请先备份。' ;;
+    uninstall_confirm) M='输入 uninstall 继续：' ;;
+    uninstall_done) M='ColTex 已移除，{dir} 也已删除。Docker 本身仍保留。' ;;
   esac
 }
 msg_zh_TW() {
@@ -118,7 +145,19 @@ msg_zh_TW() {
   coltex edition [standard | full]  查看或切換 TeX Live 版本
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [權杖] | off]
-  coltex cli <指令…>                 任何 `node src/cli.ts` 指令，例如 `coltex cli system-admin <電子郵件>`' ;;
+  coltex cli <指令…>                 任何 `node src/cli.ts` 指令，例如 `coltex cli system-admin <電子郵件>`
+  coltex reset                      刪除所有資料，從初始設定頁重新開始
+  coltex uninstall                  從這台機器上移除 ColTex（容器、資料、映像檔和這個資料夾）' ;;
+    pull_retry) M='下載中斷，正在重試（{n}/{max}）…' ;;
+    pull_hint) M='如果從這裡存取 ghcr.io 很慢：在 .env 中把 COLTEX_IMAGES 設為一個 ghcr.io 鏡像位址（Docker daemon.json 裡的 registry-mirrors 只對 Docker Hub 有效）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然後重新啟動 Docker。' ;;
+    fixing_data) M='正在把 data 資料夾交給容器執行時使用的使用者（{owner}）…' ;;
+    reset_warning) M='這會刪除這個 ColTex 裡的一切：帳號、專案及其歷史、資料庫和 data 資料夾（包括 Tailscale 的裝置金鑰）。.env 裡的設定會保留。此操作無法復原。' ;;
+    reset_confirm) M='輸入 reset 繼續：' ;;
+    reset_cancelled) M='已取消，沒有刪除任何內容。' ;;
+    reset_done) M='已重設。ColTex 正在啟動，開啟它來建立管理員帳號。' ;;
+    uninstall_warning) M='這會從這台機器上移除 ColTex：容器、資料庫、data 資料夾（所有專案及其歷史）、映像檔、coltex 指令和 ColTex 資料夾。Docker 本身會保留。此操作無法復原；如有需要保留的內容，請先備份。' ;;
+    uninstall_confirm) M='輸入 uninstall 繼續：' ;;
+    uninstall_done) M='ColTex 已移除，{dir} 也已刪除。Docker 本身仍保留。' ;;
   esac
 }
 msg_ja() {
@@ -142,7 +181,19 @@ msg_ja() {
   coltex edition [standard | full]  TeX Live のエディションを表示または切り替え
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [トークン] | off]
-  coltex cli <コマンド…>            任意の `node src/cli.ts` コマンド。例：`coltex cli system-admin <メールアドレス>`' ;;
+  coltex cli <コマンド…>            任意の `node src/cli.ts` コマンド。例：`coltex cli system-admin <メールアドレス>`
+  coltex reset                      すべてのデータを削除し、セットアップページからやり直す
+  coltex uninstall                  このマシンから ColTex を削除する（コンテナ、データ、イメージ、このフォルダー）' ;;
+    pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）…' ;;
+    pull_hint) M='ここから ghcr.io が遅い場合：.env の COLTEX_IMAGES に ghcr.io のミラーを設定してください（Docker の daemon.json の registry-mirrors は Docker Hub にしか効きません）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してください。' ;;
+    fixing_data) M='data フォルダーの所有者を、コンテナーを実行するユーザー（{owner}）にしています…' ;;
+    reset_warning) M='この ColTex のすべてを削除します：アカウント、プロジェクトとその履歴、データベース、data フォルダー（Tailscale のデバイスキーも）。.env の設定は残ります。元に戻せません。' ;;
+    reset_confirm) M='続けるには reset と入力してください：' ;;
+    reset_cancelled) M='キャンセルしました。何も削除していません。' ;;
+    reset_done) M='リセットしました。ColTex を起動しています。開いて管理者アカウントを作成してください。' ;;
+    uninstall_warning) M='このマシンから ColTex を削除します：コンテナ、データベース、data フォルダー（すべてのプロジェクトとその履歴）、イメージ、coltex コマンド、ColTex のフォルダー。Docker 自体は残ります。元に戻せません。残したいものがあれば先にバックアップしてください。' ;;
+    uninstall_confirm) M='続けるには uninstall と入力してください：' ;;
+    uninstall_done) M='ColTex を削除しました（{dir} も削除済み）。Docker 自体はインストールされたままです。' ;;
   esac
 }
 msg_ko() {
@@ -166,7 +217,19 @@ msg_ko() {
   coltex edition [standard | full]  TeX Live 에디션 보기 또는 전환
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [토큰] | off]
-  coltex cli <명령…>             모든 `node src/cli.ts` 명령, 예: `coltex cli system-admin <이메일>`' ;;
+  coltex cli <명령…>             모든 `node src/cli.ts` 명령, 예: `coltex cli system-admin <이메일>`
+  coltex reset                      모든 데이터를 삭제하고 설정 페이지부터 다시 시작
+  coltex uninstall                  이 컴퓨터에서 ColTex 제거(컨테이너, 데이터, 이미지, 이 폴더)' ;;
+    pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max})…' ;;
+    pull_hint) M='여기서 ghcr.io가 느리다면: .env의 COLTEX_IMAGES를 ghcr.io 미러로 설정하세요(Docker daemon.json의 registry-mirrors는 Docker Hub에만 적용됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작하세요.' ;;
+    fixing_data) M='data 폴더의 소유자를 컨테이너를 실행하는 사용자({owner})로 바꾸는 중…' ;;
+    reset_warning) M='이 ColTex의 모든 것을 삭제합니다: 계정, 프로젝트와 그 기록, 데이터베이스, data 폴더(Tailscale 기기 키 포함). .env의 설정은 유지됩니다. 되돌릴 수 없습니다.' ;;
+    reset_confirm) M='계속하려면 reset을 입력하세요:' ;;
+    reset_cancelled) M='취소했습니다. 아무것도 삭제하지 않았습니다.' ;;
+    reset_done) M='초기화했습니다. ColTex가 시작되는 중이니 열어서 관리자 계정을 만드세요.' ;;
+    uninstall_warning) M='이 컴퓨터에서 ColTex를 제거합니다: 컨테이너, 데이터베이스, data 폴더(모든 프로젝트와 그 기록), 이미지, coltex 명령과 ColTex 폴더. Docker 자체는 남습니다. 되돌릴 수 없으니, 남겨 둘 것이 있다면 먼저 백업하세요.' ;;
+    uninstall_confirm) M='계속하려면 uninstall을 입력하세요:' ;;
+    uninstall_done) M='ColTex를 제거했습니다. {dir}도 삭제했습니다. Docker 자체는 그대로 설치되어 있습니다.' ;;
   esac
 }
 msg_es() {
@@ -190,7 +253,19 @@ msg_es() {
   coltex edition [standard | full]  muestra o cambia la edición de TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <comando…>             cualquier comando de `node src/cli.ts`, p. ej., `coltex cli system-admin <correo>`' ;;
+  coltex cli <comando…>             cualquier comando de `node src/cli.ts`, p. ej., `coltex cli system-admin <correo>`
+  coltex reset                      borra todos los datos y vuelve a empezar desde la configuración inicial
+  coltex uninstall                  quita ColTex de esta máquina (contenedores, datos, imágenes y esta carpeta)' ;;
+    pull_retry) M='La descarga se cortó; reintentando ({n}/{max})…' ;;
+    pull_hint) M='Si ghcr.io va lento desde aquí: pon en COLTEX_IMAGES de .env un espejo de ghcr.io (registry-mirrors en el daemon.json de Docker solo se aplica a Docker Hub). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json y reinicia Docker.' ;;
+    fixing_data) M='Dando la carpeta data al usuario con el que se ejecutan los contenedores ({owner})…' ;;
+    reset_warning) M='Esto borra todo lo de este ColTex: cuentas, proyectos y su historial, la base de datos y la carpeta data (también las claves del dispositivo de Tailscale). Los ajustes de .env se mantienen. No se puede deshacer.' ;;
+    reset_confirm) M='Escribe reset para continuar:' ;;
+    reset_cancelled) M='Cancelado; no se borró nada.' ;;
+    reset_done) M='Restablecido. ColTex se está iniciando; ábrelo para crear la cuenta de administrador.' ;;
+    uninstall_warning) M='Esto quita ColTex de esta máquina: sus contenedores, la base de datos, la carpeta data (todos los proyectos y su historial), sus imágenes, el comando coltex y la carpeta de ColTex. Docker se mantiene. No se puede deshacer; haz antes una copia de seguridad si quieres conservar algo.' ;;
+    uninstall_confirm) M='Escribe uninstall para continuar:' ;;
+    uninstall_done) M='ColTex se ha quitado, también {dir}. Docker sigue instalado.' ;;
   esac
 }
 msg_fr() {
@@ -214,7 +289,19 @@ msg_fr() {
   coltex edition [standard | full]  affiche ou change l’édition de TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [JETON] | off]
-  coltex cli <commande…>            toute commande `node src/cli.ts`, p. ex. `coltex cli system-admin <e-mail>`' ;;
+  coltex cli <commande…>            toute commande `node src/cli.ts`, p. ex. `coltex cli system-admin <e-mail>`
+  coltex reset                      supprime toutes les données et recommence depuis la page de configuration
+  coltex uninstall                  supprime ColTex de cette machine (conteneurs, données, images, ce dossier)' ;;
+    pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max})…' ;;
+    pull_hint) M='Si ghcr.io est lent depuis ici : mettez dans COLTEX_IMAGES (.env) un miroir de ghcr.io (registry-mirrors dans le daemon.json de Docker ne s’applique qu’à Docker Hub). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json et redémarrez Docker.' ;;
+    fixing_data) M='Attribution du dossier data à l’utilisateur des conteneurs ({owner})…' ;;
+    reset_warning) M='Ceci supprime tout dans ce ColTex : comptes, projets et leur historique, la base de données et le dossier data (y compris les clés d’appareil de Tailscale). Les réglages de .env restent. C’est irréversible.' ;;
+    reset_confirm) M='Tapez reset pour continuer :' ;;
+    reset_cancelled) M='Annulé ; rien n’a été supprimé.' ;;
+    reset_done) M='Réinitialisé. ColTex démarre ; ouvrez-le pour créer le compte administrateur.' ;;
+    uninstall_warning) M='Cela supprime ColTex de cette machine : ses conteneurs, la base de données, le dossier data (tous les projets et leur historique), ses images, la commande coltex et le dossier de ColTex. Docker reste. C’est irréversible ; faites d’abord une sauvegarde si vous voulez garder quelque chose.' ;;
+    uninstall_confirm) M='Tapez uninstall pour continuer :' ;;
+    uninstall_done) M='ColTex a été supprimé, {dir} aussi. Docker reste installé.' ;;
   esac
 }
 msg_de() {
@@ -238,7 +325,19 @@ msg_de() {
   coltex edition [standard | full]  die TeX-Live-Edition anzeigen oder wechseln
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <Befehl…>           ein beliebiger `node src/cli.ts`-Befehl, z. B. `coltex cli system-admin <E-Mail>`' ;;
+  coltex cli <Befehl…>           ein beliebiger `node src/cli.ts`-Befehl, z. B. `coltex cli system-admin <E-Mail>`
+  coltex reset                      alle Daten löschen und auf der Einrichtungsseite neu beginnen
+  coltex uninstall                  ColTex von diesem Rechner entfernen (Container, Daten, Images, dieser Ordner)' ;;
+    pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max})…' ;;
+    pull_hint) M='Wenn ghcr.io von hier aus langsam ist: COLTEX_IMAGES in .env auf einen Spiegel von ghcr.io setzen (registry-mirrors in Dockers daemon.json gilt nur für Docker Hub). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen und Docker neu starten.' ;;
+    fixing_data) M='Der Ordner data wird dem Benutzer der Container übergeben ({owner})…' ;;
+    reset_warning) M='Das löscht alles in diesem ColTex: Konten, Projekte und ihren Verlauf, die Datenbank und den Ordner data (auch die Geräteschlüssel von Tailscale). Die Einstellungen in .env bleiben. Es lässt sich nicht rückgängig machen.' ;;
+    reset_confirm) M='Zum Fortfahren reset eingeben:' ;;
+    reset_cancelled) M='Abgebrochen; nichts wurde gelöscht.' ;;
+    reset_done) M='Zurückgesetzt. ColTex startet; öffnen Sie es, um das Administratorkonto anzulegen.' ;;
+    uninstall_warning) M='Dies entfernt ColTex von diesem Rechner: die Container, die Datenbank, den Ordner data (alle Projekte und ihr Verlauf), die Images, den Befehl coltex und den ColTex-Ordner. Docker bleibt. Das lässt sich nicht rückgängig machen; legen Sie vorher ein Backup an, wenn Sie etwas behalten möchten.' ;;
+    uninstall_confirm) M='Geben Sie uninstall ein, um fortzufahren:' ;;
+    uninstall_done) M='ColTex wurde entfernt, auch {dir}. Docker selbst bleibt installiert.' ;;
   esac
 }
 msg_pt_BR() {
@@ -262,7 +361,19 @@ msg_pt_BR() {
   coltex edition [standard | full]  mostra ou troca a edição do TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <comando…>          qualquer comando de `node src/cli.ts`, ex.: `coltex cli system-admin <e-mail>`' ;;
+  coltex cli <comando…>          qualquer comando de `node src/cli.ts`, ex.: `coltex cli system-admin <e-mail>`
+  coltex reset                      apaga todos os dados e recomeça pela página de configuração
+  coltex uninstall                  remove o ColTex desta máquina (contêineres, dados, imagens e esta pasta)' ;;
+    pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max})…' ;;
+    pull_hint) M='Se o ghcr.io estiver lento daqui: defina COLTEX_IMAGES no .env como um espelho do ghcr.io (registry-mirrors no daemon.json do Docker só vale para o Docker Hub). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json e reinicie o Docker.' ;;
+    fixing_data) M='Passando a pasta data para o usuário dos contêineres ({owner})…' ;;
+    reset_warning) M='Isto apaga tudo neste ColTex: contas, projetos e seu histórico, o banco de dados e a pasta data (inclusive as chaves de dispositivo do Tailscale). As configurações do .env ficam. Não pode ser desfeito.' ;;
+    reset_confirm) M='Digite reset para continuar:' ;;
+    reset_cancelled) M='Cancelado; nada foi apagado.' ;;
+    reset_done) M='Redefinido. O ColTex está iniciando; abra-o para criar a conta de administrador.' ;;
+    uninstall_warning) M='Isto remove o ColTex desta máquina: seus contêineres, o banco de dados, a pasta data (todos os projetos e o histórico deles), suas imagens, o comando coltex e a pasta do ColTex. O Docker continua. Não dá para desfazer; faça um backup antes se quiser guardar algo.' ;;
+    uninstall_confirm) M='Digite uninstall para continuar:' ;;
+    uninstall_done) M='O ColTex foi removido, e {dir} também. O Docker continua instalado.' ;;
   esac
 }
 msg_it() {
@@ -286,7 +397,19 @@ msg_it() {
   coltex edition [standard | full]  mostra o cambia l’edizione di TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <comando…>          qualsiasi comando `node src/cli.ts`, ad es. `coltex cli system-admin <email>`' ;;
+  coltex cli <comando…>          qualsiasi comando `node src/cli.ts`, ad es. `coltex cli system-admin <email>`
+  coltex reset                      elimina tutti i dati e ricomincia dalla pagina di configurazione
+  coltex uninstall                  rimuove ColTex da questa macchina (container, dati, immagini, questa cartella)' ;;
+    pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max})…' ;;
+    pull_hint) M='Se ghcr.io è lento da qui: imposta COLTEX_IMAGES in .env su un mirror di ghcr.io (registry-mirrors nel daemon.json di Docker vale solo per Docker Hub). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json e riavvia Docker.' ;;
+    fixing_data) M='Assegno la cartella data all’utente dei container ({owner})…' ;;
+    reset_warning) M='Questo elimina tutto in questo ColTex: account, progetti e la loro cronologia, il database e la cartella data (anche le chiavi del dispositivo Tailscale). Le impostazioni in .env restano. Non si può annullare.' ;;
+    reset_confirm) M='Digita reset per continuare:' ;;
+    reset_cancelled) M='Annullato; non è stato eliminato nulla.' ;;
+    reset_done) M='Ripristinato. ColTex si sta avviando; aprilo per creare l’account amministratore.' ;;
+    uninstall_warning) M='Questo rimuove ColTex da questa macchina: i container, il database, la cartella data (tutti i progetti e la loro cronologia), le immagini, il comando coltex e la cartella di ColTex. Docker resta. Non si può annullare; fai prima un backup se vuoi conservare qualcosa.' ;;
+    uninstall_confirm) M='Digita uninstall per continuare:' ;;
+    uninstall_done) M='ColTex è stato rimosso, anche {dir}. Docker resta installato.' ;;
   esac
 }
 msg_ru() {
@@ -310,7 +433,19 @@ msg_ru() {
   coltex edition [standard | full]  показать или сменить редакцию TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [ТОКЕН] | off]
-  coltex cli <команда…>             любая команда `node src/cli.ts`, например `coltex cli system-admin <почта>`' ;;
+  coltex cli <команда…>             любая команда `node src/cli.ts`, например `coltex cli system-admin <почта>`
+  coltex reset                      удалить все данные и начать заново со страницы настройки
+  coltex uninstall                  удалить ColTex с этой машины (контейнеры, данные, образы, эту папку)' ;;
+    pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max})…' ;;
+    pull_hint) M='Если ghcr.io отсюда работает медленно: укажите в COLTEX_IMAGES в .env зеркало ghcr.io (registry-mirrors в daemon.json Docker действует только для Docker Hub). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json и перезапустите Docker.' ;;
+    fixing_data) M='Папка data передаётся пользователю, от имени которого работают контейнеры ({owner})…' ;;
+    reset_warning) M='Будет удалено всё в этом ColTex: учётные записи, проекты и их история, база данных и папка data (и ключи устройства Tailscale). Настройки в .env останутся. Отменить это нельзя.' ;;
+    reset_confirm) M='Введите reset, чтобы продолжить:' ;;
+    reset_cancelled) M='Отменено; ничего не удалено.' ;;
+    reset_done) M='Сброшено. ColTex запускается; откройте его, чтобы создать учётную запись администратора.' ;;
+    uninstall_warning) M='Это удалит ColTex с этой машины: контейнеры, базу данных, папку data (все проекты и их историю), образы, команду coltex и папку ColTex. Docker останется. Это нельзя отменить; если нужно что-то сохранить, сначала сделайте резервную копию.' ;;
+    uninstall_confirm) M='Введите uninstall, чтобы продолжить:' ;;
+    uninstall_done) M='ColTex удалён, вместе с {dir}. Сам Docker остаётся установленным.' ;;
   esac
 }
 msg_tr() {
@@ -334,7 +469,19 @@ msg_tr() {
   coltex edition [standard | full]  TeX Live sürümünü göster veya değiştir
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [BELİRTEÇ] | off]
-  coltex cli <komut…>            herhangi bir `node src/cli.ts` komutu, ör. `coltex cli system-admin <e-posta>`' ;;
+  coltex cli <komut…>            herhangi bir `node src/cli.ts` komutu, ör. `coltex cli system-admin <e-posta>`
+  coltex reset                      tüm verileri sil ve kurulum sayfasından yeniden başla
+  coltex uninstall                  ColTex’i bu makineden kaldır (konteynerler, veriler, imajlar, bu klasör)' ;;
+    pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max})…' ;;
+    pull_hint) M='ghcr.io buradan yavaşsa: .env içindeki COLTEX_IMAGES değerini bir ghcr.io aynası yapın (Docker daemon.json içindeki registry-mirrors yalnızca Docker Hub için geçerlidir). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayıp Docker’ı yeniden başlatın.' ;;
+    fixing_data) M='data klasörü kapsayıcıları çalıştıran kullanıcıya veriliyor ({owner})…' ;;
+    reset_warning) M='Bu, bu ColTex’teki her şeyi siler: hesaplar, projeler ve geçmişleri, veritabanı ve data klasörü (Tailscale cihaz anahtarları da). .env içindeki ayarlar kalır. Geri alınamaz.' ;;
+    reset_confirm) M='Devam etmek için reset yazın:' ;;
+    reset_cancelled) M='İptal edildi; hiçbir şey silinmedi.' ;;
+    reset_done) M='Sıfırlandı. ColTex başlıyor; yönetici hesabını oluşturmak için açın.' ;;
+    uninstall_warning) M='Bu, ColTex’i bu makineden kaldırır: konteynerleri, veritabanını, data klasörünü (tüm projeler ve geçmişleri), imajları, coltex komutunu ve ColTex klasörünü. Docker kalır. Geri alınamaz; saklamak istediğiniz bir şey varsa önce yedek alın.' ;;
+    uninstall_confirm) M='Devam etmek için uninstall yazın:' ;;
+    uninstall_done) M='ColTex kaldırıldı, {dir} de silindi. Docker kurulu kalmaya devam ediyor.' ;;
   esac
 }
 msg_vi() {
@@ -358,7 +505,19 @@ msg_vi() {
   coltex edition [standard | full]  xem hoặc chuyển phiên bản TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <lệnh…>                bất kỳ lệnh `node src/cli.ts` nào, vd. `coltex cli system-admin <email>`' ;;
+  coltex cli <lệnh…>                bất kỳ lệnh `node src/cli.ts` nào, vd. `coltex cli system-admin <email>`
+  coltex reset                      xóa toàn bộ dữ liệu và bắt đầu lại từ trang thiết lập
+  coltex uninstall                  gỡ ColTex khỏi máy này (container, dữ liệu, image, thư mục này)' ;;
+    pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max})…' ;;
+    pull_hint) M='Nếu ghcr.io chậm từ đây: đặt COLTEX_IMAGES trong .env thành một bản sao (mirror) của ghcr.io (registry-mirrors trong daemon.json của Docker chỉ áp dụng cho Docker Hub). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json rồi khởi động lại Docker.' ;;
+    fixing_data) M='Đang giao thư mục data cho người dùng chạy các container ({owner})…' ;;
+    reset_warning) M='Thao tác này xóa mọi thứ trong ColTex này: tài khoản, dự án và lịch sử của chúng, cơ sở dữ liệu và thư mục data (cả khóa thiết bị của Tailscale). Các thiết lập trong .env được giữ lại. Không thể hoàn tác.' ;;
+    reset_confirm) M='Gõ reset để tiếp tục:' ;;
+    reset_cancelled) M='Đã hủy; không có gì bị xóa.' ;;
+    reset_done) M='Đã đặt lại. ColTex đang khởi động; mở nó để tạo tài khoản quản trị viên.' ;;
+    uninstall_warning) M='Thao tác này gỡ ColTex khỏi máy này: các container, cơ sở dữ liệu, thư mục data (mọi dự án và lịch sử của chúng), các image, lệnh coltex và thư mục ColTex. Docker vẫn được giữ lại. Không thể hoàn tác; hãy sao lưu trước nếu muốn giữ lại gì đó.' ;;
+    uninstall_confirm) M='Nhập uninstall để tiếp tục:' ;;
+    uninstall_done) M='Đã gỡ ColTex, cả {dir}. Docker vẫn được giữ nguyên.' ;;
   esac
 }
 msg_id() {
@@ -382,7 +541,19 @@ msg_id() {
   coltex edition [standard | full]  tampilkan atau ganti edisi TeX Live
   coltex tailscale [status | up | down | off]
   coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <perintah…>           perintah `node src/cli.ts` apa pun, mis. `coltex cli system-admin <email>`' ;;
+  coltex cli <perintah…>           perintah `node src/cli.ts` apa pun, mis. `coltex cli system-admin <email>`
+  coltex reset                      hapus semua data dan mulai lagi dari halaman penyiapan
+  coltex uninstall                  hapus ColTex dari mesin ini (kontainer, data, image, folder ini)' ;;
+    pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max})…' ;;
+    pull_hint) M='Jika ghcr.io lambat dari sini: atur COLTEX_IMAGES di .env ke mirror ghcr.io (registry-mirrors di daemon.json Docker hanya berlaku untuk Docker Hub). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json lalu mulai ulang Docker.' ;;
+    fixing_data) M='Menyerahkan folder data ke pengguna yang menjalankan kontainer ({owner})…' ;;
+    reset_warning) M='Ini menghapus semua isi ColTex ini: akun, proyek beserta riwayatnya, basis data, dan folder data (termasuk kunci perangkat Tailscale). Pengaturan di .env tetap ada. Tidak bisa dibatalkan.' ;;
+    reset_confirm) M='Ketik reset untuk melanjutkan:' ;;
+    reset_cancelled) M='Dibatalkan; tidak ada yang dihapus.' ;;
+    reset_done) M='Direset. ColTex sedang dimulai; buka untuk membuat akun administrator.' ;;
+    uninstall_warning) M='Ini menghapus ColTex dari mesin ini: kontainernya, basis data, folder data (semua proyek dan riwayatnya), image-nya, perintah coltex, dan folder ColTex. Docker tetap ada. Tidak bisa dibatalkan; buat cadangan dulu jika ada yang ingin disimpan.' ;;
+    uninstall_confirm) M='Ketik uninstall untuk melanjutkan:' ;;
+    uninstall_done) M='ColTex sudah dihapus, termasuk {dir}. Docker tetap terpasang.' ;;
   esac
 }
 # <<< messages
@@ -397,17 +568,22 @@ running_images() {
 deploy() {
   local before after old
   before="$(running_images)"
+  quiet_bind
   if [ "$(get COLTEX_BUILD)" = 1 ]; then
+    ensure_data
     compose up -d --build "$@"
   elif pull "$@"; then
+    ensure_data
     compose up -d "$@"
-  elif grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found' "$PULLED"; then
+  elif missing; then
     # Only when there are none for this version; a network or registry error is not a reason
     # to build TeX Live here.
     T no_prebuilt version="$(get COLTEX_IMAGE_TAG)"
+    ensure_data
     compose up -d --build "$@"
   else
     T pull_failed >&2
+    T pull_hint >&2
     exit 1
   fi
   after=" $(running_images | tr '\n' ' ') "
@@ -415,26 +591,57 @@ deploy() {
     case "$after" in *" $old "*) ;; *) docker image rm "$old" >/dev/null 2>&1 || true ;; esac
   done
 }
-# `docker compose pull`, shown as it goes and kept in $PULLED, so a failure can say why.
+# `docker compose pull`, shown as it goes and kept in $PULLED, so a failure can say why. Cut off
+# by the network, it is tried again (Docker keeps the layers it finished), 3 times in all.
 PULLED="$(mktemp "${TMPDIR:-/tmp}/coltex-pull.XXXXXX")"
 trap 'rm -f "$PULLED"' EXIT
+missing() { grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found' "$PULLED"; }
 pull() {
-  local rc
-  set +e
-  compose pull "$@" 2>&1 | tee "$PULLED"
-  rc=${PIPESTATUS[0]}
-  set -e
-  return "$rc"
+  local rc try=1
+  while :; do
+    set +e
+    compose pull "$@" 2>&1 | tee "$PULLED"
+    rc=${PIPESTATUS[0]}
+    set -e
+    [ "$rc" != 0 ] && ! missing && [ "$try" -lt 3 ] || return "$rc"
+    try=$((try + 1))
+    T pull_retry n="$try" max=3 >&2
+    sleep 3
+  done
 }
+# The user id owning a file (GNU and busybox stat, then BSD's).
+owner() { stat -c %u "$1" 2>/dev/null || stat -f %u "$1" 2>/dev/null || true; }
+# ./data and the two folders the compiler mounts, made and owned by the user the containers run
+# as (COLTEX_UID). Docker makes a missing mount point owned by root, and the server then can't
+# write in it (EACCES on /data/.secret, restarting over and over). Fixed as root, or else by a
+# throwaway container of the server's image (anyone who may use Docker may do this anyway).
+ensure_data() {
+  local uid gid d wrong=""
+  uid="$(get COLTEX_UID)"; uid="${uid:-1000}"
+  gid="$(get COLTEX_GID)"; gid="${gid:-1000}"
+  for d in data data/projects data/outputs; do
+    [ -d "$d" ] || mkdir -p "$d" 2>/dev/null || wrong=1
+    [ "$(owner "$d")" = "$uid" ] || wrong=1
+  done
+  [ -n "$wrong" ] || return 0
+  T fixing_data owner="$uid:$gid"
+  if [ "$(id -u)" = 0 ]; then
+    mkdir -p data/projects data/outputs && chown -R "$uid:$gid" data
+  else
+    compose run --rm --no-deps -T --user 0:0 --entrypoint sh server -c "mkdir -p /data/projects /data/outputs && chown -R $uid:$gid /data"
+  fi
+}
+# Present though empty, so a Compose that reads the port's ${COLTEX_BIND:+…} doesn't warn.
+quiet_bind() { [ ! -f .env ] || grep -q '^COLTEX_BIND=' .env || echo 'COLTEX_BIND=' >>.env; }
 # `docker compose exec` with a terminal when there is one (the cloudflare token prompt needs it).
 exec_server() {
   if [ -t 0 ] && [ -t 1 ]; then compose exec server node src/cli.ts "$@"; else compose exec -T server node src/cli.ts "$@"; fi
 }
 
 case "${1:-help}" in
-  start) compose up -d ;;
+  start) quiet_bind; ensure_data; compose up -d ;;
   stop) compose down ;;
-  restart) compose restart server ;;
+  restart) ensure_data; compose restart server ;;
   status)
     compose ps
     p="$(port)"; p="${p:-3690}"
@@ -491,6 +698,55 @@ case "${1:-help}" in
   cli)
     shift
     exec_server "$@"
+    ;;
+  reset)
+    # Everything back to a fresh install: the containers and their volumes (database, Valkey,
+    # build cache) and data/; .env stays. Asks first, with a word to type, not a y.
+    T reset_warning
+    printf '%s ' "$(T reset_confirm)"
+    answer=""
+    IFS= read -r answer || true
+    [ "$answer" = reset ] || { T reset_cancelled; exit 1; }
+    compose down -v --remove-orphans
+    if [ "$(id -u)" = 0 ] || [ "$(owner data)" = "$(id -u)" ]; then
+      rm -rf data 2>/dev/null || true
+    fi
+    # What this user can't remove (made by a container as root): removed by one as root.
+    if [ -d data ] && [ -n "$(ls -A data 2>/dev/null)" ]; then
+      compose run --rm --no-deps -T --user 0:0 --entrypoint sh server -c 'find /data -mindepth 1 -delete'
+    fi
+    ensure_data
+    compose up -d
+    T reset_done
+    ;;
+  uninstall)
+    # ColTex gone from this machine: its containers, volumes, data, images, the coltex links and
+    # this folder. Docker stays. Asks first, with a word to type, not a y.
+    T uninstall_warning
+    printf '%s ' "$(T uninstall_confirm)"
+    answer=""
+    IFS= read -r answer || true
+    [ "$answer" = uninstall ] || { T reset_cancelled; exit 1; }
+    # Only ever this checkout's folder.
+    [ -f "$DIR/docker-compose.yml" ] && [ -f "$DIR/coltex" ] && [ "$DIR" != / ] && [ "$DIR" != "$HOME" ] || exit 1
+    # Leave the tailnet first, so the built-in Tailscale's device doesn't stay behind in it.
+    compose exec -T server node src/cli.ts tailscale down >/dev/null 2>&1 || true
+    compose down -v --remove-orphans
+    if [ "$(id -u)" = 0 ] || [ "$(owner data)" = "$(id -u)" ]; then
+      rm -rf data 2>/dev/null || true
+    fi
+    # What this user can't remove (made by a container as root): removed by one as root, while the
+    # server image is still here.
+    if [ -d data ] && [ -n "$(ls -A data 2>/dev/null)" ]; then
+      compose run --rm --no-deps -T --user 0:0 --entrypoint sh server -c 'find /data -mindepth 1 -delete' || true
+    fi
+    compose down --rmi all --remove-orphans >/dev/null 2>&1 || true
+    for link in "$HOME/.local/bin/coltex" /usr/local/bin/coltex; do
+      if [ -L "$link" ] && [ "$(readlink "$link")" = "$DIR/coltex" ]; then rm -f "$link" 2>/dev/null || true; fi
+    done
+    T uninstall_done dir="$DIR"
+    cd /
+    exec rm -rf "$DIR"
     ;;
   *) T help ;;
 esac

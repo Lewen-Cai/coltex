@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': 'Đang kết nối tới Cloudflare…',
   'The tunnel did not connect.': 'Tunnel không kết nối được.',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': 'Chưa có tên máy chủ công khai: hãy thêm một tên cho tunnel trong bảng điều khiển Cloudflare, trỏ tới http://localhost:3690.',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} vẫn ở đường hầm hiện tại: hãy chuyển chúng sang đường hầm mới trong bảng điều khiển Cloudflare, nếu không sẽ gặp Error 1033.',
   'Changes every time the tunnel starts.': 'Thay đổi mỗi lần tunnel khởi động.',
   'Cloudflare (temporary)': 'Cloudflare (tạm thời)',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'Chỉ máy tính này mở được liên kết localhost. Hãy mở ColTex bằng một địa chỉ người khác truy cập được (IP LAN, IP công khai hoặc tên miền), hoặc bật Tailscale hay Cloudflare Tunnel trong Cài đặt → Mạng.',

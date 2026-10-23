@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': 'Menyambungkan ke Cloudflare…',
   'The tunnel did not connect.': 'Terowongan tidak tersambung.',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': 'Belum ada nama host publik: tambahkan satu ke terowongan di dasbor Cloudflare, yang mengarah ke http://localhost:3690.',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} tetap berada di terowongan saat ini: pindahkan ke terowongan baru di dasbor Cloudflare, atau akan muncul Error 1033.',
   'Changes every time the tunnel starts.': 'Berubah setiap kali terowongan dimulai.',
   'Cloudflare (temporary)': 'Cloudflare (sementara)',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'Hanya komputer ini yang dapat membuka tautan localhost. Buka ColTex di alamat yang dapat dijangkau orang lain (IP LAN, IP publik, atau domain), atau aktifkan Tailscale atau Cloudflare Tunnel di Pengaturan → Jaringan.',

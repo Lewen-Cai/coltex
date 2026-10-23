@@ -242,4 +242,65 @@ describe('network: public address, same-origin sign-in and Tailscale', () => {
       await network.dispose()
     }
   })
+
+  test('cloudflared: one at a time, HTTP/2 when QUIC is blocked, longer waits when rate-limited', async () => {
+    const pids = await fs.mkdtemp(path.join(t.dataDir, 'cf-pids-'))
+    process.env.FAKE_CLOUDFLARED_PIDS = pids
+    const tunnel = new CloudflareTunnel({
+      binary: path.join(import.meta.dirname, 'fixtures/fake-cloudflared.mjs'),
+      target: 'http://127.0.0.1:3690',
+      metrics: '127.0.0.1:20978',
+      restartDelayMs: 300,
+    })
+    const network = new NetworkService({
+      db: t.db,
+      envPublicUrl: undefined,
+      tailscale: new TailscaleClient({ socket: path.join(t.dataDir, 'none.sock'), target: 'http://127.0.0.1:3690' }),
+      cloudflare: tunnel,
+      box: new SecretBox('test-secret'),
+    })
+    const token = (secret: string) => Buffer.from(JSON.stringify({ a: 'f'.repeat(32), t: '6ff42ae2-765d-4adf-8112-31c55c1551ef', s: secret })).toString('base64')
+    const until = async (check: (s: Awaited<ReturnType<NetworkService['cloudflareState']>>) => boolean) => {
+      for (let i = 0; i < 100; i++) {
+        const s = await network.cloudflareState()
+        if (check(s)) return s
+        await new Promise(r => setTimeout(r, 50))
+      }
+      throw new Error(`state stayed ${JSON.stringify(await network.cloudflareState())}`)
+    }
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+    try {
+      // A refused token exits and waits to restart; switching meanwhile must not leave that restart behind.
+      await network.setCloudflare({ enabled: true, mode: 'token', token: token('revoked') })
+      await until(s => s.state === 'error')
+      await network.setCloudflare({ enabled: true, mode: 'token', token: token('good') })
+      await until(s => s.state === 'connected')
+      await sleep(1000)
+      assert.equal((await fs.readdir(pids)).length, 1, 'only one cloudflared runs')
+      assert.equal((await network.cloudflareState()).state, 'connected')
+
+      // QUIC times out (a proxy drops UDP): it goes on over HTTP/2.
+      await network.setCloudflare({ enabled: true, mode: 'token', token: token('quic-blocked') })
+      const connected = await until(s => s.state === 'connected')
+      assert.deepEqual(connected.urls, ['https://tex.example.org'])
+      assert.equal(tunnel.onHttp2(), true)
+      assert.equal((await fs.readdir(pids)).length, 1)
+
+      // A rate-limited temporary link is explained, and asked for less and less often.
+      process.env.FAKE_CLOUDFLARED = '429'
+      await network.setCloudflare({ enabled: true, mode: 'quick' })
+      const limited = await until(s => s.state === 'error')
+      assert.match(limited.error ?? '', /limiting temporary links/)
+      await sleep(1500)
+      assert.equal((await fs.readdir(pids)).length, 0, 'waiting (1.8 s, then 3.6 s) instead of retrying at once')
+      // Asking again with the same choice keeps the wait.
+      await network.setCloudflare({ enabled: true, mode: 'quick' })
+      assert.equal((await fs.readdir(pids)).length, 0)
+      delete process.env.FAKE_CLOUDFLARED
+    } finally {
+      delete process.env.FAKE_CLOUDFLARED
+      delete process.env.FAKE_CLOUDFLARED_PIDS
+      await network.dispose()
+    }
+  })
 })

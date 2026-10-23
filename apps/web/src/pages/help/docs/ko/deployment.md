@@ -38,6 +38,8 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `coltex tailscale up` | tailnet에 참여(로그인 링크와 QR 코드 출력) |
 | `coltex cloudflare quick` | 임시 공개 Cloudflare 주소 |
 | `coltex cloudflare token` | 내 도메인을 쓰는 Cloudflare 터널(토큰을 물어봄) |
+| `coltex reset` | 모든 것(계정, 프로젝트, 데이터베이스)을 삭제하고 초기 설정 페이지부터 다시 시작. 먼저 `reset`을 입력하라고 요청함 |
+| `coltex uninstall` | 이 컴퓨터에서 ColTex 제거: 컨테이너, 데이터베이스, 데이터, 이미지, `coltex` 명령과 그 폴더(Docker는 유지). 먼저 `uninstall`을 입력하라고 요청함 |
 
 ## 어떤 주소로든 로그인
 
@@ -81,6 +83,8 @@ ColTex에는 Cloudflare Tunnel도 터널 용도로만 내장되어 있습니다.
 - **내 도메인**: Cloudflare에 내 도메인이 있으면 Zero Trust → Networks → Tunnels에서 터널을 만들고 “Run the following command” 아래의 명령(Windows, macOS, Debian, Red Hat, Docker 등 어느 시스템용이든 가능)을 복사합니다. ColTex가 그 안에서 토큰을 꺼냅니다. 터널에 서비스 `http://localhost:3690`을 가리키는 공개 호스트 이름(예: `tex.example.org`)을 추가합니다.
 
 **설정 → 네트워크**의 Cloudflare Tunnel 카드 스위치로 켠 다음 임시 링크나 터널(저장된 터널 또는 붙여넣은 명령으로 만든 새 터널)을 고르거나, 터미널에서 `coltex cloudflare quick` / `coltex cloudflare token`을 실행합니다. 연결되면 그 주소가 초대 링크에 저절로 나타납니다. 토큰은 암호화되어 저장되며 다시 표시되지 않습니다.
+
+터널이 QUIC로 Cloudflare에 연결할 수 없으면(방화벽 또는 UDP를 버리는 프록시 때문에) ColTex가 자동으로 HTTP/2로 전환합니다. trycloudflare.com이 임시 링크를 제한하면(429 Too Many Requests) ColTex는 점점 더 간격을 두고 다시 요청합니다. 터널을 변경할 때는 Cloudflare 대시보드에서 공개 호스트 이름을 새 터널로 옮기세요. 옮기기 전까지는 Error 1033으로 응답합니다.
 
 ## 서버 설정
 

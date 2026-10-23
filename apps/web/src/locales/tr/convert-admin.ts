@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': 'Cloudflare’e bağlanılıyor…',
   'The tunnel did not connect.': 'Tünel bağlanamadı.',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': 'Henüz genel ana makine adı yok: Cloudflare panelinde tünele http://localhost:3690 adresine yönlenen bir ad ekleyin.',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} mevcut tünelde kalır: Cloudflare panelinde yeni tünele taşıyın, aksi hâlde Error 1033 yanıtı verirler.',
   'Changes every time the tunnel starts.': 'Tünel her başladığında değişir.',
   'Cloudflare (temporary)': 'Cloudflare (geçici)',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'localhost bağlantısını yalnızca bu bilgisayar açabilir. ColTex’i başkalarının erişebileceği bir adresten (yerel ağ IP’si, genel IP veya alan adı) açın ya da Ayarlar → Ağ bölümünde Tailscale veya Cloudflare Tunnel’ı açın.',

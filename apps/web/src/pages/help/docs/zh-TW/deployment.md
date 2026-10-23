@@ -38,6 +38,8 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `coltex tailscale up` | 加入你的 tailnet（會列出登入連結和 QR 碼） |
 | `coltex cloudflare quick` | 臨時的 Cloudflare 公開網址 |
 | `coltex cloudflare token` | 使用自己網域的 Cloudflare 通道（會詢問權杖） |
+| `coltex reset` | 刪除所有資料（帳號、專案、資料庫），從初始設定頁面重新開始；會先要求你輸入 `reset` 確認 |
+| `coltex uninstall` | 從這台機器移除 ColTex：容器、資料庫、資料、映像檔、`coltex` 指令及其資料夾（Docker 會保留）；會先要求你輸入 `uninstall` 確認 |
 
 ## 從任何位址登入
 
@@ -81,6 +83,8 @@ ColTex 也內建 Cloudflare Tunnel，僅作為通道使用：大家仍然用自�
 - **自己的網域**：你的網域在 Cloudflare 上時，在 Zero Trust → Networks → Tunnels 中建立一個通道，複製「Run the following command」下方的指令（任何作業系統都可以：Windows、macOS、Debian、Red Hat 或 Docker）；ColTex 會從中取出權杖；再為通道新增一個公開主機名稱（例如 `tex.example.org`），服務設為 `http://localhost:3690`。
 
 在 **設定 → 網路** 中，用 Cloudflare Tunnel 卡片上的開關開啟它，然後選擇臨時連結或通道（已儲存的通道，或從貼上的指令建立新通道）；也可以在終端機中執行 `coltex cloudflare quick` / `coltex cloudflare token`。連線後，它的位址會自動出現在邀請連結中。權杖會加密儲存，之後不會再顯示。
+
+如果通道無法透過 QUIC 連上 Cloudflare（防火牆，或會丟棄 UDP 的代理），ColTex 會自動改用 HTTP/2。當 trycloudflare.com 限制臨時連結（429 Too Many Requests）時，ColTex 重新請求的間隔會越來越長。更換通道時，請在 Cloudflare 主控台中把它的公開主機名稱移到新通道；在那之前，這些主機名稱會回應 Error 1033。
 
 ## 伺服器設定
 

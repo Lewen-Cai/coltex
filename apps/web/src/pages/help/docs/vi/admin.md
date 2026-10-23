@@ -12,6 +12,7 @@ Quản trị viên hệ thống thấy các trang Quản trị trong **Cài đ�
 - **Lời mời**: liên kết dùng một lần, cho một email hoặc (khi để trống email) cho bất kỳ ai có liên kết, có thời hạn. Các liên kết của một lời mời đang chờ vẫn nằm trong danh sách (**Liên kết**), mỗi địa chỉ mà ColTex có thể được truy cập một liên kết (LAN, Tailscale, Cloudflare). Quản trị viên hệ thống mời thành viên hoặc quản trị viên và chọn **Nhóm AI** cho tài khoản mới. Quản trị viên chỉ mời thành viên, vào nhóm của chính họ; những thành viên này nhận nhóm AI của quản trị viên. Quản trị viên chỉ thấy và thu hồi lời mời của chính mình.
 - **Quản lý người dùng**: quản trị viên hệ thống thấy mọi tài khoản, đặt người khác làm thành viên hoặc quản trị viên, chuyển thành viên giữa các nhóm (**Nhóm** trong menu của hàng), đặt lại mật khẩu, và tạm khóa hoặc xóa tài khoản. Quản trị viên thấy chính mình và nhóm của mình, và chỉ đặt lại mật khẩu, tạm khóa hoặc xóa thành viên trong nhóm mình. Xóa một tài khoản sẽ xóa các dự án mà tài khoản đó sở hữu.
 - Để chuyển vai trò quản trị viên hệ thống cho người khác (hoặc lấy lại khi mất tài khoản đó), hãy chạy `coltex cli system-admin <email>` trên máy chủ; quản trị viên hệ thống trước đó sẽ trở thành quản trị viên.
+- Quên mật khẩu, kể cả mật khẩu của quản trị viên hệ thống? Hãy chạy `coltex cli reset-password <email>` trên máy chủ: lệnh sẽ yêu cầu nhập mật khẩu mới hai lần và đăng xuất tài khoản đó ở mọi nơi.
 
 ## Dịch vụ AI
 

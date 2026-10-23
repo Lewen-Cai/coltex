@@ -21,6 +21,8 @@
 #   --cloudflare-quick      afterwards, open a temporary trycloudflare.com address
 #   --cloudflare-token TOK  afterwards, connect a Cloudflare tunnel made in the dashboard
 #   --local                 only this machine and its network (no questions about access)
+#   --images REGISTRY       download the images from REGISTRY instead of ghcr.io/lewen-cai, e.g.
+#                           a mirror of ghcr.io (kept for updates: COLTEX_IMAGES in .env)
 #   --build                 build the images from the sources here instead of downloading
 #                           the prebuilt ones (kept for updates: COLTEX_BUILD=1 in .env)
 #   --no-start              get the code and write the settings, but don't download or start
@@ -45,6 +47,7 @@ CF_TOKEN=""
 ACCESS_GIVEN=0
 BUILD=0
 START=1
+IMAGES=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -59,9 +62,10 @@ while [ $# -gt 0 ]; do
     --cloudflare-quick) CF_QUICK=1; ACCESS_GIVEN=1; shift ;;
     --cloudflare-token) CF_TOKEN="$2"; ACCESS_GIVEN=1; shift 2 ;;
     --local) ACCESS_GIVEN=1; shift ;;
+    --images) IMAGES="${2%/}"; shift 2 ;;
     --build) BUILD=1; shift ;;
     --no-start) START=0; shift ;;
-    -h | --help) sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -186,6 +190,10 @@ msg_en() {
     public_warning) M='This server is reachable from the internet: for real use don’t sign in over plain http. Use --domain (HTTPS), Tailscale or a Cloudflare tunnel.' ;;
     manage) M='Manage it:' ;;
     remote_later) M='Remote access later:' ;;
+    pull_retry) M='The download was cut off; trying again ({n}/{max}). Finished layers are kept.' ;;
+    pull_hint) M='If ghcr.io is slow from here: run this again with --images and a mirror of ghcr.io (registry-mirrors in Docker’s daemon.json only applies to Docker Hub). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json, restart Docker, and run this again.' ;;
+    docker_permission) M='This user may not use Docker. Run sudo usermod -aG docker {user}, log out and back in (or run newgrp docker), then run this again.' ;;
+    path_hint) M='To run it as just coltex, add {dir} to PATH: {line}' ;;
   esac
 }
 msg_zh_CN() {
@@ -234,6 +242,10 @@ msg_zh_CN() {
     public_warning) M='这台服务器能从公网访问：正式使用时不要通过明文 http 登录，请用 --domain（HTTPS）、Tailscale 或 Cloudflare 隧道。' ;;
     manage) M='管理：' ;;
     remote_later) M='之后开启远程访问：' ;;
+    pull_retry) M='下载中断，正在重试（{n}/{max}）。已下载完的层会保留。' ;;
+    pull_hint) M='如果从这里访问 ghcr.io 很慢：加上 --images 和一个 ghcr.io 镜像地址重新运行（Docker daemon.json 里的 registry-mirrors 只对 Docker Hub 有效）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重启 Docker 后重新运行。' ;;
+    docker_permission) M='当前用户无权使用 Docker。请运行 sudo usermod -aG docker {user}，然后重新登录（或运行 newgrp docker），再重新运行本脚本。' ;;
+    path_hint) M='想直接输入 coltex 运行，请把 {dir} 加入 PATH：{line}' ;;
   esac
 }
 msg_zh_TW() {
@@ -282,6 +294,10 @@ msg_zh_TW() {
     public_warning) M='這台伺服器可以從網際網路連線：正式使用時請不要透過未加密的 http 登入，請改用 --domain（HTTPS）、Tailscale 或 Cloudflare 通道。' ;;
     manage) M='管理：' ;;
     remote_later) M='之後開啟遠端存取：' ;;
+    pull_retry) M='下載中斷，正在重試（{n}/{max}）。已下載完成的層會保留。' ;;
+    pull_hint) M='如果從這裡存取 ghcr.io 很慢：加上 --images 和一個 ghcr.io 鏡像位址重新執行（Docker daemon.json 裡的 registry-mirrors 只對 Docker Hub 有效）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重新啟動 Docker 後再執行一次。' ;;
+    docker_permission) M='目前的使用者無權使用 Docker。請執行 sudo usermod -aG docker {user}，然後重新登入（或執行 newgrp docker），再重新執行本指令碼。' ;;
+    path_hint) M='想直接輸入 coltex 執行，請把 {dir} 加入 PATH：{line}' ;;
   esac
 }
 msg_ja() {
@@ -330,6 +346,10 @@ msg_ja() {
     public_warning) M='このサーバーはインターネットからアクセスできます。本番で使う場合は暗号化されていない http でログインしないでください。--domain（HTTPS）、Tailscale、または Cloudflare Tunnel を使ってください。' ;;
     manage) M='管理：' ;;
     remote_later) M='後からリモートアクセスを有効にするには：' ;;
+    pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）。完了したレイヤーは保持されます。' ;;
+    pull_hint) M='ここから ghcr.io が遅い場合：--images に ghcr.io のミラーを指定してもう一度実行してください（Docker の daemon.json の registry-mirrors は Docker Hub にしか効きません）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してからもう一度実行してください。' ;;
+    docker_permission) M='このユーザーは Docker を使えません。sudo usermod -aG docker {user} を実行し、ログインし直して（または newgrp docker を実行して）から、もう一度実行してください。' ;;
+    path_hint) M='coltex だけで実行するには、{dir} を PATH に追加してください：{line}' ;;
   esac
 }
 msg_ko() {
@@ -378,6 +398,10 @@ msg_ko() {
     public_warning) M='이 서버는 인터넷에서 접속할 수 있습니다. 실제로 사용할 때는 암호화되지 않은 http로 로그인하지 마세요. --domain(HTTPS), Tailscale 또는 Cloudflare 터널을 사용하세요.' ;;
     manage) M='관리:' ;;
     remote_later) M='나중에 원격 접속을 켜려면:' ;;
+    pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max}). 다 받은 레이어는 유지됩니다.' ;;
+    pull_hint) M='여기서 ghcr.io가 느리다면: --images에 ghcr.io 미러를 지정해 다시 실행하세요(Docker daemon.json의 registry-mirrors는 Docker Hub에만 적용됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작한 뒤 다시 실행하세요.' ;;
+    docker_permission) M='이 사용자는 Docker를 사용할 수 없습니다. sudo usermod -aG docker {user}를 실행하고 다시 로그인한 뒤(또는 newgrp docker 실행) 다시 실행하세요.' ;;
+    path_hint) M='coltex만 입력해 실행하려면 {dir}을(를) PATH에 추가하세요: {line}' ;;
   esac
 }
 msg_es() {
@@ -426,6 +450,10 @@ msg_es() {
     public_warning) M='Este servidor es accesible desde internet: para un uso real, no inicies sesión por http sin cifrar. Usa --domain (HTTPS), Tailscale o un túnel de Cloudflare.' ;;
     manage) M='Gestión:' ;;
     remote_later) M='Acceso remoto más adelante:' ;;
+    pull_retry) M='La descarga se cortó; reintentando ({n}/{max}). Las capas ya descargadas se conservan.' ;;
+    pull_hint) M='Si ghcr.io va lento desde aquí: vuelve a ejecutarlo con --images y un espejo de ghcr.io (registry-mirrors en el daemon.json de Docker solo se aplica a Docker Hub). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json, reinicia Docker y vuelve a ejecutarlo.' ;;
+    docker_permission) M='Este usuario no puede usar Docker. Ejecuta sudo usermod -aG docker {user}, cierra la sesión y vuelve a entrar (o ejecuta newgrp docker) y luego vuelve a ejecutar esto.' ;;
+    path_hint) M='Para ejecutarlo solo como coltex, añade {dir} al PATH: {line}' ;;
   esac
 }
 msg_fr() {
@@ -474,6 +502,10 @@ msg_fr() {
     public_warning) M='Ce serveur est joignable depuis Internet : pour un usage réel, ne vous connectez pas en simple http. Utilisez --domain (HTTPS), Tailscale ou un tunnel Cloudflare.' ;;
     manage) M='Pour le gérer :' ;;
     remote_later) M='Accès à distance plus tard :' ;;
+    pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max}). Les couches terminées sont conservées.' ;;
+    pull_hint) M='Si ghcr.io est lent depuis ici : relancez avec --images et un miroir de ghcr.io (registry-mirrors dans le daemon.json de Docker ne s’applique qu’à Docker Hub). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json, redémarrez Docker, puis relancez.' ;;
+    docker_permission) M='Cet utilisateur ne peut pas utiliser Docker. Lancez sudo usermod -aG docker {user}, déconnectez-vous puis reconnectez-vous (ou lancez newgrp docker), puis relancez.' ;;
+    path_hint) M='Pour le lancer simplement avec coltex, ajoutez {dir} au PATH : {line}' ;;
   esac
 }
 msg_de() {
@@ -522,6 +554,10 @@ msg_de() {
     public_warning) M='Dieser Server ist aus dem Internet erreichbar: Melden Sie sich im echten Betrieb nicht über unverschlüsseltes http an. Verwenden Sie --domain (HTTPS), Tailscale oder einen Cloudflare Tunnel.' ;;
     manage) M='Verwaltung:' ;;
     remote_later) M='Fernzugriff später:' ;;
+    pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max}). Fertige Layer bleiben erhalten.' ;;
+    pull_hint) M='Wenn ghcr.io von hier aus langsam ist: erneut mit --images und einem Spiegel von ghcr.io ausführen (registry-mirrors in Dockers daemon.json gilt nur für Docker Hub). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen, Docker neu starten und erneut ausführen.' ;;
+    docker_permission) M='Dieser Benutzer darf Docker nicht verwenden. Führen Sie sudo usermod -aG docker {user} aus, melden Sie sich ab und wieder an (oder führen Sie newgrp docker aus) und starten Sie dies erneut.' ;;
+    path_hint) M='Um es einfach als coltex auszuführen, fügen Sie {dir} zum PATH hinzu: {line}' ;;
   esac
 }
 msg_pt_BR() {
@@ -570,6 +606,10 @@ msg_pt_BR() {
     public_warning) M='Este servidor é acessível pela internet: para uso real, não faça login por http simples. Use --domain (HTTPS), Tailscale ou um Cloudflare Tunnel.' ;;
     manage) M='Para gerenciar:' ;;
     remote_later) M='Acesso remoto depois:' ;;
+    pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max}). As camadas já baixadas são mantidas.' ;;
+    pull_hint) M='Se o ghcr.io estiver lento daqui: execute de novo com --images e um espelho do ghcr.io (registry-mirrors no daemon.json do Docker só vale para o Docker Hub). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json, reinicie o Docker e execute de novo.' ;;
+    docker_permission) M='Este usuário não pode usar o Docker. Execute sudo usermod -aG docker {user}, saia e entre de novo (ou execute newgrp docker) e depois execute isto de novo.' ;;
+    path_hint) M='Para executá-lo só como coltex, adicione {dir} ao PATH: {line}' ;;
   esac
 }
 msg_it() {
@@ -618,6 +658,10 @@ msg_it() {
     public_warning) M='Questo server è raggiungibile da internet: per l’uso reale non accedere tramite http in chiaro. Usa --domain (HTTPS), Tailscale o un tunnel Cloudflare.' ;;
     manage) M='Per gestirlo:' ;;
     remote_later) M='Accesso remoto in seguito:' ;;
+    pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max}). I layer già scaricati vengono mantenuti.' ;;
+    pull_hint) M='Se ghcr.io è lento da qui: esegui di nuovo con --images e un mirror di ghcr.io (registry-mirrors nel daemon.json di Docker vale solo per Docker Hub). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json, riavvia Docker ed esegui di nuovo.' ;;
+    docker_permission) M='Questo utente non può usare Docker. Esegui sudo usermod -aG docker {user}, esci e rientra (oppure esegui newgrp docker), poi esegui di nuovo.' ;;
+    path_hint) M='Per avviarlo semplicemente con coltex, aggiungi {dir} al PATH: {line}' ;;
   esac
 }
 msg_ru() {
@@ -666,6 +710,10 @@ msg_ru() {
     public_warning) M='Этот сервер доступен из интернета: при реальной работе не входите по открытому http. Используйте --domain (HTTPS), Tailscale или туннель Cloudflare.' ;;
     manage) M='Управление:' ;;
     remote_later) M='Удалённый доступ позже:' ;;
+    pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max}). Загруженные слои сохраняются.' ;;
+    pull_hint) M='Если ghcr.io отсюда работает медленно: запустите снова с --images и зеркалом ghcr.io (registry-mirrors в daemon.json Docker действует только для Docker Hub). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json, перезапустите Docker и запустите снова.' ;;
+    docker_permission) M='Этому пользователю нельзя использовать Docker. Выполните sudo usermod -aG docker {user}, выйдите и войдите снова (или выполните newgrp docker), затем запустите снова.' ;;
+    path_hint) M='Чтобы запускать просто командой coltex, добавьте {dir} в PATH: {line}' ;;
   esac
 }
 msg_tr() {
@@ -714,6 +762,10 @@ msg_tr() {
     public_warning) M='Bu sunucuya internetten erişilebiliyor: gerçek kullanımda düz http üzerinden oturum açmayın. --domain (HTTPS), Tailscale veya bir Cloudflare tüneli kullanın.' ;;
     manage) M='Yönetmek için:' ;;
     remote_later) M='Daha sonra uzaktan erişim:' ;;
+    pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max}). Tamamlanan katmanlar korunur.' ;;
+    pull_hint) M='ghcr.io buradan yavaşsa: --images ve bir ghcr.io aynasıyla yeniden çalıştırın (Docker daemon.json içindeki registry-mirrors yalnızca Docker Hub için geçerlidir). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayın, Docker’ı yeniden başlatın ve yeniden çalıştırın.' ;;
+    docker_permission) M='Bu kullanıcı Docker’ı kullanamıyor. sudo usermod -aG docker {user} çalıştırın, oturumu kapatıp yeniden açın (veya newgrp docker çalıştırın), sonra yeniden çalıştırın.' ;;
+    path_hint) M='Yalnızca coltex yazarak çalıştırmak için {dir} dizinini PATH’e ekleyin: {line}' ;;
   esac
 }
 msg_vi() {
@@ -762,6 +814,10 @@ msg_vi() {
     public_warning) M='Máy chủ này truy cập được từ internet: khi dùng thật, đừng đăng nhập qua http thuần. Hãy dùng --domain (HTTPS), Tailscale hoặc Cloudflare tunnel.' ;;
     manage) M='Quản lý:' ;;
     remote_later) M='Truy cập từ xa sau này:' ;;
+    pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max}). Các lớp đã tải xong được giữ lại.' ;;
+    pull_hint) M='Nếu ghcr.io chậm từ đây: chạy lại với --images và một bản sao (mirror) của ghcr.io (registry-mirrors trong daemon.json của Docker chỉ áp dụng cho Docker Hub). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json, khởi động lại Docker rồi chạy lại.' ;;
+    docker_permission) M='Người dùng này không được dùng Docker. Chạy sudo usermod -aG docker {user}, đăng xuất rồi đăng nhập lại (hoặc chạy newgrp docker), sau đó chạy lại.' ;;
+    path_hint) M='Để chạy chỉ bằng lệnh coltex, hãy thêm {dir} vào PATH: {line}' ;;
   esac
 }
 msg_id() {
@@ -810,6 +866,10 @@ msg_id() {
     public_warning) M='Server ini dapat dijangkau dari internet: untuk penggunaan sungguhan, jangan masuk melalui http biasa. Gunakan --domain (HTTPS), Tailscale, atau Cloudflare Tunnel.' ;;
     manage) M='Kelola:' ;;
     remote_later) M='Akses jarak jauh nanti:' ;;
+    pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max}). Lapisan yang sudah selesai tetap disimpan.' ;;
+    pull_hint) M='Jika ghcr.io lambat dari sini: jalankan lagi dengan --images dan mirror ghcr.io (registry-mirrors di daemon.json Docker hanya berlaku untuk Docker Hub). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json, mulai ulang Docker, lalu jalankan lagi.' ;;
+    docker_permission) M='Pengguna ini tidak boleh memakai Docker. Jalankan sudo usermod -aG docker {user}, keluar lalu masuk lagi (atau jalankan newgrp docker), lalu jalankan lagi.' ;;
+    path_hint) M='Agar bisa dijalankan cukup dengan coltex, tambahkan {dir} ke PATH: {line}' ;;
   esac
 }
 # <<< messages
@@ -956,14 +1016,18 @@ header
 LOG="$(mktemp "${TMPDIR:-/tmp}/coltex-install.XXXXXX")"
 SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 
-# Stop with a message (none after a failed step, whose line says it) and the log's end.
+# Stop with a message (none after a failed step, whose line says it), the log's end, and
+# $DIE_HINT (what may help) last.
+DIE_HINT=""
 die() {
   cursor_show
   [ -n "$*" ] && printf '\n  %s %s\n' "${RED}✗${RESET}" "${BOLD}$*${RESET}" >&2
   if [ -s "$LOG" ]; then
     printf '\n%s\n' "${DIM}$(tail -n 15 "$LOG" | sed 's/^/    /')${RESET}" >&2
-    printf '\n  %s\n\n' "$(T full_output log="$LOG")" >&2
+    printf '\n  %s\n' "$(T full_output log="$LOG")" >&2
   fi
+  [ -z "$DIE_HINT" ] || printf '\n  %s\n' "$DIE_HINT" >&2
+  echo >&2
   exit 1
 }
 done_line() { printf '\r%s  %s %s\n' "${ESC}[2K" "${GREEN}✓${RESET}" "$1"; }
@@ -1038,7 +1102,9 @@ pull_with_bar() {
     docker compose pull >>"$LOG" 2>&1
     return
   fi
-  note "$(T download_note)"
+  # Once, not again on each retry.
+  [ -n "${NOTED:-}" ] || note "$(T download_note)"
+  NOTED=1
   cursor_hide
   printf '\r  %s %s' "${BLUE}${SPIN[0]}${RESET}" "$label"
   # Asking the registries takes a few seconds; the line above is already there meanwhile.
@@ -1081,8 +1147,15 @@ pull_with_bar() {
   return "$rc"
 }
 
-# The images: pulled with a bar, or plainly when this Compose has no JSON progress.
-pull_images() {
+# Whether the pull failed because there are no prebuilt images for this version (then they are
+# built here), rather than for the network or the registry (then that is the error).
+images_missing() { tail -n 40 "$LOG" | grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found'; }
+
+# The images: pulled with a bar, or plainly when this Compose has no JSON progress. A pull cut
+# off by the network is tried again (Docker keeps the layers it finished, so each try only
+# fetches the rest), up to PULL_TRIES times in all.
+PULL_TRIES=3
+pull_once() {
   local label
   label="$(T downloading)"
   pull_with_bar "$label" && return 0
@@ -1090,10 +1163,16 @@ pull_images() {
   if tail -n 3 "$LOG" | grep -qi 'progress'; then spin "$label" docker compose pull && return 0; fi
   return 1
 }
-
-# Whether the pull failed because there are no prebuilt images for this version (then they are
-# built here), rather than for the network or the registry (then that is the error).
-images_missing() { tail -n 40 "$LOG" | grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found'; }
+pull_images() {
+  local try=1
+  until pull_once; do
+    images_missing && return 1
+    [ "$try" -lt "$PULL_TRIES" ] || return 1
+    try=$((try + 1))
+    note "$(T pull_retry n="$try" max="$PULL_TRIES")"
+    sleep 3
+  done
+}
 
 # ---- Docker --------------------------------------------------------------------------
 if ! have docker; then
@@ -1110,7 +1189,13 @@ if ! have docker; then
 fi
 check_docker() {
   docker compose version >/dev/null 2>&1 || { echo "The Docker Compose plugin is needed: https://docs.docker.com/compose/install/"; return 1; }
-  docker info >/dev/null 2>&1 || { echo "Docker is installed but not running, or this user may not use it (add it to the docker group)"; return 1; }
+  local info
+  if ! info="$(docker info 2>&1)"; then
+    if echo "$info" | grep -qi 'permission denied'; then T docker_permission user="$(id -un)"; echo; return 1; fi
+    echo "$info" | tail -n 3
+    echo "Docker is installed but not running: start it (sudo systemctl start docker, or open Docker Desktop)"
+    return 1
+  fi
   have git || { echo "git is needed"; return 1; }
   have curl || { echo "curl is needed"; return 1; }
 }
@@ -1207,6 +1292,10 @@ EOF
   # The images of the version just checked out (ghcr.io; see docker-compose.yml).
   setting COLTEX_IMAGE_TAG "$VERSION"
   [ "$BUILD" = 1 ] && setting COLTEX_BUILD 1
+  [ -n "$IMAGES" ] && setting COLTEX_IMAGES "$IMAGES"
+  # Present though empty, so a Compose that reads the port's ${COLTEX_BIND:+…} doesn't warn
+  # that it isn't set.
+  grep -q '^COLTEX_BIND=' .env || setting COLTEX_BIND ""
   if [ -n "$DOMAIN" ]; then
     # HTTPS through the bundled Caddy (compose profile "proxy", which every coltex command then
     # includes); links use the domain; the plain port only answers on this machine.
@@ -1229,13 +1318,23 @@ step "$(T writing_settings)" write_settings
 PORT="$(get COLTEX_PORT)"
 PORT="${PORT:-3690}"
 
-# The `coltex` command, where the shell finds it.
+# The `coltex` command, where the shell finds it: ~/.local/bin, or /usr/local/bin when that is
+# on PATH and ~/.local/bin isn't (root on many servers); otherwise its full path for now, and
+# how to add ~/.local/bin to PATH.
 chmod +x coltex
+on_path() { case ":$PATH:" in *":$1:"*) return 0 ;; *) return 1 ;; esac; }
+CMD="$DIR/coltex"
+PATH_HINT=""
 if [ -d "$HOME/.local/bin" ] || mkdir -p "$HOME/.local/bin" 2>/dev/null; then
   ln -sf "$DIR/coltex" "$HOME/.local/bin/coltex"
-  case ":$PATH:" in *":$HOME/.local/bin:"*) CMD=coltex ;; *) CMD="$DIR/coltex" ;; esac
-else
-  CMD="$DIR/coltex"
+  on_path "$HOME/.local/bin" && CMD=coltex
+fi
+if [ "$CMD" != coltex ] && on_path /usr/local/bin && [ -w /usr/local/bin ]; then
+  ln -sf "$DIR/coltex" /usr/local/bin/coltex && CMD=coltex
+fi
+if [ "$CMD" != coltex ]; then
+  case "${SHELL:-}" in */zsh) rc="~/.zshrc" ;; */bash) rc="~/.bashrc" ;; *) rc="~/.profile" ;; esac
+  PATH_HINT="$(T path_hint dir="~/.local/bin" line="echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> $rc")"
 fi
 
 # Shown with ~ for the home folder.
@@ -1251,7 +1350,7 @@ fi
 if [ "$(get COLTEX_BUILD)" = 1 ]; then
   step "$(T building)" docker compose build
 elif ! pull_images; then
-  images_missing || die "$(T pull_failed)"
+  images_missing || { DIE_HINT="$(T pull_hint)"; die "$(T pull_failed)"; }
   note "$(T no_prebuilt version="$VERSION")"
   step "$(T building)" docker compose build
 fi
@@ -1311,4 +1410,5 @@ if [ "$public" = 1 ]; then
 fi
 printf '\n  %s\n' "$(T manage) ${BOLD}$SHOWN_CMD status | logs | update | stop | start${RESET}"
 printf '  %s\n' "$(T remote_later) ${BOLD}$SHOWN_CMD tailscale up${RESET} | ${BOLD}cloudflare quick${RESET} | ${BOLD}cloudflare token${RESET}"
+[ -z "$PATH_HINT" ] || printf '  %s\n' "$PATH_HINT"
 printf '  %s\n\n' "${DIM}$(T full_output log="$SHOWN_LOG")${RESET}"

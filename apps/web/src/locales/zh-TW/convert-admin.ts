@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': '正在連線到 Cloudflare…',
   'The tunnel did not connect.': '通道沒有連上。',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': '還沒有公開主機名稱：請在 Cloudflare 主控台為這個通道新增一個，服務指向 http://localhost:3690。',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} 仍綁定在目前的通道上：請在 Cloudflare 主控台把它們移到新通道，否則存取時會出現 Error 1033。',
   'Changes every time the tunnel starts.': '每次通道啟動都會改變。',
   'Cloudflare (temporary)': 'Cloudflare（臨時）',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'localhost 連結只有本機能開啟。請用其他人能連線的位址（區域網路 IP、公開 IP 或網域）開啟 ColTex，或在「設定 → 網路」中開啟 Tailscale 或 Cloudflare Tunnel。',

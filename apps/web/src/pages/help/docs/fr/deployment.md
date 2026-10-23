@@ -38,6 +38,8 @@ Gérez-le ensuite avec `coltex` :
 | `coltex tailscale up` | Rejoindre votre tailnet (affiche un lien de connexion et un code QR) |
 | `coltex cloudflare quick` | Une adresse Cloudflare publique temporaire |
 | `coltex cloudflare token` | Un tunnel Cloudflare avec votre propre domaine (demande le jeton) |
+| `coltex reset` | Supprime tout (comptes, projets, base de données) et repart de la page de configuration ; demande d’abord de taper `reset` |
+| `coltex uninstall` | Retire ColTex de cette machine : conteneurs, base de données, données, images, la commande `coltex` et son dossier (Docker reste installé) ; demande d’abord de taper `uninstall` |
 
 ## Se connecter depuis n’importe quelle adresse
 
@@ -81,6 +83,8 @@ ColTex intègre aussi Cloudflare Tunnel, uniquement comme tunnel : les gens se
 - **Mon propre domaine** : avec votre domaine sur Cloudflare, créez un tunnel sous Zero Trust → Networks → Tunnels, copiez la commande sous « Run the following command » (pour n’importe quel système : Windows, macOS, Debian, Red Hat ou Docker) ; ColTex en extrait le jeton ; ajoutez au tunnel un nom d’hôte public (p. ex. `tex.example.org`) avec le service `http://localhost:3690`.
 
 Activez-le avec l’interrupteur de la carte Cloudflare Tunnel dans **Paramètres → Réseau**, puis choisissez un lien temporaire ou un tunnel (celui enregistré, ou un nouveau à partir de la commande collée), ou dans un terminal avec `coltex cloudflare quick` / `coltex cloudflare token`. Une fois connecté, ses adresses apparaissent d’elles-mêmes dans les liens d’invitation. Le jeton est stocké chiffré et n’est plus jamais affiché.
+
+Si le tunnel ne peut pas joindre Cloudflare en QUIC (un pare-feu, ou un proxy qui bloque l’UDP), ColTex le fait passer de lui-même en HTTP/2. Quand trycloudflare.com limite les liens temporaires (429 Too Many Requests), ColTex redemande de moins en moins souvent. Quand vous changez de tunnel, déplacez ses noms d’hôte publics vers le nouveau tunnel dans le tableau de bord Cloudflare ; d’ici là, ils répondent par Error 1033.
 
 ## Réglages du serveur
 

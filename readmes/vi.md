@@ -109,6 +109,7 @@ Các tùy chọn trả lời thay cho câu hỏi, hoặc thay thế chúng khi k
 | `--port 3690` | Một cổng khác |
 | `--version v0.0.1` | Một bản phát hành cụ thể (`main` cho nhánh phát triển) |
 | `--build` | Dựng các image từ mã nguồn trên máy này thay vì tải về |
+| `--images REGISTRY` | Tải các image từ `REGISTRY` thay vì `ghcr.io/lewen-cai`, vd. một bản mirror của ghcr.io khi ghcr.io chậm (`registry-mirrors` của Docker chỉ áp dụng cho Docker Hub, không áp dụng cho ghcr.io) |
 
 Trên máy chủ truy cập được từ internet, đừng đăng nhập qua `http://` thuần: hãy dùng `--domain`, Tailscale hoặc Cloudflare tunnel.
 
@@ -122,6 +123,8 @@ coltex version
 coltex edition full    # switch the TeX Live edition
 coltex tailscale up    # or: coltex cloudflare quick | token
 coltex stop | start
+coltex reset           # delete all data and start again from the setup page (asks first)
+coltex uninstall       # remove ColTex from this machine: containers, data, images, this folder (asks first)
 ```
 
 <a id="configure"></a>

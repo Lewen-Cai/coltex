@@ -38,6 +38,8 @@ Danach verwalten Sie es mit `coltex`:
 | `coltex tailscale up` | Ihrem Tailnet beitreten (gibt einen Anmeldelink und einen QR-Code aus) |
 | `coltex cloudflare quick` | Eine temporäre öffentliche Cloudflare-Adresse |
 | `coltex cloudflare token` | Ein Cloudflare-Tunnel mit Ihrer eigenen Domain (fragt nach dem Token) |
+| `coltex reset` | Alles löschen (Konten, Projekte, die Datenbank) und auf der Einrichtungsseite neu beginnen; fragt vorher nach, Sie müssen `reset` eintippen |
+| `coltex uninstall` | ColTex von diesem Rechner entfernen: Container, Datenbank, Daten, Images, den Befehl `coltex` und seinen Ordner (Docker bleibt); fragt vorher nach, Sie müssen `uninstall` eintippen |
 
 ## Anmelden von jeder Adresse
 
@@ -81,6 +83,8 @@ ColTex hat auch Cloudflare Tunnel eingebaut, nur als Tunnel: Personen melden sic
 - **Eigene Domain**: Mit Ihrer Domain bei Cloudflare erstellen Sie unter Zero Trust → Networks → Tunnels einen Tunnel, kopieren den Befehl unter „Run the following command“ (für ein beliebiges System: Windows, macOS, Debian, Red Hat oder Docker) – ColTex entnimmt ihm das Token – und fügen dem Tunnel einen öffentlichen Hostnamen hinzu (z. B. `tex.example.org`) mit dem Dienst `http://localhost:3690`.
 
 Schalten Sie ihn mit dem Schalter der Karte Cloudflare Tunnel unter **Einstellungen → Netzwerk** ein und wählen Sie dann einen temporären Link oder einen Tunnel (den gespeicherten oder einen neuen aus dem eingefügten Befehl), oder im Terminal mit `coltex cloudflare quick` / `coltex cloudflare token`. Sobald er verbunden ist, erscheinen seine Adressen von selbst in Einladungslinks. Das Token wird verschlüsselt gespeichert und nie wieder angezeigt.
+
+Kann der Tunnel Cloudflare nicht über QUIC erreichen (eine Firewall oder ein Proxy, der UDP verwirft), stellt ColTex ihn von selbst auf HTTP/2 um. Wenn trycloudflare.com temporäre Links begrenzt (429 Too Many Requests), fragt ColTex immer seltener erneut an. Wenn Sie den Tunnel wechseln, verschieben Sie seine öffentlichen Hostnamen im Cloudflare-Dashboard auf den neuen Tunnel; bis dahin antworten sie mit Error 1033.
 
 ## Servereinstellungen
 

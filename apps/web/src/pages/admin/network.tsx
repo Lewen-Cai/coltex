@@ -424,6 +424,13 @@ function CloudflareCard({ info, onChanged }: { info: NetworkInfo; onChanged: () 
         className="font-mono text-xs break-all"
         aria-invalid={!!read && 'problem' in read}
       />
+      {replacing && cf.urls.length > 0 && (
+        <Warning>
+          {t('{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.', {
+            hosts: cf.urls.map(u => u.replace(/^https:\/\//, '')).join(', '),
+          })}
+        </Warning>
+      )}
       {read && 'problem' in read && <p className="text-sm text-destructive">{read.problem}</p>}
       {found && (
         <div className="grid gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm dark:border-emerald-500/40 dark:bg-emerald-500/10">

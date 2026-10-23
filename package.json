@@ -13,8 +13,8 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "infra:up": "docker compose up -d --build postgres valkey compiler",
-    "infra:down": "docker compose down"
+    "infra:up": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build postgres valkey compiler",
+    "infra:down": "docker compose -f docker-compose.yml -f docker-compose.dev.yml down"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

@@ -5,7 +5,10 @@
 # ColTex's images come from ghcr.io (.github/workflows/images.yml): COLTEX_IMAGE_TAG is the
 # release (v0.0.2, latest) or main; install.sh and `coltex update` set it to the version
 # they check out. Without a published image for it, compose builds from these sources.
-#   Development:  pnpm infra:up   (only valkey + compiler; server/web run on the host)
+#   Development:  pnpm infra:up   (postgres, valkey and the compiler; server and web run on the
+#                 host, reaching postgres and valkey through the ports docker-compose.dev.yml adds)
+# Nothing but ColTex's port (and Caddy's 80/443) is published on the host, so an install never
+# clashes with a PostgreSQL or Redis already running there.
 name: coltex
 
 services:
@@ -16,9 +19,6 @@ services:
     volumes:
       - valkey:/data
     networks: [default, backend]
-    # Exposed on localhost only, so a server running on the host can reach it in development.
-    ports:
-      - "127.0.0.1:6379:6379"
 
   postgres:
     image: postgres:18-alpine
@@ -34,9 +34,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    # Exposed on localhost only, so a server running on the host can reach it in development.
-    ports:
-      - "127.0.0.1:5432:5432"
 
   compiler:
     image: ${COLTEX_IMAGES:-ghcr.io/lewen-cai}/coltex-compiler:${COLTEX_IMAGE_TAG:-latest}-${COLTEX_EDITION:-standard}

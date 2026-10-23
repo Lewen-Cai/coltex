@@ -38,6 +38,8 @@ Sau đó quản lý bằng `coltex`:
 | `coltex tailscale up` | Tham gia tailnet của bạn (in ra liên kết đăng nhập và mã QR) |
 | `coltex cloudflare quick` | Một địa chỉ Cloudflare công khai tạm thời |
 | `coltex cloudflare token` | Một Cloudflare tunnel với tên miền của riêng bạn (hỏi token) |
+| `coltex reset` | Xóa mọi thứ (tài khoản, dự án, cơ sở dữ liệu) và bắt đầu lại từ trang thiết lập; trước đó sẽ yêu cầu bạn gõ `reset` để xác nhận |
+| `coltex uninstall` | Gỡ ColTex khỏi máy này: container, cơ sở dữ liệu, dữ liệu, image, lệnh `coltex` và thư mục của nó (Docker được giữ lại); trước đó sẽ yêu cầu bạn gõ `uninstall` để xác nhận |
 
 ## Đăng nhập từ bất kỳ địa chỉ nào
 
@@ -81,6 +83,8 @@ ColTex cũng có sẵn Cloudflare Tunnel, chỉ đóng vai trò đường hầm:
 - **Tên miền của riêng tôi**: với tên miền của bạn trên Cloudflare, hãy tạo một tunnel trong Zero Trust → Networks → Tunnels, sao chép lệnh bên dưới “Run the following command” (cho bất kỳ hệ thống nào: Windows, macOS, Debian, Red Hat hoặc Docker); ColTex sẽ tự lấy token ra từ lệnh đó; thêm một public hostname cho tunnel (vd. `tex.example.org`) với service `http://localhost:3690`.
 
 Bật nó bằng công tắc trên thẻ Cloudflare Tunnel trong **Cài đặt → Mạng**, rồi chọn liên kết tạm thời hoặc một tunnel (tunnel đã lưu, hoặc tunnel mới từ lệnh đã dán), hoặc trong terminal bằng `coltex cloudflare quick` / `coltex cloudflare token`. Khi đã kết nối, các địa chỉ của nó tự xuất hiện trong liên kết mời. Token được lưu mã hóa và không bao giờ hiển thị lại.
+
+Nếu tunnel không kết nối được tới Cloudflare qua QUIC (do tường lửa, hoặc proxy chặn UDP), ColTex sẽ tự chuyển nó sang HTTP/2. Khi trycloudflare.com giới hạn liên kết tạm thời (429 Too Many Requests), ColTex sẽ thử lại ngày càng thưa hơn. Khi bạn đổi tunnel, hãy chuyển các public hostname của nó sang tunnel mới trong bảng điều khiển Cloudflare; cho đến lúc đó, chúng sẽ trả về Error 1033.
 
 ## Cài đặt máy chủ
 

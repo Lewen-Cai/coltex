@@ -38,6 +38,8 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `coltex tailscale up` | tailnet に参加（ログインリンクと QR コードを表示します） |
 | `coltex cloudflare quick` | Cloudflare の一時的な公開アドレス |
 | `coltex cloudflare token` | 独自ドメインを使う Cloudflare トンネル（トークンを尋ねます） |
+| `coltex reset` | すべて（アカウント、プロジェクト、データベース）を削除し、セットアップページからやり直します。実行前に `reset` と入力するよう求められます |
+| `coltex uninstall` | このマシンから ColTex を削除します：コンテナ、データベース、データ、イメージ、`coltex` コマンドとそのフォルダー（Docker は残ります）。実行前に `uninstall` と入力するよう求められます |
 
 ## どのアドレスからでもログインできる
 
@@ -81,6 +83,8 @@ ColTex には Cloudflare Tunnel も組み込まれています。トンネルと
 - **独自ドメインのトンネル**：Cloudflare にドメインがある場合、Zero Trust → Networks → Tunnels でトンネルを作成し、“Run the following command” の下にあるコマンド（Windows、macOS、Debian、Red Hat、Docker のどのシステム用でも構いません）をコピーします。ColTex がそこからトークンを取り出します。トンネルに公開ホスト名（例：`tex.example.org`）を追加し、サービスを `http://localhost:3690` に設定します。
 
 **設定 → ネットワーク** の Cloudflare Tunnel カードのスイッチでオンにし、一時リンクかトンネル（保存済みのもの、または貼り付けたコマンドから作る新しいもの）を選びます。ターミナルで `coltex cloudflare quick` / `coltex cloudflare token` を使うこともできます。接続すると、そのアドレスは自動的に招待リンクに表示されます。トークンは暗号化して保存され、二度と表示されません。
+
+トンネルが QUIC で Cloudflare に接続できない場合（ファイアウォールや、UDP を通さないプロキシなど）、ColTex は自動的に HTTP/2 に切り替えます。trycloudflare.com が一時リンクを制限した場合（429 Too Many Requests）、ColTex は再試行の間隔を徐々に空けます。トンネルを変更したときは、Cloudflare のダッシュボードで公開ホスト名を新しいトンネルに移してください。移すまでは Error 1033 が返されます。
 
 ## サーバーの設定
 

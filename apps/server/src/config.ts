@@ -20,12 +20,25 @@ function loadSecret(): string {
   if (process.env.COLTEX_SECRET) return process.env.COLTEX_SECRET
   const file = path.join(dataDir, '.secret')
   try {
-    return fs.readFileSync(file, 'utf8').trim()
-  } catch {
-    const secret = crypto.randomBytes(32).toString('base64url')
-    fs.mkdirSync(dataDir, { recursive: true })
-    fs.writeFileSync(file, secret, { mode: 0o600, flag: 'wx' })
-    return secret
+    try {
+      return fs.readFileSync(file, 'utf8').trim()
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+      const secret = crypto.randomBytes(32).toString('base64url')
+      fs.mkdirSync(dataDir, { recursive: true })
+      fs.writeFileSync(file, secret, { mode: 0o600, flag: 'wx' })
+      return secret
+    }
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code !== 'EACCES' && code !== 'EPERM') throw err
+    // Usually the data folder was removed and Docker made a new one, owned by root.
+    const who = process.getuid ? `${process.getuid()}:${process.getgid!()}` : 'this user'
+    console.error(
+      `ColTex can't use its data folder: ${file} is not readable and writable by the server's user (${who}).\n` +
+        `Give the folder to that user, e.g. on the host: sudo chown -R ${who} data   (coltex start does this itself)`,
+    )
+    process.exit(1)
   }
 }
 

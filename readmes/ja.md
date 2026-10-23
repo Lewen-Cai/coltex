@@ -109,6 +109,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 別のポート |
 | `--version v0.0.1` | 特定のリリース（開発ブランチは `main`） |
 | `--build` | イメージをダウンロードせず、このマシンでソースからビルドします |
+| `--images REGISTRY` | イメージを `ghcr.io/lewen-cai` ではなく `REGISTRY` からダウンロードします。たとえば ghcr.io が遅い場合の ghcr.io のミラーです（Docker の `registry-mirrors` は Docker Hub にのみ適用され、ghcr.io には適用されません） |
 
 インターネットからアクセスできるサーバーでは、暗号化されていない `http://` でログインしないでください。`--domain`、Tailscale、または Cloudflare トンネルを使ってください。
 
@@ -122,6 +123,8 @@ coltex version
 coltex edition full    # switch the TeX Live edition
 coltex tailscale up    # or: coltex cloudflare quick | token
 coltex stop | start
+coltex reset           # delete all data and start again from the setup page (asks first)
+coltex uninstall       # remove ColTex from this machine: containers, data, images, this folder (asks first)
 ```
 
 <a id="configure"></a>

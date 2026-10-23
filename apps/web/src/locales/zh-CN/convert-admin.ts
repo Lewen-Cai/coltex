@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': '正在连接 Cloudflare…',
   'The tunnel did not connect.': '隧道没有连上。',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': '还没有公网主机名：请在 Cloudflare 后台给这个隧道添加一个，服务指向 http://localhost:3690。',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} 仍绑定在当前隧道上：请在 Cloudflare 后台把它们移到新隧道，否则访问会出现 Error 1033。',
   'Changes every time the tunnel starts.': '每次隧道启动都会变。',
   'Cloudflare (temporary)': 'Cloudflare（临时）',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'localhost 链接只有本机能打开。请用别人能访问的地址（局域网 IP、公网 IP 或域名）打开 ColTex，或在“设置 → 网络”里开启 Tailscale 或 Cloudflare Tunnel。',

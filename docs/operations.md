@@ -20,7 +20,16 @@ Without `install.sh` on Linux, create `data/projects` and `data/outputs`
 before the first `docker compose up` and give `./data` to `COLTEX_UID:COLTEX_GID`
 (1000 by default): the compiler mounts those two folders on their own, and
 folders Docker creates for a mount belong to root, which the server (not
-root) can't write into.
+root) can't write into. `coltex start`, `restart` and `deploy` check this
+first and fix it (as root, or else through a throwaway container of the
+server image run as root); a server that still can't use the folder stops
+at once and says which `chown` to run, instead of restarting over and over.
+
+Only ColTex's port (and Caddy's 80 and 443 with `--domain`) is published on
+the host. PostgreSQL and Valkey stay inside Docker, so an install never
+clashes with a database already running on the machine; development adds
+their ports from `docker-compose.dev.yml` (`pnpm infra:up`, or
+`COMPOSE_FILE` in the checkout's `.env`, as in `.env.example`).
 
 ## Addresses, proxies and tunnels
 
@@ -89,7 +98,21 @@ the metrics server on `CLOUDFLARED_METRICS` (default `127.0.0.1:20241`:
 hostnames). cloudflared forwards from loopback with `X-Forwarded-For` and
 `X-Forwarded-Proto`, which the loopback trust covers. CLI: `cloudflare
 [status | quick | token [TOKEN] | off]` (token from the argument,
-`$CF_TUNNEL_TOKEN`, or typed in).
+`$CF_TUNNEL_TOKEN`, or typed in); it only changes the setting and signals
+the server, whose cloudflared is the only one.
+
+`Supervised` keeps exactly one process: starts and stops are queued, each
+start ends the previous run and any pending restart, and a restart is only
+for the launch it was made for. A process that exits on its own is started
+again after 5 s, doubling up to 5 min while it keeps failing (a run of 2 min
+resets it); asking again with the same settings keeps the wait. For
+cloudflared, a rate-limited quick tunnel (429 / error 1015) waits from 30 s
+up to 30 min. Three QUIC dial timeouts in one run (UDP blocked, or a proxy
+with fake IPs such as Clash's 198.18.0.0/15) restart it with `--protocol
+http2` until the server restarts, unless `TUNNEL_TRANSPORT_PROTOCOL` is set
+for the server. Known errors (rate limit, edge unreachable, metrics port
+taken, invalid token) are shown explained; others as cloudflared logged
+them, each line once.
 
 ### Installing with one command
 
@@ -137,6 +160,16 @@ from the checked-out sources when the pull fails (no images for that
 version) or when `.env` has `COLTEX_BUILD=1` (`install.sh --build`). After
 a deploy it removes the images the containers ran before. The packages must
 be public on GitHub (package settings → visibility), or pulls are refused.
+
+A pull cut off by the network is tried again, three times in all (Docker
+keeps the layers it finished; `install.sh` and `coltex deploy` alike). Where
+ghcr.io is slow, `install.sh --images REGISTRY` (or `COLTEX_IMAGES` in `.env`)
+pulls from a mirror of it: Docker's `registry-mirrors` in `daemon.json` only
+applies to Docker Hub. On a connection that keeps breaking,
+`"max-concurrent-downloads": 1` and `"max-download-attempts": 10` in
+`/etc/docker/daemon.json` help. `install.sh` writes an empty `COLTEX_BIND=`
+(and `coltex` adds it when missing) so that older Compose versions don't warn
+about the port's `${COLTEX_BIND:+…}`.
 
 ## Storing project files in S3
 
@@ -225,6 +258,24 @@ Restore into a fresh install: an empty database and an empty data directory
    its database migrations on start.
 
 If the old server used `COLTEX_SECRET`, set the same value on the new one.
+
+## Passwords and starting over
+
+- `coltex cli reset-password <email>` sets a new password for an account
+  (typed twice without echo, or from `COLTEX_NEW_PASSWORD`), checked by the
+  same rules as the web app, and ends all its sessions. It works with the
+  server running.
+- `coltex reset` puts the instance back to a fresh install: after you type
+  `reset`, `docker compose down -v` (database, Valkey, build cache, Caddy's
+  certificates), then empties `data/` (through a root container for what
+  belongs to root), recreates its folders for `COLTEX_UID` and starts. `.env`
+  stays. Make a backup first if any of it may be needed.
+- `coltex uninstall` removes ColTex from the machine: after you type
+  `uninstall`, it signs the built-in Tailscale out of the tailnet (so its
+  device doesn't stay behind), `docker compose down -v`, empties and removes
+  `data/` (a root container for what belongs to root, while the server image
+  is still there), removes the images (`down --rmi all`), the `coltex` links
+  that point at this folder, and finally the folder itself. Docker stays.
 
 ## Git bridge
 

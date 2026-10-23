@@ -38,6 +38,8 @@ Lalu kelola dengan `coltex`:
 | `coltex tailscale up` | Bergabung dengan tailnet Anda (mencetak tautan masuk dan kode QR) |
 | `coltex cloudflare quick` | Alamat Cloudflare publik sementara |
 | `coltex cloudflare token` | Terowongan Cloudflare dengan domain Anda sendiri (meminta token) |
+| `coltex reset` | Hapus semuanya (akun, proyek, basis data) dan mulai lagi dari halaman penyiapan; Anda diminta mengetik `reset` terlebih dahulu |
+| `coltex uninstall` | Hapus ColTex dari mesin ini: kontainer, basis data, data, image, perintah `coltex` beserta foldernya (Docker tetap ada); Anda diminta mengetik `uninstall` terlebih dahulu |
 
 ## Masuk dari alamat mana pun
 
@@ -81,6 +83,8 @@ ColTex juga memiliki Cloudflare Tunnel bawaan, hanya sebagai terowongan: orang t
 - **Domain saya sendiri**: dengan domain Anda di Cloudflare, buat terowongan di Zero Trust → Networks → Tunnels, salin perintah di bawah “Run the following command” (untuk sistem apa pun: Windows, macOS, Debian, Red Hat, atau Docker); ColTex mengambil token dari perintah itu; tambahkan nama host publik ke terowongan (mis. `tex.example.org`) dengan layanan `http://localhost:3690`.
 
 Aktifkan dengan sakelar pada kartu Cloudflare Tunnel di **Pengaturan → Jaringan**, lalu pilih tautan sementara atau terowongan (yang tersimpan, atau yang baru dari perintah yang ditempel), atau di terminal dengan `coltex cloudflare quick` / `coltex cloudflare token`. Setelah terhubung, alamatnya muncul di tautan undangan dengan sendirinya. Token disimpan terenkripsi dan tidak pernah ditampilkan lagi.
+
+Jika terowongan tidak dapat menjangkau Cloudflare melalui QUIC (firewall, atau proksi yang membuang UDP), ColTex otomatis mengalihkannya ke HTTP/2. Ketika trycloudflare.com membatasi tautan sementara (429 Too Many Requests), ColTex mencoba lagi dengan jeda yang makin lama. Saat Anda mengganti terowongan, pindahkan nama host publiknya ke terowongan baru di dasbor Cloudflare; sampai saat itu, nama host tersebut menjawab dengan Error 1033.
 
 ## Pengaturan server
 

@@ -109,6 +109,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |
 | `--build` | 在本机从源码构建镜像，而不是下载预构建的镜像 |
+| `--images REGISTRY` | 从 `REGISTRY` 下载镜像，而不是 `ghcr.io/lewen-cai`，比如在 ghcr.io 很慢时换成它的镜像站（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
 
 如果服务器能从公网访问，不要通过明文 `http://` 登录：请用 `--domain`、Tailscale 或 Cloudflare 隧道。
 
@@ -122,6 +123,8 @@ coltex version
 coltex edition full    # switch the TeX Live edition
 coltex tailscale up    # or: coltex cloudflare quick | token
 coltex stop | start
+coltex reset           # delete all data and start again from the setup page (asks first)
+coltex uninstall       # remove ColTex from this machine: containers, data, images, this folder (asks first)
 ```
 
 <a id="configure"></a>

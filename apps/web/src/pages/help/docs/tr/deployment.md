@@ -38,6 +38,8 @@ Ardından `coltex` ile yönetin:
 | `coltex tailscale up` | tailnet’inize katılır (bir oturum açma bağlantısı ve QR kodu yazdırır) |
 | `coltex cloudflare quick` | Geçici bir genel Cloudflare adresi |
 | `coltex cloudflare token` | Kendi alan adınızla bir Cloudflare tüneli (belirteci sorar) |
+| `coltex reset` | Her şeyi (hesaplar, projeler, veritabanı) siler ve kurulum sayfasından yeniden başlar; önce `reset` yazmanızı ister |
+| `coltex uninstall` | ColTex’i bu makineden kaldırır: kapsayıcılar, veritabanı, veriler, imajlar, `coltex` komutu ve klasörü (Docker kalır); önce `uninstall` yazmanızı ister |
 
 ## Herhangi bir adresten oturum açma
 
@@ -81,6 +83,8 @@ ColTex’te Cloudflare Tunnel da yalnızca bir tünel olarak yerleşiktir: kişi
 - **Kendi alan adım**: alan adınız Cloudflare’deyken Zero Trust → Networks → Tunnels altında bir tünel oluşturun, “Run the following command” altındaki komutu kopyalayın (herhangi bir sistem için: Windows, macOS, Debian, Red Hat veya Docker); ColTex belirteci bunun içinden çıkarır. Tünele `http://localhost:3690` hizmetiyle bir genel ana makine adı ekleyin (ör. `tex.example.org`).
 
 Onu **Ayarlar → Ağ** bölümündeki Cloudflare Tunnel kartının anahtarıyla açın, ardından geçici bir bağlantı veya bir tünel seçin (kayıtlı olanı ya da yapıştırılan komuttan yeni bir tane); veya bir terminalde `coltex cloudflare quick` / `coltex cloudflare token` kullanın. Bağlandığında adresleri davet bağlantılarında kendiliğinden görünür. Belirteç şifreli saklanır ve bir daha asla gösterilmez.
+
+Tünel Cloudflare’e QUIC üzerinden ulaşamazsa (bir güvenlik duvarı veya UDP’yi engelleyen bir vekil sunucu), ColTex onu kendiliğinden HTTP/2’ye geçirir. trycloudflare.com geçici bağlantıları sınırladığında (429 Too Many Requests), ColTex giderek daha seyrek yeniden dener. Tüneli değiştirdiğinizde genel ana makine adlarını Cloudflare panelinde yeni tünele taşıyın; o zamana kadar bu adlar Error 1033 ile yanıt verir.
 
 ## Sunucu ayarları
 

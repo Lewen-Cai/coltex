@@ -38,6 +38,8 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `coltex tailscale up` | 接入 Tailnet（打印登录链接和二维码） |
 | `coltex cloudflare quick` | 打开一个临时的 Cloudflare 公网地址 |
 | `coltex cloudflare token` | 用自己域名的 Cloudflare 隧道（会提示粘贴令牌） |
+| `coltex reset` | 删除一切（账号、项目、数据库），从初始设置页重新开始；会先让你输入 `reset` 确认 |
+| `coltex uninstall` | 从这台机器上彻底移除 ColTex：容器、数据库、数据、镜像、`coltex` 命令和安装目录（Docker 本身保留）；会先让你输入 `uninstall` 确认 |
 
 ## 从哪个地址都能登录
 
@@ -81,6 +83,8 @@ ColTex 也自带 Cloudflare Tunnel，只用它的通道：登录仍然是 ColTex
 - **自己的域名**：域名托管在 Cloudflare 上时，在 Cloudflare 后台 Zero Trust → Networks → Tunnels 创建隧道，复制 “Run the following command” 下面的那条命令（Windows、macOS、Debian、Red Hat、Docker 任选一个系统都行），ColTex 会自动从里面取出令牌；给隧道添加公网主机名（比如 `tex.example.org`），服务填 `http://localhost:3690`。
 
 开启方式：打开 **设置 → 网络** 里 Cloudflare Tunnel 卡片的开关，再选临时链接或隧道（使用已保存的隧道，或粘贴命令连接新隧道）；或者在终端运行 `coltex cloudflare quick` / `coltex cloudflare token`。连上后它的地址会自动出现在邀请链接里。令牌加密保存，不会再显示。
+
+如果隧道无法通过 QUIC 连上 Cloudflare（被防火墙拦住，或代理丢弃了 UDP），ColTex 会自动改用 HTTP/2。trycloudflare.com 限制临时链接时（429 Too Many Requests），ColTex 会越来越少地重试。更换隧道时，请在 Cloudflare 后台把公网主机名移到新隧道；移过去之前，访问这些域名会出现 Error 1033。
 
 ## 服务器设置
 

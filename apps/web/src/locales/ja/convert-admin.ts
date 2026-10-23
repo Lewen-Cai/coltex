@@ -329,6 +329,7 @@ const messages: Record<string, string> = {
   'Connecting to Cloudflare…': 'Cloudflare に接続中…',
   'The tunnel did not connect.': 'トンネルに接続できませんでした。',
   'No public hostname yet: add one to the tunnel in the Cloudflare dashboard, pointing to http://localhost:3690.': '公開ホスト名がまだありません。Cloudflare のダッシュボードでこのトンネルに、http://localhost:3690 を指す公開ホスト名を追加してください。',
+  '{hosts} stay on the current tunnel: move them to the new one in the Cloudflare dashboard, or they answer with Error 1033.': '{hosts} は現在のトンネルに残ります。Cloudflare のダッシュボードで新しいトンネルに移してください。移さないと Error 1033 になります。',
   'Changes every time the tunnel starts.': 'トンネルを起動するたびに変わります。',
   'Cloudflare (temporary)': 'Cloudflare（一時的）',
   'Only this computer can open a localhost link. Open ColTex at an address others can reach (a LAN IP, a public IP or a domain), or turn on Tailscale or Cloudflare Tunnel in Settings → Network.': 'localhost のリンクはこのコンピューターでしか開けません。他の人がアクセスできるアドレス（LAN の IP、パブリック IP、ドメイン）で ColTex を開くか、「設定 → ネットワーク」で Tailscale または Cloudflare Tunnel をオンにしてください。',
