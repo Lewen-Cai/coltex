@@ -1159,7 +1159,8 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
           props: { className: 'bg-sidebar' },
           node: (
               <div className="flex h-full flex-col">
-                <div className="min-h-0 flex-1">
+                {/* A flex column, so the tree scrolls inside its share instead of running under the outline. */}
+                <div className="flex min-h-0 flex-1 flex-col">
                   <FileTree
                     projectId={projectId}
                     downloadUrl={api.downloadUrl(projectId)}
@@ -1613,23 +1614,28 @@ function BinaryPreview({ url, path }: { url: string; path: string }) {
           </a>
         </Button>
       </div>
-      <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-[repeating-conic-gradient(var(--muted)_0_25%,var(--card)_0_50%)] bg-[length:16px_16px] p-6">
-        {IMAGE_EXT.test(path) ? (
-          <motion.img
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            src={url}
-            alt={name}
-            className="max-h-full max-w-full rounded-md object-contain shadow-lg"
-          />
-        ) : path.toLowerCase().endsWith('.pdf') ? (
-          <div className="relative h-full w-full">
-            <PdfViewer url={url} />
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">{t('No preview for this file type.')}</p>
-        )}
-      </div>
+      {path.toLowerCase().endsWith('.pdf') ? (
+        // The same view as the build's PDF, filling the pane.
+        <div className="relative min-h-0 flex-1">
+          <PdfViewer url={url} />
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-muted p-6">
+          {IMAGE_EXT.test(path) ? (
+            // On white, as on the page: figures are drawn for paper, and a transparent one
+            // would vanish on a dark theme.
+            <motion.img
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              src={url}
+              alt={name}
+              className="max-h-full max-w-full bg-white object-contain shadow-md"
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('No preview for this file type.')}</p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

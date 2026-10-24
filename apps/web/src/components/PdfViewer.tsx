@@ -1,9 +1,9 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import * as pdfjs from 'pdfjs-dist'
 import { EventBus, PDFViewer } from 'pdfjs-dist/web/pdf_viewer.mjs'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import 'pdfjs-dist/web/pdf_viewer.css'
-import { FileText } from 'lucide-react'
+import { FileText, FileWarning } from 'lucide-react'
 import type { PdfPosition } from '@coltex/shared'
 import { t } from '../lib/i18n.ts'
 
@@ -41,6 +41,7 @@ type Props = {
 export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({ url, compiling, onSyncToCode }, ref) {
   const container = useRef<HTMLDivElement>(null)
   const viewer = useRef<PDFViewer>(null)
+  const [failed, setFailed] = useState<string | null>(null)
   const loadingTask = useRef<pdfjs.PDFDocumentLoadingTask>(null)
   const onSync = useRef(onSyncToCode)
   onSync.current = onSyncToCode
@@ -91,6 +92,7 @@ export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({
 
   useEffect(() => {
     const v = viewer.current
+    setFailed(null)
     if (!v || !url) return
     let cancelled = false
     // Preserve the reading position across recompiles.
@@ -119,7 +121,12 @@ export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({
         )
         void previous?.destroy()
       },
-      err => console.error('Failed to load PDF', err),
+      // Not a PDF pdf.js can read (a broken or misnamed file): say so instead of a blank pane.
+      err => {
+        if (cancelled) return
+        console.error('Failed to load PDF', err)
+        setFailed((err as Error).message || String(err))
+      },
     )
     return () => {
       cancelled = true
@@ -161,6 +168,14 @@ export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({
     <>
       <div ref={container} className="absolute inset-0 overflow-auto bg-muted">
         <div className="pdfViewer" />
+        {url && failed && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-muted p-6 text-center text-sm text-muted-foreground">
+            <span className="rounded-2xl bg-card p-4 shadow-sm">
+              <FileWarning className="size-8 text-amber-600 dark:text-amber-400" />
+            </span>
+            {`Can't display this PDF: ${failed}`}
+          </div>
+        )}
         {!url && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
             <span className="rounded-2xl bg-card p-4 shadow-sm">
