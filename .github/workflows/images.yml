@@ -183,3 +183,10 @@ jobs:
       ref: ${{ github.ref_name }}
       latest: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
     secrets: inherit
+
+  scan:
+    # Known vulnerabilities in what was just published (scan.yml; report only).
+    needs: merge
+    uses: ./.github/workflows/scan.yml
+    with:
+      ref: ${{ github.ref_name }}

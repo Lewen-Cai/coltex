@@ -1,0 +1,101 @@
+name: Scan
+run-name: Scan ${{ inputs.ref || 'latest' }}
+
+# Known vulnerabilities in the dependencies (pnpm audit) and in the published
+# images' packages (Trivy). Report only: the findings go into the run's
+# summary and never fail it or hold up a release; they are fixed in the next
+# version. Runs after every image build (images.yml), weekly on the latest
+# release (new advisories for what is already out), and by hand.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Image tag to scan (vX.Y.Z, latest or main)
+        default: latest
+
+permissions:
+  contents: read
+
+env:
+  TRIVY_VERSION: 0.76.0
+  TRIVY_SHA256: e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref != 'latest' && inputs.ref || '' }}
+          fetch-depth: 0
+      - name: The latest release's lockfile
+        if: inputs.ref == 'latest' || inputs.ref == ''
+        run: git checkout "$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)"
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: pnpm audit
+        run: |
+          if pnpm audit > audit.txt 2>&1; then
+            echo "pnpm audit: no known vulnerabilities." >> "$GITHUB_STEP_SUMMARY"
+          else
+            { echo '### pnpm audit'; echo '```'; cat audit.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=pnpm audit::$(tail -n 1 audit.txt)"
+          fi
+
+  images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: coltex-server
+            suffix: ""
+          # The full edition is the standard one plus manuals, sources and CJK fonts.
+          - name: coltex-compiler
+            suffix: -standard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space
+        # Trivy reads every layer; TeX Live's are about 9 GB.
+        if: matrix.name == 'coltex-compiler'
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache /usr/share/swift /usr/local/share/boost /usr/local/julia* || true
+          sudo docker image prune --all --force || true
+
+      - name: Install Trivy
+        # The release archive, checked against a pinned checksum (no third-party action).
+        run: |
+          archive="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -fsSLO --retry 4 "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${archive}"
+          echo "${TRIVY_SHA256}  ${archive}" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/trivy"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/trivy" trivy
+          echo "$RUNNER_TEMP/trivy" >> "$GITHUB_PATH"
+
+      - name: Scan
+        env:
+          REF: ${{ inputs.ref || 'latest' }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${{ matrix.name }}:${REF}${{ matrix.suffix }}"
+          trivy image --image-src remote --platform linux/amd64 --scanners vuln \
+            --severity MEDIUM,HIGH,CRITICAL --ignore-unfixed --exit-code 0 \
+            --format json --output report.json "$image"
+          trivy convert --format table --output report.txt report.json
+          count=$(jq '[.Results[]?.Vulnerabilities[]?] | length' report.json)
+          {
+            echo "### ${image}"
+            if [ "$count" = 0 ]; then echo "No known vulnerabilities with a fix."; else echo '```'; cat report.txt; echo '```'; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$count" != 0 ]; then echo "::warning title=${{ matrix.name }}::${count} vulnerabilities with a fix in ${image}"; fi
