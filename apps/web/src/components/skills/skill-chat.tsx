@@ -103,9 +103,8 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
                   <Item
                     key={entry.item.id}
                     item={entry.item}
-                    skillScopes={['personal']}
-                    onSaveSkill={async (body, scope, replace) => {
-                      await chat.saveSkill(entry.item.id, { ...body, scope, replace })
+                    onSaveSkill={async (body, replace) => {
+                      await chat.saveSkill(entry.item.id, { ...body, replace })
                       onSaved()
                     }}
                   />

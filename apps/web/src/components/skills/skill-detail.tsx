@@ -110,7 +110,6 @@ export function SkillDetail({ base, skill, canEdit, onEdit, onDelete, onImprove 
         )}
         {skill.scope !== 'builtin' && (
           <p className="text-xs text-muted-foreground">
-            {skill.author ? t('Added by {name}', { name: skill.author }) + ' · ' : ''}
             {t('Updated {time}', { time: timeAgo(skill.updatedAt) })}
           </p>
         )}

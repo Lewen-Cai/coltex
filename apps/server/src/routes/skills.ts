@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { AiMessageBody, AiSaveProposedSkill, AiSessionState, AiSkill, AiSkillBody, AiSkillImportResult, AiSkillSummary, ProjectId } from '@coltex/shared'
+import { AiMessageBody, AiSaveProposedSkill, AiSessionState, AiSkill, AiSkillBody, AiSkillImportResult, AiSkillSummary } from '@coltex/shared'
 import { requireUser } from '../auth/fastify.ts'
 import type { Deps } from '../deps.ts'
 import { BadRequestError, ForbiddenError, NotFoundError } from '../errors.ts'
@@ -14,17 +14,13 @@ import {
   readSkillZip,
   skillMarkdown,
   type ParsedSkill,
-  type SkillOwner,
 } from '../ai/skills.ts'
 import { attachment } from './archive.ts'
 import { streamAiEvents } from './sse.ts'
 
 const Ok = z.object({ ok: z.literal(true) })
 const NameParams = z.object({ name: z.string().min(1).max(64) })
-const ProjectParams = z.object({ id: ProjectId })
-const ProjectNameParams = z.object({ id: ProjectId, name: z.string().min(1).max(64) })
 const FileParams = NameParams.extend({ '*': z.string().min(1) })
-const ProjectFileParams = ProjectNameParams.extend({ '*': z.string().min(1) })
 const ImportQuery = z.object({
   /** Overwrite skills of the same name. */
   replace: z.enum(['0', '1']).default('0'),
@@ -41,11 +37,10 @@ const UploadedFiles = z.object({
 })
 
 /**
- * AI skills: each person's own (Settings → AI skills) and each project's
- * (project settings). Only people who have the AI agent can see or change
- * them; project skills are read by every member and changed by editors.
+ * AI skills: each person's own, for all their projects (Settings → AI skills),
+ * and the built-in ones. Only people who have the AI agent can see or change them.
  */
-export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projects, skills, skillChats }) => {
+export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, skills, skillChats }) => {
   async function withAi(req: FastifyRequest) {
     const user = requireUser(req)
     const status = await ai.statusFor(user)
@@ -53,14 +48,7 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
     return user
   }
 
-  const personal = async (req: FastifyRequest): Promise<SkillOwner> => ({ scope: 'personal', userId: (await withAi(req)).id })
-
-  async function project(req: FastifyRequest<{ Params: { id: string } }>, write: boolean): Promise<SkillOwner> {
-    const user = await withAi(req)
-    const { role } = await projects.requireAccess(req.params.id, user.id, 'viewer')
-    if (write && role !== 'owner' && role !== 'editor') throw new ForbiddenError('Only editors can change project skills')
-    return { scope: 'project', projectId: req.params.id, userId: user.id }
-  }
+  const personal = async (req: FastifyRequest): Promise<string> => (await withAi(req)).id
 
   /** A zip of one or more skill folders, files picked one by one or a folder (base64 in JSON), or a SKILL.md's text. */
   async function parseUpload(req: FastifyRequest<{ Querystring: z.infer<typeof ImportQuery> }>): Promise<{ skills: ParsedSkill[]; warnings: string[] }> {
@@ -88,8 +76,8 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
     return { skills: [parseSkillMarkdown(markdown, fallback, warnings)], warnings }
   }
 
-  async function download(owner: SkillOwner, name: string, reply: FastifyReply) {
-    const skill = await skills.full(owner, name)
+  async function download(userId: string, name: string, reply: FastifyReply) {
+    const skill = await skills.full(userId, name)
     const md = skillMarkdown(skill)
     reply.header('cache-control', 'no-store')
     if (!Object.keys(skill.files).length) {
@@ -101,16 +89,19 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
   }
 
   /** One reference file's text, for reading it on the skills page. */
-  async function referenceFile(owner: SkillOwner, name: string, file: string, reply: FastifyReply) {
-    const text = (await skills.full(owner, name)).files[cleanPath(file)]
+  async function referenceFile(userId: string, name: string, file: string, reply: FastifyReply) {
+    const text = (await skills.full(userId, name)).files[cleanPath(file)]
     if (text === undefined) throw new NotFoundError('File not found')
     return reply.header('cache-control', 'no-store').type('text/plain; charset=utf-8').send(text)
   }
 
-  // ---- Personal ------------------------------------------------------------------
-
   // Their own skills and the built-in ones (read-only).
   app.get('/me/ai/skills', { schema: { response: { 200: z.array(AiSkill) } } }, async req => skills.listWithBuiltins((await withAi(req)).id))
+
+  // The AI panel's "/" menu: the built-in skills and their own (one of theirs hides a built-in one).
+  app.get('/me/ai/skill-menu', { schema: { response: { 200: z.array(AiSkillSummary) } } }, async req =>
+    skills.menu((await withAi(req)).id),
+  )
 
   app.post('/me/ai/skills', { schema: { body: AiSkillBody, response: { 201: AiSkill } } }, async (req, reply) =>
     reply.code(201).send(await skills.create(await personal(req), req.body)),
@@ -137,9 +128,9 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
     '/me/ai/skills/import',
     { bodyLimit: IMPORT_LIMIT, schema: { querystring: ImportQuery, response: { 201: AiSkillImportResult } } },
     async (req, reply) => {
-      const owner = await personal(req)
+      const userId = await personal(req)
       const { skills: parsed, warnings } = await parseUpload(req)
-      return reply.code(201).send({ skills: await skills.import(owner, parsed, req.query.replace === '1'), warnings })
+      return reply.code(201).send({ skills: await skills.import(userId, parsed, req.query.replace === '1'), warnings })
     },
   )
 
@@ -176,49 +167,6 @@ export const skillRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, projec
     async (req, reply) => {
       const user = await withAi(req)
       return reply.code(201).send(await (await skillChats.get(user.id)).saveProposedSkill(req.params.item, req.body, user))
-    },
-  )
-
-  // ---- Project -------------------------------------------------------------------
-
-  app.get('/projects/:id/ai/skills', { schema: { params: ProjectParams, response: { 200: z.array(AiSkill) } } }, async req =>
-    skills.list(await project(req, false)),
-  )
-
-  // The panel's "/" menu: the person's skills and the project's.
-  app.get('/projects/:id/ai/skill-menu', { schema: { params: ProjectParams, response: { 200: z.array(AiSkillSummary) } } }, async req => {
-    const owner = await project(req, false)
-    return skills.menu(owner.userId, req.params.id)
-  })
-
-  app.post('/projects/:id/ai/skills', { schema: { params: ProjectParams, body: AiSkillBody, response: { 201: AiSkill } } }, async (req, reply) =>
-    reply.code(201).send(await skills.create(await project(req, true), req.body)),
-  )
-
-  app.put('/projects/:id/ai/skills/:name', { schema: { params: ProjectNameParams, body: AiSkillBody, response: { 200: AiSkill } } }, async req =>
-    skills.update(await project(req, true), req.params.name, req.body),
-  )
-
-  app.delete('/projects/:id/ai/skills/:name', { schema: { params: ProjectNameParams, response: { 200: Ok } } }, async req => {
-    await skills.remove(await project(req, true), req.params.name)
-    return { ok: true as const }
-  })
-
-  app.get('/projects/:id/ai/skills/:name/download', { schema: { params: ProjectNameParams } }, async (req, reply) =>
-    download(await project(req, false), req.params.name, reply),
-  )
-
-  app.get('/projects/:id/ai/skills/:name/files/*', { schema: { params: ProjectFileParams } }, async (req, reply) =>
-    referenceFile(await project(req, false), req.params.name, req.params['*'], reply),
-  )
-
-  app.post(
-    '/projects/:id/ai/skills/import',
-    { bodyLimit: IMPORT_LIMIT, schema: { params: ProjectParams, querystring: ImportQuery, response: { 201: AiSkillImportResult } } },
-    async (req, reply) => {
-      const owner = await project(req, true)
-      const { skills: parsed, warnings } = await parseUpload(req)
-      return reply.code(201).send({ skills: await skills.import(owner, parsed, req.query.replace === '1'), warnings })
     },
   )
 }

@@ -65,7 +65,7 @@ O ColTex é uma alternativa ao Overleaf para um grupo de pesquisa, um laboratór
 - Provedores: chaves de API (Anthropic, OpenAI, DeepSeek, Google, OpenRouter e outros), login de assinatura (Claude Pro/Max, ChatGPT, GitHub Copilot e outros) ou seu próprio servidor compatível com OpenAI (Ollama, vLLM, LM Studio).
 - Escolha automática de modelo (um modelo leve ou forte por mensagem), acesso por grupo de pessoas, uso por pessoa e limites de uso por dia, semana ou mês.
 - Conversas salvas por projeto, a janela de contexto exibida à medida que você avança e `/compact` para resumir uma conversa longa.
-- Skills: instruções suas e do projeto (formato Agent Skills) que o agente segue, usadas com `/name`; escreva-as você mesmo, importe-as ou crie-as com a IA nas Configurações.
+- Skills: suas próprias instruções (formato Agent Skills), para todos os seus projetos, que o agente segue, usadas com `/name`; escreva-as você mesmo, importe-as ou crie-as com a IA nas Configurações.
 - Permissões como as do Claude Code: as alterações do agente de IA esperam a sua revisão (Manual), são aplicadas quando ele termina (Automático), ou ele também pode excluir e mover arquivos (Acesso total).
 - Seu próprio agente (Claude Code, Codex, Cursor…) via MCP: um único endereço para todos os seus projetos, com as mesmas permissões (no Manual, as edições dele viram sugestões suas).
 

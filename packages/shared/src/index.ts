@@ -1042,7 +1042,8 @@ export const AiItem = z.discriminatedUnion('kind', [
     body: z.string(),
     /** Reference files drafted with it (path → text); older drafts have none. */
     files: z.record(z.string(), z.string()).optional(),
-    saved: z.enum(['personal', 'project']).nullable(),
+    /** Saved to the person's skills ("personal", the one place skills go). */
+    saved: z.enum(['personal']).nullable(),
   }),
 ])
 export type AiItem = z.infer<typeof AiItem>
@@ -1157,11 +1158,8 @@ export const SkillName = z
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, digits and single hyphens')
   .refine(n => !(RESERVED_SKILL_NAMES as readonly string[]).includes(n), 'This name is taken by a built-in command')
 
-export const SkillScope = z.enum(['personal', 'project'])
-export type SkillScope = z.infer<typeof SkillScope>
-
-/** Where a skill comes from: someone's own, a project's, or shipped with ColTex (read-only). */
-export const SkillSource = z.enum(['personal', 'project', 'builtin'])
+/** Where a skill comes from: someone's own, or shipped with ColTex (read-only). */
+export const SkillSource = z.enum(['personal', 'builtin'])
 export type SkillSource = z.infer<typeof SkillSource>
 
 /** What creating or editing a skill sends. */
@@ -1181,12 +1179,10 @@ export const AiSkill = z.object({
   /** Reference files that came with an imported skill (read by the agent, never run). */
   files: z.array(z.object({ path: z.string(), size: z.number() })),
   updatedAt: z.string(),
-  /** Project skills: who added it. */
-  author: z.string().nullable(),
 })
 export type AiSkill = z.infer<typeof AiSkill>
 
-/** A skill in the panel's "/" menu (personal ones win over project ones of the same name). */
+/** A skill in the panel's "/" menu (someone's own win over built-in ones of the same name). */
 export const AiSkillSummary = z.object({ name: z.string(), description: z.string(), scope: SkillSource })
 export type AiSkillSummary = z.infer<typeof AiSkillSummary>
 
@@ -1195,7 +1191,6 @@ export type AiSkillImportResult = z.infer<typeof AiSkillImportResult>
 
 /** Saving a skill the agent proposed (possibly edited first). */
 export const AiSaveProposedSkill = AiSkillBody.extend({
-  scope: SkillScope,
   /** Overwrite a skill of the same name (otherwise that is a conflict). */
   replace: z.boolean().default(false),
 })

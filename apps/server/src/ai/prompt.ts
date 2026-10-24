@@ -8,11 +8,11 @@ export const SKILLS_SECTION = 'author-skills'
 /** The skills part of the system prompt: what each is for, so the agent can pick one. */
 export function skillsSection(skills: { name: string; description: string; scope: SkillSource }[]): string {
   const list = skills.length
-    ? `Check this library before you start a task. When a request matches a skill's description (whatever language either is in), load it with read_skill first and follow it, reading the reference files it points to, instead of working from your own habits. When several match, use the most specific one; the author's and the project's own skills are usually closer to what they want than a general built-in one. A quick question no skill covers needs none.
+    ? `Check this library before you start a task. When a request matches a skill's description (whatever language either is in), load it with read_skill first and follow it, reading the reference files it points to, instead of working from your own habits. When several match, use the most specific one; the author's own skills are usually closer to what they want than a general built-in one. A quick question no skill covers needs none.
 ${skills.map(s => `- ${s.name} (${s.scope === 'builtin' ? 'built in' : s.scope}): ${s.description.replace(/\s+/g, ' ')}`).join('\n')}`
     : 'The author has none at the moment.'
   return `<skills>
-ColTex gives you a skill library: instructions for recurring tasks, written by the author, by the project, or built into ColTex. ${list}
+ColTex gives you a skill library: instructions for recurring tasks, written by the author or built into ColTex. ${list}
 Skills may mention scripts or tools you don't have. You can read a skill's files but you can't run anything: do those steps yourself where you can, and say what you can't do.
 When the author asks you to turn a way of working into a skill, or to write one, follow the skill-creator skill and draft it with propose_skill: a short lowercase-hyphenated name, a description saying what it does and when to use it, the instructions in Markdown, and any reference files. They review it and save it themselves.
 </skills>`

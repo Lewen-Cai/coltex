@@ -65,7 +65,7 @@ ColTex; bir araştırma grubu, bir laboratuvar ya da yalnızca kendiniz için, d
 - Sağlayıcılar: API anahtarları (Anthropic, OpenAI, DeepSeek, Google, OpenRouter ve diğerleri), abonelik oturumu (Claude Pro/Max, ChatGPT, GitHub Copilot ve diğerleri) veya kendi OpenAI uyumlu sunucunuz (Ollama, vLLM, LM Studio).
 - Otomatik model seçimi (mesaj başına hafif veya güçlü bir model), kişi grupları için erişim, kişi başına kullanım ve günlük, haftalık veya aylık kullanım sınırları.
 - Proje başına kaydedilen sohbetler, ilerledikçe gösterilen bağlam penceresi ve uzun bir sohbeti özetlemek için `/compact`.
-- Skills: ajanın izlediği, size ve projeye ait talimatlar (Agent Skills biçimi), `/name` ile kullanılır; kendiniz yazın, içe aktarın veya Ayarlar’da YZ ile oluşturun.
+- Skills: ajanın izlediği, tüm projelerinizde geçerli kendi talimatlarınız (Agent Skills biçimi), `/name` ile kullanılır; kendiniz yazın, içe aktarın veya Ayarlar’da YZ ile oluşturun.
 - Claude Code’unkine benzer izinler: YZ ajanının değişiklikleri incelemenizi bekler (Elle), ajan bitirdiğinde uygulanır (Otomatik) ya da ajan dosyaları silip taşıyabilir de (Tam erişim).
 - MCP üzerinden kendi ajanınız (Claude Code, Codex, Cursor…): tüm projeleriniz için tek bir adres, aynı izinlerle (Elle kipinde düzenlemeleri sizin önerileriniz olur).
 

@@ -162,7 +162,7 @@ export function useAiSession(projectId: string, enabled: boolean, onBuilt?: (com
   const rename = useCallback((conversation: string, title: string) => api.aiRenameConversation(projectId, conversation, title), [projectId])
   const compact = useCallback((preference?: AiPreference) => guard(() => api.aiCompact(projectId, preference)), [guard, projectId])
   /** The skills for the "/" menu: the person's and the project's. */
-  const skillMenu = useCallback(() => api.skillMenu(projectId), [projectId])
+  const skillMenu = useCallback(() => api.skillMenu(), [])
   /** Save a skill the agent drafted (errors go to the caller: the editor dialog shows them). */
   const saveSkill = useCallback((item: string, body: AiSaveProposedSkill) => api.aiSaveProposedSkill(projectId, item, body), [projectId])
   const apply = useCallback((body: AiApplyBody) => guard(() => api.aiApply(projectId, body)), [guard, projectId])

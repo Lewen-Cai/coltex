@@ -119,7 +119,7 @@ export class SkillWorkshop extends AgentChat {
   async send(body: AiMessageBody, user: SessionUser): Promise<void> {
     if (this.running) throw new ConflictError('The assistant is still working on the previous message')
     this.lastActive = Date.now()
-    this.skills = await this.deps.skills.available(this.userId, null)
+    this.skills = await this.deps.skills.available(this.userId)
     const { agent, notices } = await this.ensureAgent(user, body)
     this.upsert({ kind: 'user', id: shortId(), text: body.text.trim(), attachments: [] })
     for (const n of notices) this.notice('info', n)
@@ -144,8 +144,7 @@ export class SkillWorkshop extends AgentChat {
 
   /** Save a drafted skill to the person's skills (`replace`: as a new version of theirs). */
   async saveProposedSkill(itemId: string, input: AiSaveProposedSkill, user: SessionUser): Promise<AiSkill> {
-    if (input.scope !== 'personal') throw new ForbiddenError('Skills from this chat are saved to your own skills')
-    return saveDraftedSkill(this.deps.skills, { scope: 'personal', userId: user.id }, this.items, itemId, input, item => {
+    return saveDraftedSkill(this.deps.skills, user.id, this.items, itemId, input, item => {
       this.upsert(item)
       void this.persist()
     })

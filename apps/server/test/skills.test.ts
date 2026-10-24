@@ -184,7 +184,7 @@ describe('AI skills', () => {
 
     // No AI, no skills.
     assert.equal((await api('GET', '/me/ai/skills', noAi)).statusCode, 403)
-    assert.equal((await api('GET', `/projects/${projectId}/ai/skill-menu`, noAi)).statusCode, 403)
+    assert.equal((await api('GET', '/me/ai/skill-menu', noAi)).statusCode, 403)
 
     assert.equal((await api('DELETE', '/me/ai/skills/to-english', editor)).statusCode, 200)
     assert.deepEqual((await api('GET', '/me/ai/skills', editor)).json(), [])
@@ -192,29 +192,14 @@ describe('AI skills', () => {
     await api('DELETE', '/me/ai/skills/translate-en', viewer)
   })
 
-  test('project skills: members read them, editors change them, outsiders never see them', async () => {
+  test('skills are each person’s own: the "/" menu lists theirs, never someone else’s', async () => {
     const body = { name: 'journal-style', description: "The journal's house style.", body: 'Use British spelling.' }
-    assert.equal((await api('POST', `/projects/${projectId}/ai/skills`, viewer, body)).statusCode, 403)
-    const created = await api('POST', `/projects/${projectId}/ai/skills`, editor, body)
-    assert.equal(created.statusCode, 201, created.body)
-    assert.deepEqual([created.json().scope, created.json().author], ['project', 'editor'])
-    assert.equal((await api('GET', `/projects/${projectId}/ai/skills`, viewer)).json().length, 1)
-    assert.equal((await api('PUT', `/projects/${projectId}/ai/skills/journal-style`, viewer, body)).statusCode, 403)
-
-    const other = (await api('POST', '/projects', viewer, { name: 'Viewer’s own' })).json().id
-    assert.equal((await api('GET', `/projects/${other}/ai/skills`, editor)).statusCode, 404, 'not a member')
-
-    // The menu: the person's skills and the project's; theirs wins on a name clash.
-    await api('POST', '/me/ai/skills', viewer, { ...body, description: 'My own house style.' })
+    await api('POST', '/me/ai/skills', editor, body)
     await api('POST', '/me/ai/skills', viewer, { name: 'shorten', description: 'Shorten text.', body: 'Cut.' })
-    assert.deepEqual((await api('GET', `/projects/${projectId}/ai/skill-menu`, viewer)).json(), [
-      { name: 'journal-style', description: 'My own house style.', scope: 'personal' },
-      { name: 'shorten', description: 'Shorten text.', scope: 'personal' },
-    ])
-    assert.deepEqual((await api('GET', `/projects/${projectId}/ai/skill-menu`, editor)).json(), [
-      { name: 'journal-style', description: "The journal's house style.", scope: 'project' },
-    ])
-    await api('DELETE', '/me/ai/skills/journal-style', viewer)
+    assert.deepEqual((await api('GET', '/me/ai/skill-menu', viewer)).json(), [{ name: 'shorten', description: 'Shorten text.', scope: 'personal' }])
+    assert.deepEqual((await api('GET', '/me/ai/skill-menu', editor)).json(), [{ name: 'journal-style', description: "The journal's house style.", scope: 'personal' }])
+    assert.equal((await api('GET', `/projects/${projectId}/ai/skills`, editor)).statusCode, 404, 'no project skills any more')
+    await api('DELETE', '/me/ai/skills/journal-style', editor)
     await api('DELETE', '/me/ai/skills/shorten', viewer)
   })
 
@@ -267,7 +252,6 @@ describe('AI skills', () => {
     await api('DELETE', '/me/ai/skills/thesis-style', admin)
     await api('DELETE', '/me/ai/skills/cite-check', admin)
 
-    assert.equal((await api('POST', `/projects/${projectId}/ai/skills/import`, viewer, { markdown: POLISH })).statusCode, 403)
     assert.equal((await api('POST', '/me/ai/skills/import', admin, { markdown: '' })).statusCode, 400)
   })
 
@@ -350,15 +334,14 @@ describe('AI skills', () => {
     assert.equal(draft.kind === 'skill' && draft.saved, null)
     assert.deepEqual((await api('GET', '/me/ai/skills', viewer)).json(), [], 'nothing saved yet')
 
-    const save = (scope: string, cookie = viewer) =>
-      api('POST', `/projects/${projectId}/ai/session/skills/${draft.id}`, cookie, { scope, name: 'check-refs', description: 'Check refs.', body: 'List missing labels.' })
-    assert.equal((await save('project')).statusCode, 403, 'viewers cannot add project skills')
-    const saved = await save('personal')
+    const save = (cookie = viewer) =>
+      api('POST', `/projects/${projectId}/ai/session/skills/${draft.id}`, cookie, { name: 'check-refs', description: 'Check refs.', body: 'List missing labels.' })
+    const saved = await save()
     assert.equal(saved.statusCode, 201, saved.body)
     assert.equal(saved.json().description, 'Check refs.', 'saved as edited')
     const after = (await state(viewer)).items.find(i => i.id === draft.id)
     assert.equal(after?.kind === 'skill' && after.saved, 'personal')
-    assert.equal((await save('personal')).statusCode, 409, 'saved once')
+    assert.equal((await save()).statusCode, 409, 'saved once')
     assert.equal((await api('GET', '/me/ai/skills', viewer)).json().length, 1)
   })
 })

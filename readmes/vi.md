@@ -65,7 +65,7 @@ ColTex là một lựa chọn thay thế Overleaf cho nhóm nghiên cứu, phòn
 - Nhà cung cấp: khóa API (Anthropic, OpenAI, DeepSeek, Google, OpenRouter và nhiều hơn nữa), đăng nhập gói đăng ký (Claude Pro/Max, ChatGPT, GitHub Copilot và nhiều hơn nữa), hoặc máy chủ tương thích OpenAI của riêng bạn (Ollama, vLLM, LM Studio).
 - Tự động chọn mô hình (mô hình nhẹ hoặc mạnh cho mỗi tin nhắn), quyền truy cập theo nhóm người, mức dùng theo từng người, và giới hạn mức dùng theo ngày, tuần hoặc tháng.
 - Cuộc trò chuyện được lưu theo từng dự án, cửa sổ ngữ cảnh hiển thị trong lúc làm việc, và `/compact` để tóm tắt một cuộc trò chuyện dài.
-- Skill: các hướng dẫn của riêng bạn và của dự án (định dạng Agent Skills) mà tác tử làm theo, dùng bằng `/name`; tự viết, nhập vào, hoặc tạo cùng AI trong Cài đặt.
+- Skill: các hướng dẫn của riêng bạn (định dạng Agent Skills) cho mọi dự án, mà tác tử làm theo, dùng bằng `/name`; tự viết, nhập vào, hoặc tạo cùng AI trong Cài đặt.
 - Quyền giống Claude Code: thay đổi của tác tử AI chờ bạn xem xét (Thủ công), được áp dụng khi nó hoàn tất (Tự động), hoặc nó còn được phép xóa và di chuyển tệp (Toàn quyền).
 - Tác tử của riêng bạn (Claude Code, Codex, Cursor…) qua MCP: một địa chỉ cho mọi dự án của bạn, với cùng các quyền (ở chế độ Thủ công, chỉnh sửa của nó trở thành đề xuất của bạn).
 

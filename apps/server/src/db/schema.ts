@@ -2,7 +2,6 @@ import { relations, sql } from 'drizzle-orm'
 import {
   bigint,
   boolean,
-  check,
   customType,
   doublePrecision,
   index,
@@ -342,17 +341,16 @@ export const aiConversations = pgTable(
 
 /**
  * AI skills (Agent Skills: a name, a description and instructions, plus the
- * reference files an imported skill came with, as text). A personal skill has
- * `userId`, a project skill `projectId`; names are unique within each.
+ * reference files an imported skill came with, as text). Each person's own,
+ * for all their projects; names are unique per person.
  */
 export const aiSkills = pgTable(
   'ai_skills',
   {
     id: text('id').primaryKey(),
-    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
-    projectId: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
-    /** Who added it (shown for project skills). */
-    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     description: text('description').notNull(),
     body: text('body').notNull(),
@@ -361,11 +359,7 @@ export const aiSkills = pgTable(
     createdAt: timestamps.createdAt,
     updatedAt: timestamps.updatedAt,
   },
-  t => [
-    uniqueIndex('ai_skills_user_name_idx').on(t.userId, t.name).where(sql`${t.projectId} is null`),
-    uniqueIndex('ai_skills_project_name_idx').on(t.projectId, t.name).where(sql`${t.projectId} is not null`),
-    check('ai_skills_one_owner', sql`(${t.userId} is null) <> (${t.projectId} is null)`),
-  ],
+  t => [uniqueIndex('ai_skills_user_name_idx').on(t.userId, t.name)],
 )
 
 /**

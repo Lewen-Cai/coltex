@@ -215,7 +215,7 @@ export class AiSession extends AgentChat {
     this.lastActive = Date.now()
     this.toolContext.project = project
     if (body.compile) this.authorBuild = body.compile.buildId
-    this.skills = await this.deps.skills.available(this.userId, this.projectId)
+    this.skills = await this.deps.skills.available(this.userId)
     const skill = body.skill ? this.skills.find(s => s.name === body.skill) : undefined
     if (body.skill && !skill) throw new BadRequestError(`There is no skill named ${body.skill}`)
     const permission = this.canEdit ? await this.deps.ai.permission(this.userId) : undefined
@@ -318,13 +318,11 @@ export class AiSession extends AgentChat {
       })
   }
 
-  /** Save a skill the agent proposed (as it was, or edited), to the person's skills or the project's. */
+  /** Save a skill the agent proposed (as it was, or edited) to the person's skills. */
   async saveProposedSkill(itemId: string, input: AiSaveProposedSkill, user: SessionUser): Promise<AiSkill> {
-    if (input.scope === 'project' && !this.canEdit) throw new ForbiddenError('Only editors can add project skills')
-    const owner = input.scope === 'personal' ? { scope: input.scope, userId: user.id } : { scope: input.scope, projectId: this.projectId, userId: user.id }
-    return saveDraftedSkill(this.deps.skills, owner, this.items, itemId, input, item => {
+    return saveDraftedSkill(this.deps.skills, user.id, this.items, itemId, input, item => {
       this.upsert(item)
-      this.notes.push(`The author saved your proposed skill as ${input.scope === 'personal' ? 'one of their skills' : 'a project skill'}, named ${item.name}.`)
+      this.notes.push(`The author saved your proposed skill as one of their skills, named ${item.name}.`)
       void this.persist()
     })
   }

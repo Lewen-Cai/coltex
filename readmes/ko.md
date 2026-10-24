@@ -65,7 +65,7 @@ ColTex는 연구 그룹, 연구실 또는 개인을 위한 Overleaf 대안으로
 - 제공업체: API 키(Anthropic, OpenAI, DeepSeek, Google, OpenRouter 등), 구독 계정 로그인(Claude Pro/Max, ChatGPT, GitHub Copilot 등), 또는 직접 운영하는 OpenAI 호환 서버(Ollama, vLLM, LM Studio).
 - 자동 모델 선택(메시지마다 경량 모델 또는 고성능 모델), 그룹별 접근 권한, 개인별 사용량, 일·주·월 단위 사용량 한도.
 - 프로젝트별로 저장되는 대화, 실시간으로 표시되는 컨텍스트 창 사용량, 긴 대화를 요약하는 `/compact`.
-- Skill: 에이전트가 따르는 나만의 지침과 프로젝트 지침(Agent Skills 형식)으로, `/name`으로 사용합니다. 직접 작성하거나, 가져오거나, 설정에서 AI와 함께 만들 수 있습니다.
+- Skill: 에이전트가 따르는 나만의 지침(Agent Skills 형식)으로, 모든 프로젝트에 공통이며 `/name`으로 사용합니다. 직접 작성하거나, 가져오거나, 설정에서 AI와 함께 만들 수 있습니다.
 - Claude Code와 비슷한 권한: AI 에이전트의 변경 내용은 내 검토를 기다리거나(수동), 작업이 끝나면 적용되거나(자동), 파일 삭제와 이동까지 할 수 있습니다(전체 권한).
 - MCP로 연결하는 내 에이전트(Claude Code, Codex, Cursor 등): 모든 프로젝트에 주소 하나, 같은 권한 적용(수동에서는 에이전트의 편집이 내 제안이 됩니다).
 

@@ -361,7 +361,7 @@ export const api = {
     request<AiSkill>(`/api/projects/${id}/ai/session/skills/${item}`, json('POST', body)),
 
   // ---- AI skills: `base` is /api/me/ai/skills (personal) or /api/projects/:id/ai/skills ----
-  skillMenu: (id: string) => request<AiSkillSummary[]>(`/api/projects/${id}/ai/skill-menu`),
+  skillMenu: () => request<AiSkillSummary[]>('/api/me/ai/skill-menu'),
 
   // ---- The skills chat (Settings → AI skills) ----
   skillChatEventsUrl: '/api/me/ai/skill-chat/events',

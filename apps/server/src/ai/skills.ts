@@ -2,10 +2,10 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path/posix'
 import { fileURLToPath } from 'node:url'
-import { and, asc, eq, isNull } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { AiSkillBody, RESERVED_SKILL_NAMES, type AiItem, type AiSaveProposedSkill, type AiSkill, type AiSkillSummary, type SkillSource } from '@coltex/shared'
 import type { Db } from '../db/client.ts'
-import { aiSkills, user } from '../db/schema.ts'
+import { aiSkills } from '../db/schema.ts'
 import { BadRequestError, ConflictError, NotFoundError } from '../errors.ts'
 import { isJunk, readProjectZip } from '../projects/zip.ts'
 import { cleanPath } from '../storage/paths.ts'
@@ -17,7 +17,6 @@ const MAX_FILES = 100
 const ZIP_LIMITS = { maxEntries: 500, maxFileBytes: 5 * 1024 * 1024, maxTotalBytes: 20 * 1024 * 1024 }
 
 /** Whose skill: one person's, or a project's (added by `userId`). */
-export type SkillOwner = { scope: 'personal'; userId: string } | { scope: 'project'; projectId: string; userId: string }
 
 /** A skill as the agent uses it. */
 export type LoadedSkill = { name: string; description: string; body: string; scope: SkillSource; files: Record<string, string> }
@@ -211,16 +210,9 @@ export function loadBuiltinSkills(dir: string): LoadedSkill[] {
 
 type Row = typeof aiSkills.$inferSelect
 
-function ownerFilter(owner: SkillOwner) {
-  return owner.scope === 'personal'
-    ? and(eq(aiSkills.userId, owner.userId), isNull(aiSkills.projectId))
-    : eq(aiSkills.projectId, owner.projectId)
-}
+const mine = (userId: string) => eq(aiSkills.userId, userId)
 
-/**
- * AI skills (`ai_skills`): each person's own, and each project's (used by
- * every member with AI access, changed by its editors; routes check that).
- */
+/** AI skills (`ai_skills`): each person's own, for all their projects (user's decision 2026-10-24). */
 export class SkillStore {
   private readonly db: Db
   /** Shipped with ColTex, read once: everyone with the AI agent can use them; nobody can change them. */
@@ -243,21 +235,20 @@ export class SkillStore {
         .map(([p, text]) => ({ path: p, size: Buffer.byteLength(text) }))
         .sort((a, b) => a.path.localeCompare(b.path)),
       updatedAt: this.loadedAt,
-      author: null,
     }
   }
 
   /** Someone's own skills, then the built-in ones they haven't replaced with their own of the same name. */
   async listWithBuiltins(userId: string): Promise<AiSkill[]> {
-    const mine = await this.list({ scope: 'personal', userId })
-    const taken = new Set(mine.map(s => s.name))
-    return [...mine, ...this.builtins.filter(b => !taken.has(b.name)).map(b => this.builtinSkill(b))]
+    const own = await this.list(userId)
+    const taken = new Set(own.map(s => s.name))
+    return [...own, ...this.builtins.filter(b => !taken.has(b.name)).map(b => this.builtinSkill(b))]
   }
 
-  private toSkill(row: Row, author: string | null): AiSkill {
+  private toSkill(row: Row): AiSkill {
     return {
       id: row.id,
-      scope: row.projectId ? 'project' : 'personal',
+      scope: 'personal',
       name: row.name,
       description: row.description,
       body: row.body,
@@ -265,75 +256,63 @@ export class SkillStore {
         .map(([p, text]) => ({ path: p, size: Buffer.byteLength(text) }))
         .sort((a, b) => a.path.localeCompare(b.path)),
       updatedAt: row.updatedAt.toISOString(),
-      author,
     }
   }
 
-  async list(owner: SkillOwner): Promise<AiSkill[]> {
-    const rows = await this.db
-      .select({ skill: aiSkills, author: user.name })
-      .from(aiSkills)
-      .leftJoin(user, eq(user.id, aiSkills.createdBy))
-      .where(ownerFilter(owner))
-      .orderBy(asc(aiSkills.name))
-    return rows.map(r => this.toSkill(r.skill, owner.scope === 'project' ? r.author : null))
+  async list(userId: string): Promise<AiSkill[]> {
+    const rows = await this.db.select().from(aiSkills).where(mine(userId)).orderBy(asc(aiSkills.name))
+    return rows.map(r => this.toSkill(r))
   }
 
-  private async row(owner: SkillOwner, name: string): Promise<Row> {
-    const [row] = await this.db.select().from(aiSkills).where(and(ownerFilter(owner), eq(aiSkills.name, name)))
+  private async row(userId: string, name: string): Promise<Row> {
+    const [row] = await this.db.select().from(aiSkills).where(and(mine(userId), eq(aiSkills.name, name)))
     if (!row) throw new NotFoundError('Skill not found')
     return row
   }
 
-  async get(owner: SkillOwner, name: string): Promise<AiSkill> {
-    return this.toSkill(await this.row(owner, name), null)
+  async get(userId: string, name: string): Promise<AiSkill> {
+    return this.toSkill(await this.row(userId, name))
   }
 
   /** The skill's reference files too, for downloading (a built-in one when the person has none of that name). */
-  async full(owner: SkillOwner, name: string): Promise<ParsedSkill> {
-    const [row] = await this.db.select().from(aiSkills).where(and(ownerFilter(owner), eq(aiSkills.name, name)))
+  async full(userId: string, name: string): Promise<ParsedSkill> {
+    const [row] = await this.db.select().from(aiSkills).where(and(mine(userId), eq(aiSkills.name, name)))
     if (row) return { name: row.name, description: row.description, body: row.body, files: row.files }
-    const builtin = owner.scope === 'personal' ? this.builtins.find(b => b.name === name) : undefined
+    const builtin = this.builtins.find(b => b.name === name)
     if (!builtin) throw new NotFoundError('Skill not found')
     return { name: builtin.name, description: builtin.description, body: builtin.body, files: builtin.files }
   }
 
-  async exists(owner: SkillOwner, name: string): Promise<boolean> {
-    const [row] = await this.db.select({ id: aiSkills.id }).from(aiSkills).where(and(ownerFilter(owner), eq(aiSkills.name, name)))
+  async exists(userId: string, name: string): Promise<boolean> {
+    const [row] = await this.db.select({ id: aiSkills.id }).from(aiSkills).where(and(mine(userId), eq(aiSkills.name, name)))
     return !!row
   }
 
-  async create(owner: SkillOwner, body: AiSkillBody, files: Record<string, string> = {}): Promise<AiSkill> {
+  async create(userId: string, body: AiSkillBody, files: Record<string, string> = {}): Promise<AiSkill> {
     const input = AiSkillBody.parse(body)
-    if (await this.exists(owner, input.name)) throw new ConflictError(`A skill named ${input.name} already exists`)
+    if (await this.exists(userId, input.name)) throw new ConflictError(`A skill named ${input.name} already exists`)
     const [row] = await this.db
       .insert(aiSkills)
-      .values({
-        id: crypto.randomUUID(),
-        userId: owner.scope === 'personal' ? owner.userId : null,
-        projectId: owner.scope === 'project' ? owner.projectId : null,
-        createdBy: owner.userId,
-        ...input,
-        files,
-      })
+      .values({ id: crypto.randomUUID(), userId, ...input, files })
       .returning()
-    return (await this.list(owner)).find(s => s.id === row!.id)!
+    return this.toSkill(row!)
   }
 
   /** Change a skill (renaming keeps its files; `files` replaces them). */
-  async update(owner: SkillOwner, name: string, body: AiSkillBody, files?: Record<string, string>): Promise<AiSkill> {
+  async update(userId: string, name: string, body: AiSkillBody, files?: Record<string, string>): Promise<AiSkill> {
     const input = AiSkillBody.parse(body)
-    const row = await this.row(owner, name)
-    if (input.name !== name && (await this.exists(owner, input.name))) throw new ConflictError(`A skill named ${input.name} already exists`)
-    await this.db
+    const row = await this.row(userId, name)
+    if (input.name !== name && (await this.exists(userId, input.name))) throw new ConflictError(`A skill named ${input.name} already exists`)
+    const [updated] = await this.db
       .update(aiSkills)
       .set({ ...input, ...(files ? { files } : {}), updatedAt: new Date() })
       .where(eq(aiSkills.id, row.id))
-    return (await this.list(owner)).find(s => s.id === row.id)!
+      .returning()
+    return this.toSkill(updated!)
   }
 
-  async remove(owner: SkillOwner, name: string): Promise<void> {
-    const row = await this.row(owner, name)
+  async remove(userId: string, name: string): Promise<void> {
+    const row = await this.row(userId, name)
     await this.db.delete(aiSkills).where(eq(aiSkills.id, row.id))
   }
 
@@ -341,7 +320,7 @@ export class SkillStore {
    * Save imported skills. Names already taken are refused as a whole (nothing
    * saved) unless `replace`, which overwrites them.
    */
-  async import(owner: SkillOwner, skills: ParsedSkill[], replace: boolean): Promise<AiSkill[]> {
+  async import(userId: string, skills: ParsedSkill[], replace: boolean): Promise<AiSkill[]> {
     const names = new Set<string>()
     for (const s of skills) {
       const parsed = AiSkillBody.safeParse(s)
@@ -351,17 +330,15 @@ export class SkillStore {
     }
     if (!replace) {
       const taken = []
-      for (const s of skills) if (await this.exists(owner, s.name)) taken.push(s.name)
+      for (const s of skills) if (await this.exists(userId, s.name)) taken.push(s.name)
       if (taken.length) throw new ConflictError(`Skills with these names already exist: ${taken.join(', ')}`)
     }
     await this.db.transaction(async tx => {
       for (const s of skills) {
-        await tx.delete(aiSkills).where(and(ownerFilter(owner), eq(aiSkills.name, s.name)))
+        await tx.delete(aiSkills).where(and(mine(userId), eq(aiSkills.name, s.name)))
         await tx.insert(aiSkills).values({
           id: crypto.randomUUID(),
-          userId: owner.scope === 'personal' ? owner.userId : null,
-          projectId: owner.scope === 'project' ? owner.projectId : null,
-          createdBy: owner.userId,
+          userId,
           name: s.name,
           description: s.description,
           body: s.body,
@@ -369,29 +346,21 @@ export class SkillStore {
         })
       }
     })
-    const all = await this.list(owner)
+    const all = await this.list(userId)
     return all.filter(s => names.has(s.name))
   }
 
-  /**
-   * The skills someone can use: the built-in ones, the project's (in a
-   * project), and their own. A personal skill hides a project or built-in
-   * skill of the same name (their own choice), a project skill a built-in one.
-   */
-  async available(userId: string, projectId: string | null): Promise<LoadedSkill[]> {
-    const [mine, project] = await Promise.all([
-      this.db.select().from(aiSkills).where(ownerFilter({ scope: 'personal', userId })),
-      projectId ? this.db.select().from(aiSkills).where(eq(aiSkills.projectId, projectId)) : [],
-    ])
+  /** The skills someone can use: the built-in ones and their own; one of theirs hides a built-in one of the same name. */
+  async available(userId: string): Promise<LoadedSkill[]> {
+    const own = await this.db.select().from(aiSkills).where(mine(userId))
     const byName = new Map<string, LoadedSkill>()
     for (const b of this.builtins) byName.set(b.name, b)
-    for (const r of project) byName.set(r.name, { name: r.name, description: r.description, body: r.body, scope: 'project', files: r.files })
-    for (const r of mine) byName.set(r.name, { name: r.name, description: r.description, body: r.body, scope: 'personal', files: r.files })
+    for (const r of own) byName.set(r.name, { name: r.name, description: r.description, body: r.body, scope: 'personal', files: r.files })
     return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
   }
 
-  async menu(userId: string, projectId: string): Promise<AiSkillSummary[]> {
-    return (await this.available(userId, projectId)).map(s => ({ name: s.name, description: s.description, scope: s.scope }))
+  async menu(userId: string): Promise<AiSkillSummary[]> {
+    return (await this.available(userId)).map(s => ({ name: s.name, description: s.description, scope: s.scope }))
   }
 }
 
@@ -402,7 +371,7 @@ export class SkillStore {
  */
 export async function saveDraftedSkill(
   store: SkillStore,
-  owner: SkillOwner,
+  userId: string,
   items: AiItem[],
   itemId: string,
   input: AiSaveProposedSkill,
@@ -414,9 +383,9 @@ export async function saveDraftedSkill(
   const body = AiSkillBody.parse(input)
   const files = item.files ?? {}
   const skill =
-    input.replace && (await store.exists(owner, body.name))
-      ? await store.update(owner, body.name, body, files)
-      : await store.create(owner, body, files)
-  saved({ ...item, ...body, saved: owner.scope })
+    input.replace && (await store.exists(userId, body.name))
+      ? await store.update(userId, body.name, body, files)
+      : await store.create(userId, body, files)
+  saved({ ...item, ...body, saved: 'personal' })
   return skill
 }

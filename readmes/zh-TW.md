@@ -65,7 +65,7 @@ ColTex 是 Overleaf 的替代方案，適合研究團隊、實驗室或個人使
 - 供應商：API 金鑰（Anthropic、OpenAI、DeepSeek、Google、OpenRouter 等）、訂閱帳號登入（Claude Pro/Max、ChatGPT、GitHub Copilot 等），或你自己的 OpenAI 相容伺服器（Ollama、vLLM、LM Studio）。
 - 自動選擇模型（每則訊息選用輕量或強力模型）、依群組設定存取權限、依人統計用量，以及每天、每週或每月的用量上限。
 - 依專案保存對話，即時顯示上下文視窗的使用量，並可用 `/compact` 摘要過長的對話。
-- Skill：AI 代理會遵循的個人和專案指示（Agent Skills 格式），以 `/name` 使用；可以自己撰寫、匯入，或在設定中與 AI 一起建立。
+- Skill：AI 代理會遵循的個人指示（Agent Skills 格式），所有專案通用，以 `/name` 使用；可以自己撰寫、匯入，或在設定中與 AI 一起建立。
 - 與 Claude Code 類似的權限：AI 代理的修改等你審閱（手動）、完成時自動套用（自動），或還可以刪除和移動檔案（完整存取）。
 - 透過 MCP 連接你自己的代理（Claude Code、Codex、Cursor…）：所有專案共用一個位址，權限相同（手動模式下，它的編輯會成為你的修改建議）。
 

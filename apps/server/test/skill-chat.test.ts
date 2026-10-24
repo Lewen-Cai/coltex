@@ -75,7 +75,7 @@ describe('Built-in skills and the skills chat', () => {
     assert.equal((await api('GET', '/me/ai/skills/skill-creator/files/LICENSE.txt', admin)).statusCode, 404)
     assert.equal((await api('GET', '/me/ai/skills/skill-creator/files/references/examples.md', noAi)).statusCode, 403)
 
-    const menu = async () => (await api('GET', `/projects/${projectId}/ai/skill-menu`, admin)).json() as { name: string; scope: string }[]
+    const menu = async () => (await api('GET', '/me/ai/skill-menu', admin)).json() as { name: string; scope: string }[]
     assert.deepEqual(creators(await menu()), [['skill-creator', 'builtin']])
     await api('POST', '/me/ai/skills', admin, { name: 'skill-creator', description: 'My own way of writing skills.', body: 'Ask less.' })
     assert.deepEqual(creators(await menu()), [['skill-creator', 'personal']])
@@ -125,8 +125,7 @@ describe('Built-in skills and the skills chat', () => {
     assert.deepEqual(draft.files, { 'references/glossary.md': 'dataset, not data set' })
 
     const save = (id: string, replace = false) =>
-      api('POST', `/me/ai/skill-chat/skills/${id}`, admin, { scope: 'personal', name: 'thesis-terms', description: draft.description, body: draft.body, replace })
-    assert.equal((await api('POST', `/me/ai/skill-chat/skills/${draft.id}`, admin, { ...draft, scope: 'project' })).statusCode, 403)
+      api('POST', `/me/ai/skill-chat/skills/${id}`, admin, { name: 'thesis-terms', description: draft.description, body: draft.body, replace })
     const saved = await save(draft.id)
     assert.equal(saved.statusCode, 201, saved.body)
     assert.deepEqual((saved.json() as AiSkill).files, [{ path: 'references/glossary.md', size: 21 }])
@@ -171,7 +170,7 @@ describe('Built-in skills and the skills chat', () => {
     assert.deepEqual((await fresh().get(me!.id)).state().items, [], 'a new chat forgets the old one')
   })
 
-  test('in a project, drafted skills carry their reference files, and saving over an existing one asks first', async () => {
+  test('in a project, drafted skills carry their reference files to the person’s skills, and saving over one asks first', async () => {
     faux.setResponses([
       fauxAssistantMessage(
         fauxToolCall('propose_skill', {
@@ -187,12 +186,12 @@ describe('Built-in skills and the skills chat', () => {
     await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'Make that a skill' })
     await sessionIdle()
     const draft = (await session()).items.find(i => i.kind === 'skill')!
-    const save = (scope: string, replace = false) =>
-      api('POST', `/projects/${projectId}/ai/session/skills/${draft.id}`, admin, { scope, name: 'thesis-terms', description: 'Project version.', body: 'Read it.', replace })
-    assert.equal((await save('personal')).statusCode, 409, 'the person already has thesis-terms')
-    const project = await save('project')
-    assert.equal(project.statusCode, 201, project.body)
-    assert.deepEqual((project.json() as AiSkill).files, [{ path: 'references/glossary.md', size: 9 }])
-    assert.equal((await api('GET', `/projects/${projectId}/ai/skills/thesis-terms/files/references/glossary.md`, admin)).body, 'term list')
+    const save = (replace = false) =>
+      api('POST', `/projects/${projectId}/ai/session/skills/${draft.id}`, admin, { name: 'thesis-terms', description: 'Project version.', body: 'Read it.', replace })
+    assert.equal((await save()).statusCode, 409, 'the person already has thesis-terms')
+    const replaced = await save(true)
+    assert.equal(replaced.statusCode, 201, replaced.body)
+    assert.deepEqual((replaced.json() as AiSkill).files, [{ path: 'references/glossary.md', size: 9 }])
+    assert.equal((await api('GET', '/me/ai/skills/thesis-terms/files/references/glossary.md', admin)).body, 'term list')
   })
 })

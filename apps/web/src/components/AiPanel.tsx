@@ -30,7 +30,7 @@ import {
   Wand2,
   } from 'lucide-react'
 import { motion } from 'motion/react'
-import type { AiAllowance, AiItem, AiPermission, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillScope, SkillSource, ThinkingLevel } from '@coltex/shared'
+import type { AiAllowance, AiItem, AiPermission, AiModelInfo, AiPreference, AiSessionState, AiSkillBody, AiSkillSummary, AiStatus, SkillSource, ThinkingLevel } from '@coltex/shared'
 import { aiPick, type AiSessionHandle } from '../lib/ai.ts'
 import { CURRENT_PERIOD, allowanceShare, compactTokens, dollars, useAiAllowance } from '../lib/ai-limits.ts'
 import { PERMISSIONS, PERMISSION_TITLE, useAiPermission } from '../lib/ai-permission.ts'
@@ -218,8 +218,7 @@ export function AiPanel(props: Props) {
               <Item
                 key={entry.item.id}
                 item={entry.item}
-                skillScopes={['personal']}
-                onSaveSkill={(body, scope, replace) => session.saveSkill(entry.item.id, { ...body, scope, replace }).then(() => undefined)}
+                onSaveSkill={(body, replace) => session.saveSkill(entry.item.id, { ...body, replace }).then(() => undefined)}
                 onOpenFile={props.onOpenFile}
                 // Only the latest card can show its diff: the draft has moved on since older turns.
                 onReviewTurn={entry.item.id === latestTurnCard && changed && state.changes.turn ? () => review('turn') : undefined}
@@ -281,9 +280,7 @@ export function AiPanel(props: Props) {
                 >
                   <span className="shrink-0 font-mono">/{c.name}</span>
                   <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{c.label}</span>
-                  {c.source && c.source !== 'personal' && (
-                    <span className="shrink-0 text-xs text-muted-foreground">{c.source === 'project' ? t('Project') : t('Built-in')}</span>
-                  )}
+                  {c.source === 'builtin' && <span className="shrink-0 text-xs text-muted-foreground">{t('Built-in')}</span>}
                 </button>
               ))}
             </div>
@@ -595,36 +592,33 @@ function TurnCard({ item, onOpenFile, onReview }: { item: Extract<AiItem, { kind
   )
 }
 
-export type SaveDraftedSkill = (body: AiSkillBody, scope: SkillScope, replace: boolean) => Promise<void>
+export type SaveDraftedSkill = (body: AiSkillBody, replace: boolean) => Promise<void>
 
-/** A skill the agent drafted: saved only when the person saves it (as it is, or edited). */
-function SkillCard({ item, scopes, onSave }: { item: Extract<AiItem, { kind: 'skill' }>; scopes: SkillScope[]; onSave: SaveDraftedSkill }) {
+/** A skill the agent drafted: saved to the person's skills only when they save it (as it is, or edited). */
+function SkillCard({ item, onSave }: { item: Extract<AiItem, { kind: 'skill' }>; onSave: SaveDraftedSkill }) {
   const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState<SkillScope>()
+  const [saving, setSaving] = useState(false)
   const files = Object.keys(item.files ?? {})
-  /** Saving under a name already taken there replaces that skill, once the person agrees. False: they didn't. */
-  const saveAs = async (body: AiSkillBody, scope: SkillScope): Promise<void | false> => {
+  /** Saving under a name already taken replaces that skill, once the person agrees. False: they didn't. */
+  const saveAs = async (body: AiSkillBody): Promise<void | false> => {
     try {
-      await onSave(body, scope, false)
+      await onSave(body, false)
     } catch (e) {
       if (!(e instanceof ApiError) || e.status !== 409) throw e
-      const ok = await confirmDialog({
-        title: scope === 'personal' ? t('Replace your skill “{name}”?', { name: body.name }) : t('Replace the project skill “{name}”?', { name: body.name }),
-        confirmLabel: t('Replace'),
-      })
+      const ok = await confirmDialog({ title: t('Replace your skill “{name}”?', { name: body.name }), confirmLabel: t('Replace') })
       if (!ok) return false
-      await onSave(body, scope, true)
+      await onSave(body, true)
     }
-    toast.success(scope === 'personal' ? t('Saved to your skills') : t('Saved to the project skills'))
+    toast.success(t('Saved to your skills'))
   }
-  const save = async (scope: SkillScope) => {
-    setSaving(scope)
+  const save = async () => {
+    setSaving(true)
     try {
-      await saveAs({ name: item.name, description: item.description, body: item.body }, scope)
+      await saveAs({ name: item.name, description: item.description, body: item.body })
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
-      setSaving(undefined)
+      setSaving(false)
     }
   }
   return (
@@ -635,7 +629,7 @@ function SkillCard({ item, scopes, onSave }: { item: Extract<AiItem, { kind: 'sk
         {item.saved ? (
           <span className="flex items-center gap-1 text-[13px] text-emerald-700 dark:text-emerald-400">
             <Check className="size-3.5" />
-            {item.saved === 'personal' ? t('In your skills') : t('In the project skills')}
+            {t('In your skills')}
           </span>
         ) : (
           <Button variant="ghost" size="xs" className="text-primary" onClick={() => setEditing(true)}>
@@ -658,12 +652,10 @@ function SkillCard({ item, scopes, onSave }: { item: Extract<AiItem, { kind: 'sk
       </div>
       {!item.saved && (
         <div className="flex flex-wrap justify-end gap-1.5 border-t px-3 py-2">
-          {scopes.map(scope => (
-            <Button key={scope} size="xs" variant={scope === 'personal' ? 'default' : 'outline'} disabled={!!saving} onClick={() => void save(scope)}>
-              {saving === scope && <Loader2 className="animate-spin" />}
-              {scope === 'personal' ? t('Save to my skills') : t('Save to project skills')}
-            </Button>
-          ))}
+          <Button size="xs" disabled={saving} onClick={() => void save()}>
+            {saving && <Loader2 className="animate-spin" />}
+            {t('Save to my skills')}
+          </Button>
         </div>
       )}
       <SkillEditor
@@ -672,8 +664,8 @@ function SkillCard({ item, scopes, onSave }: { item: Extract<AiItem, { kind: 'sk
         title={t('Save skill')}
         initial={item}
         files={Object.entries(item.files ?? {}).map(([path, text]) => ({ path, size: new Blob([text]).size }))}
-        scopes={scopes}
-        onSave={(body, scope) => saveAs(body, scope ?? 'personal')}
+        saveLabel={t('Save to my skills')}
+        onSave={saveAs}
       />
     </motion.div>
   )
@@ -682,21 +674,18 @@ function SkillCard({ item, scopes, onSave }: { item: Extract<AiItem, { kind: 'sk
 /** One entry of a conversation with the agent (also used by the skills chat). */
 export function Item({
   item,
-  skillScopes,
   onSaveSkill,
   onOpenFile,
   onReviewTurn,
 }: {
   item: AiItem
-  /** Where the person may save a drafted skill. */
-  skillScopes: SkillScope[]
   onSaveSkill: SaveDraftedSkill
   onOpenFile?: (path: string) => void
   onReviewTurn?: () => void
 }) {
   switch (item.kind) {
     case 'skill':
-      return <SkillCard item={item} scopes={skillScopes} onSave={onSaveSkill} />
+      return <SkillCard item={item} onSave={onSaveSkill} />
     case 'compacted':
       return (
         <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
