@@ -109,7 +109,7 @@ Opsi menjawab pertanyaan-pertanyaan itu, atau menggantikannya jika tidak ada ter
 | `--port 3690` | Port lain |
 | `--version v0.0.1` | Rilis tertentu (`main` untuk cabang pengembangan) |
 | `--build` | Bangun image dari kode sumber di mesin ini alih-alih mengunduhnya |
-| `--images REGISTRY` | Unduh image dari `REGISTRY` alih-alih `ghcr.io/lewen-cai`, mis. mirror ghcr.io jika ghcr.io lambat (`registry-mirrors` milik Docker hanya berlaku untuk Docker Hub, bukan untuk ghcr.io) |
+| `--images REGISTRY` | Tempat mengunduh image: `aliyun` (image yang sama di Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`), atau mirror ghcr.io lainnya. Tanpa opsi ini, penginstal memakai Alibaba Cloud di Tiongkok daratan dan ghcr.io di tempat lain (`registry-mirrors` milik Docker hanya berlaku untuk Docker Hub, bukan untuk ghcr.io) |
 
 Di server yang dapat dijangkau dari internet, jangan masuk melalui `http://` biasa: gunakan `--domain`, Tailscale, atau terowongan Cloudflare.
 

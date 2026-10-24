@@ -21,8 +21,10 @@
 #   --cloudflare-quick      afterwards, open a temporary trycloudflare.com address
 #   --cloudflare-token TOK  afterwards, connect a Cloudflare tunnel made in the dashboard
 #   --local                 only this machine and its network (no questions about access)
-#   --images REGISTRY       download the images from REGISTRY instead of ghcr.io/lewen-cai, e.g.
-#                           a mirror of ghcr.io (kept for updates: COLTEX_IMAGES in .env)
+#   --images REGISTRY       where to download the images from: aliyun (the same images on
+#                           Alibaba Cloud), ghcr (ghcr.io/lewen-cai) or another mirror of
+#                           ghcr.io. Without it, whichever answers faster from here (Alibaba
+#                           Cloud in mainland China; kept for updates: COLTEX_IMAGES in .env)
 #   --build                 build the images from the sources here instead of downloading
 #                           the prebuilt ones (kept for updates: COLTEX_BUILD=1 in .env)
 #   --no-start              get the code and write the settings, but don't download or start
@@ -33,6 +35,10 @@ set -euo pipefail
 
 # The repository the one-line command points at (COLTEX_REPO overrides it).
 DEFAULT_REPO="${COLTEX_REPO:-https://github.com/Lewen-Cai/coltex.git}"
+# Where the images are: ghcr.io, and the same ones copied to Alibaba Cloud Container Registry
+# for mainland China (the mirror job in .github/workflows/images.yml).
+GHCR_IMAGES="ghcr.io/lewen-cai"
+ALIYUN_IMAGES="crpi-jf7w2fwdvslokqcw.cn-guangzhou.personal.cr.aliyuncs.com/coltex"
 
 DIR="${COLTEX_DIR:-$HOME/coltex}"
 PORT=""
@@ -65,12 +71,16 @@ while [ $# -gt 0 ]; do
     --images) IMAGES="${2%/}"; shift 2 ;;
     --build) BUILD=1; shift ;;
     --no-start) START=0; shift ;;
-    -h | --help) sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
 
 case "$EDITION" in "" | standard | full) ;; *) echo "--edition is standard or full" >&2; exit 2 ;; esac
+case "$IMAGES" in
+  aliyun) IMAGES="$ALIYUN_IMAGES" ;;
+  ghcr | github) IMAGES="$GHCR_IMAGES" ;;
+esac
 # A language setting or a locale (ja_JP.UTF-8, and zh from before there were more) as one of
 # ColTex's interface languages (the web app's lib/locales.ts), or nothing.
 lang_id() {
@@ -191,7 +201,9 @@ msg_en() {
     manage) M='Manage it:' ;;
     remote_later) M='Remote access later:' ;;
     pull_retry) M='The download was cut off; trying again ({n}/{max}). Finished layers are kept.' ;;
-    pull_hint) M='If ghcr.io is slow from here: run this again with --images and a mirror of ghcr.io (registry-mirrors in Docker’s daemon.json only applies to Docker Hub). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json, restart Docker, and run this again.' ;;
+    pull_hint) M='If ghcr.io is slow from here (in mainland China, say): run this again with --images aliyun, the same images on Alibaba Cloud (registry-mirrors in Docker’s daemon.json only applies to Docker Hub). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json, restart Docker, and run this again.' ;;
+    images_aliyun) M='Alibaba Cloud answers faster from here: images from Alibaba Cloud (--images ghcr to use ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud doesn’t have these images yet: downloading them from ghcr.io.' ;;
     docker_permission) M='This user may not use Docker. Run sudo usermod -aG docker {user}, log out and back in (or run newgrp docker), then run this again.' ;;
     path_hint) M='To run it as just coltex, add {dir} to PATH: {line}' ;;
   esac
@@ -243,7 +255,9 @@ msg_zh_CN() {
     manage) M='管理：' ;;
     remote_later) M='之后开启远程访问：' ;;
     pull_retry) M='下载中断，正在重试（{n}/{max}）。已下载完的层会保留。' ;;
-    pull_hint) M='如果从这里访问 ghcr.io 很慢：加上 --images 和一个 ghcr.io 镜像地址重新运行（Docker daemon.json 里的 registry-mirrors 只对 Docker Hub 有效）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重启 Docker 后重新运行。' ;;
+    pull_hint) M='如果从这里访问 ghcr.io 很慢（比如在中国大陆）：加上 --images aliyun 重新运行，从阿里云下载同样的镜像（Docker daemon.json 里的 registry-mirrors 只对 Docker Hub 有效）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重启 Docker 后重新运行。' ;;
+    images_aliyun) M='从这里访问阿里云更快：从阿里云下载镜像（--images ghcr 改用 ghcr.io）' ;;
+    images_fallback) M='阿里云上还没有这些镜像：改从 ghcr.io 下载。' ;;
     docker_permission) M='当前用户无权使用 Docker。请运行 sudo usermod -aG docker {user}，然后重新登录（或运行 newgrp docker），再重新运行本脚本。' ;;
     path_hint) M='想直接输入 coltex 运行，请把 {dir} 加入 PATH：{line}' ;;
   esac
@@ -295,7 +309,9 @@ msg_zh_TW() {
     manage) M='管理：' ;;
     remote_later) M='之後開啟遠端存取：' ;;
     pull_retry) M='下載中斷，正在重試（{n}/{max}）。已下載完成的層會保留。' ;;
-    pull_hint) M='如果從這裡存取 ghcr.io 很慢：加上 --images 和一個 ghcr.io 鏡像位址重新執行（Docker daemon.json 裡的 registry-mirrors 只對 Docker Hub 有效）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重新啟動 Docker 後再執行一次。' ;;
+    pull_hint) M='如果從這裡存取 ghcr.io 很慢（例如在中國大陸）：加上 --images aliyun 重新執行，從阿里雲下載同樣的映像檔（Docker daemon.json 裡的 registry-mirrors 只對 Docker Hub 有效）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重新啟動 Docker 後再執行一次。' ;;
+    images_aliyun) M='從這裡存取阿里雲較快：從阿里雲下載映像檔（--images ghcr 改用 ghcr.io）' ;;
+    images_fallback) M='阿里雲上還沒有這些映像檔：改從 ghcr.io 下載。' ;;
     docker_permission) M='目前的使用者無權使用 Docker。請執行 sudo usermod -aG docker {user}，然後重新登入（或執行 newgrp docker），再重新執行本指令碼。' ;;
     path_hint) M='想直接輸入 coltex 執行，請把 {dir} 加入 PATH：{line}' ;;
   esac
@@ -347,7 +363,9 @@ msg_ja() {
     manage) M='管理：' ;;
     remote_later) M='後からリモートアクセスを有効にするには：' ;;
     pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）。完了したレイヤーは保持されます。' ;;
-    pull_hint) M='ここから ghcr.io が遅い場合：--images に ghcr.io のミラーを指定してもう一度実行してください（Docker の daemon.json の registry-mirrors は Docker Hub にしか効きません）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してからもう一度実行してください。' ;;
+    pull_hint) M='ここから ghcr.io が遅い場合（中国本土など）：--images aliyun を付けてもう一度実行すると、同じイメージを Alibaba Cloud からダウンロードします（Docker の daemon.json の registry-mirrors は Docker Hub にしか効きません）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してからもう一度実行してください。' ;;
+    images_aliyun) M='ここからは Alibaba Cloud のほうが速いため、イメージを Alibaba Cloud からダウンロードします（ghcr.io を使うには --images ghcr）' ;;
+    images_fallback) M='Alibaba Cloud にはまだこれらのイメージがありません。ghcr.io からダウンロードします。' ;;
     docker_permission) M='このユーザーは Docker を使えません。sudo usermod -aG docker {user} を実行し、ログインし直して（または newgrp docker を実行して）から、もう一度実行してください。' ;;
     path_hint) M='coltex だけで実行するには、{dir} を PATH に追加してください：{line}' ;;
   esac
@@ -399,7 +417,9 @@ msg_ko() {
     manage) M='관리:' ;;
     remote_later) M='나중에 원격 접속을 켜려면:' ;;
     pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max}). 다 받은 레이어는 유지됩니다.' ;;
-    pull_hint) M='여기서 ghcr.io가 느리다면: --images에 ghcr.io 미러를 지정해 다시 실행하세요(Docker daemon.json의 registry-mirrors는 Docker Hub에만 적용됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작한 뒤 다시 실행하세요.' ;;
+    pull_hint) M='여기서 ghcr.io가 느리다면(예: 중국 본토): --images aliyun을 붙여 다시 실행하면 같은 이미지를 Alibaba Cloud에서 받습니다(Docker daemon.json의 registry-mirrors는 Docker Hub에만 적용됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작한 뒤 다시 실행하세요.' ;;
+    images_aliyun) M='여기서는 Alibaba Cloud가 더 빠르므로 이미지를 Alibaba Cloud에서 받습니다(ghcr.io를 쓰려면 --images ghcr)' ;;
+    images_fallback) M='Alibaba Cloud에 아직 이 이미지가 없습니다. ghcr.io에서 받습니다.' ;;
     docker_permission) M='이 사용자는 Docker를 사용할 수 없습니다. sudo usermod -aG docker {user}를 실행하고 다시 로그인한 뒤(또는 newgrp docker 실행) 다시 실행하세요.' ;;
     path_hint) M='coltex만 입력해 실행하려면 {dir}을(를) PATH에 추가하세요: {line}' ;;
   esac
@@ -451,7 +471,9 @@ msg_es() {
     manage) M='Gestión:' ;;
     remote_later) M='Acceso remoto más adelante:' ;;
     pull_retry) M='La descarga se cortó; reintentando ({n}/{max}). Las capas ya descargadas se conservan.' ;;
-    pull_hint) M='Si ghcr.io va lento desde aquí: vuelve a ejecutarlo con --images y un espejo de ghcr.io (registry-mirrors en el daemon.json de Docker solo se aplica a Docker Hub). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json, reinicia Docker y vuelve a ejecutarlo.' ;;
+    pull_hint) M='Si ghcr.io va lento desde aquí (en China continental, por ejemplo): vuelve a ejecutarlo con --images aliyun, las mismas imágenes en Alibaba Cloud (registry-mirrors en el daemon.json de Docker solo se aplica a Docker Hub). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json, reinicia Docker y vuelve a ejecutarlo.' ;;
+    images_aliyun) M='Alibaba Cloud responde más rápido desde aquí: imágenes desde Alibaba Cloud (--images ghcr para usar ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud aún no tiene estas imágenes: se descargan de ghcr.io.' ;;
     docker_permission) M='Este usuario no puede usar Docker. Ejecuta sudo usermod -aG docker {user}, cierra la sesión y vuelve a entrar (o ejecuta newgrp docker) y luego vuelve a ejecutar esto.' ;;
     path_hint) M='Para ejecutarlo solo como coltex, añade {dir} al PATH: {line}' ;;
   esac
@@ -503,7 +525,9 @@ msg_fr() {
     manage) M='Pour le gérer :' ;;
     remote_later) M='Accès à distance plus tard :' ;;
     pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max}). Les couches terminées sont conservées.' ;;
-    pull_hint) M='Si ghcr.io est lent depuis ici : relancez avec --images et un miroir de ghcr.io (registry-mirrors dans le daemon.json de Docker ne s’applique qu’à Docker Hub). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json, redémarrez Docker, puis relancez.' ;;
+    pull_hint) M='Si ghcr.io est lent depuis ici (en Chine continentale, par exemple) : relancez avec --images aliyun, les mêmes images sur Alibaba Cloud (registry-mirrors dans le daemon.json de Docker ne s’applique qu’à Docker Hub). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json, redémarrez Docker, puis relancez.' ;;
+    images_aliyun) M='Alibaba Cloud répond plus vite d’ici : images depuis Alibaba Cloud (--images ghcr pour utiliser ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud n’a pas encore ces images : téléchargement depuis ghcr.io.' ;;
     docker_permission) M='Cet utilisateur ne peut pas utiliser Docker. Lancez sudo usermod -aG docker {user}, déconnectez-vous puis reconnectez-vous (ou lancez newgrp docker), puis relancez.' ;;
     path_hint) M='Pour le lancer simplement avec coltex, ajoutez {dir} au PATH : {line}' ;;
   esac
@@ -555,7 +579,9 @@ msg_de() {
     manage) M='Verwaltung:' ;;
     remote_later) M='Fernzugriff später:' ;;
     pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max}). Fertige Layer bleiben erhalten.' ;;
-    pull_hint) M='Wenn ghcr.io von hier aus langsam ist: erneut mit --images und einem Spiegel von ghcr.io ausführen (registry-mirrors in Dockers daemon.json gilt nur für Docker Hub). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen, Docker neu starten und erneut ausführen.' ;;
+    pull_hint) M='Wenn ghcr.io von hier aus langsam ist (etwa in Festlandchina): erneut mit --images aliyun ausführen, dieselben Images bei Alibaba Cloud (registry-mirrors in Dockers daemon.json gilt nur für Docker Hub). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen, Docker neu starten und erneut ausführen.' ;;
+    images_aliyun) M='Alibaba Cloud antwortet von hier schneller: Images von Alibaba Cloud (--images ghcr für ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud hat diese Images noch nicht: Download von ghcr.io.' ;;
     docker_permission) M='Dieser Benutzer darf Docker nicht verwenden. Führen Sie sudo usermod -aG docker {user} aus, melden Sie sich ab und wieder an (oder führen Sie newgrp docker aus) und starten Sie dies erneut.' ;;
     path_hint) M='Um es einfach als coltex auszuführen, fügen Sie {dir} zum PATH hinzu: {line}' ;;
   esac
@@ -607,7 +633,9 @@ msg_pt_BR() {
     manage) M='Para gerenciar:' ;;
     remote_later) M='Acesso remoto depois:' ;;
     pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max}). As camadas já baixadas são mantidas.' ;;
-    pull_hint) M='Se o ghcr.io estiver lento daqui: execute de novo com --images e um espelho do ghcr.io (registry-mirrors no daemon.json do Docker só vale para o Docker Hub). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json, reinicie o Docker e execute de novo.' ;;
+    pull_hint) M='Se o ghcr.io estiver lento daqui (na China continental, por exemplo): execute de novo com --images aliyun, as mesmas imagens na Alibaba Cloud (registry-mirrors no daemon.json do Docker só vale para o Docker Hub). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json, reinicie o Docker e execute de novo.' ;;
+    images_aliyun) M='A Alibaba Cloud responde mais rápido daqui: imagens da Alibaba Cloud (--images ghcr para usar o ghcr.io)' ;;
+    images_fallback) M='A Alibaba Cloud ainda não tem estas imagens: baixando do ghcr.io.' ;;
     docker_permission) M='Este usuário não pode usar o Docker. Execute sudo usermod -aG docker {user}, saia e entre de novo (ou execute newgrp docker) e depois execute isto de novo.' ;;
     path_hint) M='Para executá-lo só como coltex, adicione {dir} ao PATH: {line}' ;;
   esac
@@ -659,7 +687,9 @@ msg_it() {
     manage) M='Per gestirlo:' ;;
     remote_later) M='Accesso remoto in seguito:' ;;
     pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max}). I layer già scaricati vengono mantenuti.' ;;
-    pull_hint) M='Se ghcr.io è lento da qui: esegui di nuovo con --images e un mirror di ghcr.io (registry-mirrors nel daemon.json di Docker vale solo per Docker Hub). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json, riavvia Docker ed esegui di nuovo.' ;;
+    pull_hint) M='Se ghcr.io è lento da qui (nella Cina continentale, per esempio): esegui di nuovo con --images aliyun, le stesse immagini su Alibaba Cloud (registry-mirrors nel daemon.json di Docker vale solo per Docker Hub). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json, riavvia Docker ed esegui di nuovo.' ;;
+    images_aliyun) M='Da qui Alibaba Cloud risponde più in fretta: immagini da Alibaba Cloud (--images ghcr per usare ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud non ha ancora queste immagini: le scarico da ghcr.io.' ;;
     docker_permission) M='Questo utente non può usare Docker. Esegui sudo usermod -aG docker {user}, esci e rientra (oppure esegui newgrp docker), poi esegui di nuovo.' ;;
     path_hint) M='Per avviarlo semplicemente con coltex, aggiungi {dir} al PATH: {line}' ;;
   esac
@@ -711,7 +741,9 @@ msg_ru() {
     manage) M='Управление:' ;;
     remote_later) M='Удалённый доступ позже:' ;;
     pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max}). Загруженные слои сохраняются.' ;;
-    pull_hint) M='Если ghcr.io отсюда работает медленно: запустите снова с --images и зеркалом ghcr.io (registry-mirrors в daemon.json Docker действует только для Docker Hub). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json, перезапустите Docker и запустите снова.' ;;
+    pull_hint) M='Если ghcr.io отсюда работает медленно (например, в материковом Китае): запустите снова с --images aliyun — те же образы в Alibaba Cloud (registry-mirrors в daemon.json Docker действует только для Docker Hub). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json, перезапустите Docker и запустите снова.' ;;
+    images_aliyun) M='Отсюда Alibaba Cloud отвечает быстрее: образы из Alibaba Cloud (--images ghcr, чтобы использовать ghcr.io)' ;;
+    images_fallback) M='В Alibaba Cloud этих образов пока нет: загружаю их с ghcr.io.' ;;
     docker_permission) M='Этому пользователю нельзя использовать Docker. Выполните sudo usermod -aG docker {user}, выйдите и войдите снова (или выполните newgrp docker), затем запустите снова.' ;;
     path_hint) M='Чтобы запускать просто командой coltex, добавьте {dir} в PATH: {line}' ;;
   esac
@@ -763,7 +795,9 @@ msg_tr() {
     manage) M='Yönetmek için:' ;;
     remote_later) M='Daha sonra uzaktan erişim:' ;;
     pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max}). Tamamlanan katmanlar korunur.' ;;
-    pull_hint) M='ghcr.io buradan yavaşsa: --images ve bir ghcr.io aynasıyla yeniden çalıştırın (Docker daemon.json içindeki registry-mirrors yalnızca Docker Hub için geçerlidir). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayın, Docker’ı yeniden başlatın ve yeniden çalıştırın.' ;;
+    pull_hint) M='ghcr.io buradan yavaşsa (örneğin Çin anakarasında): --images aliyun ile yeniden çalıştırın; aynı imajlar Alibaba Cloud’dan iner (Docker daemon.json içindeki registry-mirrors yalnızca Docker Hub için geçerlidir). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayın, Docker’ı yeniden başlatın ve yeniden çalıştırın.' ;;
+    images_aliyun) M='Buradan Alibaba Cloud daha hızlı yanıt veriyor: imajlar Alibaba Cloud’dan iniyor (ghcr.io için --images ghcr)' ;;
+    images_fallback) M='Alibaba Cloud’da bu imajlar henüz yok: ghcr.io’dan indiriliyor.' ;;
     docker_permission) M='Bu kullanıcı Docker’ı kullanamıyor. sudo usermod -aG docker {user} çalıştırın, oturumu kapatıp yeniden açın (veya newgrp docker çalıştırın), sonra yeniden çalıştırın.' ;;
     path_hint) M='Yalnızca coltex yazarak çalıştırmak için {dir} dizinini PATH’e ekleyin: {line}' ;;
   esac
@@ -815,7 +849,9 @@ msg_vi() {
     manage) M='Quản lý:' ;;
     remote_later) M='Truy cập từ xa sau này:' ;;
     pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max}). Các lớp đã tải xong được giữ lại.' ;;
-    pull_hint) M='Nếu ghcr.io chậm từ đây: chạy lại với --images và một bản sao (mirror) của ghcr.io (registry-mirrors trong daemon.json của Docker chỉ áp dụng cho Docker Hub). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json, khởi động lại Docker rồi chạy lại.' ;;
+    pull_hint) M='Nếu ghcr.io chậm từ đây (ví dụ ở Trung Quốc đại lục): chạy lại với --images aliyun để tải cùng các image từ Alibaba Cloud (registry-mirrors trong daemon.json của Docker chỉ áp dụng cho Docker Hub). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json, khởi động lại Docker rồi chạy lại.' ;;
+    images_aliyun) M='Từ đây Alibaba Cloud phản hồi nhanh hơn: tải image từ Alibaba Cloud (--images ghcr để dùng ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud chưa có các image này: tải từ ghcr.io.' ;;
     docker_permission) M='Người dùng này không được dùng Docker. Chạy sudo usermod -aG docker {user}, đăng xuất rồi đăng nhập lại (hoặc chạy newgrp docker), sau đó chạy lại.' ;;
     path_hint) M='Để chạy chỉ bằng lệnh coltex, hãy thêm {dir} vào PATH: {line}' ;;
   esac
@@ -867,7 +903,9 @@ msg_id() {
     manage) M='Kelola:' ;;
     remote_later) M='Akses jarak jauh nanti:' ;;
     pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max}). Lapisan yang sudah selesai tetap disimpan.' ;;
-    pull_hint) M='Jika ghcr.io lambat dari sini: jalankan lagi dengan --images dan mirror ghcr.io (registry-mirrors di daemon.json Docker hanya berlaku untuk Docker Hub). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json, mulai ulang Docker, lalu jalankan lagi.' ;;
+    pull_hint) M='Jika ghcr.io lambat dari sini (misalnya di Tiongkok daratan): jalankan lagi dengan --images aliyun, image yang sama di Alibaba Cloud (registry-mirrors di daemon.json Docker hanya berlaku untuk Docker Hub). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json, mulai ulang Docker, lalu jalankan lagi.' ;;
+    images_aliyun) M='Dari sini Alibaba Cloud merespons lebih cepat: image dari Alibaba Cloud (--images ghcr untuk memakai ghcr.io)' ;;
+    images_fallback) M='Alibaba Cloud belum punya image ini: diunduh dari ghcr.io.' ;;
     docker_permission) M='Pengguna ini tidak boleh memakai Docker. Jalankan sudo usermod -aG docker {user}, keluar lalu masuk lagi (atau jalankan newgrp docker), lalu jalankan lagi.' ;;
     path_hint) M='Agar bisa dijalankan cukup dengan coltex, tambahkan {dir} ke PATH: {line}' ;;
   esac
@@ -1268,6 +1306,25 @@ get() { grep -E "^$1=" .env 2>/dev/null | tail -1 | cut -d= -f2- || true; }
 setting() {
   if grep -q "^$1=" .env; then sed -i.bak "s|^$1=.*|$1=$2|" .env && rm -f .env.bak; else echo "$1=$2" >>.env; fi
 }
+# Where the images come from when neither --images nor an earlier install said: whichever of
+# ghcr.io and Alibaba Cloud answers faster from here (Alibaba Cloud in mainland China, where
+# ghcr.io is slow or cut off). Only the two registries are asked, without the shell's proxy,
+# which Docker's daemon doesn't use.
+answer_time() {
+  local t
+  t="$(curl -s --noproxy '*' -m 6 -o /dev/null -w '%{time_total}' "https://$1/v2/" 2>/dev/null)" && echo "$t"
+}
+aliyun_faster() {
+  local g a
+  g="$(answer_time "${GHCR_IMAGES%%/*}")" || g=""
+  a="$(answer_time "${ALIYUN_IMAGES%%/*}")" || a=""
+  [ -n "$a" ] || return 1
+  [ -z "$g" ] || awk -v a="$a" -v g="$g" 'BEGIN { exit !(a < g) }'
+}
+AUTO_IMAGES=0
+if [ -z "$IMAGES" ] && [ -z "$(get COLTEX_IMAGES)" ] && [ "$BUILD" = 0 ]; then
+  if aliyun_faster; then IMAGES="$ALIYUN_IMAGES"; AUTO_IMAGES=1; else IMAGES="$GHCR_IMAGES"; fi
+fi
 write_settings() {
   if [ ! -f .env ]; then
     secret() { head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n'; }
@@ -1293,6 +1350,10 @@ EOF
   setting COLTEX_IMAGE_TAG "$VERSION"
   [ "$BUILD" = 1 ] && setting COLTEX_BUILD 1
   [ -n "$IMAGES" ] && setting COLTEX_IMAGES "$IMAGES"
+  # PostgreSQL, Valkey and Caddy from the same copies on Alibaba Cloud (Docker Hub is hard to reach
+  # from mainland China); from Docker Hub with any other registry.
+  if [ "$(get COLTEX_IMAGES)" = "$ALIYUN_IMAGES" ]; then setting COLTEX_HUB_MIRROR "$ALIYUN_IMAGES"
+  else setting COLTEX_HUB_MIRROR ""; fi
   # Present though empty, so a Compose that reads the port's ${COLTEX_BIND:+…} doesn't warn
   # that it isn't set.
   grep -q '^COLTEX_BIND=' .env || setting COLTEX_BIND ""
@@ -1347,9 +1408,20 @@ if [ "$START" = 0 ]; then
 fi
 
 # ---- Download (or build) and start --------------------------------------------------
+# Alibaba Cloud chosen here rather than asked for: ghcr.io when the mirror doesn't have this
+# version yet (it copies a release after ghcr.io has it).
+download() {
+  [ "$AUTO_IMAGES" = 1 ] && note "$(T images_aliyun)"
+  pull_images && return 0
+  [ "$AUTO_IMAGES" = 1 ] && images_missing || return 1
+  note "$(T images_fallback)"
+  setting COLTEX_IMAGES "$GHCR_IMAGES"
+  setting COLTEX_HUB_MIRROR ""
+  pull_images
+}
 if [ "$(get COLTEX_BUILD)" = 1 ]; then
   step "$(T building)" docker compose build
-elif ! pull_images; then
+elif ! download; then
   images_missing || { DIE_HINT="$(T pull_hint)"; die "$(T pull_failed)"; }
   note "$(T no_prebuilt version="$VERSION")"
   step "$(T building)" docker compose build

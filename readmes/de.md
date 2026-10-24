@@ -109,7 +109,7 @@ Optionen beantworten die Fragen oder ersetzen sie, wo es kein Terminal gibt (hä
 | `--port 3690` | Ein anderer Port |
 | `--version v0.0.1` | Eine bestimmte Version (`main` für den Entwicklungszweig) |
 | `--build` | Die Images auf diesem Rechner aus den Quellen bauen, statt sie herunterzuladen |
-| `--images REGISTRY` | Die Images von `REGISTRY` statt von `ghcr.io/lewen-cai` herunterladen, z. B. von einem Spiegel von ghcr.io, wo es langsam ist (die `registry-mirrors` von Docker gelten nur für Docker Hub, nicht für ghcr.io) |
+| `--images REGISTRY` | Woher die Images kommen: `aliyun` (dieselben Images bei Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) oder ein anderer Spiegel von ghcr.io. Ohne die Option nimmt der Installer in Festlandchina Alibaba Cloud, sonst ghcr.io (die `registry-mirrors` von Docker gelten nur für Docker Hub, nicht für ghcr.io) |
 
 Melden Sie sich auf einem aus dem Internet erreichbaren Server nicht über unverschlüsseltes `http://` an: Verwenden Sie `--domain`, Tailscale oder einen Cloudflare-Tunnel.
 

@@ -11,9 +11,12 @@
 # clashes with a PostgreSQL or Redis already running there.
 name: coltex
 
+# The images from Docker Hub come from COLTEX_HUB_MIRROR when it is set (install.sh sets it to the
+# same copies on Alibaba Cloud in mainland China, where Docker Hub is hard to reach; the mirror
+# workflow keeps them there, so keep its list in step with these tags).
 services:
   valkey:
-    image: valkey/valkey:9-alpine
+    image: ${COLTEX_HUB_MIRROR:-docker.io/valkey}/valkey:9-alpine
     restart: unless-stopped
     command: ["valkey-server", "--appendonly", "yes"]
     volumes:
@@ -21,7 +24,7 @@ services:
     networks: [default, backend]
 
   postgres:
-    image: postgres:18-alpine
+    image: ${COLTEX_HUB_MIRROR:-docker.io/library}/postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: coltex
@@ -108,7 +111,7 @@ services:
       compiler: { condition: service_started }
 
   caddy:
-    image: caddy:2-alpine
+    image: ${COLTEX_HUB_MIRROR:-docker.io/library}/caddy:2-alpine
     profiles: [proxy]
     restart: unless-stopped
     environment:

@@ -1,4 +1,6 @@
 name: Images
+# Runs are named by what they publish ("Images v0.0.3", "Images main").
+run-name: Images ${{ github.ref_name }}
 
 # Prebuilt images on ghcr.io, which install.sh and `coltex update` pull:
 #   ghcr.io/<owner>/coltex-server:<ref>
@@ -6,6 +8,9 @@ name: Images
 # <ref> is the release tag (v0.0.2, plus "latest") or "main". Each architecture
 # is built on its own native runner and pushed by digest; the merge job then
 # puts them together under the tags.
+#
+# The mirror job then copies them to Alibaba Cloud Container Registry, for
+# installs in mainland China (mirror.yml, which also runs by hand).
 
 on:
   push:
@@ -166,3 +171,13 @@ jobs:
 
       - name: Inspect
         run: docker buildx imagetools inspect "${IMAGE}:${{ steps.meta.outputs.version }}"
+
+  mirror:
+    # The same images on Alibaba Cloud (mirror.yml), once they are on ghcr.io.
+    needs: merge
+    if: vars.ALIYUN_IMAGES != ''
+    uses: ./.github/workflows/mirror.yml
+    with:
+      ref: ${{ github.ref_name }}
+      latest: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    secrets: inherit

@@ -109,7 +109,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 다른 포트 사용 |
 | `--version v0.0.1` | 특정 릴리스(`main`은 개발 브랜치) |
 | `--build` | 이미지를 다운로드하지 않고 이 컴퓨터에서 소스로 빌드 |
-| `--images REGISTRY` | `ghcr.io/lewen-cai` 대신 `REGISTRY`에서 이미지를 다운로드합니다. 예: ghcr.io가 느릴 때 ghcr.io의 미러 사용(Docker의 `registry-mirrors`는 Docker Hub에만 적용되고 ghcr.io에는 적용되지 않습니다) |
+| `--images REGISTRY` | 이미지를 받을 곳: `aliyun`(알리바바 클라우드의 같은 이미지), `ghcr`(`ghcr.io/lewen-cai`) 또는 다른 ghcr.io 미러. 지정하지 않으면 중국 본토에서는 알리바바 클라우드, 그 밖에서는 ghcr.io를 씁니다(Docker의 `registry-mirrors`는 Docker Hub에만 적용되고 ghcr.io에는 적용되지 않습니다) |
 
 인터넷에서 접속할 수 있는 서버에서는 암호화되지 않은 `http://`로 로그인하지 마세요. `--domain`, Tailscale 또는 Cloudflare 터널을 사용하세요.
 

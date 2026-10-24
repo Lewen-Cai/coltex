@@ -161,11 +161,46 @@ version) or when `.env` has `COLTEX_BUILD=1` (`install.sh --build`). After
 a deploy it removes the images the containers ran before. The packages must
 be public on GitHub (package settings → visibility), or pulls are refused.
 
+For mainland China the mirror job (`.github/workflows/mirror.yml`, called
+after the merge) copies every image to Alibaba Cloud Container Registry with
+the same tags: the amd64 and arm64 images, copied with `regctl` one layer
+at a time over HTTP/1.1 and put together again with `docker buildx
+imagetools create` (ACR's personal edition refuses the attestation
+manifests buildx adds). ACR resets a connection after a while; uploading
+every layer at once over one HTTP/2 connection broke them all together, so
+the full edition never arrived. One at a time, a reset costs one layer and
+the next try (six in all) skips the layers already there. The compiler
+images keep TeX Live in layers of about a gigabyte (see
+services/compiler/Dockerfile), which also helps downloads that break. It can also be run by hand (Actions → Mirror → Run
+workflow, with the tag) to copy a version again. It runs only when the repository has the variable
+`ALIYUN_IMAGES` (registry and namespace:
+`crpi-jf7w2fwdvslokqcw.cn-guangzhou.personal.cr.aliyuncs.com/coltex`;
+`install.sh` has the same value as `ALIYUN_IMAGES`) and the secrets
+`ALIYUN_REGISTRY_USERNAME` and `ALIYUN_REGISTRY_PASSWORD`; the namespace's
+repositories must be public (ACR: default repository type public, created
+automatically on push).
+
+It also copies the images docker-compose.yml takes from Docker Hub
+(PostgreSQL, Valkey, Caddy, with their tags) into the same namespace: Docker
+Hub is hard to reach from mainland China and its public mirrors there are
+gone. `COLTEX_HUB_MIRROR` (written by `install.sh`: the ACR namespace with
+Alibaba Cloud, empty otherwise) makes compose take them from there; the
+workflow's list must follow the tags in docker-compose.yml.
+
+Without `--images` (and without `COLTEX_IMAGES` from an earlier install),
+`install.sh` picks whichever registry's `/v2/` answers faster from the
+machine (Alibaba Cloud in mainland China, ghcr.io elsewhere; ghcr.io when
+neither answers). Only the two registries are asked, without the shell's
+proxy, since Docker's daemon doesn't use it. The choice is kept as `COLTEX_IMAGES`, so
+`coltex update` stays with it. When the registry was picked this way and
+Alibaba Cloud doesn't have the version yet (the mirror copies a release
+after ghcr.io has it), it switches to ghcr.io.
+
 A pull cut off by the network is tried again, three times in all (Docker
-keeps the layers it finished; `install.sh` and `coltex deploy` alike). Where
-ghcr.io is slow, `install.sh --images REGISTRY` (or `COLTEX_IMAGES` in `.env`)
-pulls from a mirror of it: Docker's `registry-mirrors` in `daemon.json` only
-applies to Docker Hub. On a connection that keeps breaking,
+keeps the layers it finished; `install.sh` and `coltex deploy` alike).
+`install.sh --images aliyun`, `--images ghcr` or `--images REGISTRY` (any
+other mirror) sets the registry by hand, also on an existing install
+(Docker's `registry-mirrors` in `daemon.json` only applies to Docker Hub). On a connection that keeps breaking,
 `"max-concurrent-downloads": 1` and `"max-download-attempts": 10` in
 `/etc/docker/daemon.json` help. `install.sh` writes an empty `COLTEX_BIND=`
 (and `coltex` adds it when missing) so that older Compose versions don't warn

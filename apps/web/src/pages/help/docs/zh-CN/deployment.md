@@ -10,7 +10,7 @@ ColTex 正式部署只用一个端口（默认 3690）：网页、接口、实�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-它会先用方向键询问语言、版本和访问方式（也可以用 `--edition`、`--domain`、`--lang` 等参数直接指定），再检查 Docker（Linux 上没有的话可以帮你装）、把 ColTex 下载到 `~/coltex`、生成配置、下载预构建的镜像（x86-64 和 ARM64）并启动，最后打印本机和局域网的访问地址。第一次启动要下载 TeX Live，有两个版本：
+在中国大陆，它会自动从阿里云下载镜像（与 ghcr.io 上的相同）。它会先用方向键询问语言、版本和访问方式（也可以用 `--edition`、`--domain`、`--lang` 等参数直接指定），再检查 Docker（Linux 上没有的话可以帮你装）、把 ColTex 下载到 `~/coltex`、生成配置、下载预构建的镜像（x86-64 和 ARM64）并启动，最后打印本机和局域网的访问地址。第一次启动要下载 TeX Live，有两个版本：
 
 | 版本 | 下载量 | 安装后整个 ColTex 占用 | 建议预留空间 |
 | --- | --- | --- | --- |

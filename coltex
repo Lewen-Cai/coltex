@@ -77,7 +77,7 @@ msg_en() {
   coltex reset                      delete all data and start again from the setup page
   coltex uninstall                  remove ColTex from this machine (containers, data, images, this folder)' ;;
     pull_retry) M='The download was cut off; trying again ({n}/{max})…' ;;
-    pull_hint) M='If ghcr.io is slow from here: set COLTEX_IMAGES in .env to a mirror of ghcr.io (registry-mirrors in Docker’s daemon.json only applies to Docker Hub). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json and restart Docker.' ;;
+    pull_hint) M='If ghcr.io is slow from here (in mainland China, say): run the install command again with --images aliyun, the same images on Alibaba Cloud (settings and data stay). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json and restart Docker.' ;;
     fixing_data) M='Giving the data folder to the user the containers run as ({owner})…' ;;
     reset_warning) M='This deletes everything in this ColTex: accounts, projects and their history, the database, and the data folder (Tailscale’s device keys too). The settings in .env stay. It can’t be undone.' ;;
     reset_confirm) M='Type reset to go ahead:' ;;
@@ -113,7 +113,7 @@ msg_zh_CN() {
   coltex reset                      删除所有数据，从初始设置页重新开始
   coltex uninstall                  从这台机器上移除 ColTex（容器、数据、镜像和这个文件夹）' ;;
     pull_retry) M='下载中断，正在重试（{n}/{max}）…' ;;
-    pull_hint) M='如果从这里访问 ghcr.io 很慢：在 .env 中把 COLTEX_IMAGES 设为一个 ghcr.io 镜像地址（Docker daemon.json 里的 registry-mirrors 只对 Docker Hub 有效）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然后重启 Docker。' ;;
+    pull_hint) M='如果从这里访问 ghcr.io 很慢（比如在中国大陆）：加上 --images aliyun 重新运行安装命令，从阿里云下载同样的镜像（设置和数据都会保留）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然后重启 Docker。' ;;
     fixing_data) M='正在把 data 文件夹交给容器运行时使用的用户（{owner}）…' ;;
     reset_warning) M='这会删除这个 ColTex 里的一切：账号、项目及其历史、数据库和 data 文件夹（包括 Tailscale 的设备密钥）。.env 里的设置会保留。此操作无法撤销。' ;;
     reset_confirm) M='输入 reset 继续：' ;;
@@ -149,7 +149,7 @@ msg_zh_TW() {
   coltex reset                      刪除所有資料，從初始設定頁重新開始
   coltex uninstall                  從這台機器上移除 ColTex（容器、資料、映像檔和這個資料夾）' ;;
     pull_retry) M='下載中斷，正在重試（{n}/{max}）…' ;;
-    pull_hint) M='如果從這裡存取 ghcr.io 很慢：在 .env 中把 COLTEX_IMAGES 設為一個 ghcr.io 鏡像位址（Docker daemon.json 裡的 registry-mirrors 只對 Docker Hub 有效）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然後重新啟動 Docker。' ;;
+    pull_hint) M='如果從這裡存取 ghcr.io 很慢（例如在中國大陸）：加上 --images aliyun 重新執行安裝指令，從阿里雲下載同樣的映像檔（設定和資料都會保留）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然後重新啟動 Docker。' ;;
     fixing_data) M='正在把 data 資料夾交給容器執行時使用的使用者（{owner}）…' ;;
     reset_warning) M='這會刪除這個 ColTex 裡的一切：帳號、專案及其歷史、資料庫和 data 資料夾（包括 Tailscale 的裝置金鑰）。.env 裡的設定會保留。此操作無法復原。' ;;
     reset_confirm) M='輸入 reset 繼續：' ;;
@@ -185,7 +185,7 @@ msg_ja() {
   coltex reset                      すべてのデータを削除し、セットアップページからやり直す
   coltex uninstall                  このマシンから ColTex を削除する（コンテナ、データ、イメージ、このフォルダー）' ;;
     pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）…' ;;
-    pull_hint) M='ここから ghcr.io が遅い場合：.env の COLTEX_IMAGES に ghcr.io のミラーを設定してください（Docker の daemon.json の registry-mirrors は Docker Hub にしか効きません）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してください。' ;;
+    pull_hint) M='ここから ghcr.io が遅い場合（中国本土など）：インストールコマンドに --images aliyun を付けてもう一度実行すると、同じイメージを Alibaba Cloud からダウンロードします（設定とデータは残ります）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してください。' ;;
     fixing_data) M='data フォルダーの所有者を、コンテナーを実行するユーザー（{owner}）にしています…' ;;
     reset_warning) M='この ColTex のすべてを削除します：アカウント、プロジェクトとその履歴、データベース、data フォルダー（Tailscale のデバイスキーも）。.env の設定は残ります。元に戻せません。' ;;
     reset_confirm) M='続けるには reset と入力してください：' ;;
@@ -221,7 +221,7 @@ msg_ko() {
   coltex reset                      모든 데이터를 삭제하고 설정 페이지부터 다시 시작
   coltex uninstall                  이 컴퓨터에서 ColTex 제거(컨테이너, 데이터, 이미지, 이 폴더)' ;;
     pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max})…' ;;
-    pull_hint) M='여기서 ghcr.io가 느리다면: .env의 COLTEX_IMAGES를 ghcr.io 미러로 설정하세요(Docker daemon.json의 registry-mirrors는 Docker Hub에만 적용됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작하세요.' ;;
+    pull_hint) M='여기서 ghcr.io가 느리다면(예: 중국 본토): 설치 명령에 --images aliyun을 붙여 다시 실행하면 같은 이미지를 Alibaba Cloud에서 받습니다(설정과 데이터는 유지됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작하세요.' ;;
     fixing_data) M='data 폴더의 소유자를 컨테이너를 실행하는 사용자({owner})로 바꾸는 중…' ;;
     reset_warning) M='이 ColTex의 모든 것을 삭제합니다: 계정, 프로젝트와 그 기록, 데이터베이스, data 폴더(Tailscale 기기 키 포함). .env의 설정은 유지됩니다. 되돌릴 수 없습니다.' ;;
     reset_confirm) M='계속하려면 reset을 입력하세요:' ;;
@@ -257,7 +257,7 @@ msg_es() {
   coltex reset                      borra todos los datos y vuelve a empezar desde la configuración inicial
   coltex uninstall                  quita ColTex de esta máquina (contenedores, datos, imágenes y esta carpeta)' ;;
     pull_retry) M='La descarga se cortó; reintentando ({n}/{max})…' ;;
-    pull_hint) M='Si ghcr.io va lento desde aquí: pon en COLTEX_IMAGES de .env un espejo de ghcr.io (registry-mirrors en el daemon.json de Docker solo se aplica a Docker Hub). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json y reinicia Docker.' ;;
+    pull_hint) M='Si ghcr.io va lento desde aquí (en China continental, por ejemplo): vuelve a ejecutar la orden de instalación con --images aliyun, las mismas imágenes en Alibaba Cloud (los ajustes y los datos se mantienen). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json y reinicia Docker.' ;;
     fixing_data) M='Dando la carpeta data al usuario con el que se ejecutan los contenedores ({owner})…' ;;
     reset_warning) M='Esto borra todo lo de este ColTex: cuentas, proyectos y su historial, la base de datos y la carpeta data (también las claves del dispositivo de Tailscale). Los ajustes de .env se mantienen. No se puede deshacer.' ;;
     reset_confirm) M='Escribe reset para continuar:' ;;
@@ -293,7 +293,7 @@ msg_fr() {
   coltex reset                      supprime toutes les données et recommence depuis la page de configuration
   coltex uninstall                  supprime ColTex de cette machine (conteneurs, données, images, ce dossier)' ;;
     pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max})…' ;;
-    pull_hint) M='Si ghcr.io est lent depuis ici : mettez dans COLTEX_IMAGES (.env) un miroir de ghcr.io (registry-mirrors dans le daemon.json de Docker ne s’applique qu’à Docker Hub). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json et redémarrez Docker.' ;;
+    pull_hint) M='Si ghcr.io est lent depuis ici (en Chine continentale, par exemple) : relancez la commande d’installation avec --images aliyun, les mêmes images sur Alibaba Cloud (réglages et données sont conservés). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json et redémarrez Docker.' ;;
     fixing_data) M='Attribution du dossier data à l’utilisateur des conteneurs ({owner})…' ;;
     reset_warning) M='Ceci supprime tout dans ce ColTex : comptes, projets et leur historique, la base de données et le dossier data (y compris les clés d’appareil de Tailscale). Les réglages de .env restent. C’est irréversible.' ;;
     reset_confirm) M='Tapez reset pour continuer :' ;;
@@ -329,7 +329,7 @@ msg_de() {
   coltex reset                      alle Daten löschen und auf der Einrichtungsseite neu beginnen
   coltex uninstall                  ColTex von diesem Rechner entfernen (Container, Daten, Images, dieser Ordner)' ;;
     pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max})…' ;;
-    pull_hint) M='Wenn ghcr.io von hier aus langsam ist: COLTEX_IMAGES in .env auf einen Spiegel von ghcr.io setzen (registry-mirrors in Dockers daemon.json gilt nur für Docker Hub). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen und Docker neu starten.' ;;
+    pull_hint) M='Wenn ghcr.io von hier aus langsam ist (etwa in Festlandchina): den Installationsbefehl erneut mit --images aliyun ausführen, dieselben Images bei Alibaba Cloud (Einstellungen und Daten bleiben). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen und Docker neu starten.' ;;
     fixing_data) M='Der Ordner data wird dem Benutzer der Container übergeben ({owner})…' ;;
     reset_warning) M='Das löscht alles in diesem ColTex: Konten, Projekte und ihren Verlauf, die Datenbank und den Ordner data (auch die Geräteschlüssel von Tailscale). Die Einstellungen in .env bleiben. Es lässt sich nicht rückgängig machen.' ;;
     reset_confirm) M='Zum Fortfahren reset eingeben:' ;;
@@ -365,7 +365,7 @@ msg_pt_BR() {
   coltex reset                      apaga todos os dados e recomeça pela página de configuração
   coltex uninstall                  remove o ColTex desta máquina (contêineres, dados, imagens e esta pasta)' ;;
     pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max})…' ;;
-    pull_hint) M='Se o ghcr.io estiver lento daqui: defina COLTEX_IMAGES no .env como um espelho do ghcr.io (registry-mirrors no daemon.json do Docker só vale para o Docker Hub). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json e reinicie o Docker.' ;;
+    pull_hint) M='Se o ghcr.io estiver lento daqui (na China continental, por exemplo): execute de novo o comando de instalação com --images aliyun, as mesmas imagens na Alibaba Cloud (configurações e dados ficam). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json e reinicie o Docker.' ;;
     fixing_data) M='Passando a pasta data para o usuário dos contêineres ({owner})…' ;;
     reset_warning) M='Isto apaga tudo neste ColTex: contas, projetos e seu histórico, o banco de dados e a pasta data (inclusive as chaves de dispositivo do Tailscale). As configurações do .env ficam. Não pode ser desfeito.' ;;
     reset_confirm) M='Digite reset para continuar:' ;;
@@ -401,7 +401,7 @@ msg_it() {
   coltex reset                      elimina tutti i dati e ricomincia dalla pagina di configurazione
   coltex uninstall                  rimuove ColTex da questa macchina (container, dati, immagini, questa cartella)' ;;
     pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max})…' ;;
-    pull_hint) M='Se ghcr.io è lento da qui: imposta COLTEX_IMAGES in .env su un mirror di ghcr.io (registry-mirrors nel daemon.json di Docker vale solo per Docker Hub). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json e riavvia Docker.' ;;
+    pull_hint) M='Se ghcr.io è lento da qui (nella Cina continentale, per esempio): esegui di nuovo il comando di installazione con --images aliyun, le stesse immagini su Alibaba Cloud (impostazioni e dati restano). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json e riavvia Docker.' ;;
     fixing_data) M='Assegno la cartella data all’utente dei container ({owner})…' ;;
     reset_warning) M='Questo elimina tutto in questo ColTex: account, progetti e la loro cronologia, il database e la cartella data (anche le chiavi del dispositivo Tailscale). Le impostazioni in .env restano. Non si può annullare.' ;;
     reset_confirm) M='Digita reset per continuare:' ;;
@@ -437,7 +437,7 @@ msg_ru() {
   coltex reset                      удалить все данные и начать заново со страницы настройки
   coltex uninstall                  удалить ColTex с этой машины (контейнеры, данные, образы, эту папку)' ;;
     pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max})…' ;;
-    pull_hint) M='Если ghcr.io отсюда работает медленно: укажите в COLTEX_IMAGES в .env зеркало ghcr.io (registry-mirrors в daemon.json Docker действует только для Docker Hub). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json и перезапустите Docker.' ;;
+    pull_hint) M='Если ghcr.io отсюда работает медленно (например, в материковом Китае): запустите команду установки снова с --images aliyun — те же образы в Alibaba Cloud (настройки и данные сохранятся). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json и перезапустите Docker.' ;;
     fixing_data) M='Папка data передаётся пользователю, от имени которого работают контейнеры ({owner})…' ;;
     reset_warning) M='Будет удалено всё в этом ColTex: учётные записи, проекты и их история, база данных и папка data (и ключи устройства Tailscale). Настройки в .env останутся. Отменить это нельзя.' ;;
     reset_confirm) M='Введите reset, чтобы продолжить:' ;;
@@ -473,7 +473,7 @@ msg_tr() {
   coltex reset                      tüm verileri sil ve kurulum sayfasından yeniden başla
   coltex uninstall                  ColTex’i bu makineden kaldır (konteynerler, veriler, imajlar, bu klasör)' ;;
     pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max})…' ;;
-    pull_hint) M='ghcr.io buradan yavaşsa: .env içindeki COLTEX_IMAGES değerini bir ghcr.io aynası yapın (Docker daemon.json içindeki registry-mirrors yalnızca Docker Hub için geçerlidir). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayıp Docker’ı yeniden başlatın.' ;;
+    pull_hint) M='ghcr.io buradan yavaşsa (örneğin Çin anakarasında): kurulum komutunu --images aliyun ile yeniden çalıştırın; aynı imajlar Alibaba Cloud’dan iner (ayarlar ve veriler kalır). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayıp Docker’ı yeniden başlatın.' ;;
     fixing_data) M='data klasörü kapsayıcıları çalıştıran kullanıcıya veriliyor ({owner})…' ;;
     reset_warning) M='Bu, bu ColTex’teki her şeyi siler: hesaplar, projeler ve geçmişleri, veritabanı ve data klasörü (Tailscale cihaz anahtarları da). .env içindeki ayarlar kalır. Geri alınamaz.' ;;
     reset_confirm) M='Devam etmek için reset yazın:' ;;
@@ -509,7 +509,7 @@ msg_vi() {
   coltex reset                      xóa toàn bộ dữ liệu và bắt đầu lại từ trang thiết lập
   coltex uninstall                  gỡ ColTex khỏi máy này (container, dữ liệu, image, thư mục này)' ;;
     pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max})…' ;;
-    pull_hint) M='Nếu ghcr.io chậm từ đây: đặt COLTEX_IMAGES trong .env thành một bản sao (mirror) của ghcr.io (registry-mirrors trong daemon.json của Docker chỉ áp dụng cho Docker Hub). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json rồi khởi động lại Docker.' ;;
+    pull_hint) M='Nếu ghcr.io chậm từ đây (ví dụ ở Trung Quốc đại lục): chạy lại lệnh cài đặt với --images aliyun để tải cùng các image từ Alibaba Cloud (thiết lập và dữ liệu được giữ nguyên). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json rồi khởi động lại Docker.' ;;
     fixing_data) M='Đang giao thư mục data cho người dùng chạy các container ({owner})…' ;;
     reset_warning) M='Thao tác này xóa mọi thứ trong ColTex này: tài khoản, dự án và lịch sử của chúng, cơ sở dữ liệu và thư mục data (cả khóa thiết bị của Tailscale). Các thiết lập trong .env được giữ lại. Không thể hoàn tác.' ;;
     reset_confirm) M='Gõ reset để tiếp tục:' ;;
@@ -545,7 +545,7 @@ msg_id() {
   coltex reset                      hapus semua data dan mulai lagi dari halaman penyiapan
   coltex uninstall                  hapus ColTex dari mesin ini (kontainer, data, image, folder ini)' ;;
     pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max})…' ;;
-    pull_hint) M='Jika ghcr.io lambat dari sini: atur COLTEX_IMAGES di .env ke mirror ghcr.io (registry-mirrors di daemon.json Docker hanya berlaku untuk Docker Hub). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json lalu mulai ulang Docker.' ;;
+    pull_hint) M='Jika ghcr.io lambat dari sini (misalnya di Tiongkok daratan): jalankan lagi perintah instalasi dengan --images aliyun, image yang sama di Alibaba Cloud (pengaturan dan data tetap ada). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json lalu mulai ulang Docker.' ;;
     fixing_data) M='Menyerahkan folder data ke pengguna yang menjalankan kontainer ({owner})…' ;;
     reset_warning) M='Ini menghapus semua isi ColTex ini: akun, proyek beserta riwayatnya, basis data, dan folder data (termasuk kunci perangkat Tailscale). Pengaturan di .env tetap ada. Tidak bisa dibatalkan.' ;;
     reset_confirm) M='Ketik reset untuk melanjutkan:' ;;

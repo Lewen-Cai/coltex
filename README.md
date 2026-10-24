@@ -109,7 +109,7 @@ Options answer the questions, or replace them where there is no terminal (add th
 | `--port 3690` | Another port |
 | `--version v0.0.1` | A specific release (`main` for the development branch) |
 | `--build` | Build the images from the sources on this machine instead of downloading them |
-| `--images REGISTRY` | Download the images from `REGISTRY` instead of `ghcr.io/lewen-cai`, e.g. a mirror of ghcr.io where it is slow (Docker's `registry-mirrors` only applies to Docker Hub, not to ghcr.io) |
+| `--images REGISTRY` | Where to download the images from: `aliyun` (the same images on Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) or another mirror of ghcr.io. Without it, the installer uses Alibaba Cloud in mainland China and ghcr.io elsewhere (Docker's `registry-mirrors` only applies to Docker Hub, not to ghcr.io) |
 
 On a server reachable from the internet, don't sign in over plain `http://`: use `--domain`, Tailscale or a Cloudflare tunnel.
 

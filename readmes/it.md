@@ -109,7 +109,7 @@ Le opzioni rispondono alle domande, o le sostituiscono dove non c’è un termin
 | `--port 3690` | Un’altra porta |
 | `--version v0.0.1` | Una release specifica (`main` per il branch di sviluppo) |
 | `--build` | Compila le immagini dai sorgenti su questa macchina invece di scaricarle |
-| `--images REGISTRY` | Scarica le immagini da `REGISTRY` invece che da `ghcr.io/lewen-cai`, ad es. un mirror di ghcr.io dove è lento (`registry-mirrors` di Docker vale solo per Docker Hub, non per ghcr.io) |
+| `--images REGISTRY` | Da dove scaricare le immagini: `aliyun` (le stesse immagini su Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) o un altro mirror di ghcr.io. Senza l’opzione, l’installer usa Alibaba Cloud nella Cina continentale e ghcr.io altrove (`registry-mirrors` di Docker vale solo per Docker Hub, non per ghcr.io) |
 
 Su un server raggiungibile da internet, non accedere tramite `http://` in chiaro: usa `--domain`, Tailscale o un tunnel Cloudflare.
 

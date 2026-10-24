@@ -1,0 +1,121 @@
+name: Mirror
+# Runs are named by the version they copy ("Mirror v0.0.3").
+run-name: Mirror ${{ inputs.ref }}
+
+# Copies the images that images.yml published on ghcr.io to Alibaba Cloud
+# Container Registry, for installs in mainland China (install.sh uses it
+# there by itself, or with --images aliyun): the same tags, amd64 and arm64.
+# images.yml calls it after each build; run it by hand (Actions → Mirror →
+# Run workflow) to copy a version again, e.g. after fixing the credentials.
+#
+# It needs the repository variable ALIYUN_IMAGES (registry and namespace, the
+# same as ALIYUN_IMAGES in install.sh) and the secrets ALIYUN_REGISTRY_USERNAME
+# and ALIYUN_REGISTRY_PASSWORD; the namespace's repositories must be public.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+      latest:
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The images' tag (a release such as v0.0.3, or main)
+        type: string
+        required: true
+      latest:
+        description: Also tag them latest (for the newest release)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    if: vars.ALIYUN_IMAGES != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: coltex-server
+            suffix: ""
+          - name: coltex-compiler
+            suffix: -standard
+          - name: coltex-compiler
+            suffix: -full
+          # The images docker-compose.yml takes from Docker Hub (COLTEX_HUB_MIRROR), with their
+          # tags there: keep these in step with docker-compose.yml.
+          - name: postgres
+            source: docker.io/library/postgres
+            tag: 18-alpine
+          - name: valkey
+            source: docker.io/valkey/valkey
+            tag: 9-alpine
+          - name: caddy
+            source: docker.io/library/caddy
+            tag: 2-alpine
+    steps:
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Install regctl
+        run: |
+          curl -fsSL -o /usr/local/bin/regctl https://github.com/regclient/regclient/releases/download/v0.11.6/regctl-linux-amd64
+          echo "8e0e62a497fcdb8048d18aa927a139613176ba0531f412bc541044e28f9856bd  /usr/local/bin/regctl" | sha256sum -c
+          chmod +x /usr/local/bin/regctl
+
+      - name: Copy to Alibaba Cloud
+        # Only the platforms' images, put together again under the same tags:
+        # ACR's personal edition refuses the attestation manifests buildx adds
+        # to the list ("unknown manifest class for
+        # application/vnd.oci.empty.v1+json").
+        #
+        # One layer at a time over HTTP/1.1: ACR resets a connection after a
+        # while, and with every layer of an image uploading at once over one
+        # HTTP/2 connection, all of them broke together and no try got
+        # further than the last (the full edition never arrived). This way a
+        # reset costs only the layer on its way, and the next try skips the
+        # layers already there.
+        env:
+          ALIYUN_USER: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
+          ALIYUN_PASSWORD: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+          REF: ${{ inputs.ref }}
+          LATEST: ${{ inputs.latest }}
+          SUFFIX: ${{ matrix.suffix }}
+          SOURCE: ${{ matrix.source }}
+          TAG: ${{ matrix.tag }}
+          GODEBUG: http2client=0
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${{ matrix.name }}"
+          tag="$REF$SUFFIX"
+          # A Docker Hub image: its own tag, whatever version this run is for.
+          if [ -n "$SOURCE" ]; then image="$SOURCE"; tag="$TAG"; LATEST=false; fi
+          mirror="${{ vars.ALIYUN_IMAGES }}/${{ matrix.name }}"
+          registry="${mirror%%/*}"
+          echo "$ALIYUN_PASSWORD" | regctl registry login "$registry" -u "$ALIYUN_USER" --pass-stdin
+          echo "$ALIYUN_PASSWORD" | docker login --username "$ALIYUN_USER" --password-stdin "$registry"
+          regctl registry set "$registry" --req-concurrent 1 --blob-max -1
+          # amd64 and arm64, the platforms ColTex runs on.
+          mapfile -t digests < <(docker buildx imagetools inspect --raw "$image:$tag" |
+            jq -r '.manifests[] | select(.platform.os == "linux" and (.platform.architecture == "amd64" or .platform.architecture == "arm64")) | .digest')
+          [ "${#digests[@]}" -gt 0 ] || { echo "No amd64 or arm64 images in $image:$tag"; exit 1; }
+          sources=()
+          for digest in "${digests[@]}"; do
+            for try in 1 2 3 4 5 6; do
+              regctl image copy -v info "$image@$digest" "$mirror@$digest" && break
+              [ "$try" = 6 ] && exit 1
+              echo "Cut off; trying again ($((try + 1))/6), keeping the layers already there"
+              sleep 20
+            done
+            sources+=("$mirror@$digest")
+          done
+          tags=(-t "$mirror:$tag")
+          [ "$LATEST" = true ] && tags+=(-t "$mirror:latest$SUFFIX")
+          docker buildx imagetools create "${tags[@]}" "${sources[@]}"
+          docker buildx imagetools inspect --raw "$mirror:$tag" | jq -r '.manifests[].platform | "\(.os)/\(.architecture)"'

@@ -84,7 +84,7 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-脚本会先用方向键询问语言、TeX Live 版本和访问方式，然后把最新版本下载到 `~/coltex`，生成配置，带进度条下载预构建的镜像并启动 ColTex，最后打印访问地址。完整输出写在 `~/coltex/install.log`。然后打开 `http://<服务器>:3690`，创建管理员账号。
+脚本会先用方向键询问语言、TeX Live 版本和访问方式，然后把最新版本下载到 `~/coltex`，生成配置，带进度条下载预构建的镜像并启动 ColTex，最后打印访问地址。在中国大陆，它会自动从阿里云容器镜像服务下载镜像（和 ghcr.io 上的完全相同）。完整输出写在 `~/coltex/install.log`。然后打开 `http://<服务器>:3690`，创建管理员账号。
 
 第一次启动要下载 TeX Live，有两个版本可选：
 
@@ -109,7 +109,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |
 | `--build` | 在本机从源码构建镜像，而不是下载预构建的镜像 |
-| `--images REGISTRY` | 从 `REGISTRY` 下载镜像，而不是 `ghcr.io/lewen-cai`，比如在 ghcr.io 很慢时换成它的镜像站（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
+| `--images REGISTRY` | 从哪里下载镜像：`aliyun`（阿里云上的相同镜像）、`ghcr`（`ghcr.io/lewen-cai`）或其他 ghcr.io 镜像站的地址。不指定时，在中国大陆自动从阿里云下载，其他地区从 ghcr.io 下载。已安装的实例重新运行安装命令加上它即可切换，设置和数据都会保留（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
 
 如果服务器能从公网访问，不要通过明文 `http://` 登录：请用 `--domain`、Tailscale 或 Cloudflare 隧道。
 

@@ -109,7 +109,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | Другой порт |
 | `--version v0.0.1` | Конкретный выпуск (`main` — ветка разработки) |
 | `--build` | Собрать образы из исходного кода на этой машине вместо скачивания |
-| `--images REGISTRY` | Скачивать образы из `REGISTRY` вместо `ghcr.io/lewen-cai`, например с зеркала ghcr.io, если он работает медленно (`registry-mirrors` в Docker действует только для Docker Hub, а не для ghcr.io) |
+| `--images REGISTRY` | Откуда скачивать образы: `aliyun` (те же образы в Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) или другое зеркало ghcr.io. Без этого параметра установщик берёт Alibaba Cloud в материковом Китае и ghcr.io в остальных местах (`registry-mirrors` в Docker действует только для Docker Hub, а не для ghcr.io) |
 
 На сервере, доступном из интернета, не входите по открытому `http://`: используйте `--domain`, Tailscale или туннель Cloudflare.
 

@@ -109,7 +109,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 使用其他連接埠 |
 | `--version v0.0.1` | 指定版本（`main` 代表開發分支） |
 | `--build` | 在本機從原始碼建置映像檔，而不是下載 |
-| `--images REGISTRY` | 從 `REGISTRY` 而不是 `ghcr.io/lewen-cai` 下載映像檔，例如在 ghcr.io 速度很慢時使用它的鏡像站（Docker 的 `registry-mirrors` 只適用於 Docker Hub，不適用於 ghcr.io） |
+| `--images REGISTRY` | 從哪裡下載映像檔：`aliyun`（阿里雲上的相同映像檔）、`ghcr`（`ghcr.io/lewen-cai`）或其他 ghcr.io 鏡像站。未指定時，在中國大陸自動從阿里雲下載，其他地區從 ghcr.io 下載（Docker 的 `registry-mirrors` 只適用於 Docker Hub，不適用於 ghcr.io） |
 
 如果伺服器可以從網際網路連線，請不要透過未加密的 `http://` 登入：請使用 `--domain`、Tailscale 或 Cloudflare 通道。
 
