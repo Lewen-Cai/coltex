@@ -246,6 +246,20 @@
       "when": 1792804883979,
       "tag": "0034_user_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792806882517,
+      "tag": "0035_account_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792807085029,
+      "tag": "0036_avatar_hue",
+      "breakpoints": true
     }
   ]
 }

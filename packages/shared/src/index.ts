@@ -446,7 +446,8 @@ export function mentionedIds(content: string): string[] {
  * - `added`: someone added you to a project (by email);
  * - `owner`: someone made you a project's owner.
  */
-export const NotificationKind = z.enum(['mention', 'reply', 'added', 'owner'])
+/** `password_reset`: their password was set with `cli.ts reset-password` (no project, no actor). */
+export const NotificationKind = z.enum(['mention', 'reply', 'added', 'owner', 'password_reset'])
 export type NotificationKind = z.infer<typeof NotificationKind>
 
 export const Notification = z.object({
@@ -454,7 +455,8 @@ export const Notification = z.object({
   kind: NotificationKind,
   read: z.boolean(),
   createdAt: z.string(),
-  project: z.object({ id: z.string(), name: z.string() }),
+  /** Null for notifications about the account itself (`password_reset`). */
+  project: z.object({ id: z.string(), name: z.string() }).nullable(),
   /** Who caused it; `id` is null once their account is deleted. */
   actor: z.object({ id: z.string().nullable(), name: z.string() }),
   /** Where a mention was made. */
@@ -632,9 +634,17 @@ export type LearnedWordsImported = z.infer<typeof LearnedWordsImported>
 /** The interface's colour themes (the web app's lib/theme.ts): blue, green and violet, each light and dark. */
 export const ThemeChoice = z.enum(['light', 'dark', 'forest', 'moss', 'lavender', 'plum'])
 export type ThemeChoice = z.infer<typeof ThemeChoice>
-/** A person's interface settings, kept with their account; null: never chosen (the default). */
-export const UserPreferences = z.object({ theme: ThemeChoice.nullable() })
+/** The hue of a person's avatar and cursor colour (hsl(hue 70% 42%)), chosen in their profile. */
+export const AvatarHue = z.number().int().min(0).max(359)
+/** A person's settings kept with their account; null: never chosen (the default: Light, a hue made from their id). */
+export const UserPreferences = z.object({ theme: ThemeChoice.nullable(), avatarHue: AvatarHue.nullable() })
 export type UserPreferences = z.infer<typeof UserPreferences>
+/** Change some of them; what is left out stays. */
+export const UserPreferencesPatch = z.object({ theme: ThemeChoice.nullable().optional(), avatarHue: AvatarHue.nullable().optional() })
+export type UserPreferencesPatch = z.infer<typeof UserPreferencesPatch>
+/** The avatar hues people chose, by user id (everyone else has the one made from their id). */
+export const AvatarHues = z.record(z.string(), AvatarHue)
+export type AvatarHues = z.infer<typeof AvatarHues>
 
 export const CompileStatus = z.enum(['success', 'failure', 'timeout', 'error'])
 export type CompileStatus = z.infer<typeof CompileStatus>

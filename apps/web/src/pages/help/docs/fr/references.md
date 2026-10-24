@@ -8,9 +8,9 @@
 
 ## Rechercher et ajouter
 
-Dans l’onglet **Ajouter**, saisissez un titre, des auteurs ou des mots-clés et appuyez sur Entrée : ColTex interroge Crossref (revues, actes, livres) et arXiv (prépublications) et liste ce qu’il trouve, les meilleurs résultats de chacun en premier. **+** ajoute un article au fichier `.bib` choisi sous le champ. Une prépublication dont arXiv connaît la version publiée est ajoutée par le DOI de cette version.
+Dans l’onglet **Ajouter**, saisissez un titre, des auteurs ou des mots-clés et appuyez sur Entrée ou sur **Recherche** : ColTex interroge Crossref (revues, actes, livres) et arXiv (prépublications) et liste ce qu’il trouve, les meilleurs résultats de chacun en premier. **+** ajoute un article au fichier `.bib` choisi sous le champ. Une prépublication dont arXiv connaît la version publiée est ajoutée par le DOI de cette version.
 
-Un DOI (p. ex. `10.1145/3290605.3300857`), un lien doi.org ou un identifiant arXiv est ajouté directement, sans recherche.
+Un DOI (p. ex. `10.1145/3290605.3300857`), un lien doi.org ou un identifiant arXiv est ajouté directement, sans recherche (le bouton affiche alors **Ajouter**).
 
 Les entrées sont récupérées sur doi.org et ajoutées à la fin du fichier avec une clé unique ; une entrée déjà présente dans le fichier (même DOI) n’est pas ajoutée deux fois. Vérifiez ce qui a été récupéré.
 

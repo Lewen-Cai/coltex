@@ -8,9 +8,9 @@
 
 ## Mencari dan menambahkan
 
-Di tab **Tambah**, ketik judul, penulis, atau kata kunci lalu tekan Enter: ColTex mencari di Crossref (jurnal, prosiding, buku) dan arXiv (pracetak) lalu menampilkan hasilnya, dengan kecocokan terbaik dari masing-masing sumber di urutan teratas. **+** menambahkan makalah ke file `.bib` yang dipilih di bawah kolom isian. Pracetak yang versi terbitnya diketahui arXiv ditambahkan dengan DOI versi terbit tersebut.
+Di tab **Tambah**, ketik judul, penulis, atau kata kunci lalu tekan Enter atau **Cari**: ColTex mencari di Crossref (jurnal, prosiding, buku) dan arXiv (pracetak) lalu menampilkan hasilnya, dengan kecocokan terbaik dari masing-masing sumber di urutan teratas. **+** menambahkan makalah ke file `.bib` yang dipilih di bawah kolom isian. Pracetak yang versi terbitnya diketahui arXiv ditambahkan dengan DOI versi terbit tersebut.
 
-DOI (mis. `10.1145/3290605.3300857`), tautan doi.org, atau ID arXiv langsung ditambahkan, tanpa pencarian.
+DOI (mis. `10.1145/3290605.3300857`), tautan doi.org, atau ID arXiv langsung ditambahkan, tanpa pencarian (tombolnya kemudian bertuliskan **Tambah**).
 
 Entri diambil dari doi.org dan ditambahkan di akhir file dengan kunci yang unik; entri yang sudah ada di file (DOI yang sama) tidak ditambahkan dua kali. Periksa hasil yang diambil.
 

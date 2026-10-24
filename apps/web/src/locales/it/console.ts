@@ -203,6 +203,7 @@ const messages: Record<string, string> = {
   '{name} replied to a comment on {file}': '{name} ha risposto a un commento su {file}',
   '{name} added you to this project ({role})': '{name} ti ha aggiunto a questo progetto ({role})',
   '{name} made you the owner of this project': '{name} ti ha reso proprietario di questo progetto',
+  'Your password was reset from the server’s command line': 'La tua password è stata reimpostata dalla riga di comando del server',
   // Help documentation
   'Help documentation': 'Documentazione',
   'Deployment and network': 'Installazione e rete',

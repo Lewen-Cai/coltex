@@ -35,6 +35,7 @@ const messages: Record<string, string> = {
   // Account
   Profile: 'Perfil',
   Name: 'Nome',
+  'Avatar colour': 'Cor do avatar',
   Email: 'E-mail',
   Save: 'Salvar',
   'Name updated': 'Nome atualizado',

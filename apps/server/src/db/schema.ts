@@ -278,6 +278,7 @@ export const userPreferences = pgTable('user_preferences', {
     .primaryKey()
     .references(() => user.id, { onDelete: 'cascade' }),
   theme: text('theme'),
+  avatarHue: integer('avatar_hue'),
   updatedAt: timestamps.updatedAt,
 })
 
@@ -476,11 +477,10 @@ export const notifications = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    projectId: text('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
+    // Null for notifications about the account itself.
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
     actorId: text('actor_id').references(() => user.id, { onDelete: 'set null' }),
-    kind: text('kind', { enum: ['mention', 'reply', 'added', 'owner'] }).notNull(),
+    kind: text('kind', { enum: ['mention', 'reply', 'added', 'owner', 'password_reset'] }).notNull(),
     source: text('source', { enum: ['chat', 'comment'] }),
     threadId: text('thread_id').references(() => commentThreads.id, { onDelete: 'cascade' }),
     commentMessageId: text('comment_message_id').references(() => commentMessages.id, { onDelete: 'cascade' }),

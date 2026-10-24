@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, Check, CheckCheck } from 'lucide-react'
+import { Bell, Check, CheckCheck, KeyRound } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Notification } from '@coltex/shared'
 import { PageHeader } from '@/components/shell/app-shell'
@@ -141,12 +141,20 @@ function Row({ n, users, onRead }: { n: Notification; users: Record<string, stri
     <div className={cn('group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/60', !n.read && 'bg-primary/[0.04]')}>
       <button type="button" onClick={() => openNotification(n)} className="flex min-w-0 flex-1 items-start gap-3 text-left">
         <span className={cn('mt-3 size-2 shrink-0 rounded-full', n.read ? 'bg-transparent' : 'bg-primary')} aria-label={n.read ? undefined : t('Unread')} />
-        <UserAvatar id={n.actor.id ?? n.id} name={n.actor.name} className="size-9" />
+        {n.project ? (
+          <UserAvatar id={n.actor.id ?? n.id} name={n.actor.name} className="size-9" />
+        ) : (
+          // About the account itself, from no one in particular.
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <KeyRound className="size-4" />
+          </span>
+        )}
         <span className="min-w-0 flex-1">
           <span className={cn('block text-sm', !n.read && 'font-medium')}>{notificationTitle(n)}</span>
           {excerpt && <span className="mt-0.5 line-clamp-2 block text-sm text-muted-foreground">{excerpt}</span>}
           <span className="mt-1 block text-[13px] text-muted-foreground">
-            {n.project.name} · <time title={new Date(n.createdAt).toLocaleString(intlLocale())}>{timeAgo(n.createdAt)}</time>
+            {n.project && `${n.project.name} · `}
+            <time title={new Date(n.createdAt).toLocaleString(intlLocale())}>{timeAgo(n.createdAt)}</time>
           </span>
         </span>
       </button>

@@ -35,6 +35,7 @@ const messages: Record<string, string> = {
   // Account
   Profile: '프로필',
   Name: '이름',
+  'Avatar colour': '아바타 색상',
   Email: '이메일',
   Save: '저장',
   'Name updated': '이름이 업데이트되었습니다',

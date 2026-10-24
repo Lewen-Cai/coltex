@@ -203,6 +203,7 @@ const messages: Record<string, string> = {
   '{name} replied to a comment on {file}': '{name} đã trả lời một bình luận ở {file}',
   '{name} added you to this project ({role})': '{name} đã thêm bạn vào dự án này ({role})',
   '{name} made you the owner of this project': '{name} đã đặt bạn làm chủ sở hữu dự án này',
+  'Your password was reset from the server’s command line': 'Mật khẩu của bạn đã được đặt lại từ dòng lệnh của máy chủ',
   // Help documentation
   'Help documentation': 'Tài liệu trợ giúp',
   'Deployment and network': 'Triển khai và mạng',

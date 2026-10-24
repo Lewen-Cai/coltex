@@ -12,7 +12,7 @@ Administrator sistem melihat halaman Administrasi di bawah **Pengaturan** pada m
 - **Undangan**: tautan sekali pakai, untuk satu email atau (jika email dikosongkan) untuk siapa pun yang memiliki tautan, dengan masa berlaku. Tautan undangan yang tertunda tetap ada di daftar (**Tautan**), satu untuk setiap alamat tempat ColTex dapat dijangkau (LAN, Tailscale, Cloudflare). Admin sistem mengundang anggota atau admin dan memilih **Grup AI** untuk akun baru. Admin hanya mengundang anggota, ke dalam tim mereka sendiri; anggota tersebut mendapat grup AI admin itu. Admin hanya melihat dan mencabut undangan mereka sendiri.
 - **Kelola pengguna**: admin sistem melihat setiap akun, menjadikan orang anggota atau admin, memindahkan anggota antartim (**Tim** di menu baris), mengatur ulang kata sandi, serta menangguhkan atau menghapus akun. Seorang admin melihat dirinya sendiri dan timnya, dan hanya mengatur ulang kata sandi, menangguhkan, atau menghapus anggota timnya. Menghapus akun akan menghapus proyek miliknya.
 - Untuk menyerahkan peran admin sistem kepada orang lain (atau mendapatkannya kembali jika akun itu hilang), jalankan `coltex cli system-admin <email>` di server; admin sistem sebelumnya menjadi admin.
-- Lupa kata sandi, termasuk kata sandi admin sistem? Jalankan `coltex cli reset-password <email>` di server: perintah ini meminta kata sandi baru dua kali dan mengeluarkan akun itu dari semua perangkat.
+- Lupa kata sandi, termasuk kata sandi admin sistem? Jalankan `coltex cli reset-password <email>` di server: perintah ini meminta kata sandi baru dua kali dan mengeluarkan akun itu dari semua perangkat. Pemilik akun menerima notifikasi tentang hal ini, dan log server (`coltex logs`) mencatatnya.
 
 ## Layanan AI
 

@@ -12,7 +12,7 @@ Sistem yöneticisi, avatar menüsündeki **Ayarlar** altında Yönetim sayfalar�
 - **Davetler**: tek kullanımlık, son geçerlilik tarihi olan bağlantılar; tek bir e-posta için veya (e-posta boş bırakılırsa) bağlantıya sahip herkes için. Bekleyen bir davetin bağlantıları listede kalır (**Bağlantı**); ColTex’e erişilebilen her adres (yerel ağ, Tailscale, Cloudflare) için bir tane. Sistem yöneticisi üye veya yönetici davet eder ve yeni hesap için **YZ grubu** seçer. Yöneticiler yalnızca üye davet eder ve bu üyeler kendi ekiplerine katılır; bu üyeler yöneticinin YZ grubunu alır. Yöneticiler yalnızca kendi davetlerini görür ve iptal eder.
 - **Kullanıcıları yönet**: sistem yöneticisi her hesabı görür, kişileri üye veya yönetici yapar, üyeleri ekipler arasında taşır (satırın menüsündeki **Ekip**), parolaları sıfırlar ve hesapları askıya alır veya siler. Bir yönetici kendisini ve ekibini görür; parolaları sıfırlama, askıya alma ve silme işlemlerini yalnızca kendi ekibinin üyeleri için yapar. Bir hesabı silmek, sahibi olduğu projeleri de siler.
 - Sistem yöneticisi rolünü başka birine devretmek (veya o hesap kaybolduğunda geri almak) için sunucuda `coltex cli system-admin <email>` komutunu çalıştırın; önceki sistem yöneticisi yönetici olur.
-- Bir parolayı mı unuttunuz, sistem yöneticisininki dahil? Sunucuda `coltex cli reset-password <email>` komutunu çalıştırın: yeni parolayı iki kez sorar ve o hesabın tüm oturumlarını kapatır.
+- Bir parolayı mı unuttunuz, sistem yöneticisininki dahil? Sunucuda `coltex cli reset-password <email>` komutunu çalıştırın: yeni parolayı iki kez sorar ve o hesabın tüm oturumlarını kapatır. Hesabın sahibi bunun yapıldığına dair bir bildirim alır ve sunucunun günlüğü (`coltex logs`) bunu kaydeder.
 
 ## YZ hizmetleri
 

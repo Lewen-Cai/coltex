@@ -205,21 +205,25 @@ function AddTab({ projectId, bibPaths }: { projectId: string; bibPaths: string[]
     }
   }
 
+  const query = text.trim()
+  const direct = LOOKS_LIKE_ID.test(query)
+
+  // Both a search and adding a DOI or arXiv id directly take a few seconds (the sources are asked
+  // over the internet): the field's button shows it is working.
   const submit = async () => {
-    const q = text.trim()
-    if (q.length < 2) return
-    if (LOOKS_LIKE_ID.test(q)) {
-      const res = await add(q)
-      if (res) {
-        setEntry(res.entry)
-        setText('')
-      }
-      return
-    }
+    if (query.length < 2 || searching) return
     setSearching(true)
-    setEntry(undefined)
     try {
-      setResult({ ...(await api.searchLiterature(projectId, q)), query: q })
+      if (direct) {
+        const res = await add(query)
+        if (res) {
+          setEntry(res.entry)
+          setText('')
+        }
+        return
+      }
+      setEntry(undefined)
+      setResult({ ...(await api.searchLiterature(projectId, query)), query })
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
@@ -236,16 +240,24 @@ function AddTab({ projectId, bibPaths }: { projectId: string; bibPaths: string[]
           void submit()
         }}
       >
-        <InputGroup className="h-8">
-          <InputGroupAddon>{searching ? <Spinner /> : <Search />}</InputGroupAddon>
-          <InputGroupInput
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder={t('Title, authors, keywords, DOI or arXiv id')}
-            aria-label={t('Search for a paper')}
-            autoFocus
-          />
-        </InputGroup>
+        <div className="flex gap-2">
+          <InputGroup className="h-8 flex-1">
+            <InputGroupAddon>
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder={t('Title, authors, keywords, DOI or arXiv id')}
+              aria-label={t('Search for a paper')}
+              autoFocus
+            />
+          </InputGroup>
+          <Button type="submit" size="sm" className="h-8 shrink-0" disabled={searching || query.length < 2}>
+            {searching ? <Spinner /> : direct ? <Plus /> : <Search />}
+            {direct ? t('Add') : t('Search')}
+          </Button>
+        </div>
         <div className="flex items-center gap-2">
           <Label className="shrink-0 text-xs text-muted-foreground">{t('Add to')}</Label>
           <BibSelect value={path} onChange={setPath} paths={bibPaths.length ? bibPaths : [NEW_FILE]} />

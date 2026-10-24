@@ -20,6 +20,7 @@ import { hasSavedLocale, resolveLocale, setLocale, useLocale } from './lib/i18n.
 import { useNotificationStream } from './lib/notifications.ts'
 import { navigate, useHashRoute } from './lib/router.ts'
 import { useAccountTheme } from './lib/theme.ts'
+import { loadAvatarHues } from './lib/avatar-colors.ts'
 
 // Heavy parts load on demand: the editor (CodeMirror, pdf.js) and the admin pages (charts).
 const EditorPage = lazy(() => import('./components/EditorPage.tsx').then(m => ({ default: m.EditorPage })))
@@ -97,6 +98,10 @@ function Routes() {
   useNotificationStream(session.data?.user.id)
   // Signed in: their account's theme; otherwise the default.
   useAccountTheme(session.isPending ? undefined : (session.data?.user.id ?? null))
+  const userId = session.data?.user.id
+  useEffect(() => {
+    if (userId) void loadAvatarHues()
+  }, [userId])
 
   useEffect(() => {
     api.setupStatus().then(

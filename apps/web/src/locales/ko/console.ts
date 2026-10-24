@@ -203,6 +203,7 @@ const messages: Record<string, string> = {
   '{name} replied to a comment on {file}': '{name}님이 {file}의 댓글에 답글을 남겼습니다',
   '{name} added you to this project ({role})': '{name}님이 나를 이 프로젝트에 추가했습니다({role})',
   '{name} made you the owner of this project': '{name}님이 나를 이 프로젝트의 소유자로 지정했습니다',
+  'Your password was reset from the server’s command line': '서버의 명령줄에서 비밀번호가 재설정되었습니다',
   // Help documentation
   'Help documentation': '도움말 문서',
   'Deployment and network': '배포 및 네트워크',

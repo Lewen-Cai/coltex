@@ -8,9 +8,9 @@
 
 ## Tìm và thêm
 
-Ở thẻ **Thêm**, gõ tiêu đề, tác giả hoặc từ khóa rồi nhấn Enter: ColTex tìm trong Crossref (tạp chí, kỷ yếu, sách) và arXiv (bản tiền ấn phẩm) rồi liệt kê kết quả, các kết quả khớp nhất của mỗi nguồn được xếp trước. **+** thêm một bài báo vào tệp `.bib` được chọn bên dưới ô nhập. Một bản tiền ấn phẩm mà arXiv biết phiên bản đã xuất bản sẽ được thêm bằng DOI của phiên bản đó.
+Ở thẻ **Thêm**, gõ tiêu đề, tác giả hoặc từ khóa rồi nhấn Enter hoặc **Tìm kiếm**: ColTex tìm trong Crossref (tạp chí, kỷ yếu, sách) và arXiv (bản tiền ấn phẩm) rồi liệt kê kết quả, các kết quả khớp nhất của mỗi nguồn được xếp trước. **+** thêm một bài báo vào tệp `.bib` được chọn bên dưới ô nhập. Một bản tiền ấn phẩm mà arXiv biết phiên bản đã xuất bản sẽ được thêm bằng DOI của phiên bản đó.
 
-Một DOI (vd. `10.1145/3290605.3300857`), một liên kết doi.org hoặc một mã arXiv sẽ được thêm trực tiếp, không cần tìm kiếm.
+Một DOI (vd. `10.1145/3290605.3300857`), một liên kết doi.org hoặc một mã arXiv sẽ được thêm trực tiếp, không cần tìm kiếm (khi đó nút sẽ hiện **Thêm**).
 
 Các mục được lấy từ doi.org và thêm vào cuối tệp với một khóa không trùng lặp; một mục đã có trong tệp (cùng DOI) sẽ không bị thêm lần thứ hai. Hãy kiểm tra những gì được lấy về.
 

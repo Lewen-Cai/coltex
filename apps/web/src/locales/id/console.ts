@@ -203,6 +203,7 @@ const messages: Record<string, string> = {
   '{name} replied to a comment on {file}': '{name} membalas komentar di {file}',
   '{name} added you to this project ({role})': '{name} menambahkan Anda ke proyek ini ({role})',
   '{name} made you the owner of this project': '{name} menjadikan Anda pemilik proyek ini',
+  'Your password was reset from the server’s command line': 'Kata sandi Anda diatur ulang dari baris perintah server',
   // Help documentation
   'Help documentation': 'Dokumentasi bantuan',
   'Deployment and network': 'Penerapan dan jaringan',

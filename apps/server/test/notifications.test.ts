@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import type { AddressInfo } from 'node:net'
 import { TEXT_KEY, relPos } from '@coltex/review'
 import type { NotificationEvent, NotificationPage } from '@coltex/shared'
+import { NotificationService } from '../src/notifications/service.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -194,5 +195,16 @@ describe('mentions and notifications', () => {
     assert.equal(pushed.notification?.kind, 'mention')
     assert.equal(pushed.users?.[ids['owner@lab.test']!], 'Owner')
     controller.abort()
+  })
+
+  test('a password reset from the command line is a notification about the account', async () => {
+    const before = await inbox(owner)
+    await new NotificationService(t.db).passwordReset(ids['owner@lab.test']!)
+    const after = await inbox(owner)
+    assert.equal(after.unread, before.unread + 1)
+    const n = after.notifications[0]!
+    assert.equal(n.kind, 'password_reset')
+    assert.equal(n.project, null)
+    assert.equal(n.actor.id, null)
   })
 })

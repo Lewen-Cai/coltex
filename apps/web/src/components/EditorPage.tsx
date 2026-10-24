@@ -795,7 +795,7 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
   chatOpenRef.current = chatOpen
   useEffect(() => {
     setOnScreen(n => {
-      if (n.project.id !== projectId) return false
+      if (n.project?.id !== projectId) return false
       const shown = n.source === 'chat' ? chatOpenRef.current : !!n.threadId && reviewOpenRef.current && n.path === docPathRef.current
       if (shown) void api.notificationsSeen(projectId, n.threadId ?? undefined).catch(() => {})
       return shown

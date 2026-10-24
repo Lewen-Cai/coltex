@@ -8,9 +8,9 @@
 
 ## Search and add
 
-On the **Add** tab, type a title, authors or keywords and press Enter: ColTex searches Crossref (journals, proceedings, books) and arXiv (preprints) and lists what it finds, the best matches of each first. **+** adds a paper to the `.bib` file chosen under the field. A preprint arXiv knows the published version of is added by that version's DOI.
+On the **Add** tab, type a title, authors or keywords and press Enter or **Search**: ColTex searches Crossref (journals, proceedings, books) and arXiv (preprints) and lists what it finds, the best matches of each first. **+** adds a paper to the `.bib` file chosen under the field. A preprint arXiv knows the published version of is added by that version's DOI.
 
-A DOI (e.g. `10.1145/3290605.3300857`), a doi.org link or an arXiv id is added directly, without a search.
+A DOI (e.g. `10.1145/3290605.3300857`), a doi.org link or an arXiv id is added directly, without a search (the button then reads **Add**).
 
 Entries are fetched from doi.org and added at the end of the file with a unique key; one already in the file (same DOI) isn't added twice. Check what was fetched.
 

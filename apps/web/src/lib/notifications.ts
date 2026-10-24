@@ -48,8 +48,9 @@ export async function markRead(ids?: string[], read = true): Promise<void> {
   setUnread((await api.markNotificationsRead(ids, read)).unread)
 }
 
-/** Where a notification leads: the chat, the comment thread, or the project. */
+/** Where a notification leads: the chat, the comment thread, or the project (the account settings for one about the account). */
 export function notificationHref(n: Notification): string {
+  if (!n.project) return '/settings'
   const base = `/project/${n.project.id}`
   if (n.threadId) return `${base}?thread=${n.threadId}`
   if (n.source === 'chat') return `${base}?chat`
@@ -77,6 +78,8 @@ export function notificationTitle(n: Notification): string {
       return t('{name} added you to this project ({role})', { name, role: inSentence(t(ROLE[n.role ?? 'viewer'])) })
     case 'owner':
       return t('{name} made you the owner of this project', { name })
+    case 'password_reset':
+      return t('Your password was reset from the server’s command line')
   }
 }
 
@@ -99,9 +102,11 @@ export function useNotificationStream(userId: string | undefined): void {
       for (const l of arrivalListeners) l(n, users)
       if (onScreen?.(n)) return
       const excerpt = notificationExcerpt(n, users)
+      const where = n.project?.name
+      const short = excerpt.length > 120 ? `${excerpt.slice(0, 120)}…` : excerpt
       toast(notificationTitle(n), {
         id: n.id,
-        description: excerpt ? `${n.project.name} · ${excerpt.length > 120 ? `${excerpt.slice(0, 120)}…` : excerpt}` : n.project.name,
+        description: [where, short].filter(Boolean).join(' · ') || undefined,
         action: { label: t('Open'), onClick: () => openNotification(n) },
       })
     }

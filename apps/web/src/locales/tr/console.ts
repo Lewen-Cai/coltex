@@ -203,6 +203,7 @@ const messages: Record<string, string> = {
   '{name} replied to a comment on {file}': '{name}, {file} dosyasındaki bir yoruma yanıt verdi',
   '{name} added you to this project ({role})': '{name} sizi bu projeye ekledi ({role})',
   '{name} made you the owner of this project': '{name} sizi bu projenin sahibi yaptı',
+  'Your password was reset from the server’s command line': 'Parolanız sunucunun komut satırından sıfırlandı',
   // Help documentation
   'Help documentation': 'Yardım belgeleri',
   'Deployment and network': 'Kurulum ve ağ',

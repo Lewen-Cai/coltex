@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, isNull, lt, or, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, isNotNull, isNull, lt, or, type SQL } from 'drizzle-orm'
 import { customAlphabet } from 'nanoid'
 import { mentionedIds, type Notification, type NotificationEvent, type NotificationPage } from '@coltex/shared'
 import type { Db } from '../db/client.ts'
@@ -22,6 +22,10 @@ function excerpt(content: string): string {
  * is added to a project; read from the console; pushed live to the person's
  * open tabs. Only projects the person is still a member of are shown.
  */
+// Someone who left a project no longer sees what happened in it; notifications about the
+// account itself have no project. (Both queries left-join the person's membership.)
+const visible = or(isNull(notifications.projectId), isNotNull(projectMembers.userId))
+
 export class NotificationService {
   private readonly db: Db
   private readonly listeners = new Map<string, Set<(e: NotificationEvent) => void>>()
@@ -58,13 +62,12 @@ export class NotificationService {
         role: notifications.role,
       })
       .from(notifications)
-      .innerJoin(projects, eq(projects.id, notifications.projectId))
-      // Someone who left a project no longer sees what happened in it.
-      .innerJoin(projectMembers, and(eq(projectMembers.projectId, notifications.projectId), eq(projectMembers.userId, notifications.userId)))
+      .leftJoin(projects, eq(projects.id, notifications.projectId))
+      .leftJoin(projectMembers, and(eq(projectMembers.projectId, notifications.projectId), eq(projectMembers.userId, notifications.userId)))
       .leftJoin(user, eq(user.id, notifications.actorId))
       .leftJoin(commentThreads, eq(commentThreads.id, notifications.threadId))
       .leftJoin(projectDocs, eq(projectDocs.id, commentThreads.docId))
-      .where(and(eq(notifications.userId, userId), ...where))
+      .where(and(eq(notifications.userId, userId), visible, ...where))
   }
 
   private toNotification(r: Awaited<ReturnType<ReturnType<NotificationService['select']>['limit']>>[number]): Notification {
@@ -73,7 +76,7 @@ export class NotificationService {
       kind: r.kind,
       read: r.readAt !== null,
       createdAt: r.createdAt.toISOString(),
-      project: { id: r.projectId, name: r.projectName },
+      project: r.projectId && r.projectName !== null ? { id: r.projectId, name: r.projectName } : null,
       actor: { id: r.actorId, name: r.actorName ?? DELETED_USER },
       source: r.source,
       threadId: r.threadId,
@@ -95,8 +98,8 @@ export class NotificationService {
     const [row] = await this.db
       .select({ n: count() })
       .from(notifications)
-      .innerJoin(projectMembers, and(eq(projectMembers.projectId, notifications.projectId), eq(projectMembers.userId, notifications.userId)))
-      .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)))
+      .leftJoin(projectMembers, and(eq(projectMembers.projectId, notifications.projectId), eq(projectMembers.userId, notifications.userId)))
+      .where(and(eq(notifications.userId, userId), visible, isNull(notifications.readAt)))
     return row?.n ?? 0
   }
 
@@ -144,6 +147,11 @@ export class NotificationService {
       .where(and(eq(notifications.userId, userId), eq(notifications.projectId, target.projectId), isNull(notifications.readAt), where))
       .returning({ id: notifications.id })
     if (changed.length > 0) this.emit(userId, { unread: await this.unreadCount(userId) })
+  }
+
+  /** Their password was set from the server's command line (`cli.ts reset-password`). */
+  async passwordReset(userId: string): Promise<void> {
+    await this.create([{ userId, projectId: null, actorId: null, kind: 'password_reset', excerpt: '' }])
   }
 
   private emit(userId: string, event: NotificationEvent): void {

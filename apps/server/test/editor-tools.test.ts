@@ -154,16 +154,25 @@ describe('compile options, sources, spelling', () => {
     assert.equal((await patch({ spellCheckLanguage: 'en_GB' }, bob)).statusCode, 404)
   })
 
-  test('the theme is kept with each account', async () => {
+  test('the theme and avatar colour are kept with each account', async () => {
     const prefs = (method: 'GET' | 'PUT', cookie: string, payload?: object) =>
       t.app.inject({ method, url: '/api/me/preferences', headers: { cookie }, ...(payload ? { payload } : {}) })
-    assert.deepEqual((await prefs('GET', admin)).json(), { theme: null })
-    assert.deepEqual((await prefs('PUT', admin, { theme: 'plum' })).json(), { theme: 'plum' })
-    assert.deepEqual((await prefs('PUT', admin, { theme: 'forest' })).json(), { theme: 'forest' })
-    assert.deepEqual((await prefs('GET', admin)).json(), { theme: 'forest' })
-    assert.deepEqual((await prefs('GET', bob)).json(), { theme: null })
+    assert.deepEqual((await prefs('GET', admin)).json(), { theme: null, avatarHue: null })
+    assert.deepEqual((await prefs('PUT', admin, { theme: 'plum' })).json(), { theme: 'plum', avatarHue: null })
+    // Each setting on its own: changing one leaves the other.
+    assert.deepEqual((await prefs('PUT', admin, { avatarHue: 145 })).json(), { theme: 'plum', avatarHue: 145 })
+    assert.deepEqual((await prefs('PUT', admin, { theme: 'forest' })).json(), { theme: 'forest', avatarHue: 145 })
+    assert.deepEqual((await prefs('GET', bob)).json(), { theme: null, avatarHue: null })
     assert.equal((await prefs('PUT', admin, { theme: 'sepia' })).statusCode, 400)
+    assert.equal((await prefs('PUT', admin, { avatarHue: 360 })).statusCode, 400)
     assert.equal((await t.app.inject({ method: 'GET', url: '/api/me/preferences' })).statusCode, 401)
+
+    // Everyone sees the colours people chose, to draw their avatars and cursors.
+    const hues = async (cookie: string) => (await t.app.inject({ method: 'GET', url: '/api/users/avatar-hues', headers: { cookie } })).json()
+    const adminId = (await t.app.inject({ method: 'GET', url: '/api/auth/get-session', headers: { cookie: admin } })).json().user.id
+    assert.deepEqual(await hues(bob), { [adminId]: 145 })
+    await prefs('PUT', admin, { avatarHue: null })
+    assert.deepEqual(await hues(bob), {})
   })
 
   test('each user has their own dictionary', async () => {

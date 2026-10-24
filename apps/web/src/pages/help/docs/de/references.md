@@ -8,9 +8,9 @@
 
 ## Suchen und hinzufügen
 
-Geben Sie auf dem Tab **Hinzufügen** einen Titel, Autoren oder Schlüsselwörter ein und drücken Sie Enter: ColTex durchsucht Crossref (Zeitschriften, Tagungsbände, Bücher) und arXiv (Preprints) und listet die Treffer auf, jeweils die besten zuerst. **+** fügt ein Paper der `.bib`-Datei hinzu, die unter dem Feld gewählt ist. Ein Preprint, dessen veröffentlichte Fassung arXiv kennt, wird über die DOI dieser Fassung hinzugefügt.
+Geben Sie auf dem Tab **Hinzufügen** einen Titel, Autoren oder Schlüsselwörter ein und drücken Sie Enter oder **Suche**: ColTex durchsucht Crossref (Zeitschriften, Tagungsbände, Bücher) und arXiv (Preprints) und listet die Treffer auf, jeweils die besten zuerst. **+** fügt ein Paper der `.bib`-Datei hinzu, die unter dem Feld gewählt ist. Ein Preprint, dessen veröffentlichte Fassung arXiv kennt, wird über die DOI dieser Fassung hinzugefügt.
 
-Eine DOI (z. B. `10.1145/3290605.3300857`), ein doi.org-Link oder eine arXiv-ID wird direkt hinzugefügt, ohne Suche.
+Eine DOI (z. B. `10.1145/3290605.3300857`), ein doi.org-Link oder eine arXiv-ID wird direkt hinzugefügt, ohne Suche (die Schaltfläche heißt dann **Hinzufügen**).
 
 Einträge werden von doi.org abgerufen und mit einem eindeutigen Schlüssel ans Ende der Datei angefügt; ein Eintrag, der bereits in der Datei steht (gleiche DOI), wird nicht doppelt hinzugefügt. Prüfen Sie, was abgerufen wurde.
 

@@ -203,6 +203,7 @@ const messages: Record<string, string> = {
   '{name} replied to a comment on {file}': '{name} 回复了 {file} 中的评论',
   '{name} added you to this project ({role})': '{name} 把你加入了这个项目（{role}）',
   '{name} made you the owner of this project': '{name} 把这个项目转交给了你',
+  'Your password was reset from the server’s command line': '你的密码已在服务器的命令行中被重设',
   // Help documentation
   'Help documentation': '帮助文档',
   'Deployment and network': '部署与网络',

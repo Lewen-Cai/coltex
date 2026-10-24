@@ -8,9 +8,9 @@ Sol çubuktaki **Kaynaklar**, projenin `.bib` dosyalarıyla çalışır.
 
 ## Arama ve ekleme
 
-**Ekle** sekmesinde bir başlık, yazarlar veya anahtar sözcükler yazıp Enter’a basın: ColTex, Crossref’te (dergiler, bildiriler, kitaplar) ve arXiv’de (ön baskılar) arama yapar ve bulduklarını, her birinin en iyi eşleşmeleri önce gelecek şekilde listeler. **+**, bir makaleyi alanın altında seçilen `.bib` dosyasına ekler. arXiv’in yayımlanmış sürümünü bildiği bir ön baskı, o sürümün DOI’siyle eklenir.
+**Ekle** sekmesinde bir başlık, yazarlar veya anahtar sözcükler yazıp Enter’a veya **Ara** düğmesine basın: ColTex, Crossref’te (dergiler, bildiriler, kitaplar) ve arXiv’de (ön baskılar) arama yapar ve bulduklarını, her birinin en iyi eşleşmeleri önce gelecek şekilde listeler. **+**, bir makaleyi alanın altında seçilen `.bib` dosyasına ekler. arXiv’in yayımlanmış sürümünü bildiği bir ön baskı, o sürümün DOI’siyle eklenir.
 
-Bir DOI (ör. `10.1145/3290605.3300857`), bir doi.org bağlantısı veya bir arXiv kimliği arama yapılmadan doğrudan eklenir.
+Bir DOI (ör. `10.1145/3290605.3300857`), bir doi.org bağlantısı veya bir arXiv kimliği arama yapılmadan doğrudan eklenir (düğmede bu durumda **Ekle** yazar).
 
 Girdiler doi.org’dan alınır ve dosyanın sonuna benzersiz bir anahtarla eklenir; dosyada zaten bulunan bir girdi (aynı DOI) iki kez eklenmez. Alınan bilgileri denetleyin.
 

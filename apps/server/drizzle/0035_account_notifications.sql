@@ -1,0 +1,1 @@
+ALTER TABLE "notifications" ALTER COLUMN "project_id" DROP NOT NULL;

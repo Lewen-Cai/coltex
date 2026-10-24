@@ -62,6 +62,8 @@ import type {
   LearnedWords,
   LearnedWordsImported,
   UserPreferences,
+  UserPreferencesPatch,
+  AvatarHues,
   ProjectSources,
   ReplaceBody,
   ReplaceResult,
@@ -290,7 +292,8 @@ export const api = {
 
   // ---- Interface preferences (per user) ----
   preferences: () => request<UserPreferences>('/api/me/preferences'),
-  setPreferences: (prefs: UserPreferences) => request<UserPreferences>('/api/me/preferences', json('PUT', prefs)),
+  setPreferences: (patch: UserPreferencesPatch) => request<UserPreferences>('/api/me/preferences', json('PUT', patch)),
+  avatarHues: () => request<AvatarHues>('/api/users/avatar-hues'),
 
   // ---- Spelling dictionary (per user) ----
   learnedWords: () => request<LearnedWords>('/api/me/dictionary'),

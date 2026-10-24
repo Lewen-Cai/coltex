@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import * as Y from 'yjs'
 import { changesMap } from '@coltex/review'
 import type { SessionUser } from './auth.ts'
+import { avatarHue, hueColor } from './avatar-colors.ts'
 
 /** Must match the server (apps/server/src/collab/server.ts). */
 const COLLAB_PATH = '/api/collab'
@@ -14,11 +15,9 @@ const SUGGESTION_REFUSED = 'coltex/suggestion-refused'
 
 export type CollabUser = { id: string; name: string; color: string; colorLight: string }
 
-/** A stable, distinguishable colour per user (y-codemirror uses `color`/`colorLight` for cursors). */
+/** A person's colour: the one they chose, else a stable one made from their id (y-codemirror uses `color`/`colorLight` for cursors). */
 export function userColor(userId: string): string {
-  let hash = 0
-  for (const ch of userId) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
-  return `hsl(${hash % 360} 70% 42%)`
+  return hueColor(avatarHue(userId))
 }
 
 /**

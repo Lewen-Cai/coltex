@@ -35,6 +35,7 @@ const messages: Record<string, string> = {
   // Account
   Profile: '個人資料',
   Name: '姓名',
+  'Avatar colour': '頭像顏色',
   Email: '電子郵件',
   Save: '儲存',
   'Name updated': '姓名已更新',

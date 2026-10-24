@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { KeyRound, Mail, ShieldCheck, User } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Check, KeyRound, Mail, ShieldCheck, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { passwordProblem } from '@coltex/shared'
 import { PasswordInput } from '@/components/auth/PasswordInput'
@@ -13,10 +13,69 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { UserAvatar } from '@/components/user-avatar'
+import { api } from '@/lib/api'
 import { authClient, type SessionUser } from '@/lib/auth'
+import { defaultHue, hueColor, showOwnAvatarHue } from '@/lib/avatar-colors'
 import { authErrorText } from '@/lib/auth-errors'
 import { t } from '@/lib/i18n'
 import { ROLE_NAME } from '@/lib/roles'
+import { cn } from '@/lib/utils'
+
+/** The hues offered for avatars: around the wheel, each dark enough for white initials. */
+const AVATAR_HUES = [0, 25, 45, 90, 145, 170, 190, 215, 240, 265, 290, 325]
+
+/** The person's avatar (and cursor) colour: the one made from their id, or one they pick; saved at once. */
+function AvatarColorPicker({ user }: { user: SessionUser }) {
+  // undefined while loading; null: the one made from their id.
+  const [hue, setHue] = useState<number | null>()
+
+  useEffect(() => {
+    api.preferences().then(p => setHue(p.avatarHue), () => setHue(null))
+  }, [])
+
+  const choose = (next: number | null) => {
+    const before = hue ?? null
+    setHue(next)
+    showOwnAvatarHue(user.id, next)
+    api.setPreferences({ avatarHue: next }).catch((e: Error) => {
+      setHue(before)
+      showOwnAvatarHue(user.id, before)
+      toast.error(e.message)
+    })
+  }
+
+  const swatch = (value: number | null, label?: string) => {
+    const selected = hue === value
+    return (
+      <button
+        key={value ?? 'auto'}
+        type="button"
+        role="radio"
+        aria-checked={selected}
+        aria-label={label ?? `${value}°`}
+        disabled={hue === undefined}
+        onClick={() => choose(value)}
+        className={cn(
+          'flex h-8 items-center gap-2 rounded-full border-2 border-transparent transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+          selected && 'border-primary',
+          label ? 'pr-3 pl-0.5' : 'w-8 justify-center',
+        )}
+      >
+        <span className="flex size-6 items-center justify-center rounded-full text-white" style={{ background: hueColor(value ?? defaultHue(user.id)) }}>
+          {selected && <Check className="size-3.5" />}
+        </span>
+        {label && <span className="text-sm">{label}</span>}
+      </button>
+    )
+  }
+
+  return (
+    <div role="radiogroup" aria-labelledby="settings-avatar-colour" className="flex flex-wrap items-center gap-1.5">
+      {swatch(null, t('Automatic'))}
+      {AVATAR_HUES.map(h => swatch(h))}
+    </div>
+  )
+}
 
 function ProfileCard({ user }: { user: SessionUser }) {
   const [name, setName] = useState(user.name)
@@ -68,6 +127,10 @@ function ProfileCard({ user }: { user: SessionUser }) {
                   <Mail />
                 </InputGroupAddon>
               </InputGroup>
+            </Field>
+            <Field>
+              <FieldLabel id="settings-avatar-colour">{t('Avatar colour')}</FieldLabel>
+              <AvatarColorPicker user={user} />
             </Field>
           </FieldGroup>
         </CardContent>

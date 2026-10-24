@@ -49,6 +49,7 @@ import { config } from './config.ts'
 import { createDb } from './db/client.ts'
 import { account, projects, session, user } from './db/schema.ts'
 import { NotFoundError } from './errors.ts'
+import { NotificationService } from './notifications/service.ts'
 import { SnapshotService } from './history/snapshots.ts'
 import { createStore } from './storage/index.ts'
 import { LocalProjectStore } from './storage/local.ts'
@@ -409,6 +410,18 @@ function askHidden(prompt: string): Promise<string> {
  * else, and every session of it ended (whoever knew the old one is out).
  * Works with the server running.
  */
+/**
+ * A line in the running server's log as well as here. In the server's container
+ * this command runs beside the server (`docker compose exec`), so its own output
+ * only reaches this terminal; the container's log is the server's (PID 1) stdout.
+ * Elsewhere (a development machine) there is no such file and only this terminal
+ * sees it.
+ */
+async function serverLog(msg: string): Promise<void> {
+  const line = JSON.stringify({ level: 40, time: Date.now(), pid: process.pid, msg }) + '\n'
+  await fs.appendFile('/proc/1/fd/1', line).catch(() => {})
+}
+
 async function resetPassword(email: string | undefined): Promise<void> {
   if (!email) throw new Error('Usage: node src/cli.ts reset-password <email>')
   const db = createDb(config.databaseUrl)
@@ -435,6 +448,10 @@ async function resetPassword(email: string | undefined): Promise<void> {
       if (!updated.length) await tx.insert(account).values({ id: crypto.randomUUID(), accountId: target.id, providerId: 'credential', userId: target.id, password: hashed })
       await tx.delete(session).where(eq(session.userId, target.id))
     })
+    // Traces anyone can find afterwards: a notification for the account's owner, and a line in
+    // the server's log (`coltex logs`).
+    await new NotificationService(db).passwordReset(target.id)
+    await serverLog(`Password reset from the command line for ${email.trim().toLowerCase()}; all their sessions were signed out`)
     console.log(`New password set for ${target.name}; signed out everywhere.`)
   } finally {
     await db.$client.end()

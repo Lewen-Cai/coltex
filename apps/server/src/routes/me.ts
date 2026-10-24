@@ -1,6 +1,6 @@
-import { and, asc, count, eq } from 'drizzle-orm'
+import { and, asc, count, eq, isNotNull } from 'drizzle-orm'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { LearnedWord, LearnedWords, LearnedWordsImport, LearnedWordsImported, ThemeChoice, UserPreferences } from '@coltex/shared'
+import { LearnedWord, LearnedWords, LearnedWordsImport, LearnedWordsImported, AvatarHues, ThemeChoice, UserPreferences, UserPreferencesPatch } from '@coltex/shared'
 import { requireUser } from '../auth/fastify.ts'
 import { learnedWords, userPreferences } from '../db/schema.ts'
 import type { Deps } from '../deps.ts'
@@ -11,21 +11,35 @@ const MAX_LEARNED_WORDS = 10_000
 
 /** The signed-in user's own settings: interface preferences and the spelling dictionary. */
 export const meRoutes: FastifyPluginAsyncZod<Deps> = async (app, { db }) => {
-  app.get('/me/preferences', { schema: { response: { 200: UserPreferences } } }, async req => {
-    const [row] = await db.select().from(userPreferences).where(eq(userPreferences.userId, requireUser(req).id))
+  const preferences = async (userId: string): Promise<UserPreferences> => {
+    const [row] = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId))
     const theme = ThemeChoice.safeParse(row?.theme)
     // A theme that no longer exists reads as never chosen.
-    return { theme: theme.success ? theme.data : null }
+    return { theme: theme.success ? theme.data : null, avatarHue: row?.avatarHue ?? null }
+  }
+
+  app.get('/me/preferences', { schema: { response: { 200: UserPreferences } } }, async req => preferences(requireUser(req).id))
+
+  app.put('/me/preferences', { schema: { body: UserPreferencesPatch, response: { 200: UserPreferences } } }, async req => {
+    const userId = requireUser(req).id
+    const set = Object.fromEntries(Object.entries(req.body).filter(([, v]) => v !== undefined))
+    if (Object.keys(set).length) {
+      await db
+        .insert(userPreferences)
+        .values({ userId, ...set })
+        .onConflictDoUpdate({ target: userPreferences.userId, set: { ...set, updatedAt: new Date() } })
+    }
+    return preferences(userId)
   })
 
-  app.put('/me/preferences', { schema: { body: UserPreferences, response: { 200: UserPreferences } } }, async req => {
-    const userId = requireUser(req).id
-    const { theme } = req.body
-    await db
-      .insert(userPreferences)
-      .values({ userId, theme })
-      .onConflictDoUpdate({ target: userPreferences.userId, set: { theme, updatedAt: new Date() } })
-    return { theme }
+  // Everyone's chosen avatar colour, for drawing anyone's avatar and cursor (ids and hues only).
+  app.get('/users/avatar-hues', { schema: { response: { 200: AvatarHues } } }, async req => {
+    requireUser(req)
+    const rows = await db
+      .select({ userId: userPreferences.userId, hue: userPreferences.avatarHue })
+      .from(userPreferences)
+      .where(isNotNull(userPreferences.avatarHue))
+    return Object.fromEntries(rows.map(r => [r.userId, r.hue!]))
   })
 
   app.get('/me/dictionary', { schema: { response: { 200: LearnedWords } } }, async req => {
