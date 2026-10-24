@@ -2,6 +2,31 @@
 
 All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTex is at 0.0.x, any release may change things.
 
+## v0.0.4
+
+Projects from Overleaf and VS Code compile and import cleanly, a simpler installer, grouped `coltex` help, and skills that are all your own.
+
+### Fixed
+
+- A project whose `latexmkrc` sends the output to another folder (`$out_dir = 'build'`, as VS Code's LaTeX Workshop is often set up) no longer fails every build. ColTex keeps latexmk's output where it reads it; the rest of the `latexmkrc` still applies.
+- With many files, the file tree no longer runs under the file outline in the editor's side panel.
+- The installer's download bar looked full from the start in terminals that don't dim text (PuTTY, for one).
+
+### Improved
+
+- Importing a project leaves out the build files other editors leave behind (`.aux`, `.log`, `.synctex.gz` and the like) and folders such as `.vscode`, as Overleaf does. `latexmkrc` and `.bbl` files are kept.
+- A PDF opened from the file tree is shown like the build's PDF, filling the pane, and images are shown on white instead of a checkerboard. A file that isn't a readable PDF says so instead of showing nothing.
+- The installer asks only for the language and the TeX Live edition. Remote access (Tailscale, Cloudflare Tunnel) is turned on afterwards in Settings → Network, or with the same options as before. The edition choices say what each contains.
+- The installer's download shows the speed instead of the time and says in one line where the images come from. The closing screen lists the common commands and, when `~/.local/bin` isn't in `PATH`, one line that adds it and works right away.
+- `coltex help` groups the commands by task and says what each does; `coltex cli` on its own shows it too.
+- Downloads of ColTex's code from GitHub, in the installer and in `coltex update`, are tried again when the connection is reset.
+- Skills are each person's own, for all their projects. Project skills are removed.
+
+### New
+
+- `coltex reset-password <email>` and `coltex system-admin <email>`, without `coltex cli`.
+- Installs and `coltex update` follow full releases (`vX.Y.Z`) only, so a pre-release is installed only when asked for with `--version`.
+
 ## v0.0.3
 
 Fixes for the Cloudflare Tunnel, ports, the data folder and downloads, the images on Alibaba Cloud for mainland China, three new maintenance commands, and themes kept with your account.
