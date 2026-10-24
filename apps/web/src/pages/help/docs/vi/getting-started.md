@@ -22,7 +22,7 @@ Các dự án mà mọi người đã xuất bản thành mẫu (chẳng hạn �
 
 Dự án mới biên dịch với **Tự động**: trình biên dịch được chọn ở mỗi lần biên dịch dựa trên tài liệu; xem [Biên dịch và PDF](#/help/compiling).
 
-Để chuyển một dự án từ Overleaf sang, hãy chọn **Download Source** ở đó rồi **Nhập** tệp zip ở đây (tối đa 200 MB). Tài liệu chính được tự động phát hiện, và trình biên dịch cũng là Tự động.
+Để chuyển một dự án từ Overleaf sang, hãy chọn **Download Source** ở đó rồi **Nhập** tệp zip ở đây (tối đa 200 MB). Tài liệu chính được tự động phát hiện, và trình biên dịch cũng là Tự động. Các tệp biên dịch do trình soạn thảo khác để lại (`.aux`, `.log`, `.synctex.gz` và tương tự) cùng các thư mục như `.vscode` sẽ được bỏ qua, giống như trên Overleaf; tệp `latexmkrc` và `.bbl` được giữ lại.
 
 ## Trình soạn thảo
 

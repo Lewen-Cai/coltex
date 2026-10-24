@@ -22,7 +22,7 @@ Kişilerin şablon olarak yayımladığı projeler (örneğin bir grubun tez bi�
 
 Yeni projeler **Otomatik** ile derlenir: motor her derlemede belgeye göre seçilir; bkz. [Derleme ve PDF](#/help/compiling).
 
-Bir projeyi Overleaf’ten getirmek için orada **Download Source** seçeneğini kullanın ve zip dosyasını burada **İçe aktar** ile yükleyin (en fazla 200 MB). Ana belge algılanır ve derleyici de Otomatik olur.
+Bir projeyi Overleaf’ten getirmek için orada **Download Source** seçeneğini kullanın ve zip dosyasını burada **İçe aktar** ile yükleyin (en fazla 200 MB). Ana belge algılanır ve derleyici de Otomatik olur. Başka düzenleyicilerin bıraktığı derleme dosyaları (`.aux`, `.log`, `.synctex.gz` vb.) ve `.vscode` gibi klasörler, Overleaf’te olduğu gibi alınmaz; `latexmkrc` ve `.bbl` dosyaları korunur.
 
 ## Düzenleyici
 

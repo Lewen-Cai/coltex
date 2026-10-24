@@ -28,6 +28,22 @@ const JUNK = [/^__MACOSX(\/|$)/, /(^|\/)\.DS_Store$/, /(^|\/)Thumbs\.db$/, /(^|\
 /** Whether a path is OS or VCS clutter (also for files uploaded one by one). */
 export const isJunk = (p: string) => JUNK.some(re => re.test(p))
 
+// What another editor leaves in a project folder: build files, editor and tool folders, dotfiles
+// other than .latexmkrc. The same as Overleaf's fileIgnorePattern (services/web/config/
+// settings.defaults.js), except .bbl: an arXiv source often has a .bbl and no .bib.
+const CLUTTER_FOLDERS = new Set(['__macosx', '.git', '.texpadtmp', '.r', '.venv', 'venv'])
+const BUILD_FILE = /\.(dvi|aux|log|toc|out|pdfsync|synctex|synctex\(busy\)|fdb_latexmk|fls|nlo|ind|glo|gls|glg|blg|doc|docx|gz|swp)$/i
+
+/** Whether an imported project's path is another editor's build or tool file, skipped silently. */
+export function isBuildClutter(path: string): boolean {
+  const parts = path.split('/')
+  const name = parts.at(-1)!
+  return (
+    parts.some(part => CLUTTER_FOLDERS.has(part.toLowerCase()) || (part.startsWith('.') && part !== '.latexmkrc')) ||
+    BUILD_FILE.test(name)
+  )
+}
+
 const S_IFMT = 0o170000
 const S_IFLNK = 0o120000
 
@@ -76,7 +92,12 @@ function stripCommonRoot(archive: ProjectArchive): void {
  * LaTeX project) into memory, enforcing size limits. Unsafe paths reject the
  * whole archive; symlinks and OS clutter are skipped.
  */
-export async function readProjectZip(buffer: Buffer, limits: ZipLimits = DEFAULT_ZIP_LIMITS): Promise<ProjectArchive> {
+export async function readProjectZip(
+  buffer: Buffer,
+  limits: ZipLimits = DEFAULT_ZIP_LIMITS,
+  // Projects only: a skill's files are never build output.
+  options: { skipBuildFiles?: boolean } = {},
+): Promise<ProjectArchive> {
   let zip: ZipFile
   try {
     zip = await yauzl.fromBufferPromise(buffer, { lazyEntries: true, validateEntrySizes: true })
@@ -90,7 +111,7 @@ export async function readProjectZip(buffer: Buffer, limits: ZipLimits = DEFAULT
     for (let entry = await nextEntry(zip); entry; entry = await nextEntry(zip)) {
       if (++count > limits.maxEntries) throw new BadRequestError(`The archive has more than ${limits.maxEntries} entries`)
       const name = entry.fileName.replace(/\/+$/, '')
-      if (!name || JUNK.some(re => re.test(name))) continue
+      if (!name || JUNK.some(re => re.test(name)) || (options.skipBuildFiles && isBuildClutter(name))) continue
       if (entry.isEncrypted()) throw new BadRequestError('Encrypted zip files are not supported')
       if (((entry.externalFileAttributes >>> 16) & S_IFMT) === S_IFLNK) {
         archive.warnings.push(`Skipped symbolic link ${name}`)

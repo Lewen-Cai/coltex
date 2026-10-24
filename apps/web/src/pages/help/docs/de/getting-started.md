@@ -22,7 +22,7 @@ Projekte, die andere als Vorlage veröffentlicht haben (etwa das Dissertationsfo
 
 Neue Projekte kompilieren mit **Automatisch**: Die Engine wird bei jedem Build anhand des Dokuments gewählt; siehe [Kompilieren und PDF](#/help/compiling).
 
-Um ein Projekt aus Overleaf zu übernehmen, wählen Sie dort **Download Source** und **Importieren** Sie die ZIP-Datei hier (bis 200 MB). Das Hauptdokument wird erkannt, und der Compiler steht ebenfalls auf Automatisch.
+Um ein Projekt aus Overleaf zu übernehmen, wählen Sie dort **Download Source** und **Importieren** Sie die ZIP-Datei hier (bis 200 MB). Das Hauptdokument wird erkannt, und der Compiler steht ebenfalls auf Automatisch. Build-Dateien, die andere Editoren hinterlassen (`.aux`, `.log`, `.synctex.gz` und ähnliche), und Ordner wie `.vscode` werden wie bei Overleaf ausgelassen; `latexmkrc`- und `.bbl`-Dateien bleiben erhalten.
 
 ## Der Editor
 

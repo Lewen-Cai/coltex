@@ -56,6 +56,31 @@ describe('readProjectZip', () => {
     assert.deepEqual([...a.folders], ['figures'])
   })
 
+  test('skips other editors’ build and tool files in a project, as Overleaf does', async () => {
+    const zip = await makeZip([
+      { path: 'paper/main.tex', data: '\\documentclass{article}' },
+      { path: 'paper/main.aux', data: 'x' },
+      { path: 'paper/main.log', data: 'x' },
+      { path: 'paper/main.synctex.gz', data: 'x' },
+      { path: 'paper/main.fdb_latexmk', data: 'x' },
+      { path: 'paper/main.fls', data: 'x' },
+      { path: 'paper/main.bbl', data: 'kept: arXiv sources need it' },
+      { path: 'paper/latexmkrc', data: 'x' },
+      { path: 'paper/.latexmkrc', data: 'x' },
+      { path: 'paper/.vscode/settings.json', data: '{}' },
+      { path: 'paper/.vscode', dir: true },
+      { path: 'paper/venv/lib/x.py', data: 'x' },
+      { path: 'paper/build/output.pdf', data: '%PDF' },
+      { path: 'paper/build/output.aux', data: 'x' },
+      { path: 'paper/fig/plot.pdf', data: '%PDF' },
+    ])
+    const a = await readProjectZip(zip, undefined, { skipBuildFiles: true })
+    assert.deepEqual(files(a.files), ['.latexmkrc', 'build/output.pdf', 'fig/plot.pdf', 'latexmkrc', 'main.bbl', 'main.tex'])
+    assert.deepEqual(a.warnings, [])
+    // Not for skills: their files are kept as they are.
+    assert.ok((await readProjectZip(zip)).files.has('main.log'))
+  })
+
   test('strips a single wrapping folder', async () => {
     const zip = await makeZip([
       { path: 'paper-main/main.tex', data: 'x' },

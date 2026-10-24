@@ -22,7 +22,7 @@ ColTex는 내 서버에서 실행되는 협업 LaTeX 편집기입니다. Overlea
 
 새 프로젝트는 **자동**으로 컴파일됩니다. 빌드할 때마다 문서를 보고 엔진을 고릅니다. [컴파일과 PDF](#/help/compiling)를 참고하세요.
 
-Overleaf에서 프로젝트를 옮겨 오려면 Overleaf에서 **Download Source**를 선택하고, 받은 zip을 여기서 **가져오기**합니다(최대 200 MB). 기본 문서는 자동으로 감지되며, 컴파일러도 자동으로 설정됩니다.
+Overleaf에서 프로젝트를 옮겨 오려면 Overleaf에서 **Download Source**를 선택하고, 받은 zip을 여기서 **가져오기**합니다(최대 200 MB). 기본 문서는 자동으로 감지되며, 컴파일러도 자동으로 설정됩니다. 다른 편집기가 남긴 빌드 파일(`.aux`, `.log`, `.synctex.gz` 등)과 `.vscode` 같은 폴더는 Overleaf와 마찬가지로 가져오지 않습니다. `latexmkrc`와 `.bbl` 파일은 그대로 둡니다.
 
 ## 편집기
 

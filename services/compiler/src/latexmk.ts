@@ -35,6 +35,10 @@ export function runLatexmk(
     '-file-line-error',
     '-synctex=1',
     '-jobname=output',
+    // Here, whatever a project's latexmkrc says ($out_dir = 'build' from VS Code's LaTeX
+    // Workshop): the command line is read after the rc files, and the worker looks here.
+    '-outdir=.',
+    '-auxdir=.',
     // Passed to the engine before the root file; latexmk reruns when it changes.
     ...(options.draft ? [`-usepretex=${DRAFT_PRETEX}`] : []),
     // latexmk passes this on to the engine: stop at the first error (no PDF then).

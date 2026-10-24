@@ -22,7 +22,7 @@ Los proyectos que otras personas han publicado como plantillas (por ejemplo, el 
 
 Los nuevos proyectos compilan con **Automático**: el motor se elige en cada compilación a partir del documento; consulta [Compilación y PDF](#/help/compiling).
 
-Para traer un proyecto desde Overleaf, elige allí **Download Source** e **Importar** el zip aquí (hasta 200 MB). El documento principal se detecta solo, y el compilador también queda en Automático.
+Para traer un proyecto desde Overleaf, elige allí **Download Source** e **Importar** el zip aquí (hasta 200 MB). El documento principal se detecta solo, y el compilador también queda en Automático. Los archivos de compilación que dejan otros editores (`.aux`, `.log`, `.synctex.gz` y similares) y carpetas como `.vscode` se omiten, igual que en Overleaf; los archivos `latexmkrc` y `.bbl` se conservan.
 
 ## El editor
 

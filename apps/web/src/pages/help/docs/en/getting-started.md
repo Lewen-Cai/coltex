@@ -22,7 +22,7 @@ Projects that people published as templates (a group's thesis format, say) are l
 
 New projects compile with **Automatic**: the engine is picked at each build from the document; see [Compiling and the PDF](#/help/compiling).
 
-To bring a project over from Overleaf, choose **Download Source** there and **Import** the zip here (up to 200 MB). The main document is detected, and the compiler is Automatic too.
+To bring a project over from Overleaf, choose **Download Source** there and **Import** the zip here (up to 200 MB). The main document is detected, and the compiler is Automatic too. Build files other editors leave behind (`.aux`, `.log`, `.synctex.gz` and the like) and folders such as `.vscode` are left out, as on Overleaf; `latexmkrc` and `.bbl` files are kept.
 
 ## The editor
 

@@ -22,7 +22,7 @@ Les projets que d’autres ont publiés comme modèles (le format de thèse d’
 
 Les nouveaux projets compilent en **Automatique** : le moteur est choisi à chaque compilation d’après le document ; voir [Compilation et PDF](#/help/compiling).
 
-Pour reprendre un projet d’Overleaf, choisissez là-bas **Download Source** (télécharger la source), puis **Importer** le zip ici (jusqu’à 200 Mo). Le document principal est détecté, et le compilateur est lui aussi en Automatique.
+Pour reprendre un projet d’Overleaf, choisissez là-bas **Download Source** (télécharger la source), puis **Importer** le zip ici (jusqu’à 200 Mo). Le document principal est détecté, et le compilateur est lui aussi en Automatique. Les fichiers de compilation laissés par d’autres éditeurs (`.aux`, `.log`, `.synctex.gz`, etc.) et les dossiers comme `.vscode` sont ignorés, comme sur Overleaf ; les fichiers `latexmkrc` et `.bbl` sont conservés.
 
 ## L’éditeur
 

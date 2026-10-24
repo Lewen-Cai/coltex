@@ -29,7 +29,7 @@ export const archiveRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects
     async (req, reply) => {
       const user = requireUser(req)
       if (!Buffer.isBuffer(req.body)) throw new BadRequestError('Expected the zip file as an application/zip body')
-      const archive = await readProjectZip(req.body)
+      const archive = await readProjectZip(req.body, undefined, { skipBuildFiles: true })
       if (archive.files.size === 0) throw new BadRequestError('The archive contains no files')
       const warnings = [...archive.warnings]
       const rootFile = detectMainFile(archive.files)

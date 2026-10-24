@@ -22,7 +22,7 @@ Proyek yang diterbitkan orang sebagai templat (misalnya format tesis sebuah kelo
 
 Proyek baru dikompilasi dengan **Otomatis**: mesin dipilih pada setiap kompilasi berdasarkan dokumennya; lihat [Kompilasi dan PDF](#/help/compiling).
 
-Untuk memindahkan proyek dari Overleaf, pilih **Download Source** di sana lalu **Impor** file zip-nya di sini (maksimal 200 MB). Dokumen utama terdeteksi, dan kompilatornya juga Otomatis.
+Untuk memindahkan proyek dari Overleaf, pilih **Download Source** di sana lalu **Impor** file zip-nya di sini (maksimal 200 MB). Dokumen utama terdeteksi, dan kompilatornya juga Otomatis. Berkas kompilasi yang ditinggalkan editor lain (`.aux`, `.log`, `.synctex.gz`, dan sejenisnya) serta folder seperti `.vscode` dilewati, sama seperti di Overleaf; berkas `latexmkrc` dan `.bbl` tetap disimpan.
 
 ## Editor
 

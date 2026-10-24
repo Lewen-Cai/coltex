@@ -22,7 +22,7 @@ ColTex 是執行在你自己伺服器上的協作式 LaTeX 編輯器。用起來
 
 新專案的編譯器是 **自動**：每次編譯時依文件內容選擇引擎；請見 [編譯與 PDF](#/help/compiling)。
 
-要從 Overleaf 搬移專案，請在 Overleaf 選擇 **Download Source** 下載 zip，再在這裡用 **匯入** 上傳（最大 200 MB）。主文件會自動偵測，編譯器同樣是自動。
+要從 Overleaf 搬移專案，請在 Overleaf 選擇 **Download Source** 下載 zip，再在這裡用 **匯入** 上傳（最大 200 MB）。主文件會自動偵測，編譯器同樣是自動。其他編輯器留下的編譯檔案（`.aux`、`.log`、`.synctex.gz` 等）和 `.vscode` 這類資料夾會被略過，和 Overleaf 一樣；`latexmkrc` 和 `.bbl` 檔案會保留。
 
 ## 編輯器
 

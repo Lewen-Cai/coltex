@@ -22,7 +22,7 @@ ColTex 是部署在你们自己服务器上的协作 LaTeX 编辑器，用法和
 
 新项目的编译器是 **自动**：每次编译时根据文档内容选择，见 [编译与 PDF](#/help/compiling)。
 
-已有的 Overleaf 项目可以在 Overleaf 里选 **Download Source** 下载 zip，再在 ColTex 里点 **导入** 上传（最大 200 MB）。主文档会自动识别，编译器同样是自动。
+已有的 Overleaf 项目可以在 Overleaf 里选 **Download Source** 下载 zip，再在 ColTex 里点 **导入** 上传（最大 200 MB）。主文档会自动识别，编译器同样是自动。其他编辑器留下的编译文件（`.aux`、`.log`、`.synctex.gz` 等）和 `.vscode` 这类文件夹会被略过，和 Overleaf 一样；`latexmkrc` 和 `.bbl` 文件会保留。
 
 ## 编辑器的布局
 
