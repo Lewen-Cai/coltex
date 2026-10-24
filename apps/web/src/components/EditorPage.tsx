@@ -74,6 +74,7 @@ import { AI_START_KEY, openConvert } from './ConvertDialog.tsx'
 import { ReviewPanel, type CommentDraft } from './ReviewPanel.tsx'
 import { ShareDialog } from './ShareDialog.tsx'
 import { WordCountDialog } from './WordCountDialog.tsx'
+import { ProjectName } from './project-name.tsx'
 import { openCopyProject } from './shell/project-dialogs.tsx'
 import { spellLanguageOptions, useHunspell, useLearnedWords } from '../spelling/index.ts'
 import { LogPanel } from './LogPanel.tsx'
@@ -671,7 +672,7 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
       await refresh()
     })
 
-  const update = async (patch: Partial<Pick<ProjectMeta, 'rootFile' | 'engine' | 'spellCheckLanguage'>>) => {
+  const update = async (patch: Partial<Pick<ProjectMeta, 'name' | 'rootFile' | 'engine' | 'spellCheckLanguage'>>) => {
     setProject(await api.updateProject(projectId, patch))
   }
 
@@ -1324,7 +1325,7 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
         </Tooltip>
 
         <div className="flex min-w-0 flex-1 items-center gap-2 px-1 sm:justify-center sm:px-2">
-          <span className="truncate font-semibold">{project?.name ?? ' '}</span>
+          <ProjectName name={project?.name} canEdit={canEdit} onRename={name => run(() => update({ name }))} />
           {role === 'viewer' && <Badge variant="secondary" className="shrink-0">{t('Read only')}</Badge>}
           {role === 'reviewer' && (
             <Tooltip>

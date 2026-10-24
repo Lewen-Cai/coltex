@@ -397,3 +397,76 @@ export function CopyProjectDialogHost() {
     </Dialog>
   )
 }
+
+const RENAME_EVENT = 'coltex:rename-project'
+
+/** Ask for a new name for a project (the project list's menu). */
+export const openRenameProject = (projectId: string, projectName: string) =>
+  window.dispatchEvent(new CustomEvent(RENAME_EVENT, { detail: { projectId, projectName } }))
+
+/** Mounted once by the app, next to the copy dialog. */
+export function RenameProjectDialogHost() {
+  const [target, setTarget] = useState<{ projectId: string; projectName: string }>()
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const detail = (e as CustomEvent<{ projectId: string; projectName: string }>).detail
+      setTarget(detail)
+      setName(detail.projectName)
+    }
+    window.addEventListener(RENAME_EVENT, onOpen)
+    return () => window.removeEventListener(RENAME_EVENT, onOpen)
+  }, [])
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    const next = name.trim()
+    if (!target || !next) return
+    if (next === target.projectName) return setTarget(undefined)
+    setBusy(true)
+    try {
+      await api.updateProject(target.projectId, { name: next })
+      setTarget(undefined)
+      window.dispatchEvent(new Event(PROJECTS_CHANGED))
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Dialog open={!!target} onOpenChange={open => !open && setTarget(undefined)}>
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <form onSubmit={submit}>
+          <DialogHeader>
+            <DialogTitle>{t('Rename project')}</DialogTitle>
+          </DialogHeader>
+          <FieldGroup className="py-5">
+            <Field>
+              <FieldLabel htmlFor="rename-project">{t('Project name')}</FieldLabel>
+              <Input
+                id="rename-project"
+                autoFocus
+                maxLength={200}
+                value={name}
+                onChange={e => setName(e.target.value)}
+                onFocus={e => e.target.select()}
+              />
+            </Field>
+          </FieldGroup>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setTarget(undefined)}>
+              {t('Cancel')}
+            </Button>
+            <Button type="submit" disabled={!name.trim() || busy}>
+              {busy && <Spinner />} {t('Rename')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

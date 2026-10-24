@@ -216,6 +216,8 @@ const messages: Record<string, string> = {
   'Previous section': 'Section précédente',
   'Next section': 'Section suivante',
   'Name or email of someone with an account': 'Nom ou e-mail d’une personne ayant un compte',
+  'Rename…': 'Renommer…',
+  'Rename project': 'Renommer le projet',
 }
 
 export default messages

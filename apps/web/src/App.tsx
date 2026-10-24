@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react'
 import { ConfirmHost } from '@/components/confirm'
 import { ConvertDialogHost } from '@/components/ConvertDialog'
-import { CopyProjectDialogHost } from '@/components/shell/project-dialogs'
+import { CopyProjectDialogHost, RenameProjectDialogHost } from '@/components/shell/project-dialogs'
 import { PublishTemplateDialogHost } from '@/components/publish-template-dialog'
 import { AppShell } from '@/components/shell/app-shell'
 import { Toaster } from '@/components/ui/sonner'
@@ -177,6 +177,7 @@ export function App() {
       <ConfirmHost />
       <ConvertDialogHost />
       <CopyProjectDialogHost />
+      <RenameProjectDialogHost />
       <PublishTemplateDialogHost />
     </TooltipProvider>
   )

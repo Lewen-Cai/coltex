@@ -539,7 +539,7 @@ export const LinkedFile = z.object({
 export type LinkedFile = z.infer<typeof LinkedFile>
 
 export const UpdateProjectBody = z.object({
-  name: z.string().min(1).max(200).optional(),
+  name: z.string().trim().min(1).max(200).optional(),
   rootFile: z.string().min(1).optional(),
   engine: EngineSetting.optional(),
   spellCheckLanguage: SpellCheckLanguage.optional(),

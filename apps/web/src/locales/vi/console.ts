@@ -216,6 +216,8 @@ const messages: Record<string, string> = {
   'Previous section': 'Mục trước',
   'Next section': 'Mục sau',
   'Name or email of someone with an account': 'Tên hoặc email của người đã có tài khoản',
+  'Rename…': 'Đổi tên…',
+  'Rename project': 'Đổi tên dự án',
 }
 
 export default messages

@@ -216,6 +216,8 @@ const messages: Record<string, string> = {
   'Previous section': '이전 섹션',
   'Next section': '다음 섹션',
   'Name or email of someone with an account': '계정이 있는 사람의 이름 또는 이메일',
+  'Rename…': '이름 바꾸기…',
+  'Rename project': '프로젝트 이름 바꾸기',
 }
 
 export default messages

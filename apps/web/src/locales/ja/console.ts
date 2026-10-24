@@ -216,6 +216,8 @@ const messages: Record<string, string> = {
   'Previous section': '前のセクション',
   'Next section': '次のセクション',
   'Name or email of someone with an account': 'アカウントを持つユーザーの名前またはメールアドレス',
+  'Rename…': '名前を変更…',
+  'Rename project': 'プロジェクト名を変更',
 }
 
 export default messages

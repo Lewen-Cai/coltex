@@ -216,6 +216,8 @@ const messages: Record<string, string> = {
   'Previous section': 'Bagian sebelumnya',
   'Next section': 'Bagian berikutnya',
   'Name or email of someone with an account': 'Nama atau email seseorang yang memiliki akun',
+  'Rename…': 'Ganti nama…',
+  'Rename project': 'Ganti nama proyek',
 }
 
 export default messages

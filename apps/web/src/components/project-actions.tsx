@@ -8,6 +8,7 @@ import {
   LayoutTemplate,
   LogOut,
   MoreHorizontal,
+  Pencil,
   Plus,
   Share2, // i18n-ignore
   Trash2,
@@ -31,7 +32,7 @@ import { changeTags, useTags } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import { confirmDialog } from './confirm'
 import { openConvert } from './ConvertDialog'
-import { PROJECTS_CHANGED, openCopyProject } from './shell/project-dialogs'
+import { PROJECTS_CHANGED, openCopyProject, openRenameProject } from './shell/project-dialogs'
 import { openPublishTemplate } from './publish-template-dialog'
 import { TagBadge, openTagDialog } from './tag-dialog'
 
@@ -243,6 +244,11 @@ export function ProjectActions({ project }: { project: ProjectSummary }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56" onClick={e => e.stopPropagation()}>
+        {(owner || project.role === 'editor') && (
+          <DropdownMenuItem onSelect={() => openRenameProject(project.id, project.name)}>
+            <Pencil /> {t('Rename…')}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => openCopyProject(project.id, project.name)}>
           <Copy /> {t('Make a copy')}
         </DropdownMenuItem>

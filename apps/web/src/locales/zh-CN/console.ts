@@ -216,6 +216,8 @@ const messages: Record<string, string> = {
   'Previous section': '上一节',
   'Next section': '下一节',
   'Name or email of someone with an account': '有账号的人的姓名或邮箱',
+  'Rename…': '重命名…',
+  'Rename project': '重命名项目',
 }
 
 export default messages

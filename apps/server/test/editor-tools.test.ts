@@ -154,6 +154,16 @@ describe('compile options, sources, spelling', () => {
     assert.equal((await patch({ spellCheckLanguage: 'en_GB' }, bob)).statusCode, 404)
   })
 
+  test('editors rename a project, trimmed', async () => {
+    const patch = (payload: Record<string, unknown>, cookie = admin) => t.app.inject({ method: 'PATCH', url: `/api/projects/${id}`, headers: { cookie }, payload })
+    const renamed = await patch({ name: '  Thesis draft  ' })
+    assert.equal(renamed.statusCode, 200)
+    assert.equal(renamed.json().name, 'Thesis draft')
+    assert.equal((await patch({ name: '   ' })).statusCode, 400)
+    assert.equal((await patch({ name: 'x'.repeat(201) })).statusCode, 400)
+    assert.equal((await patch({ name: 'Not mine' }, bob)).statusCode, 404)
+  })
+
   test('the theme and avatar colour are kept with each account', async () => {
     const prefs = (method: 'GET' | 'PUT', cookie: string, payload?: object) =>
       t.app.inject({ method, url: '/api/me/preferences', headers: { cookie }, ...(payload ? { payload } : {}) })
