@@ -11,10 +11,11 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
-import { registerAuth } from './auth/fastify.ts'
+import { registerAuth, requireUser } from './auth/fastify.ts'
 import { config } from './config.ts'
 import type { Deps } from './deps.ts'
 import { HttpError } from './errors.ts'
+import { securityHeaders } from './security-headers.ts'
 import { accountRoutes } from './routes/accounts.ts'
 import { adminRoutes } from './routes/admin.ts'
 import { networkRoutes } from './routes/network.ts'
@@ -52,6 +53,8 @@ export async function buildApp(
     (_req, body, done) => done(null, body),
   )
 
+  securityHeaders(app)
+
   app.setErrorHandler((err: FastifyError, _req, reply) => {
     if (err instanceof HttpError) return reply.code(err.statusCode).send({ error: err.message })
     if (hasZodFastifySchemaValidationErrors(err)) {
@@ -81,7 +84,11 @@ export async function buildApp(
   await app.register(
     async api => {
       api.get('/health', () => ({ ok: true }))
-      api.get('/openapi.json', () => app.swagger())
+      // The API's description is for people who use it, not for whoever finds the server.
+      api.get('/openapi.json', req => {
+        requireUser(req)
+        return app.swagger()
+      })
       await api.register(accountRoutes, deps)
       await api.register(meRoutes, deps)
       await api.register(notificationRoutes, deps)

@@ -7,7 +7,7 @@
 | Language | TypeScript everywhere | Node runs `.ts` directly via type stripping (erasable syntax only) |
 | Monorepo | pnpm workspaces + Turborepo | |
 | Web | React 19, Vite, Tailwind 4, shadcn/ui (Radix), motion, CodeMirror 6, PDF.js | LaTeX/BibTeX language support ported from Overleaf (`packages/latex-language`); provider logos from LobeHub (`@lobehub/icons-static-svg`, MIT) |
-| API | Fastify 5 + Zod (OpenAPI at `/api/openapi.json`) | |
+| API | Fastify 5 + Zod (OpenAPI at `/api/openapi.json`, signed in) | |
 | Realtime | Yjs + Hocuspocus 4 (in the API process, `/api/collab`), y-codemirror.next | One WebSocket per page multiplexes the project doc and the open file |
 | Database | PostgreSQL 18 + Drizzle (migrations in `apps/server/drizzle`, applied at startup) | |
 | Queue | Valkey + BullMQ | |

@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>ColTex</title>
-    <script>
-      // Apply the signed-in person's theme before the first paint (see src/lib/theme.ts).
-      try {
-        var c = (localStorage.getItem('coltex:theme') || '').split(':').pop()
-        if (c === 'dark' || c === 'moss' || c === 'plum') document.documentElement.classList.add('dark')
-        if (c === 'forest' || c === 'moss' || c === 'lavender' || c === 'plum') document.documentElement.dataset.theme = c
-      } catch (e) {}
-    </script>
+    <script src="/theme.js"></script>
   </head>
   <body>
     <div id="root"></div>

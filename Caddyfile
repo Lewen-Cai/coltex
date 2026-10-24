@@ -1,6 +1,8 @@
 # Set COLTEX_DOMAIN to your public hostname; Caddy obtains HTTPS certificates automatically.
 {$COLTEX_DOMAIN} {
 	encode zstd gzip
+	# Browsers that have seen the site over HTTPS never try plain http again.
+	header Strict-Transport-Security "max-age=31536000"
 	request_body {
 		max_size 60MB
 	}

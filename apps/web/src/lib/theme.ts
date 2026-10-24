@@ -14,7 +14,7 @@ export type { ThemeChoice }
  * The theme is the account's (user's decision 2026-10-24), kept on the server
  * (`/api/me/preferences`); pages nobody is signed in to (sign-in, setup,
  * invitations) always use the default. This browser remembers the signed-in
- * person's theme so `index.html` can apply it before the first paint (keep
+ * person's theme so `public/theme.js` can apply it before the first paint (keep
  * its storage key and lists in sync with this file); signing out forgets it.
  */
 
