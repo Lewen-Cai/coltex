@@ -84,7 +84,9 @@ Docker yüklü bir Linux veya macOS makinesine (Linux’ta kurulum aracı Docker
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Kurulum aracı dili, TeX Live sürümünü (edition) ve kişilerin ColTex’e nasıl erişeceğini sorar (ok tuşlarıyla), en son sürümü `~/coltex` içine alır, hazır imajları bir ilerleme çubuğuyla indirir, ColTex’i başlatır ve açılacak adresleri yazdırır. Çıktının tamamı `~/coltex/install.log` dosyasına gider. Ardından `http://<server>:3690` adresini açın ve yönetici hesabını oluşturun.
+İndirme yarıda kesilirse (`curl: (35) Recv failure: Connection reset by peer`, GitHub’a erişmek zor olduğunda sık görülür) komutu yeniden çalıştırın.
+
+Kurulum aracı dili ve TeX Live sürümünü (edition) sorar (ok tuşlarıyla), en son sürümü `~/coltex` içine alır, hazır imajları bir ilerleme çubuğuyla indirir, ColTex’i başlatır ve açılacak adresleri yazdırır. Çıktının tamamı `~/coltex/install.log` dosyasına gider. Ardından `http://<server>:3690` adresini açın ve yönetici hesabını oluşturun. Tailscale veya Cloudflare Tunnel üzerinden uzaktan erişim daha sonra **Ayarlar → Ağ** bölümünden açılır.
 
 İlk başlatma TeX Live’ı indirir. Bir sürüm seçin:
 
@@ -93,9 +95,9 @@ Kurulum aracı dili, TeX Live sürümünü (edition) ve kişilerin ColTex’e na
 | **standard** (varsayılan) | yaklaşık 3 GB | yaklaşık 12 GB | 20 GB |
 | **full** (`--edition full`) | yaklaşık 8 GB | yaklaşık 23 GB | 35 GB |
 
-İkisi de aynı belgeleri derler. full sürümünde ayrıca paket kılavuzları bulunur; YZ ajanı bunları okuyabilir.
+İkisinde de TeX Live’ın tüm paketleri vardır ve aynı belgeleri derler; YZ ajanı ikisiyle de çalışır. standard sürümünde paket kılavuzları yoktur; full sürümü kılavuzları ve kaynakları ekler, YZ ajanı bunları da okuyabilir.
 
-Seçenekler soruları yanıtlar ya da terminal olmayan yerlerde onların yerini alır (bunları `bash -s --` sonrasına ekleyin):
+`--edition` ve `--lang` soruları yanıtlar ya da terminal olmayan yerlerde onların yerini alır. `--domain`, `--tailscale` ve Cloudflare seçenekleri, betikle yapılan kurulumlarda uzaktan erişimi kurulum sırasında ayarlar. Seçenekleri `bash -s --` sonrasına ekleyin:
 
 | Seçenek | |
 | --- | --- |
@@ -104,7 +106,6 @@ Seçenekler soruları yanıtlar ya da terminal olmayan yerlerde onların yerini 
 | `--cloudflare-token TOKEN` | Kendi alan adınız için oluşturduğunuz bir Cloudflare tünelini bağlar |
 | `--cloudflare-quick` | Denemek için geçici, genel bir `trycloudflare.com` adresi |
 | `--edition full` | Tam (full) TeX Live sürümü |
-| `--local` | Yalnızca bu makine ve ağı |
 | `--lang LANG` | Kurulum aracının, `coltex` komutunun ve kurulum sayfasının dili: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi` veya `id` (verilmezse sorulur) |
 | `--port 3690` | Başka bir bağlantı noktası |
 | `--version v0.0.1` | Belirli bir sürüm (geliştirme dalı için `main`) |

@@ -84,7 +84,9 @@ ColTex 是 Overleaf 的替代方案，適合研究團隊、實驗室或個人使
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-它會詢問語言、TeX Live 版本，以及其他人要如何連線到 ColTex（用方向鍵選擇），把最新版本下載到 `~/coltex`，以進度條下載預先建置的映像檔，啟動 ColTex，並列出要開啟的網址。完整輸出會寫入 `~/coltex/install.log`。接著開啟 `http://<server>:3690`，建立管理員帳號。
+如果下載中斷（`curl: (35) Recv failure: Connection reset by peer`，連線 GitHub 不穩定時常見），再執行一次指令即可。
+
+它會詢問語言和 TeX Live 版本（用方向鍵選擇），把最新版本下載到 `~/coltex`，以進度條下載預先建置的映像檔，啟動 ColTex，並列出要開啟的網址。完整輸出會寫入 `~/coltex/install.log`。接著開啟 `http://<server>:3690`，建立管理員帳號。遠端存取（Tailscale、Cloudflare Tunnel）之後在 **設定 → 網路** 中開啟。
 
 第一次啟動會下載 TeX Live。請選擇版本：
 
@@ -93,9 +95,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | **standard**（預設） | 約 3 GB | 約 12 GB | 20 GB |
 | **full**（`--edition full`） | 約 8 GB | 約 23 GB | 35 GB |
 
-兩者能編譯的文件相同。full 版另外包含套件手冊，AI 代理可以閱讀它們。
+兩者都包含 TeX Live 的所有套件，能編譯的文件相同，AI 代理也都能使用。standard 版不含套件手冊；full 版另外包含套件手冊和原始碼，AI 代理也可以閱讀它們。
 
-選項可以直接回答這些問題，或在沒有終端機時取代它們（加在 `bash -s --` 後面）：
+`--edition` 和 `--lang` 可以直接回答這些問題，或在沒有終端機時取代它們；`--domain`、`--tailscale` 和 Cloudflare 相關選項用於腳本化安裝，在安裝時就設定好遠端存取。選項加在 `bash -s --` 後面：
 
 | 選項 | |
 | --- | --- |
@@ -104,7 +106,6 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--cloudflare-token TOKEN` | 連接你為自己網域建立的 Cloudflare 通道 |
 | `--cloudflare-quick` | 臨時的 `trycloudflare.com` 公開網址，適合試用 |
 | `--edition full` | 完整的 TeX Live 版本 |
-| `--local` | 僅限本機及其所在網路 |
 | `--lang LANG` | 安裝程式、`coltex` 和初始設定頁面的語言：`en`、`zh-CN`、`zh-TW`、`ja`、`ko`、`es`、`fr`、`de`、`pt-BR`、`it`、`ru`、`tr`、`vi` 或 `id`（未指定時會詢問） |
 | `--port 3690` | 使用其他連接埠 |
 | `--version v0.0.1` | 指定版本（`main` 代表開發分支） |

@@ -10,16 +10,18 @@ Docker の入った Linux または macOS で、次のコマンドを 1 つ実�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-言語、エディション、ColTex へのアクセス方法を尋ねられます（矢印キーで選択します。`--edition`、`--domain`、`--lang` などのオプションで代わりに指定することもできます）。その後、Docker を確認し（Linux ではインストールもできます）、ColTex を `~/coltex` に取得し、設定を書き込み、ビルド済みのイメージ（x86-64 と ARM64）をダウンロードして起動し、このマシンとネットワーク上で開くアドレスを表示します。初回の起動時には TeX Live がダウンロードされます。エディションは 2 つあります。
+ダウンロードが途中で切れた場合（`curl: (35) Recv failure: Connection reset by peer`。GitHub につながりにくい環境でよく起こります）は、同じコマンドをもう一度実行してください。
+
+言語と TeX Live のエディションを尋ねられます（矢印キーで選択します。`--edition` や `--lang` のオプションで代わりに指定することもできます）。その後、Docker を確認し（Linux ではインストールもできます）、ColTex を `~/coltex` に取得し、設定を書き込み、ビルド済みのイメージ（x86-64 と ARM64）をダウンロードして起動し、このマシンとネットワーク上で開くアドレスを表示します。初回の起動時には TeX Live がダウンロードされます。エディションは 2 つあります。
 
 | エディション | ダウンロード | ディスク使用量（ColTex 全体） | 必要な空き容量 |
 | --- | --- | --- | --- |
 | **standard**（既定） | 約 3 GB | 約 12 GB | 20 GB |
 | **full**（`--edition full`） | 約 8 GB | 約 23 GB | 35 GB |
 
-どちらも同じようにコンパイルできます（完全な TeX Live）。full エディションにはパッケージのマニュアルとソースが追加され、AI エージェントがそれを読めるようになります。standard エディションでは、AI エージェントはパッケージのファイルと自身の知識から回答します。後から `coltex edition full` または `coltex edition standard` で切り替えられます。
+どちらも完全な TeX Live で、同じ文書をコンパイルでき、AI エージェントもどちらでも使えます。standard エディションにはパッケージのマニュアルとソースが含まれません。full エディションではそれらが加わり、AI エージェントはマニュアルも読めます。standard エディションでは、AI エージェントはパッケージのファイルと自身の知識から回答します。後から `coltex edition full` または `coltex edition standard` で切り替えられます。
 
-リモートアクセスも同時にオンにできます。
+リモートアクセス（Tailscale、Cloudflare Tunnel）は、インストール後に **設定 → ネットワーク** でオンにします（下記参照）。スクリプトでインストールする場合は、オプションでインストール時にオンにすることもできます。
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

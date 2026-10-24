@@ -5,7 +5,8 @@ run-name: Images ${{ github.ref_name }}
 # Prebuilt images on ghcr.io, which install.sh and `coltex update` pull:
 #   ghcr.io/<owner>/coltex-server:<ref>
 #   ghcr.io/<owner>/coltex-compiler:<ref>-standard | <ref>-full
-# <ref> is the release tag (v0.0.2, plus "latest") or "main". Each architecture
+# <ref> is the release tag (v0.0.2, plus "latest"; a pre-release only its own tag)
+# or "main". Each architecture
 # is built on its own native runner and pushed by digest; the merge job then
 # puts them together under the tags.
 #
@@ -152,13 +153,14 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           # v0.0.2 and latest for a release, main for the branch: the names
-          # install.sh writes to COLTEX_IMAGE_TAG.
+          # install.sh writes to COLTEX_IMAGE_TAG. Pre-releases (tags with a
+          # "-") never become latest.
           flavor: |
             latest=false
             suffix=${{ matrix.suffix }}
           tags: |
             type=ref,event=tag
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
             type=ref,event=branch
 
       - name: Create the manifest list
@@ -179,5 +181,5 @@ jobs:
     uses: ./.github/workflows/mirror.yml
     with:
       ref: ${{ github.ref_name }}
-      latest: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      latest: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
     secrets: inherit

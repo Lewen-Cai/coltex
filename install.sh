@@ -4,14 +4,15 @@
 #   curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
 #
-# Without options, it asks for the language, the TeX Live edition and how to reach ColTex
-# (arrow keys). Options answer those questions, or replace them where there is no terminal:
+# Without options, it asks for the language and the TeX Live edition (arrow keys); remote
+# access is turned on later in Settings → Network. Options answer the questions, or replace
+# them where there is no terminal:
 #   --lang LANG             the language of the installer, `coltex` and the setup page:
 #                           en, zh-CN, zh-TW, ja, ko, es, fr, de, pt-BR, it, ru, tr, vi, id
 #   --dir DIR               where it goes (default ~/coltex)
 #   --port PORT             the port (default 3690)
-#   --edition EDITION       standard (default, TeX Live without package manuals, about 9 GB)
-#                           or full (with the manuals the AI agent can read, about 20 GB)
+#   --edition EDITION       standard (default: every package without their manuals, about
+#                           12 GB on disk) or full (with the manuals and sources, about 23 GB)
 #   --repo URL              the Git repository (default: github.com/Lewen-Cai/coltex)
 #   --version VERSION       a release such as v0.0.1 (default: the latest), or main for the
 #                           development branch
@@ -20,7 +21,6 @@
 #   --tailscale             afterwards, put it on your tailnet (prints a sign-in link and QR code)
 #   --cloudflare-quick      afterwards, open a temporary trycloudflare.com address
 #   --cloudflare-token TOK  afterwards, connect a Cloudflare tunnel made in the dashboard
-#   --local                 only this machine and its network (no questions about access)
 #   --images REGISTRY       where to download the images from: aliyun (the same images on
 #                           Alibaba Cloud), ghcr (ghcr.io/lewen-cai) or another mirror of
 #                           ghcr.io. Without it, whichever answers faster from here (Alibaba
@@ -50,7 +50,6 @@ REPO="$DEFAULT_REPO"
 TAILSCALE=0
 CF_QUICK=0
 CF_TOKEN=""
-ACCESS_GIVEN=0
 BUILD=0
 START=1
 IMAGES=""
@@ -61,13 +60,13 @@ while [ $# -gt 0 ]; do
     --dir) DIR="$2"; shift 2 ;;
     --port) PORT="$2"; shift 2 ;;
     --edition) EDITION="$2"; shift 2 ;;
-    --domain) DOMAIN="$2"; ACCESS_GIVEN=1; shift 2 ;;
+    --domain) DOMAIN="$2"; shift 2 ;;
     --version) VERSION="$2"; shift 2 ;;
     --repo) REPO="$2"; shift 2 ;;
-    --tailscale) TAILSCALE=1; ACCESS_GIVEN=1; shift ;;
-    --cloudflare-quick) CF_QUICK=1; ACCESS_GIVEN=1; shift ;;
-    --cloudflare-token) CF_TOKEN="$2"; ACCESS_GIVEN=1; shift 2 ;;
-    --local) ACCESS_GIVEN=1; shift ;;
+    --tailscale) TAILSCALE=1; shift ;;
+    --cloudflare-quick) CF_QUICK=1; shift ;;
+    --cloudflare-token) CF_TOKEN="$2"; shift 2 ;;
+    --local) shift ;; # From older instructions: there is no question about access now.
     --images) IMAGES="${2%/}"; shift 2 ;;
     --build) BUILD=1; shift ;;
     --no-start) START=0; shift ;;
@@ -107,15 +106,15 @@ TTY=0
 if [ -t 1 ] && { : </dev/tty; } 2>/dev/null; then TTY=1; fi
 COLS="$(tput cols 2>/dev/null || echo 80)"
 ESC=$'\033'
-RESET="" BOLD="" DIM="" BLUE="" WHITE="" GREEN="" RED="" AMBER="" BG_BLUE="" BG_WHITE=""
+RESET="" BOLD="" DIM="" BLUE="" GRAY="" WHITE="" GREEN="" RED="" AMBER="" BG_BLUE="" BG_WHITE=""
 if [ "$TTY" = 1 ] && [ -z "${NO_COLOR:-}" ]; then
   RESET="${ESC}[0m" BOLD="${ESC}[1m" DIM="${ESC}[2m"
   case "${COLORTERM:-}" in
     truecolor | 24bit)
-      BLUE="${ESC}[38;2;37;99;235m" WHITE="${ESC}[38;2;255;255;255m" GREEN="${ESC}[38;2;22;163;74m"
+      BLUE="${ESC}[38;2;37;99;235m" GRAY="${ESC}[38;2;128;128;128m" WHITE="${ESC}[38;2;255;255;255m" GREEN="${ESC}[38;2;22;163;74m"
       RED="${ESC}[38;2;220;38;38m" AMBER="${ESC}[38;2;217;119;6m" BG_BLUE="${ESC}[48;2;37;99;235m" BG_WHITE="${ESC}[48;2;255;255;255m" ;;
     *)
-      BLUE="${ESC}[38;5;27m" WHITE="${ESC}[38;5;231m" GREEN="${ESC}[38;5;34m" RED="${ESC}[38;5;160m" AMBER="${ESC}[38;5;172m" BG_BLUE="${ESC}[48;5;27m" BG_WHITE="${ESC}[48;5;231m" ;;
+      BLUE="${ESC}[38;5;27m" GRAY="${ESC}[38;5;244m" WHITE="${ESC}[38;5;231m" GREEN="${ESC}[38;5;34m" RED="${ESC}[38;5;160m" AMBER="${ESC}[38;5;172m" BG_BLUE="${ESC}[48;5;27m" BG_WHITE="${ESC}[48;5;231m" ;;
   esac
 fi
 cursor_hide() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25l" || true; }
@@ -160,7 +159,9 @@ msg_en() {
     language) M='Language' ;;
     full_output) M='Full output: {log}' ;;
     downloading) M='Downloading' ;;
-    download_note) M='The images are several GB, so the download can take a while.' ;;
+    download_aliyun) M='Downloading the images from Alibaba Cloud. They are large, so please be patient…' ;;
+    download_github) M='Downloading the images from GitHub. They are large, so please be patient…' ;;
+    download_other) M='Downloading the images from {registry}. They are large, so please be patient…' ;;
     pull_failed) M='Downloading the images failed. Check the network connection and run this again.' ;;
     docker_install_q) M='Docker is not installed. Install it now with Docker’s script (get.docker.com, needs sudo)?' ;;
     docker_install) M='Install Docker' ;;
@@ -171,16 +172,8 @@ msg_en() {
     checking_docker) M='Checking Docker' ;;
     no_release) M='No release found in {repo} (pass --version main for the development branch)' ;;
     edition_q) M='TeX Live edition' ;;
-    edition_standard) M='Standard: everything compiles; about 3 GB to download, 12 GB on disk' ;;
-    edition_full) M='Full: also the package manuals for the AI agent; about 8 GB, 23 GB on disk' ;;
-    access_q) M='How will people reach ColTex?' ;;
-    access_local) M='On this machine and its network' ;;
-    access_domain) M='A domain of mine, with HTTPS' ;;
-    access_tailscale) M='Tailscale (my tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel with my domain' ;;
-    access_cf_quick) M='A temporary public link (trycloudflare.com)' ;;
-    ask_domain) M='Domain (its DNS must point here; ports 80 and 443 open):' ;;
-    ask_token) M='Tunnel token (from the Cloudflare dashboard):' ;;
+    edition_standard) M='Standard: every package, without their manuals; about 3 GB to download, 12 GB on disk' ;;
+    edition_full) M='Full: every package with its manual and source; about 8 GB to download, 23 GB on disk' ;;
     updating_to) M='Updating ColTex to {version}' ;;
     getting) M='Getting ColTex {version}' ;;
     writing_settings) M='Writing settings' ;;
@@ -198,14 +191,17 @@ msg_en() {
     your_network) M='(on your network)' ;;
     public_address) M='(public address)' ;;
     public_warning) M='This server is reachable from the internet: for real use don’t sign in over plain http. Use --domain (HTTPS), Tailscale or a Cloudflare tunnel.' ;;
-    manage) M='Manage it:' ;;
-    remote_later) M='Remote access later:' ;;
     pull_retry) M='The download was cut off; trying again ({n}/{max}). Finished layers are kept.' ;;
     pull_hint) M='If ghcr.io is slow from here (in mainland China, say): run this again with --images aliyun, the same images on Alibaba Cloud (registry-mirrors in Docker’s daemon.json only applies to Docker Hub). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json, restart Docker, and run this again.' ;;
-    images_aliyun) M='Alibaba Cloud answers faster from here: images from Alibaba Cloud (--images ghcr to use ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud doesn’t have these images yet: downloading them from ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud doesn’t have the images of this version yet.' ;;
     docker_permission) M='This user may not use Docker. Run sudo usermod -aG docker {user}, log out and back in (or run newgrp docker), then run this again.' ;;
-    path_hint) M='To run it as just coltex, add {dir} to PATH: {line}' ;;
+    commands) M='Commands' ;;
+    cmd_status) M='is it running' ;;
+    cmd_logs) M='the server’s log' ;;
+    cmd_update) M='update to the newest release' ;;
+    cmd_help) M='all commands' ;;
+    path_first) M='Run this once, and coltex works from anywhere:' ;;
+    remote_access) M='Remote access (Tailscale, Cloudflare Tunnel): turn it on in ColTex under Settings → Network.' ;;
   esac
 }
 msg_zh_CN() {
@@ -214,7 +210,9 @@ msg_zh_CN() {
     language) M='语言' ;;
     full_output) M='完整输出：{log}' ;;
     downloading) M='下载镜像' ;;
-    download_note) M='镜像有几 GB，下载需要一段时间。' ;;
+    download_aliyun) M='正在从阿里云下载镜像，镜像体积较大，请耐心等待…' ;;
+    download_github) M='正在从 GitHub 下载镜像，镜像体积较大，请耐心等待…' ;;
+    download_other) M='正在从 {registry} 下载镜像，镜像体积较大，请耐心等待…' ;;
     pull_failed) M='下载镜像失败。请检查网络连接后重新运行。' ;;
     docker_install_q) M='没有安装 Docker。现在用 Docker 的官方脚本（get.docker.com，需要 sudo）安装吗？' ;;
     docker_install) M='安装 Docker' ;;
@@ -225,16 +223,8 @@ msg_zh_CN() {
     checking_docker) M='检查 Docker' ;;
     no_release) M='在 {repo} 里没有找到发布版本（开发分支请加 --version main）' ;;
     edition_q) M='TeX Live 版本' ;;
-    edition_standard) M='标准版：能编译的文档完全一样；下载约 3 GB，占用约 12 GB' ;;
-    edition_full) M='完整版：另含宏包手册，供 AI 智能体查阅；下载约 8 GB，占用约 23 GB' ;;
-    access_q) M='大家怎样访问 ColTex？' ;;
-    access_local) M='本机和局域网' ;;
-    access_domain) M='我自己的域名，启用 HTTPS' ;;
-    access_tailscale) M='Tailscale（我的 tailnet）' ;;
-    access_cf_token) M='Cloudflare Tunnel，用我的域名' ;;
-    access_cf_quick) M='临时公网链接（trycloudflare.com）' ;;
-    ask_domain) M='域名（DNS 要解析到这台机器，并开放 80 和 443 端口）：' ;;
-    ask_token) M='隧道令牌（在 Cloudflare 控制台里）：' ;;
+    edition_standard) M='标准版：全部宏包，不含手册；下载约 3 GB，占用约 12 GB' ;;
+    edition_full) M='完整版：全部宏包，含手册和源码；下载约 8 GB，占用约 23 GB' ;;
     updating_to) M='更新 ColTex 到 {version}' ;;
     getting) M='获取 ColTex {version}' ;;
     writing_settings) M='写入设置' ;;
@@ -252,14 +242,17 @@ msg_zh_CN() {
     your_network) M='（局域网）' ;;
     public_address) M='（公网地址）' ;;
     public_warning) M='这台服务器能从公网访问：正式使用时不要通过明文 http 登录，请用 --domain（HTTPS）、Tailscale 或 Cloudflare 隧道。' ;;
-    manage) M='管理：' ;;
-    remote_later) M='之后开启远程访问：' ;;
     pull_retry) M='下载中断，正在重试（{n}/{max}）。已下载完的层会保留。' ;;
     pull_hint) M='如果从这里访问 ghcr.io 很慢（比如在中国大陆）：加上 --images aliyun 重新运行，从阿里云下载同样的镜像（Docker daemon.json 里的 registry-mirrors 只对 Docker Hub 有效）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重启 Docker 后重新运行。' ;;
-    images_aliyun) M='从这里访问阿里云更快：从阿里云下载镜像（--images ghcr 改用 ghcr.io）' ;;
-    images_fallback) M='阿里云上还没有这些镜像：改从 ghcr.io 下载。' ;;
+    images_fallback) M='阿里云上还没有这个版本的镜像。' ;;
     docker_permission) M='当前用户无权使用 Docker。请运行 sudo usermod -aG docker {user}，然后重新登录（或运行 newgrp docker），再重新运行本脚本。' ;;
-    path_hint) M='想直接输入 coltex 运行，请把 {dir} 加入 PATH：{line}' ;;
+    commands) M='常用命令' ;;
+    cmd_status) M='运行状态' ;;
+    cmd_logs) M='查看日志' ;;
+    cmd_update) M='更新到最新版本' ;;
+    cmd_help) M='全部命令' ;;
+    path_first) M='先运行一次这一行，之后在任何地方都能直接输入 coltex：' ;;
+    remote_access) M='远程访问（Tailscale、Cloudflare Tunnel）：在 ColTex 的“设置 → 网络”里开启。' ;;
   esac
 }
 msg_zh_TW() {
@@ -268,7 +261,9 @@ msg_zh_TW() {
     language) M='語言' ;;
     full_output) M='完整輸出：{log}' ;;
     downloading) M='下載映像檔' ;;
-    download_note) M='映像檔有好幾 GB，下載需要一段時間。' ;;
+    download_aliyun) M='正在從阿里雲下載映像檔，映像檔較大，請耐心等候…' ;;
+    download_github) M='正在從 GitHub 下載映像檔，映像檔較大，請耐心等候…' ;;
+    download_other) M='正在從 {registry} 下載映像檔，映像檔較大，請耐心等候…' ;;
     pull_failed) M='下載映像檔失敗。請檢查網路連線後重新執行。' ;;
     docker_install_q) M='尚未安裝 Docker。要現在用 Docker 的官方指令碼（get.docker.com，需要 sudo）安裝嗎？' ;;
     docker_install) M='安裝 Docker' ;;
@@ -279,16 +274,8 @@ msg_zh_TW() {
     checking_docker) M='檢查 Docker' ;;
     no_release) M='在 {repo} 中找不到發佈版本（開發分支請加上 --version main）' ;;
     edition_q) M='TeX Live 版本' ;;
-    edition_standard) M='標準版：能編譯的文件完全相同；下載約 3 GB，磁碟占用約 12 GB' ;;
-    edition_full) M='完整版：另含套件手冊，供 AI 代理閱讀；下載約 8 GB，磁碟占用約 23 GB' ;;
-    access_q) M='其他人要如何連線到 ColTex？' ;;
-    access_local) M='本機及其所在網路' ;;
-    access_domain) M='我自己的網域，啟用 HTTPS' ;;
-    access_tailscale) M='Tailscale（我的 tailnet）' ;;
-    access_cf_token) M='Cloudflare Tunnel，使用我的網域' ;;
-    access_cf_quick) M='臨時公開連結（trycloudflare.com）' ;;
-    ask_domain) M='網域（DNS 必須指向這台機器，並開放連接埠 80 和 443）：' ;;
-    ask_token) M='通道權杖（在 Cloudflare 主控台中）：' ;;
+    edition_standard) M='標準版：全部套件，不含手冊；下載約 3 GB，磁碟占用約 12 GB' ;;
+    edition_full) M='完整版：全部套件，含手冊和原始碼；下載約 8 GB，磁碟占用約 23 GB' ;;
     updating_to) M='將 ColTex 更新到 {version}' ;;
     getting) M='取得 ColTex {version}' ;;
     writing_settings) M='寫入設定' ;;
@@ -306,14 +293,17 @@ msg_zh_TW() {
     your_network) M='（你的網路）' ;;
     public_address) M='（公開位址）' ;;
     public_warning) M='這台伺服器可以從網際網路連線：正式使用時請不要透過未加密的 http 登入，請改用 --domain（HTTPS）、Tailscale 或 Cloudflare 通道。' ;;
-    manage) M='管理：' ;;
-    remote_later) M='之後開啟遠端存取：' ;;
     pull_retry) M='下載中斷，正在重試（{n}/{max}）。已下載完成的層會保留。' ;;
     pull_hint) M='如果從這裡存取 ghcr.io 很慢（例如在中國大陸）：加上 --images aliyun 重新執行，從阿里雲下載同樣的映像檔（Docker daemon.json 裡的 registry-mirrors 只對 Docker Hub 有效）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，重新啟動 Docker 後再執行一次。' ;;
-    images_aliyun) M='從這裡存取阿里雲較快：從阿里雲下載映像檔（--images ghcr 改用 ghcr.io）' ;;
-    images_fallback) M='阿里雲上還沒有這些映像檔：改從 ghcr.io 下載。' ;;
+    images_fallback) M='阿里雲上還沒有這個版本的映像檔。' ;;
     docker_permission) M='目前的使用者無權使用 Docker。請執行 sudo usermod -aG docker {user}，然後重新登入（或執行 newgrp docker），再重新執行本指令碼。' ;;
-    path_hint) M='想直接輸入 coltex 執行，請把 {dir} 加入 PATH：{line}' ;;
+    commands) M='常用指令' ;;
+    cmd_status) M='執行狀態' ;;
+    cmd_logs) M='查看日誌' ;;
+    cmd_update) M='更新到最新版本' ;;
+    cmd_help) M='全部指令' ;;
+    path_first) M='先執行一次這一行，之後在任何地方都能直接輸入 coltex：' ;;
+    remote_access) M='遠端存取（Tailscale、Cloudflare Tunnel）：在 ColTex 的「設定 → 網路」中開啟。' ;;
   esac
 }
 msg_ja() {
@@ -322,7 +312,9 @@ msg_ja() {
     language) M='言語' ;;
     full_output) M='出力の全文：{log}' ;;
     downloading) M='ダウンロード中' ;;
-    download_note) M='イメージは数 GB あるため、ダウンロードには時間がかかります。' ;;
+    download_aliyun) M='Alibaba Cloud からイメージをダウンロードしています。サイズが大きいので、しばらくお待ちください…' ;;
+    download_github) M='GitHub からイメージをダウンロードしています。サイズが大きいので、しばらくお待ちください…' ;;
+    download_other) M='{registry} からイメージをダウンロードしています。サイズが大きいので、しばらくお待ちください…' ;;
     pull_failed) M='イメージのダウンロードに失敗しました。ネットワーク接続を確認して、もう一度実行してください。' ;;
     docker_install_q) M='Docker がインストールされていません。Docker の公式スクリプト（get.docker.com、sudo が必要）で今すぐインストールしますか？' ;;
     docker_install) M='Docker をインストール' ;;
@@ -333,16 +325,8 @@ msg_ja() {
     checking_docker) M='Docker を確認中' ;;
     no_release) M='{repo} にリリースが見つかりません（開発ブランチを使うには --version main を指定してください）' ;;
     edition_q) M='TeX Live のエディション' ;;
-    edition_standard) M='standard：すべての文書をコンパイル可能。ダウンロード約 3 GB、ディスク使用量 12 GB' ;;
-    edition_full) M='full：AI エージェント用のパッケージマニュアルも含む。ダウンロード約 8 GB、ディスク使用量 23 GB' ;;
-    access_q) M='ColTex へのアクセス方法は？' ;;
-    access_local) M='このマシンとそのネットワークから' ;;
-    access_domain) M='独自ドメイン（HTTPS）' ;;
-    access_tailscale) M='Tailscale（自分の tailnet）' ;;
-    access_cf_token) M='独自ドメインの Cloudflare Tunnel' ;;
-    access_cf_quick) M='一時的な公開リンク（trycloudflare.com）' ;;
-    ask_domain) M='ドメイン（DNS がこのマシンを指し、ポート 80 と 443 が開いている必要があります）：' ;;
-    ask_token) M='トンネルトークン（Cloudflare のダッシュボードで取得）：' ;;
+    edition_standard) M='standard：すべてのパッケージ（マニュアルなし）。ダウンロード約 3 GB、ディスク使用量 12 GB' ;;
+    edition_full) M='full：すべてのパッケージとそのマニュアル・ソース。ダウンロード約 8 GB、ディスク使用量 23 GB' ;;
     updating_to) M='ColTex を {version} に更新中' ;;
     getting) M='ColTex {version} を取得中' ;;
     writing_settings) M='設定を書き込み中' ;;
@@ -360,14 +344,17 @@ msg_ja() {
     your_network) M='（ネットワーク内）' ;;
     public_address) M='（公開アドレス）' ;;
     public_warning) M='このサーバーはインターネットからアクセスできます。本番で使う場合は暗号化されていない http でログインしないでください。--domain（HTTPS）、Tailscale、または Cloudflare Tunnel を使ってください。' ;;
-    manage) M='管理：' ;;
-    remote_later) M='後からリモートアクセスを有効にするには：' ;;
     pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）。完了したレイヤーは保持されます。' ;;
     pull_hint) M='ここから ghcr.io が遅い場合（中国本土など）：--images aliyun を付けてもう一度実行すると、同じイメージを Alibaba Cloud からダウンロードします（Docker の daemon.json の registry-mirrors は Docker Hub にしか効きません）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してからもう一度実行してください。' ;;
-    images_aliyun) M='ここからは Alibaba Cloud のほうが速いため、イメージを Alibaba Cloud からダウンロードします（ghcr.io を使うには --images ghcr）' ;;
-    images_fallback) M='Alibaba Cloud にはまだこれらのイメージがありません。ghcr.io からダウンロードします。' ;;
+    images_fallback) M='Alibaba Cloud にはまだこのバージョンのイメージがありません。' ;;
     docker_permission) M='このユーザーは Docker を使えません。sudo usermod -aG docker {user} を実行し、ログインし直して（または newgrp docker を実行して）から、もう一度実行してください。' ;;
-    path_hint) M='coltex だけで実行するには、{dir} を PATH に追加してください：{line}' ;;
+    commands) M='よく使うコマンド' ;;
+    cmd_status) M='動作状況' ;;
+    cmd_logs) M='ログを表示' ;;
+    cmd_update) M='最新リリースに更新' ;;
+    cmd_help) M='すべてのコマンド' ;;
+    path_first) M='これを一度実行すると、どこからでも coltex だけで使えます：' ;;
+    remote_access) M='リモートアクセス（Tailscale、Cloudflare Tunnel）：ColTex の「設定 → ネットワーク」でオンにします。' ;;
   esac
 }
 msg_ko() {
@@ -376,7 +363,9 @@ msg_ko() {
     language) M='언어' ;;
     full_output) M='전체 출력: {log}' ;;
     downloading) M='다운로드 중' ;;
-    download_note) M='이미지가 몇 GB라서 내려받는 데 시간이 걸립니다.' ;;
+    download_aliyun) M='Alibaba Cloud에서 이미지를 다운로드하고 있습니다. 용량이 커서 시간이 걸리니 잠시 기다려 주세요…' ;;
+    download_github) M='GitHub에서 이미지를 다운로드하고 있습니다. 용량이 커서 시간이 걸리니 잠시 기다려 주세요…' ;;
+    download_other) M='{registry}에서 이미지를 다운로드하고 있습니다. 용량이 커서 시간이 걸리니 잠시 기다려 주세요…' ;;
     pull_failed) M='이미지를 내려받지 못했습니다. 네트워크 연결을 확인한 뒤 다시 실행하세요.' ;;
     docker_install_q) M='Docker가 설치되어 있지 않습니다. 지금 Docker 설치 스크립트(get.docker.com, sudo 필요)로 설치할까요?' ;;
     docker_install) M='Docker 설치' ;;
@@ -387,16 +376,8 @@ msg_ko() {
     checking_docker) M='Docker 확인 중' ;;
     no_release) M='{repo}에서 릴리스를 찾을 수 없습니다(개발 브랜치를 쓰려면 --version main을 지정하세요)' ;;
     edition_q) M='TeX Live 에디션' ;;
-    edition_standard) M='standard: 모든 문서를 컴파일할 수 있음, 다운로드 약 3 GB, 디스크 12 GB' ;;
-    edition_full) M='full: AI 에이전트용 패키지 매뉴얼 포함, 다운로드 약 8 GB, 디스크 23 GB' ;;
-    access_q) M='사람들이 ColTex에 어떻게 접속하나요?' ;;
-    access_local) M='이 컴퓨터와 그 네트워크에서' ;;
-    access_domain) M='내 도메인으로, HTTPS 사용' ;;
-    access_tailscale) M='Tailscale(내 tailnet)' ;;
-    access_cf_token) M='내 도메인을 쓰는 Cloudflare Tunnel' ;;
-    access_cf_quick) M='임시 공개 링크(trycloudflare.com)' ;;
-    ask_domain) M='도메인(DNS가 이 서버를 가리키고 포트 80과 443이 열려 있어야 함):' ;;
-    ask_token) M='터널 토큰(Cloudflare 대시보드에서 확인):' ;;
+    edition_standard) M='standard: 모든 패키지(매뉴얼 제외), 다운로드 약 3 GB, 디스크 12 GB' ;;
+    edition_full) M='full: 모든 패키지와 매뉴얼·소스, 다운로드 약 8 GB, 디스크 23 GB' ;;
     updating_to) M='ColTex를 {version}(으)로 업데이트하는 중' ;;
     getting) M='ColTex {version} 내려받는 중' ;;
     writing_settings) M='설정 쓰는 중' ;;
@@ -414,14 +395,17 @@ msg_ko() {
     your_network) M='(내 네트워크에서)' ;;
     public_address) M='(공개 주소)' ;;
     public_warning) M='이 서버는 인터넷에서 접속할 수 있습니다. 실제로 사용할 때는 암호화되지 않은 http로 로그인하지 마세요. --domain(HTTPS), Tailscale 또는 Cloudflare 터널을 사용하세요.' ;;
-    manage) M='관리:' ;;
-    remote_later) M='나중에 원격 접속을 켜려면:' ;;
     pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max}). 다 받은 레이어는 유지됩니다.' ;;
     pull_hint) M='여기서 ghcr.io가 느리다면(예: 중국 본토): --images aliyun을 붙여 다시 실행하면 같은 이미지를 Alibaba Cloud에서 받습니다(Docker daemon.json의 registry-mirrors는 Docker Hub에만 적용됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작한 뒤 다시 실행하세요.' ;;
-    images_aliyun) M='여기서는 Alibaba Cloud가 더 빠르므로 이미지를 Alibaba Cloud에서 받습니다(ghcr.io를 쓰려면 --images ghcr)' ;;
-    images_fallback) M='Alibaba Cloud에 아직 이 이미지가 없습니다. ghcr.io에서 받습니다.' ;;
+    images_fallback) M='Alibaba Cloud에 아직 이 버전의 이미지가 없습니다.' ;;
     docker_permission) M='이 사용자는 Docker를 사용할 수 없습니다. sudo usermod -aG docker {user}를 실행하고 다시 로그인한 뒤(또는 newgrp docker 실행) 다시 실행하세요.' ;;
-    path_hint) M='coltex만 입력해 실행하려면 {dir}을(를) PATH에 추가하세요: {line}' ;;
+    commands) M='자주 쓰는 명령' ;;
+    cmd_status) M='실행 상태' ;;
+    cmd_logs) M='로그 보기' ;;
+    cmd_update) M='최신 릴리스로 업데이트' ;;
+    cmd_help) M='모든 명령' ;;
+    path_first) M='이 줄을 한 번 실행하면 어디서든 coltex만 입력해 쓸 수 있습니다:' ;;
+    remote_access) M='원격 접속(Tailscale, Cloudflare Tunnel): ColTex의 설정 → 네트워크에서 켭니다.' ;;
   esac
 }
 msg_es() {
@@ -430,7 +414,9 @@ msg_es() {
     language) M='Idioma' ;;
     full_output) M='Salida completa: {log}' ;;
     downloading) M='Descargando' ;;
-    download_note) M='Las imágenes ocupan varios GB, así que la descarga puede tardar.' ;;
+    download_aliyun) M='Descargando las imágenes desde Alibaba Cloud. Son grandes, así que ten paciencia…' ;;
+    download_github) M='Descargando las imágenes desde GitHub. Son grandes, así que ten paciencia…' ;;
+    download_other) M='Descargando las imágenes desde {registry}. Son grandes, así que ten paciencia…' ;;
     pull_failed) M='No se pudieron descargar las imágenes. Revisa la conexión de red y vuelve a ejecutar esto.' ;;
     docker_install_q) M='Docker no está instalado. ¿Instalarlo ahora con el script de Docker (get.docker.com, requiere sudo)?' ;;
     docker_install) M='Instalar Docker' ;;
@@ -441,16 +427,8 @@ msg_es() {
     checking_docker) M='Comprobando Docker' ;;
     no_release) M='No se encontró ninguna versión en {repo} (usa --version main para la rama de desarrollo)' ;;
     edition_q) M='Edición de TeX Live' ;;
-    edition_standard) M='Standard: compila todo; unos 3 GB de descarga, 12 GB en disco' ;;
-    edition_full) M='Full: incluye también los manuales de los paquetes para el agente de IA; unos 8 GB, 23 GB en disco' ;;
-    access_q) M='¿Cómo accederán las personas a ColTex?' ;;
-    access_local) M='En esta máquina y su red' ;;
-    access_domain) M='Un dominio propio, con HTTPS' ;;
-    access_tailscale) M='Tailscale (mi tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel con mi dominio' ;;
-    access_cf_quick) M='Un enlace público temporal (trycloudflare.com)' ;;
-    ask_domain) M='Dominio (su DNS debe apuntar aquí; puertos 80 y 443 abiertos):' ;;
-    ask_token) M='Token del túnel (del panel de Cloudflare):' ;;
+    edition_standard) M='Standard: todos los paquetes, sin sus manuales; unos 3 GB de descarga, 12 GB en disco' ;;
+    edition_full) M='Full: todos los paquetes con sus manuales y fuentes; unos 8 GB de descarga, 23 GB en disco' ;;
     updating_to) M='Actualizando ColTex a {version}' ;;
     getting) M='Descargando ColTex {version}' ;;
     writing_settings) M='Escribiendo la configuración' ;;
@@ -468,14 +446,17 @@ msg_es() {
     your_network) M='(en tu red)' ;;
     public_address) M='(dirección pública)' ;;
     public_warning) M='Este servidor es accesible desde internet: para un uso real, no inicies sesión por http sin cifrar. Usa --domain (HTTPS), Tailscale o un túnel de Cloudflare.' ;;
-    manage) M='Gestión:' ;;
-    remote_later) M='Acceso remoto más adelante:' ;;
     pull_retry) M='La descarga se cortó; reintentando ({n}/{max}). Las capas ya descargadas se conservan.' ;;
     pull_hint) M='Si ghcr.io va lento desde aquí (en China continental, por ejemplo): vuelve a ejecutarlo con --images aliyun, las mismas imágenes en Alibaba Cloud (registry-mirrors en el daemon.json de Docker solo se aplica a Docker Hub). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json, reinicia Docker y vuelve a ejecutarlo.' ;;
-    images_aliyun) M='Alibaba Cloud responde más rápido desde aquí: imágenes desde Alibaba Cloud (--images ghcr para usar ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud aún no tiene estas imágenes: se descargan de ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud aún no tiene las imágenes de esta versión.' ;;
     docker_permission) M='Este usuario no puede usar Docker. Ejecuta sudo usermod -aG docker {user}, cierra la sesión y vuelve a entrar (o ejecuta newgrp docker) y luego vuelve a ejecutar esto.' ;;
-    path_hint) M='Para ejecutarlo solo como coltex, añade {dir} al PATH: {line}' ;;
+    commands) M='Comandos' ;;
+    cmd_status) M='si está en marcha' ;;
+    cmd_logs) M='el registro del servidor' ;;
+    cmd_update) M='actualizar a la última versión' ;;
+    cmd_help) M='todos los comandos' ;;
+    path_first) M='Ejecuta esto una vez y coltex funcionará desde cualquier carpeta:' ;;
+    remote_access) M='Acceso remoto (Tailscale, Cloudflare Tunnel): actívalo en ColTex, en Configuración → Red.' ;;
   esac
 }
 msg_fr() {
@@ -484,7 +465,9 @@ msg_fr() {
     language) M='Langue' ;;
     full_output) M='Sortie complète : {log}' ;;
     downloading) M='Téléchargement' ;;
-    download_note) M='Les images font plusieurs GB : le téléchargement peut prendre un moment.' ;;
+    download_aliyun) M='Téléchargement des images depuis Alibaba Cloud. Elles sont volumineuses, merci de patienter…' ;;
+    download_github) M='Téléchargement des images depuis GitHub. Elles sont volumineuses, merci de patienter…' ;;
+    download_other) M='Téléchargement des images depuis {registry}. Elles sont volumineuses, merci de patienter…' ;;
     pull_failed) M='Le téléchargement des images a échoué. Vérifiez la connexion réseau et relancez la commande.' ;;
     docker_install_q) M='Docker n’est pas installé. L’installer maintenant avec le script de Docker (get.docker.com, nécessite sudo) ?' ;;
     docker_install) M='Installer Docker' ;;
@@ -495,16 +478,8 @@ msg_fr() {
     checking_docker) M='Vérification de Docker' ;;
     no_release) M='Aucune version publiée trouvée dans {repo} (indiquez --version main pour la branche de développement)' ;;
     edition_q) M='Édition de TeX Live' ;;
-    edition_standard) M='Standard : tout compile ; environ 3 GB à télécharger, 12 GB sur le disque' ;;
-    edition_full) M='Full : avec en plus les manuels des packages pour l’agent IA ; environ 8 GB, 23 GB sur le disque' ;;
-    access_q) M='Comment les gens accéderont-ils à ColTex ?' ;;
-    access_local) M='Sur cette machine et son réseau' ;;
-    access_domain) M='Un domaine à moi, avec HTTPS' ;;
-    access_tailscale) M='Tailscale (mon tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel avec mon domaine' ;;
-    access_cf_quick) M='Un lien public temporaire (trycloudflare.com)' ;;
-    ask_domain) M='Domaine (son DNS doit pointer ici ; ports 80 et 443 ouverts) :' ;;
-    ask_token) M='Jeton du tunnel (depuis le tableau de bord Cloudflare) :' ;;
+    edition_standard) M='Standard : tous les packages, sans leurs manuels ; environ 3 GB à télécharger, 12 GB sur le disque' ;;
+    edition_full) M='Full : tous les packages avec leurs manuels et sources ; environ 8 GB à télécharger, 23 GB sur le disque' ;;
     updating_to) M='Mise à jour de ColTex vers {version}' ;;
     getting) M='Récupération de ColTex {version}' ;;
     writing_settings) M='Écriture des réglages' ;;
@@ -522,14 +497,17 @@ msg_fr() {
     your_network) M='(sur votre réseau)' ;;
     public_address) M='(adresse publique)' ;;
     public_warning) M='Ce serveur est joignable depuis Internet : pour un usage réel, ne vous connectez pas en simple http. Utilisez --domain (HTTPS), Tailscale ou un tunnel Cloudflare.' ;;
-    manage) M='Pour le gérer :' ;;
-    remote_later) M='Accès à distance plus tard :' ;;
     pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max}). Les couches terminées sont conservées.' ;;
     pull_hint) M='Si ghcr.io est lent depuis ici (en Chine continentale, par exemple) : relancez avec --images aliyun, les mêmes images sur Alibaba Cloud (registry-mirrors dans le daemon.json de Docker ne s’applique qu’à Docker Hub). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json, redémarrez Docker, puis relancez.' ;;
-    images_aliyun) M='Alibaba Cloud répond plus vite d’ici : images depuis Alibaba Cloud (--images ghcr pour utiliser ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud n’a pas encore ces images : téléchargement depuis ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud n’a pas encore les images de cette version.' ;;
     docker_permission) M='Cet utilisateur ne peut pas utiliser Docker. Lancez sudo usermod -aG docker {user}, déconnectez-vous puis reconnectez-vous (ou lancez newgrp docker), puis relancez.' ;;
-    path_hint) M='Pour le lancer simplement avec coltex, ajoutez {dir} au PATH : {line}' ;;
+    commands) M='Commandes' ;;
+    cmd_status) M='état du service' ;;
+    cmd_logs) M='journal du serveur' ;;
+    cmd_update) M='mettre à jour vers la dernière version' ;;
+    cmd_help) M='toutes les commandes' ;;
+    path_first) M='Lancez ceci une fois, et coltex fonctionnera depuis n’importe où :' ;;
+    remote_access) M='Accès à distance (Tailscale, Cloudflare Tunnel) : à activer dans ColTex, sous Paramètres → Réseau.' ;;
   esac
 }
 msg_de() {
@@ -538,7 +516,9 @@ msg_de() {
     language) M='Sprache' ;;
     full_output) M='Vollständige Ausgabe: {log}' ;;
     downloading) M='Wird heruntergeladen' ;;
-    download_note) M='Die Images sind mehrere GB groß, der Download kann eine Weile dauern.' ;;
+    download_aliyun) M='Die Images werden von Alibaba Cloud heruntergeladen. Sie sind groß, bitte etwas Geduld…' ;;
+    download_github) M='Die Images werden von GitHub heruntergeladen. Sie sind groß, bitte etwas Geduld…' ;;
+    download_other) M='Die Images werden von {registry} heruntergeladen. Sie sind groß, bitte etwas Geduld…' ;;
     pull_failed) M='Die Images konnten nicht heruntergeladen werden. Prüfen Sie die Netzwerkverbindung und starten Sie den Befehl erneut.' ;;
     docker_install_q) M='Docker ist nicht installiert. Jetzt mit dem Skript von Docker installieren (get.docker.com, benötigt sudo)?' ;;
     docker_install) M='Docker installieren' ;;
@@ -549,16 +529,8 @@ msg_de() {
     checking_docker) M='Docker wird geprüft' ;;
     no_release) M='Keine Version in {repo} gefunden (mit --version main erhalten Sie den Entwicklungszweig)' ;;
     edition_q) M='TeX-Live-Edition' ;;
-    edition_standard) M='Standard: alles kompiliert; etwa 3 GB Download, 12 GB auf der Festplatte' ;;
-    edition_full) M='Full: zusätzlich die Paket-Handbücher für den KI-Agenten; etwa 8 GB, 23 GB auf der Festplatte' ;;
-    access_q) M='Wie sollen Personen ColTex erreichen?' ;;
-    access_local) M='Auf diesem Rechner und in seinem Netzwerk' ;;
-    access_domain) M='Über eine eigene Domain, mit HTTPS' ;;
-    access_tailscale) M='Tailscale (mein tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel mit meiner Domain' ;;
-    access_cf_quick) M='Ein temporärer öffentlicher Link (trycloudflare.com)' ;;
-    ask_domain) M='Domain (ihr DNS-Eintrag muss hierher zeigen; Ports 80 und 443 offen):' ;;
-    ask_token) M='Tunnel-Token (aus dem Cloudflare-Dashboard):' ;;
+    edition_standard) M='Standard: alle Pakete, ohne ihre Handbücher; etwa 3 GB Download, 12 GB auf der Festplatte' ;;
+    edition_full) M='Full: alle Pakete mit Handbüchern und Quellen; etwa 8 GB Download, 23 GB auf der Festplatte' ;;
     updating_to) M='ColTex wird auf {version} aktualisiert' ;;
     getting) M='ColTex {version} wird geholt' ;;
     writing_settings) M='Einstellungen werden geschrieben' ;;
@@ -576,14 +548,17 @@ msg_de() {
     your_network) M='(in Ihrem Netzwerk)' ;;
     public_address) M='(öffentliche Adresse)' ;;
     public_warning) M='Dieser Server ist aus dem Internet erreichbar: Melden Sie sich im echten Betrieb nicht über unverschlüsseltes http an. Verwenden Sie --domain (HTTPS), Tailscale oder einen Cloudflare Tunnel.' ;;
-    manage) M='Verwaltung:' ;;
-    remote_later) M='Fernzugriff später:' ;;
     pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max}). Fertige Layer bleiben erhalten.' ;;
     pull_hint) M='Wenn ghcr.io von hier aus langsam ist (etwa in Festlandchina): erneut mit --images aliyun ausführen, dieselben Images bei Alibaba Cloud (registry-mirrors in Dockers daemon.json gilt nur für Docker Hub). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen, Docker neu starten und erneut ausführen.' ;;
-    images_aliyun) M='Alibaba Cloud antwortet von hier schneller: Images von Alibaba Cloud (--images ghcr für ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud hat diese Images noch nicht: Download von ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud hat die Images dieser Version noch nicht.' ;;
     docker_permission) M='Dieser Benutzer darf Docker nicht verwenden. Führen Sie sudo usermod -aG docker {user} aus, melden Sie sich ab und wieder an (oder führen Sie newgrp docker aus) und starten Sie dies erneut.' ;;
-    path_hint) M='Um es einfach als coltex auszuführen, fügen Sie {dir} zum PATH hinzu: {line}' ;;
+    commands) M='Befehle' ;;
+    cmd_status) M='läuft es?' ;;
+    cmd_logs) M='Protokoll des Servers' ;;
+    cmd_update) M='auf die neueste Version aktualisieren' ;;
+    cmd_help) M='alle Befehle' ;;
+    path_first) M='Führen Sie dies einmal aus, dann funktioniert coltex überall:' ;;
+    remote_access) M='Fernzugriff (Tailscale, Cloudflare Tunnel): in ColTex unter Einstellungen → Netzwerk einschalten.' ;;
   esac
 }
 msg_pt_BR() {
@@ -592,7 +567,9 @@ msg_pt_BR() {
     language) M='Idioma' ;;
     full_output) M='Saída completa: {log}' ;;
     downloading) M='Baixando' ;;
-    download_note) M='As imagens têm vários GB, então o download pode demorar.' ;;
+    download_aliyun) M='Baixando as imagens da Alibaba Cloud. Elas são grandes, então tenha paciência…' ;;
+    download_github) M='Baixando as imagens do GitHub. Elas são grandes, então tenha paciência…' ;;
+    download_other) M='Baixando as imagens de {registry}. Elas são grandes, então tenha paciência…' ;;
     pull_failed) M='Não foi possível baixar as imagens. Verifique a conexão de rede e execute de novo.' ;;
     docker_install_q) M='O Docker não está instalado. Instalar agora com o script do Docker (get.docker.com, requer sudo)?' ;;
     docker_install) M='Instalar o Docker' ;;
@@ -603,16 +580,8 @@ msg_pt_BR() {
     checking_docker) M='Verificando o Docker' ;;
     no_release) M='Nenhuma versão encontrada em {repo} (use --version main para o branch de desenvolvimento)' ;;
     edition_q) M='Edição do TeX Live' ;;
-    edition_standard) M='Standard: compila tudo; cerca de 3 GB para baixar, 12 GB em disco' ;;
-    edition_full) M='Full: inclui também os manuais dos pacotes para o agente de IA; cerca de 8 GB, 23 GB em disco' ;;
-    access_q) M='Como as pessoas vão acessar o ColTex?' ;;
-    access_local) M='Nesta máquina e na rede dela' ;;
-    access_domain) M='Um domínio meu, com HTTPS' ;;
-    access_tailscale) M='Tailscale (minha tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel com meu domínio' ;;
-    access_cf_quick) M='Um link público temporário (trycloudflare.com)' ;;
-    ask_domain) M='Domínio (o DNS dele deve apontar para cá; portas 80 e 443 abertas):' ;;
-    ask_token) M='Token do túnel (do painel da Cloudflare):' ;;
+    edition_standard) M='Standard: todos os pacotes, sem os manuais; cerca de 3 GB para baixar, 12 GB em disco' ;;
+    edition_full) M='Full: todos os pacotes com manuais e fontes; cerca de 8 GB para baixar, 23 GB em disco' ;;
     updating_to) M='Atualizando o ColTex para {version}' ;;
     getting) M='Obtendo o ColTex {version}' ;;
     writing_settings) M='Gravando as configurações' ;;
@@ -630,14 +599,17 @@ msg_pt_BR() {
     your_network) M='(na sua rede)' ;;
     public_address) M='(endereço público)' ;;
     public_warning) M='Este servidor é acessível pela internet: para uso real, não faça login por http simples. Use --domain (HTTPS), Tailscale ou um Cloudflare Tunnel.' ;;
-    manage) M='Para gerenciar:' ;;
-    remote_later) M='Acesso remoto depois:' ;;
     pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max}). As camadas já baixadas são mantidas.' ;;
     pull_hint) M='Se o ghcr.io estiver lento daqui (na China continental, por exemplo): execute de novo com --images aliyun, as mesmas imagens na Alibaba Cloud (registry-mirrors no daemon.json do Docker só vale para o Docker Hub). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json, reinicie o Docker e execute de novo.' ;;
-    images_aliyun) M='A Alibaba Cloud responde mais rápido daqui: imagens da Alibaba Cloud (--images ghcr para usar o ghcr.io)' ;;
-    images_fallback) M='A Alibaba Cloud ainda não tem estas imagens: baixando do ghcr.io.' ;;
+    images_fallback) M='A Alibaba Cloud ainda não tem as imagens desta versão.' ;;
     docker_permission) M='Este usuário não pode usar o Docker. Execute sudo usermod -aG docker {user}, saia e entre de novo (ou execute newgrp docker) e depois execute isto de novo.' ;;
-    path_hint) M='Para executá-lo só como coltex, adicione {dir} ao PATH: {line}' ;;
+    commands) M='Comandos' ;;
+    cmd_status) M='se está em execução' ;;
+    cmd_logs) M='o log do servidor' ;;
+    cmd_update) M='atualizar para a versão mais recente' ;;
+    cmd_help) M='todos os comandos' ;;
+    path_first) M='Execute isto uma vez e o coltex funcionará de qualquer pasta:' ;;
+    remote_access) M='Acesso remoto (Tailscale, Cloudflare Tunnel): ative no ColTex, em Configurações → Rede.' ;;
   esac
 }
 msg_it() {
@@ -646,7 +618,9 @@ msg_it() {
     language) M='Lingua' ;;
     full_output) M='Output completo: {log}' ;;
     downloading) M='Download in corso' ;;
-    download_note) M='Le immagini pesano diversi GB, quindi il download può richiedere un po’ di tempo.' ;;
+    download_aliyun) M='Download delle immagini da Alibaba Cloud. Sono grandi, quindi ci vorrà un po’…' ;;
+    download_github) M='Download delle immagini da GitHub. Sono grandi, quindi ci vorrà un po’…' ;;
+    download_other) M='Download delle immagini da {registry}. Sono grandi, quindi ci vorrà un po’…' ;;
     pull_failed) M='Il download delle immagini non è riuscito. Controlla la connessione di rete ed esegui di nuovo il comando.' ;;
     docker_install_q) M='Docker non è installato. Vuoi installarlo ora con lo script di Docker (get.docker.com, richiede sudo)?' ;;
     docker_install) M='Installa Docker' ;;
@@ -657,16 +631,8 @@ msg_it() {
     checking_docker) M='Controllo di Docker' ;;
     no_release) M='Nessuna release trovata in {repo} (usa --version main per il branch di sviluppo)' ;;
     edition_q) M='Edizione di TeX Live' ;;
-    edition_standard) M='Standard: compila tutto; circa 3 GB da scaricare, 12 GB su disco' ;;
-    edition_full) M='Full: anche i manuali dei pacchetti per l’agente IA; circa 8 GB, 23 GB su disco' ;;
-    access_q) M='Come raggiungeranno ColTex le persone?' ;;
-    access_local) M='Da questa macchina e dalla sua rete' ;;
-    access_domain) M='Un mio dominio, con HTTPS' ;;
-    access_tailscale) M='Tailscale (la mia tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel con il mio dominio' ;;
-    access_cf_quick) M='Un link pubblico temporaneo (trycloudflare.com)' ;;
-    ask_domain) M='Dominio (il suo DNS deve puntare qui; porte 80 e 443 aperte):' ;;
-    ask_token) M='Token del tunnel (dalla dashboard di Cloudflare):' ;;
+    edition_standard) M='Standard: tutti i pacchetti, senza i manuali; circa 3 GB da scaricare, 12 GB su disco' ;;
+    edition_full) M='Full: tutti i pacchetti con manuali e sorgenti; circa 8 GB da scaricare, 23 GB su disco' ;;
     updating_to) M='Aggiornamento di ColTex a {version}' ;;
     getting) M='Download di ColTex {version}' ;;
     writing_settings) M='Scrittura delle impostazioni' ;;
@@ -684,14 +650,17 @@ msg_it() {
     your_network) M='(nella tua rete)' ;;
     public_address) M='(indirizzo pubblico)' ;;
     public_warning) M='Questo server è raggiungibile da internet: per l’uso reale non accedere tramite http in chiaro. Usa --domain (HTTPS), Tailscale o un tunnel Cloudflare.' ;;
-    manage) M='Per gestirlo:' ;;
-    remote_later) M='Accesso remoto in seguito:' ;;
     pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max}). I layer già scaricati vengono mantenuti.' ;;
     pull_hint) M='Se ghcr.io è lento da qui (nella Cina continentale, per esempio): esegui di nuovo con --images aliyun, le stesse immagini su Alibaba Cloud (registry-mirrors nel daemon.json di Docker vale solo per Docker Hub). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json, riavvia Docker ed esegui di nuovo.' ;;
-    images_aliyun) M='Da qui Alibaba Cloud risponde più in fretta: immagini da Alibaba Cloud (--images ghcr per usare ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud non ha ancora queste immagini: le scarico da ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud non ha ancora le immagini di questa versione.' ;;
     docker_permission) M='Questo utente non può usare Docker. Esegui sudo usermod -aG docker {user}, esci e rientra (oppure esegui newgrp docker), poi esegui di nuovo.' ;;
-    path_hint) M='Per avviarlo semplicemente con coltex, aggiungi {dir} al PATH: {line}' ;;
+    commands) M='Comandi' ;;
+    cmd_status) M='se è in esecuzione' ;;
+    cmd_logs) M='il log del server' ;;
+    cmd_update) M='aggiorna all’ultima versione' ;;
+    cmd_help) M='tutti i comandi' ;;
+    path_first) M='Esegui questo una volta e coltex funzionerà da qualsiasi cartella:' ;;
+    remote_access) M='Accesso remoto (Tailscale, Cloudflare Tunnel): attivalo in ColTex, in Impostazioni → Rete.' ;;
   esac
 }
 msg_ru() {
@@ -700,7 +669,9 @@ msg_ru() {
     language) M='Язык' ;;
     full_output) M='Полный вывод: {log}' ;;
     downloading) M='Загрузка' ;;
-    download_note) M='Образы занимают несколько GB, загрузка может занять время.' ;;
+    download_aliyun) M='Загрузка образов из Alibaba Cloud. Они большие, наберитесь терпения…' ;;
+    download_github) M='Загрузка образов с GitHub. Они большие, наберитесь терпения…' ;;
+    download_other) M='Загрузка образов из {registry}. Они большие, наберитесь терпения…' ;;
     pull_failed) M='Не удалось загрузить образы. Проверьте подключение к сети и запустите команду снова.' ;;
     docker_install_q) M='Docker не установлен. Установить его сейчас скриптом Docker (get.docker.com, нужен sudo)?' ;;
     docker_install) M='Установить Docker' ;;
@@ -711,16 +682,8 @@ msg_ru() {
     checking_docker) M='Проверка Docker' ;;
     no_release) M='В {repo} не найдено ни одного выпуска (укажите --version main для ветки разработки)' ;;
     edition_q) M='Редакция TeX Live' ;;
-    edition_standard) M='Standard: компилируется всё; загрузка около 3 GB, на диске 12 GB' ;;
-    edition_full) M='Full: ещё и руководства пакетов для ИИ-агента; около 8 GB, на диске 23 GB' ;;
-    access_q) M='Как люди будут открывать ColTex?' ;;
-    access_local) M='На этой машине и в её сети' ;;
-    access_domain) M='Мой домен, с HTTPS' ;;
-    access_tailscale) M='Tailscale (мой tailnet)' ;;
-    access_cf_token) M='Cloudflare Tunnel с моим доменом' ;;
-    access_cf_quick) M='Временная публичная ссылка (trycloudflare.com)' ;;
-    ask_domain) M='Домен (его DNS должен указывать сюда; порты 80 и 443 открыты):' ;;
-    ask_token) M='Токен туннеля (из панели Cloudflare):' ;;
+    edition_standard) M='Standard: все пакеты, без руководств; загрузка около 3 GB, на диске 12 GB' ;;
+    edition_full) M='Full: все пакеты с руководствами и исходниками; загрузка около 8 GB, на диске 23 GB' ;;
     updating_to) M='Обновление ColTex до {version}' ;;
     getting) M='Загрузка ColTex {version}' ;;
     writing_settings) M='Запись настроек' ;;
@@ -738,14 +701,17 @@ msg_ru() {
     your_network) M='(в вашей сети)' ;;
     public_address) M='(публичный адрес)' ;;
     public_warning) M='Этот сервер доступен из интернета: при реальной работе не входите по открытому http. Используйте --domain (HTTPS), Tailscale или туннель Cloudflare.' ;;
-    manage) M='Управление:' ;;
-    remote_later) M='Удалённый доступ позже:' ;;
     pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max}). Загруженные слои сохраняются.' ;;
     pull_hint) M='Если ghcr.io отсюда работает медленно (например, в материковом Китае): запустите снова с --images aliyun — те же образы в Alibaba Cloud (registry-mirrors в daemon.json Docker действует только для Docker Hub). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json, перезапустите Docker и запустите снова.' ;;
-    images_aliyun) M='Отсюда Alibaba Cloud отвечает быстрее: образы из Alibaba Cloud (--images ghcr, чтобы использовать ghcr.io)' ;;
-    images_fallback) M='В Alibaba Cloud этих образов пока нет: загружаю их с ghcr.io.' ;;
+    images_fallback) M='В Alibaba Cloud пока нет образов этой версии.' ;;
     docker_permission) M='Этому пользователю нельзя использовать Docker. Выполните sudo usermod -aG docker {user}, выйдите и войдите снова (или выполните newgrp docker), затем запустите снова.' ;;
-    path_hint) M='Чтобы запускать просто командой coltex, добавьте {dir} в PATH: {line}' ;;
+    commands) M='Команды' ;;
+    cmd_status) M='работает ли' ;;
+    cmd_logs) M='журнал сервера' ;;
+    cmd_update) M='обновить до последней версии' ;;
+    cmd_help) M='все команды' ;;
+    path_first) M='Выполните это один раз, и coltex будет работать из любой папки:' ;;
+    remote_access) M='Удалённый доступ (Tailscale, Cloudflare Tunnel): включается в ColTex в разделе «Настройки → Сеть».' ;;
   esac
 }
 msg_tr() {
@@ -754,7 +720,9 @@ msg_tr() {
     language) M='Dil' ;;
     full_output) M='Çıktının tamamı: {log}' ;;
     downloading) M='İndiriliyor' ;;
-    download_note) M='İmajlar birkaç GB olduğundan indirme biraz zaman alabilir.' ;;
+    download_aliyun) M='İmajlar Alibaba Cloud’dan indiriliyor. Boyutları büyük, lütfen sabırla bekleyin…' ;;
+    download_github) M='İmajlar GitHub’dan indiriliyor. Boyutları büyük, lütfen sabırla bekleyin…' ;;
+    download_other) M='İmajlar {registry} üzerinden indiriliyor. Boyutları büyük, lütfen sabırla bekleyin…' ;;
     pull_failed) M='İmajlar indirilemedi. Ağ bağlantısını kontrol edip komutu yeniden çalıştırın.' ;;
     docker_install_q) M='Docker yüklü değil. Docker’ın betiğiyle (get.docker.com, sudo gerekir) şimdi kurulsun mu?' ;;
     docker_install) M='Docker’ı kur' ;;
@@ -765,16 +733,8 @@ msg_tr() {
     checking_docker) M='Docker denetleniyor' ;;
     no_release) M='{repo} içinde sürüm bulunamadı (geliştirme dalı için --version main kullanın)' ;;
     edition_q) M='TeX Live sürümü (edition)' ;;
-    edition_standard) M='Standard: her şey derlenir; yaklaşık 3 GB indirme, diskte 12 GB' ;;
-    edition_full) M='Full: YZ ajanı için paket kılavuzları da; yaklaşık 8 GB, diskte 23 GB' ;;
-    access_q) M='Kişiler ColTex’e nasıl erişecek?' ;;
-    access_local) M='Bu makinede ve ağında' ;;
-    access_domain) M='Kendi alan adımla, HTTPS ile' ;;
-    access_tailscale) M='Tailscale (tailnet’im)' ;;
-    access_cf_token) M='Kendi alan adımla Cloudflare Tunnel' ;;
-    access_cf_quick) M='Geçici bir genel bağlantı (trycloudflare.com)' ;;
-    ask_domain) M='Alan adı (DNS kaydı buraya yönlenmeli; 80 ve 443 numaralı bağlantı noktaları açık olmalı):' ;;
-    ask_token) M='Tünel belirteci (Cloudflare panelinden):' ;;
+    edition_standard) M='Standard: tüm paketler, kılavuzları olmadan; yaklaşık 3 GB indirme, diskte 12 GB' ;;
+    edition_full) M='Full: tüm paketler, kılavuzları ve kaynaklarıyla; yaklaşık 8 GB indirme, diskte 23 GB' ;;
     updating_to) M='ColTex güncelleniyor: {version}' ;;
     getting) M='ColTex alınıyor: {version}' ;;
     writing_settings) M='Ayarlar yazılıyor' ;;
@@ -792,14 +752,17 @@ msg_tr() {
     your_network) M='(ağınızda)' ;;
     public_address) M='(genel adres)' ;;
     public_warning) M='Bu sunucuya internetten erişilebiliyor: gerçek kullanımda düz http üzerinden oturum açmayın. --domain (HTTPS), Tailscale veya bir Cloudflare tüneli kullanın.' ;;
-    manage) M='Yönetmek için:' ;;
-    remote_later) M='Daha sonra uzaktan erişim:' ;;
     pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max}). Tamamlanan katmanlar korunur.' ;;
     pull_hint) M='ghcr.io buradan yavaşsa (örneğin Çin anakarasında): --images aliyun ile yeniden çalıştırın; aynı imajlar Alibaba Cloud’dan iner (Docker daemon.json içindeki registry-mirrors yalnızca Docker Hub için geçerlidir). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayın, Docker’ı yeniden başlatın ve yeniden çalıştırın.' ;;
-    images_aliyun) M='Buradan Alibaba Cloud daha hızlı yanıt veriyor: imajlar Alibaba Cloud’dan iniyor (ghcr.io için --images ghcr)' ;;
-    images_fallback) M='Alibaba Cloud’da bu imajlar henüz yok: ghcr.io’dan indiriliyor.' ;;
+    images_fallback) M='Alibaba Cloud’da bu sürümün imajları henüz yok.' ;;
     docker_permission) M='Bu kullanıcı Docker’ı kullanamıyor. sudo usermod -aG docker {user} çalıştırın, oturumu kapatıp yeniden açın (veya newgrp docker çalıştırın), sonra yeniden çalıştırın.' ;;
-    path_hint) M='Yalnızca coltex yazarak çalıştırmak için {dir} dizinini PATH’e ekleyin: {line}' ;;
+    commands) M='Komutlar' ;;
+    cmd_status) M='çalışıyor mu' ;;
+    cmd_logs) M='sunucu günlüğü' ;;
+    cmd_update) M='en yeni sürüme güncelle' ;;
+    cmd_help) M='tüm komutlar' ;;
+    path_first) M='Bunu bir kez çalıştırın, coltex her yerden çalışsın:' ;;
+    remote_access) M='Uzaktan erişim (Tailscale, Cloudflare Tunnel): ColTex’te Ayarlar → Ağ bölümünden açın.' ;;
   esac
 }
 msg_vi() {
@@ -808,7 +771,9 @@ msg_vi() {
     language) M='Ngôn ngữ' ;;
     full_output) M='Toàn bộ đầu ra: {log}' ;;
     downloading) M='Đang tải xuống' ;;
-    download_note) M='Các image nặng vài GB nên việc tải xuống có thể mất một lúc.' ;;
+    download_aliyun) M='Đang tải các image từ Alibaba Cloud. Dung lượng khá lớn, vui lòng chờ…' ;;
+    download_github) M='Đang tải các image từ GitHub. Dung lượng khá lớn, vui lòng chờ…' ;;
+    download_other) M='Đang tải các image từ {registry}. Dung lượng khá lớn, vui lòng chờ…' ;;
     pull_failed) M='Không tải được các image. Hãy kiểm tra kết nối mạng rồi chạy lại.' ;;
     docker_install_q) M='Docker chưa được cài đặt. Cài ngay bằng script của Docker (get.docker.com, cần sudo)?' ;;
     docker_install) M='Cài Docker' ;;
@@ -819,16 +784,8 @@ msg_vi() {
     checking_docker) M='Đang kiểm tra Docker' ;;
     no_release) M='Không tìm thấy bản phát hành nào trong {repo} (dùng --version main cho nhánh phát triển)' ;;
     edition_q) M='Phiên bản TeX Live' ;;
-    edition_standard) M='Standard: biên dịch được mọi thứ; tải khoảng 3 GB, chiếm 12 GB trên ổ đĩa' ;;
-    edition_full) M='Full: có thêm tài liệu hướng dẫn của các gói cho tác tử AI; khoảng 8 GB, chiếm 23 GB trên ổ đĩa' ;;
-    access_q) M='Mọi người sẽ truy cập ColTex bằng cách nào?' ;;
-    access_local) M='Trên máy này và mạng của nó' ;;
-    access_domain) M='Tên miền của tôi, có HTTPS' ;;
-    access_tailscale) M='Tailscale (tailnet của tôi)' ;;
-    access_cf_token) M='Cloudflare Tunnel với tên miền của tôi' ;;
-    access_cf_quick) M='Một liên kết công khai tạm thời (trycloudflare.com)' ;;
-    ask_domain) M='Tên miền (DNS phải trỏ về máy này; mở cổng 80 và 443):' ;;
-    ask_token) M='Token của tunnel (từ bảng điều khiển Cloudflare):' ;;
+    edition_standard) M='Standard: mọi gói, không kèm tài liệu hướng dẫn; tải khoảng 3 GB, chiếm 12 GB trên ổ đĩa' ;;
+    edition_full) M='Full: mọi gói kèm tài liệu hướng dẫn và mã nguồn; tải khoảng 8 GB, chiếm 23 GB trên ổ đĩa' ;;
     updating_to) M='Đang cập nhật ColTex lên {version}' ;;
     getting) M='Đang tải ColTex {version}' ;;
     writing_settings) M='Đang ghi cài đặt' ;;
@@ -846,14 +803,17 @@ msg_vi() {
     your_network) M='(trong mạng của bạn)' ;;
     public_address) M='(địa chỉ công khai)' ;;
     public_warning) M='Máy chủ này truy cập được từ internet: khi dùng thật, đừng đăng nhập qua http thuần. Hãy dùng --domain (HTTPS), Tailscale hoặc Cloudflare tunnel.' ;;
-    manage) M='Quản lý:' ;;
-    remote_later) M='Truy cập từ xa sau này:' ;;
     pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max}). Các lớp đã tải xong được giữ lại.' ;;
     pull_hint) M='Nếu ghcr.io chậm từ đây (ví dụ ở Trung Quốc đại lục): chạy lại với --images aliyun để tải cùng các image từ Alibaba Cloud (registry-mirrors trong daemon.json của Docker chỉ áp dụng cho Docker Hub). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json, khởi động lại Docker rồi chạy lại.' ;;
-    images_aliyun) M='Từ đây Alibaba Cloud phản hồi nhanh hơn: tải image từ Alibaba Cloud (--images ghcr để dùng ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud chưa có các image này: tải từ ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud chưa có image của phiên bản này.' ;;
     docker_permission) M='Người dùng này không được dùng Docker. Chạy sudo usermod -aG docker {user}, đăng xuất rồi đăng nhập lại (hoặc chạy newgrp docker), sau đó chạy lại.' ;;
-    path_hint) M='Để chạy chỉ bằng lệnh coltex, hãy thêm {dir} vào PATH: {line}' ;;
+    commands) M='Lệnh' ;;
+    cmd_status) M='có đang chạy không' ;;
+    cmd_logs) M='nhật ký máy chủ' ;;
+    cmd_update) M='cập nhật lên bản mới nhất' ;;
+    cmd_help) M='mọi lệnh' ;;
+    path_first) M='Chạy dòng này một lần, sau đó gõ coltex ở đâu cũng được:' ;;
+    remote_access) M='Truy cập từ xa (Tailscale, Cloudflare Tunnel): bật trong ColTex tại Cài đặt → Mạng.' ;;
   esac
 }
 msg_id() {
@@ -862,7 +822,9 @@ msg_id() {
     language) M='Bahasa' ;;
     full_output) M='Keluaran lengkap: {log}' ;;
     downloading) M='Mengunduh' ;;
-    download_note) M='Image berukuran beberapa GB, jadi pengunduhan bisa memakan waktu.' ;;
+    download_aliyun) M='Mengunduh image dari Alibaba Cloud. Ukurannya besar, mohon bersabar…' ;;
+    download_github) M='Mengunduh image dari GitHub. Ukurannya besar, mohon bersabar…' ;;
+    download_other) M='Mengunduh image dari {registry}. Ukurannya besar, mohon bersabar…' ;;
     pull_failed) M='Gagal mengunduh image. Periksa koneksi jaringan lalu jalankan lagi.' ;;
     docker_install_q) M='Docker belum terpasang. Pasang sekarang dengan skrip Docker (get.docker.com, memerlukan sudo)?' ;;
     docker_install) M='Pasang Docker' ;;
@@ -873,16 +835,8 @@ msg_id() {
     checking_docker) M='Memeriksa Docker' ;;
     no_release) M='Tidak ada rilis di {repo} (gunakan --version main untuk cabang pengembangan)' ;;
     edition_q) M='Edisi TeX Live' ;;
-    edition_standard) M='Standard: semua dapat dikompilasi; unduhan sekitar 3 GB, 12 GB di disk' ;;
-    edition_full) M='Full: ditambah manual paket untuk agen AI; sekitar 8 GB, 23 GB di disk' ;;
-    access_q) M='Bagaimana orang akan menjangkau ColTex?' ;;
-    access_local) M='Di mesin ini dan jaringannya' ;;
-    access_domain) M='Domain saya sendiri, dengan HTTPS' ;;
-    access_tailscale) M='Tailscale (tailnet saya)' ;;
-    access_cf_token) M='Cloudflare Tunnel dengan domain saya' ;;
-    access_cf_quick) M='Tautan publik sementara (trycloudflare.com)' ;;
-    ask_domain) M='Domain (DNS-nya harus mengarah ke sini; port 80 dan 443 terbuka):' ;;
-    ask_token) M='Token terowongan (dari dasbor Cloudflare):' ;;
+    edition_standard) M='Standard: semua paket, tanpa manualnya; unduhan sekitar 3 GB, 12 GB di disk' ;;
+    edition_full) M='Full: semua paket beserta manual dan sumbernya; unduhan sekitar 8 GB, 23 GB di disk' ;;
     updating_to) M='Memperbarui ColTex ke {version}' ;;
     getting) M='Mengambil ColTex {version}' ;;
     writing_settings) M='Menulis pengaturan' ;;
@@ -900,22 +854,32 @@ msg_id() {
     your_network) M='(di jaringan Anda)' ;;
     public_address) M='(alamat publik)' ;;
     public_warning) M='Server ini dapat dijangkau dari internet: untuk penggunaan sungguhan, jangan masuk melalui http biasa. Gunakan --domain (HTTPS), Tailscale, atau Cloudflare Tunnel.' ;;
-    manage) M='Kelola:' ;;
-    remote_later) M='Akses jarak jauh nanti:' ;;
     pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max}). Lapisan yang sudah selesai tetap disimpan.' ;;
     pull_hint) M='Jika ghcr.io lambat dari sini (misalnya di Tiongkok daratan): jalankan lagi dengan --images aliyun, image yang sama di Alibaba Cloud (registry-mirrors di daemon.json Docker hanya berlaku untuk Docker Hub). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json, mulai ulang Docker, lalu jalankan lagi.' ;;
-    images_aliyun) M='Dari sini Alibaba Cloud merespons lebih cepat: image dari Alibaba Cloud (--images ghcr untuk memakai ghcr.io)' ;;
-    images_fallback) M='Alibaba Cloud belum punya image ini: diunduh dari ghcr.io.' ;;
+    images_fallback) M='Alibaba Cloud belum punya image versi ini.' ;;
     docker_permission) M='Pengguna ini tidak boleh memakai Docker. Jalankan sudo usermod -aG docker {user}, keluar lalu masuk lagi (atau jalankan newgrp docker), lalu jalankan lagi.' ;;
-    path_hint) M='Agar bisa dijalankan cukup dengan coltex, tambahkan {dir} ke PATH: {line}' ;;
+    commands) M='Perintah' ;;
+    cmd_status) M='apakah berjalan' ;;
+    cmd_logs) M='log server' ;;
+    cmd_update) M='perbarui ke rilis terbaru' ;;
+    cmd_help) M='semua perintah' ;;
+    path_first) M='Jalankan ini sekali, lalu coltex bisa dipakai dari mana saja:' ;;
+    remote_access) M='Akses jarak jauh (Tailscale, Cloudflare Tunnel): aktifkan di ColTex lewat Pengaturan → Jaringan.' ;;
   esac
 }
 # <<< messages
 
+# An option's name: what comes before its colon ("Standard: about 3 GB" → "Standard").
+option_name() {
+  local name="${1%%:*}"
+  printf '%s' "${name%%：*}"
+}
+
 # A choice with the arrow keys (or the number keys); the index lands in CHOICE.
-# $1 is the question, the rest are the options; CHOICE's value going in is the default.
+# $1 is the question, the rest are the options ("Name: details"); CHOICE's value going in is
+# the default.
 choose() {
-  local title="$1" i key rest n
+  local title="$1" i key rest n name detail
   shift
   n=$#
   local options=("$@")
@@ -923,12 +887,20 @@ choose() {
   cursor_hide
   local first=1
   while :; do
-    [ "$first" = 1 ] || printf '%s' "${ESC}[${n}A"
+    [ "$first" = 1 ] || printf '%s' "${ESC}[$((n + 1))A"
     first=0
     for i in "${!options[@]}"; do
-      if [ "$i" = "$CHOICE" ]; then printf '\r%s    %s %s\n' "${ESC}[2K" "${BLUE}❯${RESET}" "${BOLD}${options[i]}${RESET}"
-      else printf '\r%s      %s\n' "${ESC}[2K" "${DIM}${options[i]}${RESET}"; fi
+      name="$(option_name "${options[i]}")"
+      detail="${options[i]#"$name"}"
+      # Not [:：]: in a C locale a bracket would take only the first byte of the wide colon.
+      detail="${detail#:}"
+      detail="${detail#：}"
+      detail="${detail# }"
+      [ -z "$detail" ] || detail="  ${DIM}${detail}${RESET}"
+      if [ "$i" = "$CHOICE" ]; then printf '\r%s    %s %s%s\n' "${ESC}[2K" "${BLUE}❯${RESET}" "${BOLD}${name}${RESET}" "$detail"
+      else printf '\r%s      %s%s\n' "${ESC}[2K" "${DIM}${name}${RESET}" "$detail"; fi
     done
+    printf '\r%s      %s\n' "${ESC}[2K" "${DIM}↑/↓ · Enter${RESET}"
     IFS= read -rsn1 key </dev/tty || key=""
     case "$key" in
       "") break ;;
@@ -943,23 +915,12 @@ choose() {
       [1-9]) if [ "$key" -le "$n" ]; then CHOICE=$((key - 1)); fi ;;
     esac
   done
-  # Fold the list into one line with the answer (what comes before a colon), or none with $QUIET.
-  printf '%s' "${ESC}[$((n + 2))A"
-  for ((i = 0; i < n + 2; i++)); do printf '\r%s\n' "${ESC}[2K"; done
-  printf '%s' "${ESC}[$((n + 2))A"
-  local answer="${options[CHOICE]}"
-  answer="${answer%%:*}"
-  answer="${answer%%：*}"
-  [ -n "${QUIET:-}" ] || printf '\r  %s %s\n' "${GREEN}✓${RESET}" "${title} ${DIM}${answer}${RESET}"
+  # Fold the list into one line with the answer's name, or none with $QUIET.
+  printf '%s' "${ESC}[$((n + 3))A"
+  for ((i = 0; i < n + 3; i++)); do printf '\r%s\n' "${ESC}[2K"; done
+  printf '%s' "${ESC}[$((n + 3))A"
+  [ -n "${QUIET:-}" ] || printf '\r  %s %s\n' "${GREEN}✓${RESET}" "${title} ${DIM}$(option_name "${options[CHOICE]}")${RESET}"
   cursor_show
-}
-
-# A line of text from the terminal; with $2 = secret, not echoed.
-ask_text() {
-  local answer=""
-  if [ "${2:-}" = secret ]; then IFS= read -rs -p "    $1 " answer </dev/tty || true; echo >&2
-  else IFS= read -r -p "    $1 " answer </dev/tty || true; fi
-  printf '%s' "$answer"
 }
 
 # The language: given, kept from an earlier install, chosen here, or from the locale.
@@ -1106,6 +1067,8 @@ step() {
 
 # Bytes as "1.2 GB" or "340 MB".
 size() { awk -v b="$1" 'BEGIN { if (b >= 1e9) printf "%.1f GB", b / 1e9; else printf "%.0f MB", b / 1e6 }'; }
+# The bytes between two counts over some seconds, as "12.3 MB/s" or "640 KB/s".
+speed() { awk -v a="$1" -v b="$2" -v t="$3" 'BEGIN { r = (b - a) / t; if (r < 0) r = 0; if (r >= 1e6) printf "%.1f MB/s", r / 1e6; else printf "%.0f KB/s", r / 1e3 }'; }
 
 # The compressed size of every layer the pull will download, as "<short id> <bytes>" lines (shared
 # layers once), asked of the registries before it starts (`docker manifest inspect`: each image's
@@ -1121,7 +1084,7 @@ layer_sizes() {
       /"architecture":/ { v = $0; gsub(/.*: *"|".*/, "", v); platform = v }
       /"layers": *\[/ { layers = 1; next }
       layers && /^[ \t]*\]/ { layers = 0 }
-      layers && /"digest":/ { d = $0; gsub(/.*sha256:|".*/, "", d) }
+      layers && /"digest":/ { d = $0; sub(/.*sha256:/, "", d); sub(/".*/, "", d) }
       layers && /"size":/ { n = $0; gsub(/[^0-9]/, "", n); if (platform == "" || arch == "" || platform == arch) print substr(d, 1, 12), n }
     ' || true
   done | sort -u
@@ -1132,19 +1095,29 @@ layer_sizes() {
 # as each starts, and the percentage never goes back. Every byte count stays in awk (printed
 # with %.0f: some awks print large numbers as 7.23839e+09, which bash can't count with), and
 # drawing runs apart from the pull, so nothing that goes wrong on screen interrupts the download.
+# No spinner: the line changes only when compose reports progress. The speed is over the last
+# few seconds (bash 3.2 has whole seconds only).
 pull_with_bar() {
-  local label="$1" sizes rc start=$SECONDS
+  local label="$1" sizes rc
   printf '\n==> %s\n' "$label" >>"$LOG"
   if [ "$TTY" != 1 ]; then
     printf '==> %s\n' "$label"
     docker compose pull >>"$LOG" 2>&1
     return
   fi
-  # Once, not again on each retry.
-  [ -n "${NOTED:-}" ] || note "$(T download_note)"
+  # Where from, once (not again on each retry; again after a switch to GitHub).
+  if [ -z "${NOTED:-}" ]; then
+    local from
+    from="$(get COLTEX_IMAGES)"
+    case "${from:-$GHCR_IMAGES}" in
+      "$ALIYUN_IMAGES") note "$(T download_aliyun)" ;;
+      "$GHCR_IMAGES") note "$(T download_github)" ;;
+      *) note "$(T download_other registry="${from%%/*}")" ;;
+    esac
+  fi
   NOTED=1
   cursor_hide
-  printf '\r  %s %s' "${BLUE}${SPIN[0]}${RESET}" "$label"
+  printf '\r    %s' "$label"
   # Asking the registries takes a few seconds; the line above is already there meanwhile.
   sizes="$(mktemp "${TMPDIR:-/tmp}/coltex-layers.XXXXXX")"
   layer_sizes >"$sizes" 2>/dev/null || true
@@ -1164,16 +1137,22 @@ pull_with_bar() {
       if (t <= 0) next
       if (s > t) s = t
       p = int(s * 100 / t); if (p < last) p = last
-      if (p != last || t != lastt) { printf "%d %d %.0f %.0f\n", p, int(p * 20 / 100), s, t; fflush(); last = p; lastt = t }
+      # Also every megabyte, for the speed.
+      if (p != last || t != lastt || s - lasts >= 1e6) { printf "%d %d %.0f %.0f\n", p, int(p * 20 / 100), s, t; fflush(); last = p; lastt = t; lasts = s }
     }' | {
-    ( i=0
+    ( t0=$SECONDS c0=0 t1=$SECONDS c1=0 drawn=-1 shown=-1 rate=""
       while read -r pct filled cur tot; do
-        bar=""
-        for ((k = 0; k < 20; k++)); do if [ "$k" -lt "$filled" ]; then bar+="━"; else bar+="${DIM}━${RESET}${BLUE}"; fi; done
-        e=$((SECONDS - start))
-        printf '\r%s  %s %s %s%s%s %3d%%  %s' "${ESC}[2K" "${BLUE}${SPIN[i % 10]}${RESET}" "$(pad "$label" 16)" "$BLUE" "$bar" "$RESET" "$pct" \
-          "${DIM}$(size "$cur") / $(size "$tot") · $((e / 60)):$(printf '%02d' $((e % 60)))${RESET}"
-        i=$((i + 1))
+        # At most once a second, unless the percentage moved.
+        [ "$pct" != "$shown" ] || [ "$SECONDS" != "$drawn" ] || continue
+        if [ $((SECONDS - t1)) -ge 3 ]; then t0=$t1 c0=$c1 t1=$SECONDS c1=$cur; fi
+        [ $((SECONDS - t0)) -lt 1 ] || rate=" · $(speed "$c0" "$cur" $((SECONDS - t0)))"
+        # The track in its own grey, not dimmed blue: some terminals (PuTTY, xterm.js) draw
+        # dim text at full strength, and the bar looked full from the start.
+        bar="$BLUE"
+        for ((k = 0; k < 20; k++)); do [ "$k" = "$filled" ] && bar+="$GRAY"; bar+="━"; done
+        printf '\r%s    %s %s%s %3d%%  %s' "${ESC}[2K" "$(pad "$label" 16)" "$bar" "$RESET" "$pct" \
+          "${DIM}$(size "$cur") / $(size "$tot")$rate${RESET}"
+        drawn=$SECONDS shown=$pct
       done ) 2>/dev/null
     cat >/dev/null
   }
@@ -1241,8 +1220,20 @@ echo
 step "$(T checking_docker)" check_docker
 
 # ---- The code: a release (a vX.Y.Z tag), or the main branch with --version main ----------
-# The newest release tag in a repository (a URL or a local path).
-latest_release() { git ls-remote --tags --refs "$1" 'v*' | sed 's|.*refs/tags/||' | sort -V | tail -1; }
+# Connections to GitHub are sometimes reset on the way ("Recv failure: Connection reset by
+# peer"), so a git command that goes over the network is tried up to four times.
+net() {
+  local try
+  for try in 1 2 3; do
+    "$@" && return 0
+    sleep "$try"
+  done
+  "$@"
+}
+
+# The newest release tag in a repository (a URL or a local path); pre-releases are installed
+# only when asked for with --version.
+latest_release() { net git ls-remote --tags --refs "$1" 'v*' | sed 's|.*refs/tags/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1; }
 
 FRESH=1
 [ -f "$DIR/.env" ] && FRESH=0
@@ -1256,36 +1247,24 @@ if [ -z "$VERSION" ]; then
   [ -n "$VERSION" ] || die "$(T no_release repo="$REPO")"
 fi
 
-# ---- Questions (a fresh install with a terminal, for what no option answered) ------------
-if [ "$FRESH" = 1 ] && [ "$TTY" = 1 ]; then
-  if [ -z "$EDITION" ]; then
-    CHOICE=0
-    choose "$(T edition_q)" "$(T edition_standard)" "$(T edition_full)"
-    if [ "$CHOICE" = 1 ]; then EDITION=full; else EDITION=standard; fi
-  fi
-  if [ "$ACCESS_GIVEN" = 0 ]; then
-    CHOICE=0
-    choose "$(T access_q)" "$(T access_local)" "$(T access_domain)" "$(T access_tailscale)" "$(T access_cf_token)" "$(T access_cf_quick)"
-    case "$CHOICE" in
-      1)
-        while [ -z "$DOMAIN" ]; do DOMAIN="$(ask_text "$(T ask_domain)")"; done ;;
-      2) TAILSCALE=1 ;;
-      3) while [ -z "$CF_TOKEN" ]; do CF_TOKEN="$(ask_text "$(T ask_token)" secret)"; done ;;
-      4) CF_QUICK=1 ;;
-    esac
-  fi
+# ---- The one question (a fresh install with a terminal, unless --edition answered it) ------
+# Remote access isn't asked: it is turned on later in Settings → Network (or with the options).
+if [ "$FRESH" = 1 ] && [ "$TTY" = 1 ] && [ -z "$EDITION" ]; then
+  CHOICE=0
+  choose "$(T edition_q)" "$(T edition_standard)" "$(T edition_full)"
+  if [ "$CHOICE" = 1 ]; then EDITION=full; else EDITION=standard; fi
   echo
 fi
 
 get_code() {
   if [ -d "$DIR/.git" ]; then
     if [ "$VERSION" = main ]; then
-      git -C "$DIR" fetch --depth 1 origin main && git -C "$DIR" checkout -q -B main FETCH_HEAD
+      net git -C "$DIR" fetch --depth 1 origin main && git -C "$DIR" checkout -q -B main FETCH_HEAD
     else
-      git -C "$DIR" fetch --depth 1 --force origin tag "$VERSION" && git -C "$DIR" -c advice.detachedHead=false checkout -q "$VERSION"
+      net git -C "$DIR" fetch --depth 1 --force origin tag "$VERSION" && git -C "$DIR" -c advice.detachedHead=false checkout -q "$VERSION"
     fi
   else
-    git -c advice.detachedHead=false clone -q --depth 1 --branch "$VERSION" "$REPO" "$DIR"
+    net git -c advice.detachedHead=false clone -q --depth 1 --branch "$VERSION" "$REPO" "$DIR"
   fi
 }
 if [ -d "$DIR/.git" ]; then step "$(T updating_to version="$VERSION")" get_code
@@ -1381,25 +1360,30 @@ PORT="${PORT:-3690}"
 
 # The `coltex` command, where the shell finds it: ~/.local/bin, or /usr/local/bin when that is
 # on PATH and ~/.local/bin isn't (root on many servers); otherwise its full path for now, and
-# how to add ~/.local/bin to PATH.
+# the line that adds ~/.local/bin to PATH (then the closing screen says just coltex).
 chmod +x coltex
 on_path() { case ":$PATH:" in *":$1:"*) return 0 ;; *) return 1 ;; esac; }
 CMD="$DIR/coltex"
-PATH_HINT=""
+PATH_LINE=""
+linked=0
 if [ -d "$HOME/.local/bin" ] || mkdir -p "$HOME/.local/bin" 2>/dev/null; then
-  ln -sf "$DIR/coltex" "$HOME/.local/bin/coltex"
-  on_path "$HOME/.local/bin" && CMD=coltex
+  ln -sf "$DIR/coltex" "$HOME/.local/bin/coltex" && linked=1
+  if [ "$linked" = 1 ] && on_path "$HOME/.local/bin"; then CMD=coltex; fi
 fi
 if [ "$CMD" != coltex ] && on_path /usr/local/bin && [ -w /usr/local/bin ]; then
   ln -sf "$DIR/coltex" /usr/local/bin/coltex && CMD=coltex
 fi
-if [ "$CMD" != coltex ]; then
-  case "${SHELL:-}" in */zsh) rc="~/.zshrc" ;; */bash) rc="~/.bashrc" ;; *) rc="~/.profile" ;; esac
-  PATH_HINT="$(T path_hint dir="~/.local/bin" line="echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> $rc")"
+if [ "$CMD" != coltex ] && [ "$linked" = 1 ]; then
+  # One line that also reloads the file: a pipe into bash can't change the shell it came from,
+  # and the file is otherwise read only by the next terminal.
+  case "${SHELL:-}" in */zsh) rc="~/.zshrc" load=source ;; */bash) rc="~/.bashrc" load=source ;; *) rc="~/.profile" load=. ;; esac
+  PATH_LINE="echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> $rc && $load $rc"
 fi
 
-# Shown with ~ for the home folder.
+# Shown with ~ for the home folder. NAME is what the closing screen calls the command.
 SHOWN_CMD="${CMD/#$HOME/~}"
+NAME="$SHOWN_CMD"
+[ -z "$PATH_LINE" ] || NAME=coltex
 SHOWN_LOG="${DIR/#$HOME/~}/install.log"
 
 if [ "$START" = 0 ]; then
@@ -1411,12 +1395,12 @@ fi
 # Alibaba Cloud chosen here rather than asked for: ghcr.io when the mirror doesn't have this
 # version yet (it copies a release after ghcr.io has it).
 download() {
-  [ "$AUTO_IMAGES" = 1 ] && note "$(T images_aliyun)"
   pull_images && return 0
   [ "$AUTO_IMAGES" = 1 ] && images_missing || return 1
   note "$(T images_fallback)"
   setting COLTEX_IMAGES "$GHCR_IMAGES"
   setting COLTEX_HUB_MIRROR ""
+  NOTED=""
   pull_images
 }
 if [ "$(get COLTEX_BUILD)" = 1 ]; then
@@ -1480,7 +1464,14 @@ fi
 if [ "$public" = 1 ]; then
   printf '\n  %s\n' "${AMBER}$(T public_warning)${RESET}"
 fi
-printf '\n  %s\n' "$(T manage) ${BOLD}$SHOWN_CMD status | logs | update | stop | start${RESET}"
-printf '  %s\n' "$(T remote_later) ${BOLD}$SHOWN_CMD tailscale up${RESET} | ${BOLD}cloudflare quick${RESET} | ${BOLD}cloudflare token${RESET}"
-[ -z "$PATH_HINT" ] || printf '  %s\n' "$PATH_HINT"
+if [ -n "$PATH_LINE" ]; then
+  printf '\n  %s\n    %s\n' "$(T path_first)" "${BOLD}${PATH_LINE}${RESET}"
+fi
+# The commands people need first, one a line with what it does; `coltex help` has the rest.
+printf '\n  %s\n' "${BOLD}$(T commands)${RESET}"
+width=$((${#NAME} + 9))
+for c in status logs update help; do
+  printf "    ${BOLD}%-${width}s${RESET}%s\n" "$NAME $c" "${DIM}$(T "cmd_$c")${RESET}"
+done
+printf '\n  %s\n' "$(T remote_access)"
 printf '  %s\n\n' "${DIM}$(T full_output log="$SHOWN_LOG")${RESET}"

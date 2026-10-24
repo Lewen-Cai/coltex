@@ -10,16 +10,18 @@ On Linux or macOS with Docker, one command:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-It asks for the language, the edition and how people will reach ColTex (arrow keys; options such as `--edition`, `--domain` or `--lang` answer them instead), checks Docker (on Linux it can install it), gets ColTex into `~/coltex`, writes the settings, downloads the prebuilt images (x86-64 and ARM64) and starts it, and prints the addresses to open on this machine and on your network. The first start downloads TeX Live. There are two editions:
+If the download is cut off (`curl: (35) Recv failure: Connection reset by peer`, common when GitHub is hard to reach), run the command again.
+
+It asks for the language and the TeX Live edition (arrow keys; `--edition` and `--lang` answer them instead), checks Docker (on Linux it can install it), gets ColTex into `~/coltex`, writes the settings, downloads the prebuilt images (x86-64 and ARM64) and starts it, and prints the addresses to open on this machine and on your network. The first start downloads TeX Live. There are two editions:
 
 | Edition | Download | On disk (all of ColTex) | Free space to have |
 | --- | --- | --- | --- |
 | **standard** (default) | about 3 GB | about 12 GB | 20 GB |
 | **full** (`--edition full`) | about 8 GB | about 23 GB | 35 GB |
 
-Both compile the same (the complete TeX Live). The full edition adds the package manuals and sources, which the AI agent can then read; with the standard one it answers from the package files and its own knowledge. Switch later with `coltex edition full` or `coltex edition standard`.
+Both have the complete TeX Live and compile the same documents, and the AI agent works with either. The standard edition leaves out the packages' manuals and sources; the full edition adds them, and the AI agent can then also read the manuals. With the standard edition it answers from the package files and its own knowledge. Switch later with `coltex edition full` or `coltex edition standard`.
 
-Remote access can be turned on at the same time:
+Remote access (Tailscale, Cloudflare Tunnel) is turned on after the install, in **Settings → Network** (see below). For scripted installs, options can also set it up during the install:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

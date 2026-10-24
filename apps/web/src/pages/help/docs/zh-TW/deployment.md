@@ -10,16 +10,18 @@
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-它會詢問語言、版本，以及其他人要如何連線到 ColTex（用方向鍵選擇；也可以改用 `--edition`、`--domain` 或 `--lang` 等選項直接回答），檢查 Docker（在 Linux 上可以代為安裝），把 ColTex 下載到 `~/coltex`，寫入設定，下載預先建置的映像檔（x86-64 和 ARM64）並啟動，最後列出在本機和在你的網路上要開啟的網址。第一次啟動會下載 TeX Live。共有兩種版本：
+如果下載中斷（`curl: (35) Recv failure: Connection reset by peer`，連線 GitHub 不穩定時常見），再執行一次指令即可。
+
+它會詢問語言和 TeX Live 版本（用方向鍵選擇；也可以改用 `--edition` 或 `--lang` 選項直接回答），檢查 Docker（在 Linux 上可以代為安裝），把 ColTex 下載到 `~/coltex`，寫入設定，下載預先建置的映像檔（x86-64 和 ARM64）並啟動，最後列出在本機和在你的網路上要開啟的網址。第一次啟動會下載 TeX Live。共有兩種版本：
 
 | 版本 | 下載量 | 磁碟占用（整個 ColTex） | 建議可用空間 |
 | --- | --- | --- | --- |
 | **standard**（預設） | 約 3 GB | 約 12 GB | 20 GB |
 | **full**（`--edition full`） | 約 8 GB | 約 23 GB | 35 GB |
 
-兩者的編譯能力相同（完整的 TeX Live）。full 版另外包含套件手冊和原始碼，AI 代理可以閱讀它們；使用 standard 版時，AI 代理會根據套件檔案和自身知識回答。之後可以用 `coltex edition full` 或 `coltex edition standard` 切換。
+兩者都是完整的 TeX Live，編譯能力相同，AI 代理也都能使用。standard 版不含套件手冊和原始碼；full 版另外包含它們，AI 代理還可以閱讀手冊。使用 standard 版時，AI 代理會根據套件檔案和自身知識回答。之後可以用 `coltex edition full` 或 `coltex edition standard` 切換。
 
-也可以同時開啟遠端存取：
+遠端存取（Tailscale、Cloudflare Tunnel）在安裝後到 **設定 → 網路** 開啟（見下文）。以腳本安裝時，也可以用選項在安裝時一併開啟：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

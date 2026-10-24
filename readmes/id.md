@@ -84,7 +84,9 @@ Anda memerlukan mesin Linux atau macOS dengan Docker (di Linux, penginstal dapat
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Penginstal menanyakan bahasa, edisi TeX Live, dan cara orang akan menjangkau ColTex (tombol panah), mengambil rilis terbaru ke `~/coltex`, mengunduh image siap pakai dengan bilah kemajuan, menjalankan ColTex, dan mencetak alamat yang dapat dibuka. Keluaran lengkapnya masuk ke `~/coltex/install.log`. Lalu buka `http://<server>:3690` dan buat akun administrator.
+Jika unduhan terputus (`curl: (35) Recv failure: Connection reset by peer`, sering terjadi saat GitHub sulit dijangkau), jalankan perintahnya lagi.
+
+Penginstal menanyakan bahasa dan edisi TeX Live (tombol panah), mengambil rilis terbaru ke `~/coltex`, mengunduh image siap pakai dengan bilah kemajuan, menjalankan ColTex, dan mencetak alamat yang dapat dibuka. Keluaran lengkapnya masuk ke `~/coltex/install.log`. Lalu buka `http://<server>:3690` dan buat akun administrator. Akses jarak jauh melalui Tailscale atau Cloudflare Tunnel diaktifkan setelahnya di **Pengaturan → Jaringan**.
 
 Saat pertama kali dijalankan, TeX Live diunduh. Pilih edisi:
 
@@ -93,9 +95,9 @@ Saat pertama kali dijalankan, TeX Live diunduh. Pilih edisi:
 | **standard** (bawaan) | sekitar 3 GB | sekitar 12 GB | 20 GB |
 | **full** (`--edition full`) | sekitar 8 GB | sekitar 23 GB | 35 GB |
 
-Keduanya mengompilasi dokumen yang sama. Edisi full juga berisi manual paket, yang kemudian dapat dibaca agen AI.
+Keduanya berisi semua paket TeX Live dan mengompilasi dokumen yang sama, dan agen AI bekerja dengan keduanya. Edisi standard tidak menyertakan manual paket; edisi full menambahkan manual dan sumber paket, yang juga dapat dibaca agen AI.
 
-Opsi menjawab pertanyaan-pertanyaan itu, atau menggantikannya jika tidak ada terminal (tambahkan setelah `bash -s --`):
+`--edition` dan `--lang` menjawab pertanyaan-pertanyaan itu, atau menggantikannya jika tidak ada terminal. `--domain`, `--tailscale`, dan opsi Cloudflare menyiapkan akses jarak jauh sekaligus saat instalasi, untuk instalasi lewat skrip. Tambahkan opsi setelah `bash -s --`:
 
 | Opsi | |
 | --- | --- |
@@ -104,7 +106,6 @@ Opsi menjawab pertanyaan-pertanyaan itu, atau menggantikannya jika tidak ada ter
 | `--cloudflare-token TOKEN` | Sambungkan terowongan Cloudflare yang Anda buat untuk domain Anda sendiri |
 | `--cloudflare-quick` | Alamat `trycloudflare.com` publik sementara, untuk mencoba-coba |
 | `--edition full` | Edisi TeX Live full |
-| `--local` | Hanya mesin ini dan jaringannya |
 | `--lang LANG` | Bahasa penginstal, `coltex`, dan halaman penyiapan: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi`, atau `id` (ditanyakan jika tidak diberikan) |
 | `--port 3690` | Port lain |
 | `--version v0.0.1` | Rilis tertentu (`main` untuk cabang pengembangan) |

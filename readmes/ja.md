@@ -84,7 +84,9 @@ Docker の入った Linux または macOS のマシン（Linux ではインス�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-言語、TeX Live のエディション、ColTex へのアクセス方法を（矢印キーで）尋ねたあと、最新のリリースを `~/coltex` に取得し、ビルド済みのイメージを進捗バー付きでダウンロードして ColTex を起動し、開くべきアドレスを表示します。出力の全文は `~/coltex/install.log` に保存されます。その後 `http://<server>:3690` を開き、管理者アカウントを作成してください。
+ダウンロードが途中で切れた場合（`curl: (35) Recv failure: Connection reset by peer`。GitHub につながりにくい環境でよく起こります）は、同じコマンドをもう一度実行してください。
+
+言語と TeX Live のエディションを（矢印キーで）尋ねたあと、最新のリリースを `~/coltex` に取得し、ビルド済みのイメージを進捗バー付きでダウンロードして ColTex を起動し、開くべきアドレスを表示します。出力の全文は `~/coltex/install.log` に保存されます。その後 `http://<server>:3690` を開き、管理者アカウントを作成してください。Tailscale や Cloudflare Tunnel によるリモートアクセスは、あとから **設定 → ネットワーク** でオンにします。
 
 初回の起動時には TeX Live がダウンロードされます。エディションを選んでください。
 
@@ -93,9 +95,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | **standard**（既定） | 約 3 GB | 約 12 GB | 20 GB |
 | **full**（`--edition full`） | 約 8 GB | 約 23 GB | 35 GB |
 
-どちらも同じ文書をコンパイルできます。full エディションにはパッケージのマニュアルも含まれ、AI エージェントがそれを読めるようになります。
+どちらにも TeX Live のすべてのパッケージが入っていて、同じ文書をコンパイルでき、AI エージェントもどちらでも使えます。standard エディションにはパッケージのマニュアルが含まれません。full エディションにはマニュアルとソースが加わり、AI エージェントはそれも読めます。
 
-オプションで質問に答えることも、端末がない環境で質問の代わりに指定することもできます（`bash -s --` の後に付けます）。
+`--edition` と `--lang` で質問に答えることも、端末がない環境で質問の代わりに指定することもできます。`--domain`、`--tailscale`、Cloudflare のオプションは、スクリプトでインストールするときにリモートアクセスもあわせて設定するためのものです。オプションは `bash -s --` の後に付けます。
 
 | オプション | |
 | --- | --- |
@@ -104,7 +106,6 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--cloudflare-token TOKEN` | 独自ドメイン用に作成した Cloudflare トンネルに接続します |
 | `--cloudflare-quick` | お試し用の一時的な公開アドレス（`trycloudflare.com`） |
 | `--edition full` | TeX Live の full エディション |
-| `--local` | このマシンとそのネットワークからのみ利用 |
 | `--lang LANG` | インストーラー、`coltex`、セットアップページの言語：`en`、`zh-CN`、`zh-TW`、`ja`、`ko`、`es`、`fr`、`de`、`pt-BR`、`it`、`ru`、`tr`、`vi`、`id`（指定しない場合は尋ねられます） |
 | `--port 3690` | 別のポート |
 | `--version v0.0.1` | 特定のリリース（開発ブランチは `main`） |

@@ -84,7 +84,9 @@ You need a Linux or macOS machine with Docker (on Linux the installer can set it
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-It asks for the language, the TeX Live edition and how people will reach ColTex (arrow keys), gets the latest release into `~/coltex`, downloads the prebuilt images with a progress bar, starts ColTex, and prints the addresses to open. The full output goes to `~/coltex/install.log`. Then open `http://<server>:3690` and create the administrator account.
+If the download is cut off (`curl: (35) Recv failure: Connection reset by peer`, common when GitHub is hard to reach), run the command again.
+
+It asks for the language and the TeX Live edition (arrow keys), gets the latest release into `~/coltex`, downloads the prebuilt images with a progress bar, starts ColTex, and prints the addresses to open. The full output goes to `~/coltex/install.log`. Then open `http://<server>:3690` and create the administrator account. Remote access through Tailscale or Cloudflare Tunnel is turned on afterwards in **Settings → Network**.
 
 The first start downloads TeX Live. Choose an edition:
 
@@ -93,9 +95,9 @@ The first start downloads TeX Live. Choose an edition:
 | **standard** (default) | about 3 GB | about 12 GB | 20 GB |
 | **full** (`--edition full`) | about 8 GB | about 23 GB | 35 GB |
 
-Both compile the same documents. The full edition also has the package manuals, which the AI agent can then read.
+Both have every TeX Live package and compile the same documents, and the AI agent works with either. The standard edition leaves out the packages' manuals; the full edition adds the manuals and sources, which the AI agent can also read.
 
-Options answer the questions, or replace them where there is no terminal (add them after `bash -s --`):
+`--edition` and `--lang` answer the questions, or replace them where there is no terminal. `--domain`, `--tailscale` and the Cloudflare options set up remote access during the install, for scripted installs. Add options after `bash -s --`:
 
 | Option | |
 | --- | --- |
@@ -104,7 +106,6 @@ Options answer the questions, or replace them where there is no terminal (add th
 | `--cloudflare-token TOKEN` | Connect a Cloudflare tunnel you created for your own domain |
 | `--cloudflare-quick` | A temporary public `trycloudflare.com` address, for trying it out |
 | `--edition full` | The full TeX Live edition |
-| `--local` | Only this machine and its network |
 | `--lang LANG` | The language of the installer, `coltex` and the setup page: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi` or `id` (asked when not given) |
 | `--port 3690` | Another port |
 | `--version v0.0.1` | A specific release (`main` for the development branch) |

@@ -84,7 +84,9 @@ Bạn cần một máy Linux hoặc macOS có Docker (trên Linux, trình cài �
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Trình cài đặt hỏi ngôn ngữ, phiên bản TeX Live và cách mọi người sẽ truy cập ColTex (dùng phím mũi tên), tải bản phát hành mới nhất về `~/coltex`, tải các image dựng sẵn kèm thanh tiến trình, khởi động ColTex, và in ra các địa chỉ để mở. Toàn bộ đầu ra được ghi vào `~/coltex/install.log`. Sau đó mở `http://<server>:3690` và tạo tài khoản quản trị viên.
+Nếu việc tải xuống bị ngắt (`curl: (35) Recv failure: Connection reset by peer`, thường gặp khi khó kết nối tới GitHub), hãy chạy lại lệnh.
+
+Trình cài đặt hỏi ngôn ngữ và phiên bản TeX Live (dùng phím mũi tên), tải bản phát hành mới nhất về `~/coltex`, tải các image dựng sẵn kèm thanh tiến trình, khởi động ColTex, và in ra các địa chỉ để mở. Toàn bộ đầu ra được ghi vào `~/coltex/install.log`. Sau đó mở `http://<server>:3690` và tạo tài khoản quản trị viên. Truy cập từ xa qua Tailscale hoặc Cloudflare Tunnel được bật sau đó trong **Cài đặt → Mạng**.
 
 Lần khởi động đầu tiên sẽ tải TeX Live. Hãy chọn một phiên bản:
 
@@ -93,9 +95,9 @@ Lần khởi động đầu tiên sẽ tải TeX Live. Hãy chọn một phiên 
 | **standard** (mặc định) | khoảng 3 GB | khoảng 12 GB | 20 GB |
 | **full** (`--edition full`) | khoảng 8 GB | khoảng 23 GB | 35 GB |
 
-Cả hai biên dịch được cùng các tài liệu. Phiên bản full có thêm tài liệu hướng dẫn của các gói, mà tác tử AI có thể đọc.
+Cả hai đều có mọi gói của TeX Live và biên dịch được cùng các tài liệu, và tác tử AI dùng được với cả hai. Phiên bản standard không kèm tài liệu hướng dẫn của các gói; phiên bản full có thêm tài liệu hướng dẫn và mã nguồn, mà tác tử AI cũng có thể đọc.
 
-Các tùy chọn trả lời thay cho câu hỏi, hoặc thay thế chúng khi không có terminal (thêm chúng sau `bash -s --`):
+`--edition` và `--lang` trả lời thay cho câu hỏi, hoặc thay thế chúng khi không có terminal. `--domain`, `--tailscale` và các tùy chọn Cloudflare thiết lập truy cập từ xa ngay trong lúc cài, dành cho cài đặt bằng script. Thêm các tùy chọn sau `bash -s --`:
 
 | Tùy chọn | |
 | --- | --- |
@@ -104,7 +106,6 @@ Các tùy chọn trả lời thay cho câu hỏi, hoặc thay thế chúng khi k
 | `--cloudflare-token TOKEN` | Kết nối một Cloudflare tunnel bạn đã tạo cho tên miền của mình |
 | `--cloudflare-quick` | Một địa chỉ `trycloudflare.com` công khai tạm thời, để dùng thử |
 | `--edition full` | Phiên bản TeX Live đầy đủ |
-| `--local` | Chỉ máy này và mạng của nó |
 | `--lang LANG` | Ngôn ngữ của trình cài đặt, `coltex` và trang thiết lập: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi` hoặc `id` (sẽ được hỏi nếu không chỉ định) |
 | `--port 3690` | Một cổng khác |
 | `--version v0.0.1` | Một bản phát hành cụ thể (`main` cho nhánh phát triển) |

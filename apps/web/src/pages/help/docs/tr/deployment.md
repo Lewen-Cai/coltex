@@ -10,16 +10,18 @@ Docker yüklü Linux veya macOS’ta tek bir komut:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Komut dili, sürümü (edition) ve kişilerin ColTex’e nasıl erişeceğini sorar (ok tuşlarıyla; `--edition`, `--domain` veya `--lang` gibi seçenekler bunları yanıtlar), Docker’ı denetler (Linux’ta kurabilir), ColTex’i `~/coltex` içine alır, ayarları yazar, hazır imajları (x86-64 ve ARM64) indirip başlatır ve bu makinede ve ağınızda açılacak adresleri yazdırır. İlk başlatma TeX Live’ı indirir. İki sürüm vardır:
+İndirme yarıda kesilirse (`curl: (35) Recv failure: Connection reset by peer`, GitHub’a erişmek zor olduğunda sık görülür) komutu yeniden çalıştırın.
+
+Komut dili ve TeX Live sürümünü (edition) sorar (ok tuşlarıyla; `--edition` ve `--lang` seçenekleri bunları yanıtlar), Docker’ı denetler (Linux’ta kurabilir), ColTex’i `~/coltex` içine alır, ayarları yazar, hazır imajları (x86-64 ve ARM64) indirip başlatır ve bu makinede ve ağınızda açılacak adresleri yazdırır. İlk başlatma TeX Live’ı indirir. İki sürüm vardır:
 
 | Sürüm | İndirme | Diskte (tüm ColTex) | Gereken boş alan |
 | --- | --- | --- | --- |
 | **standard** (varsayılan) | yaklaşık 3 GB | yaklaşık 12 GB | 20 GB |
 | **full** (`--edition full`) | yaklaşık 8 GB | yaklaşık 23 GB | 35 GB |
 
-İkisi de aynı biçimde derler (tam TeX Live). full sürümü paket kılavuzlarını ve kaynaklarını ekler; YZ ajanı bunları okuyabilir. standard sürümde paket dosyalarından ve kendi bilgisinden yanıt verir. Daha sonra `coltex edition full` veya `coltex edition standard` ile geçiş yapın.
+İkisinde de tam TeX Live vardır ve aynı biçimde derler; YZ ajanı ikisiyle de çalışır. standard sürümünde paket kılavuzları ve kaynakları yoktur; full sürümü bunları ekler ve YZ ajanı kılavuzları da okuyabilir. standard sürümde YZ ajanı paket dosyalarından ve kendi bilgisinden yanıt verir. Daha sonra `coltex edition full` veya `coltex edition standard` ile geçiş yapın.
 
-Uzaktan erişim aynı anda açılabilir:
+Uzaktan erişim (Tailscale, Cloudflare Tunnel) kurulumdan sonra **Ayarlar → Ağ** bölümünden açılır (aşağıya bakın). Betikle yapılan kurulumlarda seçeneklerle kurulum sırasında da ayarlanabilir:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

@@ -10,16 +10,18 @@ Docker가 있는 Linux나 macOS에서 명령 하나로 설치합니다.
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-설치 프로그램은 언어, 에디션, 사람들이 ColTex에 접속할 방법을 묻고(화살표 키로 선택. `--edition`, `--domain`, `--lang` 같은 옵션으로 대신 답할 수 있음), Docker를 확인하고(Linux에서는 설치도 가능), ColTex를 `~/coltex`에 내려받고, 설정을 쓰고, 미리 빌드된 이미지(x86-64와 ARM64)를 다운로드해 실행한 뒤, 이 컴퓨터와 네트워크에서 열 주소를 출력합니다. 처음 시작할 때 TeX Live를 다운로드합니다. 에디션은 두 가지입니다.
+다운로드가 중간에 끊기면(`curl: (35) Recv failure: Connection reset by peer`, GitHub에 접속하기 어려울 때 자주 생깁니다) 명령을 다시 실행하세요.
+
+설치 프로그램은 언어와 TeX Live 에디션을 묻고(화살표 키로 선택. `--edition`, `--lang` 옵션으로 대신 답할 수 있음), Docker를 확인하고(Linux에서는 설치도 가능), ColTex를 `~/coltex`에 내려받고, 설정을 쓰고, 미리 빌드된 이미지(x86-64와 ARM64)를 다운로드해 실행한 뒤, 이 컴퓨터와 네트워크에서 열 주소를 출력합니다. 처음 시작할 때 TeX Live를 다운로드합니다. 에디션은 두 가지입니다.
 
 | 에디션 | 다운로드 | 디스크 사용량(ColTex 전체) | 필요한 여유 공간 |
 | --- | --- | --- | --- |
 | **standard**(기본값) | 약 3 GB | 약 12 GB | 20 GB |
 | **full**(`--edition full`) | 약 8 GB | 약 23 GB | 35 GB |
 
-두 에디션 모두 같은 방식으로 컴파일합니다(전체 TeX Live). full 에디션에는 패키지 매뉴얼과 소스가 추가되어 AI 에이전트가 이를 읽을 수 있습니다. standard 에디션에서는 패키지 파일과 자체 지식으로 답합니다. 나중에 `coltex edition full`이나 `coltex edition standard`로 전환할 수 있습니다.
+두 에디션 모두 전체 TeX Live를 담고 있어 같은 방식으로 컴파일하며, AI 에이전트도 어느 쪽에서나 쓸 수 있습니다. standard 에디션에는 패키지 매뉴얼과 소스가 없고, full 에디션에는 이것들이 추가되어 AI 에이전트가 매뉴얼도 읽을 수 있습니다. standard 에디션에서는 AI 에이전트가 패키지 파일과 자체 지식으로 답합니다. 나중에 `coltex edition full`이나 `coltex edition standard`로 전환할 수 있습니다.
 
-원격 접속을 함께 켤 수도 있습니다.
+원격 접속(Tailscale, Cloudflare Tunnel)은 설치 후 **설정 → 네트워크**에서 켭니다(아래 참고). 스크립트로 설치할 때는 옵션으로 설치하면서 함께 켤 수도 있습니다.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

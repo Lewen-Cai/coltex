@@ -6,7 +6,9 @@
 #   coltex edition [standard | full]  show or switch the TeX Live edition
 #   coltex tailscale [status | up | down | off]
 #   coltex cloudflare [status | quick | token [TOKEN] | off]
-#   coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
+#   coltex reset-password <email>     set a new password for an account
+#   coltex system-admin <email>       make another account the system administrator
+#   coltex cli <command…>             any other `node src/cli.ts` command
 #   coltex reset                      delete all data and start again from the setup page
 #   coltex uninstall                  remove ColTex from this machine (containers, data, images,
 #                                     this folder); Docker stays
@@ -61,21 +63,37 @@ msg_en() {
     no_release) M='No release found' ;;
     latest) M='ColTex {version} is the latest release' ;;
     updating) M='Updating ColTex {from} → {to}; see the release notes: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX Live edition: {edition} (standard: without package manuals, about 9 GB; full: with them, about 20 GB)' ;;
+    edition_show) M='TeX Live edition: {edition} (standard: every package without their manuals, about 12 GB on disk; full: with the manuals and sources, about 23 GB)' ;;
     edition_already) M='Already the {edition} edition' ;;
     edition_switching) M='Switching to the {edition} edition (downloads TeX Live)…' ;;
     done) M='Done.' ;;
     edition_usage) M='Usage: coltex edition [standard | full]' ;;
-    help) M='ColTex on this machine. Run from anywhere (install.sh links it into ~/.local/bin):
+    help) M='ColTex on this machine. Run from anywhere:
 
-  coltex start | stop | restart | status | logs [service] | version
-  coltex update [VERSION]           to the latest release (or VERSION, e.g. v0.0.2, or main)
-  coltex edition [standard | full]  show or switch the TeX Live edition
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <command…>             any `node src/cli.ts` command, e.g. `coltex cli system-admin <email>`
-  coltex reset                      delete all data and start again from the setup page
-  coltex uninstall                  remove ColTex from this machine (containers, data, images, this folder)' ;;
+  Running it
+    coltex status                     is it running, and at which address
+    coltex start | stop | restart
+    coltex logs [service]             follow a log (the server’s, or postgres, compiler…)
+    coltex version
+
+  Updates
+    coltex update [VERSION]           to the newest release (or VERSION, e.g. v0.0.2, or main)
+    coltex edition [standard | full]  show or switch the TeX Live edition
+
+  Remote access (also in ColTex under Settings → Network)
+    coltex tailscale up               put ColTex on your tailnet: prints a sign-in link
+    coltex tailscale status | down | off
+    coltex cloudflare quick           a temporary public trycloudflare.com address
+    coltex cloudflare token [TOKEN]   connect a Cloudflare tunnel you created
+    coltex cloudflare status | off
+
+  Accounts
+    coltex reset-password <email>     set a new password for an account
+    coltex system-admin <email>       make another account the system administrator
+
+  Starting over
+    coltex reset                      delete all data and start again from the setup page
+    coltex uninstall                  remove ColTex from this machine (Docker stays)' ;;
     pull_retry) M='The download was cut off; trying again ({n}/{max})…' ;;
     pull_hint) M='If ghcr.io is slow from here (in mainland China, say): run the install command again with --images aliyun, the same images on Alibaba Cloud (settings and data stay). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json and restart Docker.' ;;
     fixing_data) M='Giving the data folder to the user the containers run as ({owner})…' ;;
@@ -97,21 +115,37 @@ msg_zh_CN() {
     no_release) M='没有找到发布版本' ;;
     latest) M='ColTex {version} 已经是最新版本' ;;
     updating) M='正在把 ColTex 从 {from} 更新到 {to}；更新说明：https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX Live 版本：{edition}（standard 标准版：不含宏包手册，约 9 GB；full 完整版：含手册，约 20 GB）' ;;
+    edition_show) M='TeX Live 版本：{edition}（standard：全部宏包，不含手册，占用约 12 GB；full：含手册和源码，约 23 GB）' ;;
     edition_already) M='已经是 {edition} 版本' ;;
     edition_switching) M='正在切换到 {edition} 版本（会下载 TeX Live）…' ;;
     done) M='完成。' ;;
     edition_usage) M='用法：coltex edition [standard | full]' ;;
-    help) M='本机上的 ColTex。可以在任何目录运行（install.sh 会把它链接到 ~/.local/bin）：
+    help) M='本机上的 ColTex。可以在任何目录运行：
 
-  coltex start | stop | restart | status | logs [服务] | version
-  coltex update [版本]               更新到最新版本（或指定版本，如 v0.0.2，或 main）
-  coltex edition [standard | full]  查看或切换 TeX Live 版本
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [令牌] | off]
-  coltex cli <命令…>                 服务器的命令行，例如 `coltex cli system-admin <邮箱>`
-  coltex reset                      删除所有数据，从初始设置页重新开始
-  coltex uninstall                  从这台机器上移除 ColTex（容器、数据、镜像和这个文件夹）' ;;
+  运行
+    coltex status                     是否在运行，以及访问地址
+    coltex start | stop | restart     启动 | 停止 | 重启
+    coltex logs [服务]                查看日志（默认是 server，也可以是 postgres、compiler…）
+    coltex version                    当前版本
+
+  更新
+    coltex update [版本]              更新到最新版本（或指定版本，如 v0.0.2，或 main）
+    coltex edition [standard | full]  查看或切换 TeX Live 版本
+
+  远程访问（也可以在 ColTex 的“设置 → 网络”里操作）
+    coltex tailscale up               加入你的 tailnet：会打印登录链接
+    coltex tailscale status | down | off
+    coltex cloudflare quick           临时公网地址（trycloudflare.com）
+    coltex cloudflare token [令牌]    连接你创建的 Cloudflare 隧道
+    coltex cloudflare status | off
+
+  账号
+    coltex reset-password <邮箱>      给账号设置新密码
+    coltex system-admin <邮箱>        把系统管理员转给另一个账号
+
+  从头开始
+    coltex reset                      删除所有数据，从初始设置页重新开始
+    coltex uninstall                  从这台机器上移除 ColTex（Docker 保留）' ;;
     pull_retry) M='下载中断，正在重试（{n}/{max}）…' ;;
     pull_hint) M='如果从这里访问 ghcr.io 很慢（比如在中国大陆）：加上 --images aliyun 重新运行安装命令，从阿里云下载同样的镜像（设置和数据都会保留）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然后重启 Docker。' ;;
     fixing_data) M='正在把 data 文件夹交给容器运行时使用的用户（{owner}）…' ;;
@@ -133,21 +167,37 @@ msg_zh_TW() {
     no_release) M='找不到發佈版本' ;;
     latest) M='ColTex {version} 已經是最新版本' ;;
     updating) M='正在將 ColTex 從 {from} 更新到 {to}；版本資訊：https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX Live 版本：{edition}（standard 標準版：不含套件手冊，約 9 GB；full 完整版：含手冊，約 20 GB）' ;;
+    edition_show) M='TeX Live 版本：{edition}（standard：全部套件，不含手冊，磁碟占用約 12 GB；full：含手冊和原始碼，約 23 GB）' ;;
     edition_already) M='已經是 {edition} 版本' ;;
     edition_switching) M='正在切換到 {edition} 版本（會下載 TeX Live）…' ;;
     done) M='完成。' ;;
     edition_usage) M='用法：coltex edition [standard | full]' ;;
-    help) M='本機上的 ColTex。可以在任何目錄執行（install.sh 會將它連結到 ~/.local/bin）：
+    help) M='本機上的 ColTex。可以在任何目錄執行：
 
-  coltex start | stop | restart | status | logs [服務] | version
-  coltex update [版本]               更新到最新版本（或指定版本，如 v0.0.2，或 main）
-  coltex edition [standard | full]  查看或切換 TeX Live 版本
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [權杖] | off]
-  coltex cli <指令…>                 任何 `node src/cli.ts` 指令，例如 `coltex cli system-admin <電子郵件>`
-  coltex reset                      刪除所有資料，從初始設定頁重新開始
-  coltex uninstall                  從這台機器上移除 ColTex（容器、資料、映像檔和這個資料夾）' ;;
+  執行
+    coltex status                     是否正在執行，以及連線網址
+    coltex start | stop | restart     啟動 | 停止 | 重新啟動
+    coltex logs [服務]                查看記錄檔（預設為 server，也可以是 postgres、compiler…）
+    coltex version                    目前版本
+
+  更新
+    coltex update [版本]              更新到最新版本（或指定版本，如 v0.0.2，或 main）
+    coltex edition [standard | full]  查看或切換 TeX Live 版本
+
+  遠端存取（也可以在 ColTex 的「設定 → 網路」中操作）
+    coltex tailscale up               將 ColTex 加入你的 tailnet：會列出登入連結
+    coltex tailscale status | down | off
+    coltex cloudflare quick           臨時公開網址（trycloudflare.com）
+    coltex cloudflare token [權杖]    連接你建立的 Cloudflare 通道
+    coltex cloudflare status | off
+
+  帳號
+    coltex reset-password <電子郵件>  為帳號設定新密碼
+    coltex system-admin <電子郵件>    將系統管理員轉交給另一個帳號
+
+  從頭開始
+    coltex reset                      刪除所有資料，從初始設定頁面重新開始
+    coltex uninstall                  從這台機器移除 ColTex（Docker 會保留）' ;;
     pull_retry) M='下載中斷，正在重試（{n}/{max}）…' ;;
     pull_hint) M='如果從這裡存取 ghcr.io 很慢（例如在中國大陸）：加上 --images aliyun 重新執行安裝指令，從阿里雲下載同樣的映像檔（設定和資料都會保留）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然後重新啟動 Docker。' ;;
     fixing_data) M='正在把 data 資料夾交給容器執行時使用的使用者（{owner}）…' ;;
@@ -169,21 +219,37 @@ msg_ja() {
     no_release) M='リリースが見つかりません' ;;
     latest) M='ColTex {version} は最新のリリースです' ;;
     updating) M='ColTex を {from} から {to} に更新中。リリースノート：https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX Live のエディション：{edition}（standard：パッケージマニュアルなし、約 9 GB。full：マニュアルあり、約 20 GB）' ;;
+    edition_show) M='TeX Live エディション：{edition}（standard：すべてのパッケージ、マニュアルなし、約 12 GB。full：マニュアルとソース付き、約 23 GB）' ;;
     edition_already) M='すでに {edition} エディションです' ;;
     edition_switching) M='{edition} エディションに切り替え中（TeX Live をダウンロードします）…' ;;
     done) M='完了しました。' ;;
     edition_usage) M='使い方：coltex edition [standard | full]' ;;
-    help) M='このマシン上の ColTex。どこからでも実行できます（install.sh が ~/.local/bin にリンクします）：
+    help) M='このマシン上の ColTex。どこからでも実行できます：
 
-  coltex start | stop | restart | status | logs [サービス] | version
-  coltex update [バージョン]        最新のリリースに更新（または指定したバージョン。例：v0.0.2、main）
-  coltex edition [standard | full]  TeX Live のエディションを表示または切り替え
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [トークン] | off]
-  coltex cli <コマンド…>            任意の `node src/cli.ts` コマンド。例：`coltex cli system-admin <メールアドレス>`
-  coltex reset                      すべてのデータを削除し、セットアップページからやり直す
-  coltex uninstall                  このマシンから ColTex を削除する（コンテナ、データ、イメージ、このフォルダー）' ;;
+  実行
+    coltex status                           稼働中かどうかと、そのアドレス
+    coltex start | stop | restart
+    coltex logs [サービス]                  ログを表示（既定は server。postgres、compiler なども指定可）
+    coltex version
+
+  更新
+    coltex update [バージョン]              最新のリリースに更新（またはバージョンを指定。例：v0.0.2、main）
+    coltex edition [standard | full]        TeX Live のエディションを表示または切り替え
+
+  リモートアクセス（ColTex の「設定 → ネットワーク」でも設定できます）
+    coltex tailscale up                     ColTex を tailnet に追加：ログインリンクを表示
+    coltex tailscale status | down | off
+    coltex cloudflare quick                 一時的な公開アドレス（trycloudflare.com）
+    coltex cloudflare token [トークン]      作成した Cloudflare トンネルに接続
+    coltex cloudflare status | off
+
+  アカウント
+    coltex reset-password <メールアドレス>  アカウントに新しいパスワードを設定
+    coltex system-admin <メールアドレス>    別のアカウントをシステム管理者にする
+
+  最初からやり直す
+    coltex reset                            すべてのデータを削除し、セットアップページからやり直す
+    coltex uninstall                        このマシンから ColTex を削除（Docker は残ります）' ;;
     pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）…' ;;
     pull_hint) M='ここから ghcr.io が遅い場合（中国本土など）：インストールコマンドに --images aliyun を付けてもう一度実行すると、同じイメージを Alibaba Cloud からダウンロードします（設定とデータは残ります）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してください。' ;;
     fixing_data) M='data フォルダーの所有者を、コンテナーを実行するユーザー（{owner}）にしています…' ;;
@@ -205,21 +271,37 @@ msg_ko() {
     no_release) M='릴리스를 찾을 수 없습니다' ;;
     latest) M='ColTex {version}이(가) 최신 릴리스입니다' ;;
     updating) M='ColTex {from} → {to} 업데이트 중. 릴리스 노트: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX Live 에디션: {edition} (standard: 패키지 매뉴얼 없음, 약 9 GB; full: 매뉴얼 포함, 약 20 GB)' ;;
+    edition_show) M='TeX Live 에디션: {edition} (standard: 모든 패키지, 매뉴얼 제외, 약 12 GB / full: 매뉴얼·소스 포함, 약 23 GB)' ;;
     edition_already) M='이미 {edition} 에디션입니다' ;;
     edition_switching) M='{edition} 에디션으로 전환하는 중(TeX Live를 다운로드합니다)…' ;;
     done) M='완료.' ;;
     edition_usage) M='사용법: coltex edition [standard | full]' ;;
-    help) M='이 컴퓨터의 ColTex. 어디서나 실행할 수 있습니다(install.sh가 ~/.local/bin에 링크합니다):
+    help) M='이 컴퓨터의 ColTex. 어디서나 실행할 수 있습니다:
 
-  coltex start | stop | restart | status | logs [서비스] | version
-  coltex update [버전]             최신 릴리스로 업데이트(또는 버전 지정, 예: v0.0.2 또는 main)
-  coltex edition [standard | full]  TeX Live 에디션 보기 또는 전환
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [토큰] | off]
-  coltex cli <명령…>             모든 `node src/cli.ts` 명령, 예: `coltex cli system-admin <이메일>`
-  coltex reset                      모든 데이터를 삭제하고 설정 페이지부터 다시 시작
-  coltex uninstall                  이 컴퓨터에서 ColTex 제거(컨테이너, 데이터, 이미지, 이 폴더)' ;;
+  실행
+    coltex status                     실행 중인지, 어떤 주소인지 확인
+    coltex start | stop | restart     시작 | 중지 | 다시 시작
+    coltex logs [서비스]              로그 보기(기본은 server, postgres, compiler 등도 가능)
+    coltex version                    현재 버전
+
+  업데이트
+    coltex update [버전]              최신 릴리스로 업데이트(또는 버전 지정, 예: v0.0.2 또는 main)
+    coltex edition [standard | full]  TeX Live 에디션 보기 또는 전환
+
+  원격 접속(ColTex의 설정 → 네트워크에서도 가능)
+    coltex tailscale up               ColTex를 내 tailnet에 추가: 로그인 링크를 출력합니다
+    coltex tailscale status | down | off
+    coltex cloudflare quick           임시 공개 주소(trycloudflare.com)
+    coltex cloudflare token [토큰]    직접 만든 Cloudflare 터널에 연결
+    coltex cloudflare status | off
+
+  계정
+    coltex reset-password <이메일>    계정의 비밀번호를 새로 설정
+    coltex system-admin <이메일>      다른 계정을 시스템 관리자로 지정
+
+  처음부터 다시
+    coltex reset                      모든 데이터를 삭제하고 초기 설정 페이지부터 다시 시작
+    coltex uninstall                  이 컴퓨터에서 ColTex 제거(Docker는 유지)' ;;
     pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max})…' ;;
     pull_hint) M='여기서 ghcr.io가 느리다면(예: 중국 본토): 설치 명령에 --images aliyun을 붙여 다시 실행하면 같은 이미지를 Alibaba Cloud에서 받습니다(설정과 데이터는 유지됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작하세요.' ;;
     fixing_data) M='data 폴더의 소유자를 컨테이너를 실행하는 사용자({owner})로 바꾸는 중…' ;;
@@ -241,21 +323,37 @@ msg_es() {
     no_release) M='No se encontró ninguna versión' ;;
     latest) M='ColTex {version} es la última versión' ;;
     updating) M='Actualizando ColTex {from} → {to}; consulta las notas de la versión: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Edición de TeX Live: {edition} (standard: sin los manuales de los paquetes, unos 9 GB; full: con ellos, unos 20 GB)' ;;
+    edition_show) M='Edición de TeX Live: {edition} (standard: todos los paquetes sin manuales, unos 12 GB en disco; full: con manuales y fuentes, unos 23 GB)' ;;
     edition_already) M='Ya es la edición {edition}' ;;
     edition_switching) M='Cambiando a la edición {edition} (descarga TeX Live)…' ;;
     done) M='Listo.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
-    help) M='ColTex en esta máquina. Se puede ejecutar desde cualquier carpeta (install.sh lo enlaza en ~/.local/bin):
+    help) M='ColTex en esta máquina. Se puede ejecutar desde cualquier carpeta:
 
-  coltex start | stop | restart | status | logs [servicio] | version
-  coltex update [VERSIÓN]           a la última versión (o VERSIÓN, p. ej., v0.0.2, o main)
-  coltex edition [standard | full]  muestra o cambia la edición de TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <comando…>             cualquier comando de `node src/cli.ts`, p. ej., `coltex cli system-admin <correo>`
-  coltex reset                      borra todos los datos y vuelve a empezar desde la configuración inicial
-  coltex uninstall                  quita ColTex de esta máquina (contenedores, datos, imágenes y esta carpeta)' ;;
+  Uso
+    coltex status                     si está en marcha y en qué dirección
+    coltex start | stop | restart
+    coltex logs [servicio]            sigue un registro (el del servidor, o postgres, compiler…)
+    coltex version
+
+  Actualizaciones
+    coltex update [VERSIÓN]           a la última versión (o VERSIÓN, p. ej., v0.0.2, o main)
+    coltex edition [standard | full]  muestra o cambia la edición de TeX Live
+
+  Acceso remoto (también en ColTex, en Configuración → Red)
+    coltex tailscale up               pone ColTex en tu tailnet: muestra un enlace de inicio de sesión
+    coltex tailscale status | down | off
+    coltex cloudflare quick           una dirección pública temporal de trycloudflare.com
+    coltex cloudflare token [TOKEN]   conecta un túnel de Cloudflare que creaste
+    coltex cloudflare status | off
+
+  Cuentas
+    coltex reset-password <correo>    establece una nueva contraseña para una cuenta
+    coltex system-admin <correo>      hace administrador del sistema a otra cuenta
+
+  Empezar de nuevo
+    coltex reset                      borra todos los datos y vuelve a empezar desde la configuración inicial
+    coltex uninstall                  quita ColTex de esta máquina (Docker se queda)' ;;
     pull_retry) M='La descarga se cortó; reintentando ({n}/{max})…' ;;
     pull_hint) M='Si ghcr.io va lento desde aquí (en China continental, por ejemplo): vuelve a ejecutar la orden de instalación con --images aliyun, las mismas imágenes en Alibaba Cloud (los ajustes y los datos se mantienen). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json y reinicia Docker.' ;;
     fixing_data) M='Dando la carpeta data al usuario con el que se ejecutan los contenedores ({owner})…' ;;
@@ -277,21 +375,37 @@ msg_fr() {
     no_release) M='Aucune version publiée trouvée' ;;
     latest) M='ColTex {version} est la dernière version publiée' ;;
     updating) M='Mise à jour de ColTex {from} → {to} ; notes de version : https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Édition de TeX Live : {edition} (standard : sans les manuels des packages, environ 9 GB ; full : avec, environ 20 GB)' ;;
+    edition_show) M='Édition de TeX Live : {edition} (standard : tous les packages sans manuels, environ 12 GB ; full : avec manuels et sources, environ 23 GB)' ;;
     edition_already) M='Déjà en édition {edition}' ;;
     edition_switching) M='Passage à l’édition {edition} (télécharge TeX Live)…' ;;
     done) M='Terminé.' ;;
     edition_usage) M='Utilisation : coltex edition [standard | full]' ;;
-    help) M='ColTex sur cette machine. À lancer depuis n’importe où (install.sh le lie dans ~/.local/bin) :
+    help) M='ColTex sur cette machine. À lancer depuis n’importe où :
 
-  coltex start | stop | restart | status | logs [service] | version
-  coltex update [VERSION]           vers la dernière version publiée (ou VERSION, p. ex. v0.0.2, ou main)
-  coltex edition [standard | full]  affiche ou change l’édition de TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [JETON] | off]
-  coltex cli <commande…>            toute commande `node src/cli.ts`, p. ex. `coltex cli system-admin <e-mail>`
-  coltex reset                      supprime toutes les données et recommence depuis la page de configuration
-  coltex uninstall                  supprime ColTex de cette machine (conteneurs, données, images, ce dossier)' ;;
+  Fonctionnement
+    coltex status                     est-il en marche, et à quelle adresse
+    coltex start | stop | restart
+    coltex logs [service]             suit un journal (celui du serveur, ou postgres, compiler…)
+    coltex version
+
+  Mises à jour
+    coltex update [VERSION]           vers la dernière version publiée (ou VERSION, p. ex. v0.0.2, ou main)
+    coltex edition [standard | full]  affiche ou change l’édition de TeX Live
+
+  Accès à distance (aussi dans ColTex, sous Paramètres → Réseau)
+    coltex tailscale up               place ColTex sur votre tailnet : affiche un lien de connexion
+    coltex tailscale status | down | off
+    coltex cloudflare quick           une adresse publique temporaire trycloudflare.com
+    coltex cloudflare token [JETON]   connecte un tunnel Cloudflare que vous avez créé
+    coltex cloudflare status | off
+
+  Comptes
+    coltex reset-password <e-mail>    définit un nouveau mot de passe pour un compte
+    coltex system-admin <e-mail>      fait d’un autre compte l’administrateur système
+
+  Repartir de zéro
+    coltex reset                      supprime toutes les données et repart de la page de configuration
+    coltex uninstall                  retire ColTex de cette machine (Docker reste installé)' ;;
     pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max})…' ;;
     pull_hint) M='Si ghcr.io est lent depuis ici (en Chine continentale, par exemple) : relancez la commande d’installation avec --images aliyun, les mêmes images sur Alibaba Cloud (réglages et données sont conservés). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json et redémarrez Docker.' ;;
     fixing_data) M='Attribution du dossier data à l’utilisateur des conteneurs ({owner})…' ;;
@@ -313,21 +427,37 @@ msg_de() {
     no_release) M='Keine Version gefunden' ;;
     latest) M='ColTex {version} ist die neueste Version' ;;
     updating) M='ColTex wird aktualisiert: {from} → {to}; Versionshinweise: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX-Live-Edition: {edition} (standard: ohne Paket-Handbücher, etwa 9 GB; full: mit ihnen, etwa 20 GB)' ;;
+    edition_show) M='TeX-Live-Edition: {edition} (standard: alle Pakete ohne Handbücher, etwa 12 GB; full: mit Handbüchern und Quellen, etwa 23 GB)' ;;
     edition_already) M='Bereits die Edition {edition}' ;;
     edition_switching) M='Wechsel zur Edition {edition} (lädt TeX Live herunter)…' ;;
     done) M='Fertig.' ;;
     edition_usage) M='Verwendung: coltex edition [standard | full]' ;;
-    help) M='ColTex auf diesem Rechner. Von überall ausführbar (install.sh verlinkt es nach ~/.local/bin):
+    help) M='ColTex auf diesem Rechner. Von überall ausführbar:
 
-  coltex start | stop | restart | status | logs [Dienst] | version
-  coltex update [VERSION]          auf die neueste Version (oder VERSION, z. B. v0.0.2, oder main)
-  coltex edition [standard | full]  die TeX-Live-Edition anzeigen oder wechseln
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <Befehl…>           ein beliebiger `node src/cli.ts`-Befehl, z. B. `coltex cli system-admin <E-Mail>`
-  coltex reset                      alle Daten löschen und auf der Einrichtungsseite neu beginnen
-  coltex uninstall                  ColTex von diesem Rechner entfernen (Container, Daten, Images, dieser Ordner)' ;;
+  Betrieb
+    coltex status                     läuft es, und unter welcher Adresse
+    coltex start | stop | restart
+    coltex logs [Dienst]              einem Protokoll folgen (dem des Servers oder postgres, compiler…)
+    coltex version
+
+  Updates
+    coltex update [VERSION]           auf die neueste Version (oder VERSION, z. B. v0.0.2, oder main)
+    coltex edition [standard | full]  die TeX-Live-Edition anzeigen oder wechseln
+
+  Fernzugriff (auch in ColTex unter Einstellungen → Netzwerk)
+    coltex tailscale up               ColTex in Ihr tailnet bringen: gibt einen Anmeldelink aus
+    coltex tailscale status | down | off
+    coltex cloudflare quick           eine temporäre öffentliche trycloudflare.com-Adresse
+    coltex cloudflare token [TOKEN]   einen von Ihnen erstellten Cloudflare-Tunnel verbinden
+    coltex cloudflare status | off
+
+  Konten
+    coltex reset-password <E-Mail>    ein neues Passwort für ein Konto festlegen
+    coltex system-admin <E-Mail>      ein anderes Konto zum Systemadmin machen
+
+  Neu anfangen
+    coltex reset                      alle Daten löschen und auf der Einrichtungsseite neu beginnen
+    coltex uninstall                  ColTex von diesem Rechner entfernen (Docker bleibt)' ;;
     pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max})…' ;;
     pull_hint) M='Wenn ghcr.io von hier aus langsam ist (etwa in Festlandchina): den Installationsbefehl erneut mit --images aliyun ausführen, dieselben Images bei Alibaba Cloud (Einstellungen und Daten bleiben). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen und Docker neu starten.' ;;
     fixing_data) M='Der Ordner data wird dem Benutzer der Container übergeben ({owner})…' ;;
@@ -349,21 +479,37 @@ msg_pt_BR() {
     no_release) M='Nenhuma versão encontrada' ;;
     latest) M='O ColTex {version} é a versão mais recente' ;;
     updating) M='Atualizando o ColTex {from} → {to}; veja as notas da versão: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Edição do TeX Live: {edition} (standard: sem os manuais dos pacotes, cerca de 9 GB; full: com eles, cerca de 20 GB)' ;;
+    edition_show) M='Edição do TeX Live: {edition} (standard: todos os pacotes sem manuais, cerca de 12 GB em disco; full: com manuais e fontes, cerca de 23 GB)' ;;
     edition_already) M='Já está na edição {edition}' ;;
     edition_switching) M='Mudando para a edição {edition} (baixa o TeX Live)…' ;;
     done) M='Concluído.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
-    help) M='ColTex nesta máquina. Execute de qualquer lugar (o install.sh cria um link em ~/.local/bin):
+    help) M='ColTex nesta máquina. Execute de qualquer lugar:
 
-  coltex start | stop | restart | status | logs [serviço] | version
-  coltex update [VERSÃO]           atualiza para a versão mais recente (ou VERSÃO, ex.: v0.0.2, ou main)
-  coltex edition [standard | full]  mostra ou troca a edição do TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <comando…>          qualquer comando de `node src/cli.ts`, ex.: `coltex cli system-admin <e-mail>`
-  coltex reset                      apaga todos os dados e recomeça pela página de configuração
-  coltex uninstall                  remove o ColTex desta máquina (contêineres, dados, imagens e esta pasta)' ;;
+  Em execução
+    coltex status                     se está em execução, e em qual endereço
+    coltex start | stop | restart
+    coltex logs [serviço]             acompanha um log (o do servidor, ou postgres, compiler…)
+    coltex version
+
+  Atualizações
+    coltex update [VERSÃO]            para a versão mais recente (ou VERSÃO, ex.: v0.0.2, ou main)
+    coltex edition [standard | full]  mostra ou troca a edição do TeX Live
+
+  Acesso remoto (também no ColTex, em Configurações → Rede)
+    coltex tailscale up               coloca o ColTex na sua tailnet: mostra um link de login
+    coltex tailscale status | down | off
+    coltex cloudflare quick           um endereço público temporário trycloudflare.com
+    coltex cloudflare token [TOKEN]   conecta um túnel da Cloudflare que você criou
+    coltex cloudflare status | off
+
+  Contas
+    coltex reset-password <e-mail>    define uma nova senha para uma conta
+    coltex system-admin <e-mail>      torna outra conta o administrador do sistema
+
+  Recomeçar do zero
+    coltex reset                      exclui todos os dados e recomeça a partir da página de configuração inicial
+    coltex uninstall                  remove o ColTex desta máquina (o Docker permanece)' ;;
     pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max})…' ;;
     pull_hint) M='Se o ghcr.io estiver lento daqui (na China continental, por exemplo): execute de novo o comando de instalação com --images aliyun, as mesmas imagens na Alibaba Cloud (configurações e dados ficam). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json e reinicie o Docker.' ;;
     fixing_data) M='Passando a pasta data para o usuário dos contêineres ({owner})…' ;;
@@ -385,21 +531,37 @@ msg_it() {
     no_release) M='Nessuna release trovata' ;;
     latest) M='ColTex {version} è l’ultima release' ;;
     updating) M='Aggiornamento di ColTex {from} → {to}; vedi le note di rilascio: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Edizione di TeX Live: {edition} (standard: senza manuali dei pacchetti, circa 9 GB; full: con i manuali, circa 20 GB)' ;;
+    edition_show) M='Edizione di TeX Live: {edition} (standard: tutti i pacchetti senza manuali, circa 12 GB; full: con manuali e sorgenti, circa 23 GB)' ;;
     edition_already) M='È già l’edizione {edition}' ;;
     edition_switching) M='Passaggio all’edizione {edition} (scarica TeX Live)…' ;;
     done) M='Fatto.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
-    help) M='ColTex su questa macchina. Si può eseguire da qualsiasi cartella (install.sh lo collega in ~/.local/bin):
+    help) M='ColTex su questa macchina. Si può eseguire da qualsiasi cartella:
 
-  coltex start | stop | restart | status | logs [servizio] | version
-  coltex update [VERSIONE]         all’ultima release (o a VERSIONE, ad es. v0.0.2, o main)
-  coltex edition [standard | full]  mostra o cambia l’edizione di TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <comando…>          qualsiasi comando `node src/cli.ts`, ad es. `coltex cli system-admin <email>`
-  coltex reset                      elimina tutti i dati e ricomincia dalla pagina di configurazione
-  coltex uninstall                  rimuove ColTex da questa macchina (container, dati, immagini, questa cartella)' ;;
+  In esecuzione
+    coltex status                     è in esecuzione, e a quale indirizzo
+    coltex start | stop | restart
+    coltex logs [servizio]            segue un log (quello del server, o postgres, compiler…)
+    coltex version
+
+  Aggiornamenti
+    coltex update [VERSIONE]          all’ultima release (o a VERSIONE, ad es. v0.0.2, o main)
+    coltex edition [standard | full]  mostra o cambia l’edizione di TeX Live
+
+  Accesso remoto (anche in ColTex in Impostazioni → Rete)
+    coltex tailscale up               mette ColTex sulla tua tailnet: stampa un link di accesso
+    coltex tailscale status | down | off
+    coltex cloudflare quick           un indirizzo pubblico temporaneo trycloudflare.com
+    coltex cloudflare token [TOKEN]   collega un tunnel Cloudflare che hai creato
+    coltex cloudflare status | off
+
+  Account
+    coltex reset-password <email>     imposta una nuova password per un account
+    coltex system-admin <email>       rende un altro account l’amministratore di sistema
+
+  Ricominciare da capo
+    coltex reset                      elimina tutti i dati e ricomincia dalla pagina di configurazione
+    coltex uninstall                  rimuove ColTex da questa macchina (Docker resta)' ;;
     pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max})…' ;;
     pull_hint) M='Se ghcr.io è lento da qui (nella Cina continentale, per esempio): esegui di nuovo il comando di installazione con --images aliyun, le stesse immagini su Alibaba Cloud (impostazioni e dati restano). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json e riavvia Docker.' ;;
     fixing_data) M='Assegno la cartella data all’utente dei container ({owner})…' ;;
@@ -421,21 +583,37 @@ msg_ru() {
     no_release) M='Выпуск не найден' ;;
     latest) M='ColTex {version} — последний выпуск' ;;
     updating) M='Обновление ColTex {from} → {to}; примечания к выпуску: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Редакция TeX Live: {edition} (standard: без руководств пакетов, около 9 GB; full: с ними, около 20 GB)' ;;
+    edition_show) M='Редакция TeX Live: {edition} (standard: все пакеты без руководств, около 12 GB; full: с руководствами и исходниками, около 23 GB)' ;;
     edition_already) M='Уже установлена редакция {edition}' ;;
     edition_switching) M='Переключение на редакцию {edition} (загружается TeX Live)…' ;;
     done) M='Готово.' ;;
     edition_usage) M='Использование: coltex edition [standard | full]' ;;
-    help) M='ColTex на этой машине. Запускается из любого каталога (install.sh добавляет ссылку в ~/.local/bin):
+    help) M='ColTex на этой машине. Запускается из любого каталога:
 
-  coltex start | stop | restart | status | logs [служба] | version
-  coltex update [ВЕРСИЯ]            до последнего выпуска (или до ВЕРСИИ, например v0.0.2, или main)
-  coltex edition [standard | full]  показать или сменить редакцию TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [ТОКЕН] | off]
-  coltex cli <команда…>             любая команда `node src/cli.ts`, например `coltex cli system-admin <почта>`
-  coltex reset                      удалить все данные и начать заново со страницы настройки
-  coltex uninstall                  удалить ColTex с этой машины (контейнеры, данные, образы, эту папку)' ;;
+  Работа
+    coltex status                     запущен ли ColTex и по какому адресу
+    coltex start | stop | restart
+    coltex logs [служба]              следить за журналом (сервера, или postgres, compiler…)
+    coltex version
+
+  Обновления
+    coltex update [ВЕРСИЯ]            до последнего выпуска (или до ВЕРСИИ, например v0.0.2, или main)
+    coltex edition [standard | full]  показать или сменить редакцию TeX Live
+
+  Удалённый доступ (также в ColTex: Настройки → Сеть)
+    coltex tailscale up               подключить ColTex к вашему tailnet: выводит ссылку для входа
+    coltex tailscale status | down | off
+    coltex cloudflare quick           временный публичный адрес trycloudflare.com
+    coltex cloudflare token [ТОКЕН]   подключить созданный вами туннель Cloudflare
+    coltex cloudflare status | off
+
+  Учётные записи
+    coltex reset-password <почта>     задать новый пароль для учётной записи
+    coltex system-admin <почта>       сделать системным администратором другую учётную запись
+
+  Начать заново
+    coltex reset                      удалить все данные и начать заново со страницы первоначальной настройки
+    coltex uninstall                  удалить ColTex с этой машины (Docker остаётся)' ;;
     pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max})…' ;;
     pull_hint) M='Если ghcr.io отсюда работает медленно (например, в материковом Китае): запустите команду установки снова с --images aliyun — те же образы в Alibaba Cloud (настройки и данные сохранятся). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json и перезапустите Docker.' ;;
     fixing_data) M='Папка data передаётся пользователю, от имени которого работают контейнеры ({owner})…' ;;
@@ -457,21 +635,37 @@ msg_tr() {
     no_release) M='Sürüm bulunamadı' ;;
     latest) M='ColTex {version} en son sürüm' ;;
     updating) M='ColTex güncelleniyor: {from} → {to}; sürüm notları: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='TeX Live sürümü: {edition} (standard: paket kılavuzları olmadan, yaklaşık 9 GB; full: kılavuzlarla, yaklaşık 20 GB)' ;;
+    edition_show) M='TeX Live sürümü: {edition} (standard: kılavuzlar olmadan tüm paketler, yaklaşık 12 GB; full: kılavuzlar ve kaynaklarla, yaklaşık 23 GB)' ;;
     edition_already) M='Zaten bu sürüm kullanılıyor: {edition}' ;;
     edition_switching) M='Şu sürüme geçiliyor: {edition} (TeX Live indirilir)…' ;;
     done) M='Bitti.' ;;
     edition_usage) M='Kullanım: coltex edition [standard | full]' ;;
-    help) M='Bu makinedeki ColTex. Her yerden çalıştırın (install.sh onu ~/.local/bin içine bağlar):
+    help) M='Bu makinedeki ColTex. Her yerden çalıştırın:
 
-  coltex start | stop | restart | status | logs [hizmet] | version
-  coltex update [SÜRÜM]            en son sürüme (veya SÜRÜM, ör. v0.0.2 ya da main)
-  coltex edition [standard | full]  TeX Live sürümünü göster veya değiştir
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [BELİRTEÇ] | off]
-  coltex cli <komut…>            herhangi bir `node src/cli.ts` komutu, ör. `coltex cli system-admin <e-posta>`
-  coltex reset                      tüm verileri sil ve kurulum sayfasından yeniden başla
-  coltex uninstall                  ColTex’i bu makineden kaldır (konteynerler, veriler, imajlar, bu klasör)' ;;
+  Çalıştırma
+    coltex status                       çalışıyor mu, hangi adreste
+    coltex start | stop | restart
+    coltex logs [hizmet]                bir günlüğü izle (sunucunun ya da postgres, compiler…)
+    coltex version
+
+  Güncellemeler
+    coltex update [SÜRÜM]               en son sürüme (veya SÜRÜM, ör. v0.0.2 ya da main)
+    coltex edition [standard | full]    TeX Live sürümünü göster veya değiştir
+
+  Uzaktan erişim (ColTex’te Ayarlar → Ağ altında da)
+    coltex tailscale up                 ColTex’i tailnet’inize ekle: bir oturum açma bağlantısı yazdırır
+    coltex tailscale status | down | off
+    coltex cloudflare quick             geçici, genel bir trycloudflare.com adresi
+    coltex cloudflare token [BELİRTEÇ]  oluşturduğunuz bir Cloudflare tünelini bağla
+    coltex cloudflare status | off
+
+  Hesaplar
+    coltex reset-password <e-posta>     bir hesap için yeni parola belirle
+    coltex system-admin <e-posta>       başka bir hesabı sistem yöneticisi yap
+
+  Baştan başlama
+    coltex reset                        tüm verileri sil ve kurulum sayfasından yeniden başla
+    coltex uninstall                    ColTex’i bu makineden kaldır (Docker kalır)' ;;
     pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max})…' ;;
     pull_hint) M='ghcr.io buradan yavaşsa (örneğin Çin anakarasında): kurulum komutunu --images aliyun ile yeniden çalıştırın; aynı imajlar Alibaba Cloud’dan iner (ayarlar ve veriler kalır). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayıp Docker’ı yeniden başlatın.' ;;
     fixing_data) M='data klasörü kapsayıcıları çalıştıran kullanıcıya veriliyor ({owner})…' ;;
@@ -493,21 +687,37 @@ msg_vi() {
     no_release) M='Không tìm thấy bản phát hành nào' ;;
     latest) M='ColTex {version} là bản phát hành mới nhất' ;;
     updating) M='Đang cập nhật ColTex {from} → {to}; xem ghi chú phát hành: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Phiên bản TeX Live: {edition} (standard: không có tài liệu hướng dẫn của các gói, khoảng 9 GB; full: có tài liệu, khoảng 20 GB)' ;;
+    edition_show) M='Phiên bản TeX Live: {edition} (standard: mọi gói, không kèm tài liệu, khoảng 12 GB; full: kèm tài liệu và mã nguồn, khoảng 23 GB)' ;;
     edition_already) M='Đang dùng phiên bản {edition} rồi' ;;
     edition_switching) M='Đang chuyển sang phiên bản {edition} (tải TeX Live)…' ;;
     done) M='Xong.' ;;
     edition_usage) M='Cách dùng: coltex edition [standard | full]' ;;
-    help) M='ColTex trên máy này. Chạy được từ bất kỳ thư mục nào (install.sh liên kết nó vào ~/.local/bin):
+    help) M='ColTex trên máy này. Chạy được từ bất kỳ thư mục nào:
 
-  coltex start | stop | restart | status | logs [dịch vụ] | version
-  coltex update [PHIÊN BẢN]         lên bản phát hành mới nhất (hoặc PHIÊN BẢN, vd. v0.0.2, hoặc main)
-  coltex edition [standard | full]  xem hoặc chuyển phiên bản TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <lệnh…>                bất kỳ lệnh `node src/cli.ts` nào, vd. `coltex cli system-admin <email>`
-  coltex reset                      xóa toàn bộ dữ liệu và bắt đầu lại từ trang thiết lập
-  coltex uninstall                  gỡ ColTex khỏi máy này (container, dữ liệu, image, thư mục này)' ;;
+  Vận hành
+    coltex status                     có đang chạy không, và ở địa chỉ nào
+    coltex start | stop | restart
+    coltex logs [dịch vụ]             theo dõi nhật ký (của máy chủ, hoặc postgres, compiler…)
+    coltex version
+
+  Cập nhật
+    coltex update [PHIÊN BẢN]         lên bản phát hành mới nhất (hoặc PHIÊN BẢN, vd. v0.0.2, hoặc main)
+    coltex edition [standard | full]  xem hoặc chuyển phiên bản TeX Live
+
+  Truy cập từ xa (cũng có trong ColTex ở Cài đặt → Mạng)
+    coltex tailscale up               đưa ColTex vào tailnet của bạn: in ra liên kết đăng nhập
+    coltex tailscale status | down | off
+    coltex cloudflare quick           một địa chỉ trycloudflare.com công khai tạm thời
+    coltex cloudflare token [TOKEN]   kết nối một Cloudflare tunnel bạn đã tạo
+    coltex cloudflare status | off
+
+  Tài khoản
+    coltex reset-password <email>     đặt mật khẩu mới cho một tài khoản
+    coltex system-admin <email>       đặt một tài khoản khác làm quản trị viên hệ thống
+
+  Bắt đầu lại
+    coltex reset                      xóa toàn bộ dữ liệu và bắt đầu lại từ trang thiết lập
+    coltex uninstall                  gỡ ColTex khỏi máy này (Docker được giữ lại)' ;;
     pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max})…' ;;
     pull_hint) M='Nếu ghcr.io chậm từ đây (ví dụ ở Trung Quốc đại lục): chạy lại lệnh cài đặt với --images aliyun để tải cùng các image từ Alibaba Cloud (thiết lập và dữ liệu được giữ nguyên). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json rồi khởi động lại Docker.' ;;
     fixing_data) M='Đang giao thư mục data cho người dùng chạy các container ({owner})…' ;;
@@ -529,21 +739,37 @@ msg_id() {
     no_release) M='Tidak ada rilis' ;;
     latest) M='ColTex {version} adalah rilis terbaru' ;;
     updating) M='Memperbarui ColTex {from} → {to}; lihat catatan rilis: https://github.com/Lewen-Cai/coltex/releases' ;;
-    edition_show) M='Edisi TeX Live: {edition} (standard: tanpa manual paket, sekitar 9 GB; full: dengan manual, sekitar 20 GB)' ;;
+    edition_show) M='Edisi TeX Live: {edition} (standard: semua paket tanpa manual, sekitar 12 GB; full: dengan manual dan sumber, sekitar 23 GB)' ;;
     edition_already) M='Sudah menggunakan edisi {edition}' ;;
     edition_switching) M='Beralih ke edisi {edition} (mengunduh TeX Live)…' ;;
     done) M='Selesai.' ;;
     edition_usage) M='Penggunaan: coltex edition [standard | full]' ;;
-    help) M='ColTex di mesin ini. Dapat dijalankan dari mana saja (install.sh menautkannya ke ~/.local/bin):
+    help) M='ColTex di mesin ini. Dapat dijalankan dari mana saja:
 
-  coltex start | stop | restart | status | logs [layanan] | version
-  coltex update [VERSI]            ke rilis terbaru (atau VERSI, mis. v0.0.2, atau main)
-  coltex edition [standard | full]  tampilkan atau ganti edisi TeX Live
-  coltex tailscale [status | up | down | off]
-  coltex cloudflare [status | quick | token [TOKEN] | off]
-  coltex cli <perintah…>           perintah `node src/cli.ts` apa pun, mis. `coltex cli system-admin <email>`
-  coltex reset                      hapus semua data dan mulai lagi dari halaman penyiapan
-  coltex uninstall                  hapus ColTex dari mesin ini (kontainer, data, image, folder ini)' ;;
+  Menjalankan
+    coltex status                     apakah sedang berjalan, dan di alamat mana
+    coltex start | stop | restart
+    coltex logs [layanan]             ikuti log (server, atau postgres, compiler…)
+    coltex version
+
+  Pembaruan
+    coltex update [VERSI]             ke rilis terbaru (atau VERSI, mis. v0.0.2, atau main)
+    coltex edition [standard | full]  tampilkan atau ganti edisi TeX Live
+
+  Akses jarak jauh (juga di ColTex, di Pengaturan → Jaringan)
+    coltex tailscale up               masukkan ColTex ke tailnet Anda: mencetak tautan masuk
+    coltex tailscale status | down | off
+    coltex cloudflare quick           alamat trycloudflare.com publik sementara
+    coltex cloudflare token [TOKEN]   sambungkan terowongan Cloudflare yang Anda buat
+    coltex cloudflare status | off
+
+  Akun
+    coltex reset-password <email>     atur kata sandi baru untuk sebuah akun
+    coltex system-admin <email>       jadikan akun lain sebagai admin sistem
+
+  Mulai dari awal
+    coltex reset                      hapus semua data dan mulai lagi dari halaman penyiapan
+    coltex uninstall                  hapus ColTex dari mesin ini (Docker tetap ada)' ;;
     pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max})…' ;;
     pull_hint) M='Jika ghcr.io lambat dari sini (misalnya di Tiongkok daratan): jalankan lagi perintah instalasi dengan --images aliyun, image yang sama di Alibaba Cloud (pengaturan dan data tetap ada). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json lalu mulai ulang Docker.' ;;
     fixing_data) M='Menyerahkan folder data ke pengguna yang menjalankan kontainer ({owner})…' ;;
@@ -638,6 +864,17 @@ exec_server() {
   if [ -t 0 ] && [ -t 1 ]; then compose exec server node src/cli.ts "$@"; else compose exec -T server node src/cli.ts "$@"; fi
 }
 
+# Connections to GitHub are sometimes reset on the way ("Recv failure: Connection reset by
+# peer"), so a git command that goes over the network is tried up to four times.
+net() {
+  local try
+  for try in 1 2 3; do
+    "$@" && return 0
+    sleep "$try"
+  done
+  "$@"
+}
+
 case "${1:-help}" in
   start) quiet_bind; ensure_data; compose up -d ;;
   stop) compose down ;;
@@ -656,15 +893,16 @@ case "${1:-help}" in
     from="$(current)"
     to="${2:-}"
     if [ -z "$to" ]; then
-      # On the main branch (installed with --version main) updates follow main; otherwise releases.
-      if git symbolic-ref -q HEAD >/dev/null; then to=main; else to="$(git ls-remote --tags --refs origin 'v*' | sed 's|.*refs/tags/||' | sort -V | tail -1)"; fi
+      # On the main branch (installed with --version main) updates follow main; otherwise releases
+      # (never a pre-release unless it is named).
+      if git symbolic-ref -q HEAD >/dev/null; then to=main; else to="$(net git ls-remote --tags --refs origin 'v*' | sed 's|.*refs/tags/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"; fi
     fi
     [ -n "$to" ] || { T no_release >&2; exit 1; }
     if [ "$to" = main ]; then
-      git fetch --depth 1 origin main && git checkout -q -B main FETCH_HEAD
+      net git fetch --depth 1 origin main && git checkout -q -B main FETCH_HEAD
     else
       if [ "$to" = "$from" ]; then T latest version="$from"; exit 0; fi
-      git fetch --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
+      net git fetch --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
     fi
     T updating from="$from" to="$(current)"
     setting COLTEX_IMAGE_TAG "$to"
@@ -695,8 +933,13 @@ case "${1:-help}" in
     shift
     exec_server "$cmd" "$@"
     ;;
+  reset-password | system-admin)
+    exec_server "$@"
+    ;;
   cli)
     shift
+    # Without a command, the list of commands (the server's own is one line in English).
+    if [ $# = 0 ]; then T help; exit 0; fi
     exec_server "$@"
     ;;
   reset)

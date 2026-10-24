@@ -10,16 +10,18 @@ Unter Linux oder macOS mit Docker genügt ein Befehl:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Er fragt nach der Sprache, der Edition und danach, wie Personen ColTex erreichen sollen (mit den Pfeiltasten; Optionen wie `--edition`, `--domain` oder `--lang` beantworten diese Fragen stattdessen), prüft Docker (unter Linux kann er es installieren), holt ColTex nach `~/coltex`, schreibt die Einstellungen, lädt die vorgefertigten Images (x86-64 und ARM64) herunter, startet ColTex und gibt die Adressen aus, die Sie auf diesem Rechner und in Ihrem Netzwerk öffnen können. Beim ersten Start wird TeX Live heruntergeladen. Es gibt zwei Editionen:
+Bricht der Download ab (`curl: (35) Recv failure: Connection reset by peer`, häufig, wenn GitHub schwer erreichbar ist), führen Sie den Befehl einfach erneut aus.
+
+Er fragt nach der Sprache und der TeX-Live-Edition (mit den Pfeiltasten; `--edition` und `--lang` beantworten diese Fragen stattdessen), prüft Docker (unter Linux kann er es installieren), holt ColTex nach `~/coltex`, schreibt die Einstellungen, lädt die vorgefertigten Images (x86-64 und ARM64) herunter, startet ColTex und gibt die Adressen aus, die Sie auf diesem Rechner und in Ihrem Netzwerk öffnen können. Beim ersten Start wird TeX Live heruntergeladen. Es gibt zwei Editionen:
 
 | Edition | Download | Auf der Festplatte (ColTex gesamt) | Benötigter freier Speicher |
 | --- | --- | --- | --- |
 | **standard** (Voreinstellung) | etwa 3 GB | etwa 12 GB | 20 GB |
 | **full** (`--edition full`) | etwa 8 GB | etwa 23 GB | 35 GB |
 
-Beide kompilieren gleich (das vollständige TeX Live). Die Edition full fügt die Handbücher und Quellen der Pakete hinzu, die der KI-Agent dann lesen kann; mit der Edition standard antwortet er anhand der Paketdateien und seines eigenen Wissens. Später wechseln Sie mit `coltex edition full` oder `coltex edition standard`.
+Beide enthalten das vollständige TeX Live und kompilieren gleich, und der KI-Agent funktioniert mit beiden. Der Edition standard fehlen die Handbücher und Quellen der Pakete; die Edition full fügt sie hinzu, und der KI-Agent kann dann auch die Handbücher lesen. Mit der Edition standard antwortet er anhand der Paketdateien und seines eigenen Wissens. Später wechseln Sie mit `coltex edition full` oder `coltex edition standard`.
 
-Der Fernzugriff lässt sich gleich mit einschalten:
+Den Fernzugriff (Tailscale, Cloudflare Tunnel) schalten Sie nach der Installation unter **Einstellungen → Netzwerk** ein (siehe unten). Bei skriptgesteuerten Installationen können Optionen ihn auch gleich mit einrichten:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

@@ -84,7 +84,9 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-脚本会先用方向键询问语言、TeX Live 版本和访问方式，然后把最新版本下载到 `~/coltex`，生成配置，带进度条下载预构建的镜像并启动 ColTex，最后打印访问地址。在中国大陆，它会自动从阿里云容器镜像服务下载镜像（和 ghcr.io 上的完全相同）。完整输出写在 `~/coltex/install.log`。然后打开 `http://<服务器>:3690`，创建管理员账号。
+如果下载中途断开（`curl: (35) Recv failure: Connection reset by peer`，访问 GitHub 不稳定时常见），重新运行这条命令即可。
+
+脚本会先用方向键询问语言和 TeX Live 版本，然后把最新版本下载到 `~/coltex`，生成配置，带进度条下载预构建的镜像并启动 ColTex，最后打印访问地址。在中国大陆，它会自动从阿里云容器镜像服务下载镜像（和 ghcr.io 上的完全相同）。完整输出写在 `~/coltex/install.log`。然后打开 `http://<服务器>:3690`，创建管理员账号。远程访问（Tailscale、Cloudflare Tunnel）之后在 **设置 → 网络** 里开启。
 
 第一次启动要下载 TeX Live，有两个版本可选：
 
@@ -93,9 +95,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | **标准版**（默认） | 约 3 GB | 约 12 GB | 20 GB |
 | **完整版**（`--edition full`） | 约 8 GB | 约 23 GB | 35 GB |
 
-两个版本能编译的文档一样。完整版多了宏包手册，AI 智能体 可以查阅。
+两个版本都包含 TeX Live 的全部宏包，能编译的文档一样，AI 智能体也都能用。标准版不带宏包手册；完整版加上了宏包手册和源码，AI 智能体还可以查阅它们。
 
-参数可以直接回答这些问题，没有终端时也用它们代替（加在 `bash -s --` 后面）：
+`--edition` 和 `--lang` 可以直接回答这些问题，没有终端时也用它们代替；`--domain`、`--tailscale` 和 Cloudflare 相关参数用于脚本化安装，在安装时就配置好远程访问。参数加在 `bash -s --` 后面：
 
 | 参数 | |
 | --- | --- |
@@ -104,7 +106,6 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--cloudflare-token 令牌` | 连接你为自己域名创建的 Cloudflare 隧道 |
 | `--cloudflare-quick` | 临时的 `trycloudflare.com` 公网地址，适合试用 |
 | `--edition full` | 完整版 TeX Live |
-| `--local` | 只在本机和局域网访问 |
 | `--lang LANG` | 安装脚本、`coltex` 和初始设置页面的语言：`en`、`zh-CN`、`zh-TW`、`ja`、`ko`、`es`、`fr`、`de`、`pt-BR`、`it`、`ru`、`tr`、`vi` 或 `id`（不指定时会询问） |
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |

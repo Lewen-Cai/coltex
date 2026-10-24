@@ -10,16 +10,18 @@ ColTex 正式部署只用一个端口（默认 3690）：网页、接口、实�
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-在中国大陆，它会自动从阿里云下载镜像（与 ghcr.io 上的相同）。它会先用方向键询问语言、版本和访问方式（也可以用 `--edition`、`--domain`、`--lang` 等参数直接指定），再检查 Docker（Linux 上没有的话可以帮你装）、把 ColTex 下载到 `~/coltex`、生成配置、下载预构建的镜像（x86-64 和 ARM64）并启动，最后打印本机和局域网的访问地址。第一次启动要下载 TeX Live，有两个版本：
+如果下载中途断开（`curl: (35) Recv failure: Connection reset by peer`，访问 GitHub 不稳定时常见），重新运行这条命令即可。
+
+在中国大陆，它会自动从阿里云下载镜像（与 ghcr.io 上的相同）。它会先用方向键询问语言和 TeX Live 版本（也可以用 `--edition`、`--lang` 参数直接指定），再检查 Docker（Linux 上没有的话可以帮你装）、把 ColTex 下载到 `~/coltex`、生成配置、下载预构建的镜像（x86-64 和 ARM64）并启动，最后打印本机和局域网的访问地址。第一次启动要下载 TeX Live，有两个版本：
 
 | 版本 | 下载量 | 安装后整个 ColTex 占用 | 建议预留空间 |
 | --- | --- | --- | --- |
 | **标准版**（默认） | 约 3 GB | 约 12 GB | 20 GB |
 | **完整版**（`--edition full`） | 约 8 GB | 约 23 GB | 35 GB |
 
-两个版本编译效果一样（都是完整的 TeX Live）。完整版多了宏包手册和源码，AI 智能体可以查阅；标准版里 AI 根据宏包文件和自己的知识回答。之后可以用 `coltex edition full` 或 `coltex edition standard` 切换。
+两个版本都是完整的 TeX Live，编译效果一样，AI 智能体也都能用。标准版不带宏包手册和源码；完整版加上了它们，AI 智能体还可以查阅手册。用标准版时，AI 智能体根据宏包文件和自己的知识回答。之后可以用 `coltex edition full` 或 `coltex edition standard` 切换。
 
-安装时可以顺带开启远程访问：
+远程访问（Tailscale、Cloudflare Tunnel）在安装后到 **设置 → 网络** 里开启（见下文）。用脚本安装时，也可以用参数在安装时顺带开启：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

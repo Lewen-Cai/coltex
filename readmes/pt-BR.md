@@ -84,7 +84,9 @@ Você precisa de uma máquina Linux ou macOS com Docker (no Linux, o instalador 
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Ele pergunta o idioma, a edição do TeX Live e como as pessoas vão acessar o ColTex (com as setas do teclado), coloca a versão mais recente em `~/coltex`, baixa as imagens pré-compiladas com uma barra de progresso, inicia o ColTex e mostra os endereços para abrir. A saída completa vai para `~/coltex/install.log`. Depois, abra `http://<server>:3690` e crie a conta de administrador.
+Se o download for interrompido (`curl: (35) Recv failure: Connection reset by peer`, comum quando o GitHub está difícil de acessar), execute o comando de novo.
+
+Ele pergunta o idioma e a edição do TeX Live (com as setas do teclado), coloca a versão mais recente em `~/coltex`, baixa as imagens pré-compiladas com uma barra de progresso, inicia o ColTex e mostra os endereços para abrir. A saída completa vai para `~/coltex/install.log`. Depois, abra `http://<server>:3690` e crie a conta de administrador. O acesso remoto pelo Tailscale ou pelo Cloudflare Tunnel é ativado depois em **Configurações → Rede**.
 
 A primeira inicialização baixa o TeX Live. Escolha uma edição:
 
@@ -93,9 +95,9 @@ A primeira inicialização baixa o TeX Live. Escolha uma edição:
 | **standard** (padrão) | cerca de 3 GB | cerca de 12 GB | 20 GB |
 | **full** (`--edition full`) | cerca de 8 GB | cerca de 23 GB | 35 GB |
 
-As duas compilam os mesmos documentos. A edição full também tem os manuais dos pacotes, que o agente de IA passa a poder ler.
+As duas têm todos os pacotes do TeX Live e compilam os mesmos documentos, e o agente de IA funciona com qualquer uma. A standard não traz os manuais dos pacotes; a full acrescenta os manuais e os códigos-fonte, que o agente de IA também pode ler.
 
-As opções respondem às perguntas, ou as substituem quando não há terminal (coloque-as depois de `bash -s --`):
+`--edition` e `--lang` respondem às perguntas, ou as substituem quando não há terminal. `--domain`, `--tailscale` e as opções da Cloudflare configuram o acesso remoto já na instalação, para instalações automatizadas. Coloque as opções depois de `bash -s --`:
 
 | Opção | |
 | --- | --- |
@@ -104,7 +106,6 @@ As opções respondem às perguntas, ou as substituem quando não há terminal (
 | `--cloudflare-token TOKEN` | Conecta um túnel da Cloudflare que você criou para o seu próprio domínio |
 | `--cloudflare-quick` | Um endereço público temporário `trycloudflare.com`, para experimentar |
 | `--edition full` | A edição full do TeX Live |
-| `--local` | Só esta máquina e a rede dela |
 | `--lang LANG` | O idioma do instalador, do `coltex` e da página de configuração inicial: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi` ou `id` (perguntado quando não informado) |
 | `--port 3690` | Outra porta |
 | `--version v0.0.1` | Uma versão específica (`main` para o branch de desenvolvimento) |

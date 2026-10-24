@@ -84,7 +84,9 @@ Docker가 있는 Linux 또는 macOS 컴퓨터(Linux에서는 설치 프로그램
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-설치 프로그램은 언어, TeX Live 에디션, 사람들이 ColTex에 접속할 방법을 묻고(화살표 키로 선택), 최신 릴리스를 `~/coltex`에 내려받고, 진행 막대와 함께 미리 빌드된 이미지를 다운로드하고, ColTex를 시작한 뒤 열 주소를 출력합니다. 전체 출력은 `~/coltex/install.log`에 기록됩니다. 그다음 `http://<server>:3690`을 열고 관리자 계정을 만드세요.
+다운로드가 중간에 끊기면(`curl: (35) Recv failure: Connection reset by peer`, GitHub에 접속하기 어려울 때 자주 생깁니다) 명령을 다시 실행하세요.
+
+설치 프로그램은 언어와 TeX Live 에디션을 묻고(화살표 키로 선택), 최신 릴리스를 `~/coltex`에 내려받고, 진행 막대와 함께 미리 빌드된 이미지를 다운로드하고, ColTex를 시작한 뒤 열 주소를 출력합니다. 전체 출력은 `~/coltex/install.log`에 기록됩니다. 그다음 `http://<server>:3690`을 열고 관리자 계정을 만드세요. Tailscale이나 Cloudflare Tunnel을 통한 원격 접속은 나중에 **설정 → 네트워크**에서 켭니다.
 
 처음 시작할 때 TeX Live를 다운로드합니다. 에디션을 고르세요.
 
@@ -93,9 +95,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | **standard**(기본값) | 약 3 GB | 약 12 GB | 20 GB |
 | **full**(`--edition full`) | 약 8 GB | 약 23 GB | 35 GB |
 
-두 에디션 모두 같은 문서를 컴파일합니다. full 에디션에는 패키지 매뉴얼도 들어 있어 AI 에이전트가 읽을 수 있습니다.
+두 에디션 모두 TeX Live의 모든 패키지를 담고 있어 같은 문서를 컴파일하며, AI 에이전트도 어느 쪽에서나 쓸 수 있습니다. standard 에디션에는 패키지 매뉴얼이 없고, full 에디션에는 매뉴얼과 소스가 더해져 AI 에이전트가 이것도 읽을 수 있습니다.
 
-옵션으로 질문에 답하거나, 터미널이 없는 환경에서는 질문 대신 옵션을 씁니다(`bash -s --` 뒤에 붙이세요).
+`--edition`과 `--lang`으로 질문에 답하거나, 터미널이 없는 환경에서는 질문 대신 이 옵션을 씁니다. `--domain`, `--tailscale`, Cloudflare 옵션은 스크립트로 설치할 때 원격 접속까지 함께 설정하는 용도입니다. 옵션은 `bash -s --` 뒤에 붙이세요.
 
 | 옵션 | |
 | --- | --- |
@@ -104,7 +106,6 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--cloudflare-token TOKEN` | 내 도메인용으로 만든 Cloudflare 터널에 연결합니다 |
 | `--cloudflare-quick` | 시험용 임시 공개 `trycloudflare.com` 주소 |
 | `--edition full` | full TeX Live 에디션 |
-| `--local` | 이 컴퓨터와 그 네트워크에서만 접속 |
 | `--lang LANG` | 설치 프로그램, `coltex`, 초기 설정 페이지의 언어: `en`, `zh-CN`, `zh-TW`, `ja`, `ko`, `es`, `fr`, `de`, `pt-BR`, `it`, `ru`, `tr`, `vi` 또는 `id`(지정하지 않으면 물어봅니다) |
 | `--port 3690` | 다른 포트 사용 |
 | `--version v0.0.1` | 특정 릴리스(`main`은 개발 브랜치) |

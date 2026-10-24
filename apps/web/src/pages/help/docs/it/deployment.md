@@ -10,16 +10,18 @@ Su Linux o macOS con Docker, un solo comando:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Chiede la lingua, l’edizione e come le persone raggiungeranno ColTex (con i tasti freccia; opzioni come `--edition`, `--domain` o `--lang` rispondono al posto tuo), controlla Docker (su Linux può installarlo), scarica ColTex in `~/coltex`, scrive le impostazioni, scarica le immagini precompilate (x86-64 e ARM64) e lo avvia, poi stampa gli indirizzi da aprire su questa macchina e nella tua rete. Il primo avvio scarica TeX Live. Ci sono due edizioni:
+Se il download si interrompe (`curl: (35) Recv failure: Connection reset by peer`, frequente quando GitHub è difficile da raggiungere), esegui di nuovo il comando.
+
+Chiede la lingua e l’edizione di TeX Live (con i tasti freccia; `--edition` e `--lang` rispondono al posto tuo), controlla Docker (su Linux può installarlo), scarica ColTex in `~/coltex`, scrive le impostazioni, scarica le immagini precompilate (x86-64 e ARM64) e lo avvia, poi stampa gli indirizzi da aprire su questa macchina e nella tua rete. Il primo avvio scarica TeX Live. Ci sono due edizioni:
 
 | Edizione | Download | Su disco (tutto ColTex) | Spazio libero necessario |
 | --- | --- | --- | --- |
 | **standard** (predefinita) | circa 3 GB | circa 12 GB | 20 GB |
 | **full** (`--edition full`) | circa 8 GB | circa 23 GB | 35 GB |
 
-Entrambe compilano allo stesso modo (TeX Live completo). L’edizione full aggiunge i manuali e i sorgenti dei pacchetti, che l’agente IA può quindi leggere; con quella standard risponde in base ai file dei pacchetti e alle proprie conoscenze. Puoi cambiare in seguito con `coltex edition full` o `coltex edition standard`.
+Entrambe hanno TeX Live completo e compilano allo stesso modo, e l’agente IA funziona con tutte e due. La standard non include i manuali e i sorgenti dei pacchetti; la full li aggiunge, e l’agente IA può anche leggere i manuali. Con quella standard risponde in base ai file dei pacchetti e alle proprie conoscenze. Puoi cambiare in seguito con `coltex edition full` o `coltex edition standard`.
 
-L’accesso remoto si può attivare contemporaneamente:
+L’accesso remoto (Tailscale, Cloudflare Tunnel) si attiva dopo l’installazione, in **Impostazioni → Rete** (vedi sotto). Nelle installazioni da script, alcune opzioni possono anche configurarlo durante l’installazione:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

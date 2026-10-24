@@ -10,16 +10,18 @@ Di Linux atau macOS dengan Docker, cukup satu perintah:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Perintah ini menanyakan bahasa, edisi, dan cara orang akan menjangkau ColTex (tombol panah; opsi seperti `--edition`, `--domain`, atau `--lang` menjawabnya sebagai gantinya), memeriksa Docker (di Linux dapat memasangnya), mengambil ColTex ke `~/coltex`, menulis pengaturan, mengunduh image siap pakai (x86-64 dan ARM64) lalu menjalankannya, dan mencetak alamat yang dapat dibuka di mesin ini dan di jaringan Anda. Saat pertama kali dijalankan, TeX Live diunduh. Ada dua edisi:
+Jika unduhan terputus (`curl: (35) Recv failure: Connection reset by peer`, sering terjadi saat GitHub sulit dijangkau), jalankan perintahnya lagi.
+
+Perintah ini menanyakan bahasa dan edisi TeX Live (tombol panah; opsi `--edition` dan `--lang` menjawabnya sebagai gantinya), memeriksa Docker (di Linux dapat memasangnya), mengambil ColTex ke `~/coltex`, menulis pengaturan, mengunduh image siap pakai (x86-64 dan ARM64) lalu menjalankannya, dan mencetak alamat yang dapat dibuka di mesin ini dan di jaringan Anda. Saat pertama kali dijalankan, TeX Live diunduh. Ada dua edisi:
 
 | Edisi | Unduhan | Di disk (seluruh ColTex) | Ruang kosong yang diperlukan |
 | --- | --- | --- | --- |
 | **standard** (bawaan) | sekitar 3 GB | sekitar 12 GB | 20 GB |
 | **full** (`--edition full`) | sekitar 8 GB | sekitar 23 GB | 35 GB |
 
-Keduanya mengompilasi dengan sama (TeX Live lengkap). Edisi full menambahkan manual dan sumber paket, yang kemudian dapat dibaca agen AI; dengan edisi standard, agen menjawab dari file paket dan pengetahuannya sendiri. Ganti kemudian dengan `coltex edition full` atau `coltex edition standard`.
+Keduanya berisi TeX Live lengkap dan mengompilasi dengan sama, dan agen AI bekerja dengan keduanya. Edisi standard tidak menyertakan manual dan sumber paket; edisi full menambahkannya, dan agen AI juga dapat membaca manualnya. Dengan edisi standard, agen menjawab dari file paket dan pengetahuannya sendiri. Ganti kemudian dengan `coltex edition full` atau `coltex edition standard`.
 
-Akses jarak jauh dapat diaktifkan sekaligus:
+Akses jarak jauh (Tailscale, Cloudflare Tunnel) diaktifkan setelah instalasi, di **Pengaturan → Jaringan** (lihat di bawah). Untuk instalasi lewat skrip, opsi juga dapat menyiapkannya saat instalasi:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale

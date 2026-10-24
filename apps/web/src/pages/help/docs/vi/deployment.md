@@ -10,16 +10,18 @@ Trên Linux hoặc macOS có Docker, chỉ cần một lệnh:
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
 ```
 
-Lệnh này hỏi ngôn ngữ, phiên bản và cách mọi người sẽ truy cập ColTex (dùng phím mũi tên; các tùy chọn như `--edition`, `--domain` hoặc `--lang` sẽ trả lời thay), kiểm tra Docker (trên Linux có thể cài đặt nó), tải ColTex về `~/coltex`, ghi cài đặt, tải các image dựng sẵn (x86-64 và ARM64) rồi khởi động, và in ra các địa chỉ để mở trên máy này và trong mạng của bạn. Lần khởi động đầu tiên sẽ tải TeX Live. Có hai phiên bản:
+Nếu việc tải xuống bị ngắt (`curl: (35) Recv failure: Connection reset by peer`, thường gặp khi khó kết nối tới GitHub), hãy chạy lại lệnh.
+
+Lệnh này hỏi ngôn ngữ và phiên bản TeX Live (dùng phím mũi tên; các tùy chọn `--edition` và `--lang` sẽ trả lời thay), kiểm tra Docker (trên Linux có thể cài đặt nó), tải ColTex về `~/coltex`, ghi cài đặt, tải các image dựng sẵn (x86-64 và ARM64) rồi khởi động, và in ra các địa chỉ để mở trên máy này và trong mạng của bạn. Lần khởi động đầu tiên sẽ tải TeX Live. Có hai phiên bản:
 
 | Phiên bản | Dung lượng tải | Trên ổ đĩa (toàn bộ ColTex) | Dung lượng trống cần có |
 | --- | --- | --- | --- |
 | **standard** (mặc định) | khoảng 3 GB | khoảng 12 GB | 20 GB |
 | **full** (`--edition full`) | khoảng 8 GB | khoảng 23 GB | 35 GB |
 
-Cả hai biên dịch như nhau (TeX Live đầy đủ). Phiên bản full có thêm tài liệu hướng dẫn và mã nguồn của các gói, mà tác tử AI có thể đọc; với phiên bản standard, nó trả lời dựa trên các tệp của gói và kiến thức của chính nó. Có thể chuyển đổi sau bằng `coltex edition full` hoặc `coltex edition standard`.
+Cả hai đều có TeX Live đầy đủ và biên dịch như nhau, và tác tử AI dùng được với cả hai. Phiên bản standard không kèm tài liệu hướng dẫn và mã nguồn của các gói; phiên bản full có thêm chúng, và tác tử AI còn có thể đọc tài liệu hướng dẫn. Với phiên bản standard, nó trả lời dựa trên các tệp của gói và kiến thức của chính nó. Có thể chuyển đổi sau bằng `coltex edition full` hoặc `coltex edition standard`.
 
-Có thể bật truy cập từ xa cùng lúc:
+Truy cập từ xa (Tailscale, Cloudflare Tunnel) được bật sau khi cài, trong **Cài đặt → Mạng** (xem bên dưới). Khi cài bằng script, có thể dùng tùy chọn để thiết lập ngay trong lúc cài:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
