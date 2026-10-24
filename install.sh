@@ -23,8 +23,8 @@
 #   --cloudflare-token TOK  afterwards, connect a Cloudflare tunnel made in the dashboard
 #   --images REGISTRY       where to download the images from: aliyun (the same images on
 #                           Alibaba Cloud), ghcr (ghcr.io/lewen-cai) or another mirror of
-#                           ghcr.io. Without it, whichever answers faster from here (Alibaba
-#                           Cloud in mainland China; kept for updates: COLTEX_IMAGES in .env)
+#                           ghcr.io. Without it, whichever of the two answers faster from
+#                           here (kept for updates: COLTEX_IMAGES in .env)
 #   --build                 build the images from the sources here instead of downloading
 #                           the prebuilt ones (kept for updates: COLTEX_BUILD=1 in .env)
 #   --no-start              get the code and write the settings, but don't download or start
@@ -122,6 +122,9 @@ cursor_show() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25h" || true; }
 trap 'cursor_show; printf "%s\n" "$RESET"; exit 130' INT TERM
 trap 'cursor_show' EXIT
 
+# >>> shared (the same in install.sh and coltex, checked by apps/server/test/shell-scripts.test.ts;
+# they need TTY, ESC, the colours, cursor_hide/cursor_show, LOG, T, get, GHCR_IMAGES and ALIYUN_IMAGES)
+SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 # Columns a string takes: one per character (UTF-8 continuation bytes don't count), two for
 # CJK and Hangul (lead bytes E3-ED) and full-width forms (EF BC/BD).
 width() {
@@ -138,6 +141,162 @@ pad() {
   w=$(width "$1")
   printf '%s%*s' "$1" $(($2 > w ? $2 - w : 0)) ''
 }
+
+done_line() { printf '\r%s  %s %s\n' "${ESC}[2K" "${GREEN}✓${RESET}" "$1"; }
+note() { printf '  %s\n' "${DIM}$*${RESET}"; }
+
+# Run a command with a spinner (output to the log); ✓ when it worked, else its exit code
+# with the line cleared.
+spin() {
+  local label="$1" pid rc=0 i=0
+  shift
+  printf '\n==> %s\n' "$label" >>"$LOG"
+  if [ "$TTY" != 1 ]; then
+    printf '==> %s\n' "$label"
+    "$@" >>"$LOG" 2>&1 || return $?
+    return 0
+  fi
+  cursor_hide
+  "$@" >>"$LOG" 2>&1 &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    printf '\r  %s %s' "${BLUE}${SPIN[i % 10]}${RESET}" "$label"
+    i=$((i + 1))
+    sleep 0.08
+  done
+  wait "$pid" || rc=$?
+  cursor_show
+  if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
+  return "$rc"
+}
+
+# Bytes as "1.2 GB" or "340 MB".
+size() { awk -v b="$1" 'BEGIN { if (b >= 1e9) printf "%.1f GB", b / 1e9; else printf "%.0f MB", b / 1e6 }'; }
+# The bytes between two counts over some seconds, as "12.3 MB/s" or "640 KB/s".
+speed() { awk -v a="$1" -v b="$2" -v t="$3" 'BEGIN { r = (b - a) / t; if (r < 0) r = 0; if (r >= 1e6) printf "%.1f MB/s", r / 1e6; else printf "%.0f KB/s", r / 1e3 }'; }
+
+# The compressed size of every layer the pull will download, as "<short id> <bytes>" lines (shared
+# layers once), asked of the registries before it starts (`docker manifest inspect`: each image's
+# layers for this machine's platform), so the bar's total is right from the start. Images already
+# here are left out; nothing when the registries can't be asked (offline, an older Docker).
+layer_sizes() {
+  local arch img
+  arch="$(docker version -f '{{.Server.Arch}}' 2>/dev/null || true)"
+  for img in $(docker compose config --images "$@" 2>/dev/null); do
+    docker image inspect "$img" >/dev/null 2>&1 && continue
+    docker manifest inspect -v "$img" 2>/dev/null | awk -v arch="$arch" '
+      /"Ref":/ { platform = "" }
+      /"architecture":/ { v = $0; gsub(/.*: *"|".*/, "", v); platform = v }
+      /"layers": *\[/ { layers = 1; next }
+      layers && /^[ \t]*\]/ { layers = 0 }
+      layers && /"digest":/ { d = $0; sub(/.*sha256:/, "", d); sub(/".*/, "", d) }
+      layers && /"size":/ { n = $0; gsub(/[^0-9]/, "", n); if (platform == "" || arch == "" || platform == arch) print substr(d, 1, 12), n }
+    ' || true
+  done | sort -u
+}
+
+# `docker compose pull` with a download bar from compose's JSON progress. The total comes from
+# layer_sizes (less the layers compose finds already here); without it, from the layers' sizes
+# as each starts, and the percentage never goes back. Every byte count stays in awk (printed
+# with %.0f: some awks print large numbers as 7.23839e+09, which bash can't count with), and
+# drawing runs apart from the pull, so nothing that goes wrong on screen interrupts the download.
+# No spinner: the line changes only when compose reports progress. The speed is over the last
+# few seconds (bash 3.2 has whole seconds only).
+pull_with_bar() {
+  local label="$1" sizes rc
+  shift
+  printf '\n==> %s\n' "$label" >>"$LOG"
+  if [ "$TTY" != 1 ]; then
+    printf '==> %s\n' "$label"
+    docker compose pull "$@" >>"$LOG" 2>&1
+    return
+  fi
+  # Where from, once (not again on each retry; again after a switch to GitHub).
+  if [ -z "${NOTED:-}" ]; then
+    local from
+    from="$(get COLTEX_IMAGES)"
+    case "${from:-$GHCR_IMAGES}" in
+      "$ALIYUN_IMAGES") note "$(T download_aliyun)" ;;
+      "$GHCR_IMAGES") note "$(T download_github)" ;;
+      *) note "$(T download_other registry="${from%%/*}")" ;;
+    esac
+  fi
+  NOTED=1
+  cursor_hide
+  printf '\r    %s' "$label"
+  # Asking the registries takes a few seconds; the line above is already there meanwhile.
+  sizes="$(mktemp "${TMPDIR:-/tmp}/coltex-layers.XXXXXX")"
+  layer_sizes "$@" >"$sizes" 2>/dev/null || true
+  set +e
+  docker compose --progress json pull "$@" 2>&1 | tee -a "$LOG" | awk -v sizes="$sizes" '
+    BEGIN { while ((getline line < sizes) > 0) { split(line, f, " "); want[f[1]] = f[2] + 0; known += f[2] + 0 } last = -1 }
+    !/"parent_id"/ { next }
+    {
+      id = ""; if (match($0, /"id":"[^"]*"/)) id = substr($0, RSTART + 6, RLENGTH - 7)
+      if ($0 ~ /"text":"Already exists"/) { if ((id in want) && !(id in here)) { here[id] = 1; known -= want[id] } next }
+      if (!(id in want) && match($0, /"total":[0-9]+/)) extra[id] = substr($0, RSTART + 8, RLENGTH - 8) + 0
+      if ($0 ~ /"text":"Downloading"/ && match($0, /"current":[0-9]+/)) got[id] = substr($0, RSTART + 10, RLENGTH - 10) + 0
+      if ($0 ~ /"text":"(Download complete|Pull complete)"/) { if (id in want) got[id] = want[id]; else if (id in extra) got[id] = extra[id] }
+      s = 0; t = known
+      for (k in got) s += got[k]
+      for (k in extra) t += extra[k]
+      if (t <= 0) next
+      if (s > t) s = t
+      p = int(s * 100 / t); if (p < last) p = last
+      # Also every megabyte, for the speed.
+      if (p != last || t != lastt || s - lasts >= 1e6) { printf "%d %d %.0f %.0f\n", p, int(p * 20 / 100), s, t; fflush(); last = p; lastt = t; lasts = s }
+    }' | {
+    ( t0=$SECONDS c0=0 t1=$SECONDS c1=0 drawn=-1 shown=-1 rate=""
+      while read -r pct filled cur tot; do
+        # At most once a second, unless the percentage moved.
+        [ "$pct" != "$shown" ] || [ "$SECONDS" != "$drawn" ] || continue
+        if [ $((SECONDS - t1)) -ge 3 ]; then t0=$t1 c0=$c1 t1=$SECONDS c1=$cur; fi
+        [ $((SECONDS - t0)) -lt 1 ] || rate=" · $(speed "$c0" "$cur" $((SECONDS - t0)))"
+        # The track in its own grey, not dimmed blue: some terminals (PuTTY, xterm.js) draw
+        # dim text at full strength, and the bar looked full from the start.
+        bar="$BLUE"
+        for ((k = 0; k < 20; k++)); do [ "$k" = "$filled" ] && bar+="$GRAY"; bar+="━"; done
+        printf '\r%s    %s %s%s %3d%%  %s' "${ESC}[2K" "$(pad "$label" 16)" "$bar" "$RESET" "$pct" \
+          "${DIM}$(size "$cur") / $(size "$tot")$rate${RESET}"
+        drawn=$SECONDS shown=$pct
+      done ) 2>/dev/null
+    cat >/dev/null
+  }
+  rc=${PIPESTATUS[0]}
+  set -e
+  rm -f "$sizes"
+  cursor_show
+  if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
+  return "$rc"
+}
+
+# Whether the pull failed because there are no prebuilt images for this version (then they are
+# built here), rather than for the network or the registry (then that is the error).
+images_missing() { tail -n 40 "$LOG" | grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found'; }
+
+# The images (all, or the services given): pulled with a bar, or plainly when this Compose has no JSON progress. A pull cut
+# off by the network is tried again (Docker keeps the layers it finished, so each try only
+# fetches the rest), up to PULL_TRIES times in all.
+PULL_TRIES=3
+pull_once() {
+  local label
+  label="$(T downloading)"
+  pull_with_bar "$label" "$@" && return 0
+  # A Compose without JSON progress said so instead of pulling.
+  if tail -n 3 "$LOG" | grep -qi 'progress'; then spin "$label" docker compose pull "$@" && return 0; fi
+  return 1
+}
+pull_images() {
+  local try=1
+  until pull_once "$@"; do
+    images_missing && return 1
+    [ "$try" -lt "$PULL_TRIES" ] || return 1
+    try=$((try + 1))
+    note "$(T pull_retry n="$try" max="$PULL_TRIES")"
+    sleep 3
+  done
+}
+# <<< shared
 
 # ---- Language -------------------------------------------------------------------------
 # A message in the chosen language: T key [name=value…], each {name} in it replaced by the
@@ -1013,7 +1172,6 @@ header
 # ---- Steps ---------------------------------------------------------------------------
 # Everything a step prints goes to the log; the screen shows one line per step.
 LOG="$(mktemp "${TMPDIR:-/tmp}/coltex-install.XXXXXX")"
-SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 
 # Stop with a message (none after a failed step, whose line says it), the log's end, and
 # $DIE_HINT (what may help) last.
@@ -1029,166 +1187,12 @@ die() {
   echo >&2
   exit 1
 }
-done_line() { printf '\r%s  %s %s\n' "${ESC}[2K" "${GREEN}✓${RESET}" "$1"; }
-note() { printf '  %s\n' "${DIM}$*${RESET}"; }
-
-# Run a command with a spinner (output to the log); ✓ when it worked, else its exit code
-# with the line cleared.
-spin() {
-  local label="$1" pid rc=0 i=0
-  shift
-  printf '\n==> %s\n' "$label" >>"$LOG"
-  if [ "$TTY" != 1 ]; then
-    printf '==> %s\n' "$label"
-    "$@" >>"$LOG" 2>&1 || return $?
-    return 0
-  fi
-  cursor_hide
-  "$@" >>"$LOG" 2>&1 &
-  pid=$!
-  while kill -0 "$pid" 2>/dev/null; do
-    printf '\r  %s %s' "${BLUE}${SPIN[i % 10]}${RESET}" "$label"
-    i=$((i + 1))
-    sleep 0.08
-  done
-  wait "$pid" || rc=$?
-  cursor_show
-  if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
-  return "$rc"
-}
-
 # A step that must work: a spinner while it runs, ✓, or ✗ and the end of its output.
 step() {
   local label="$1"
   spin "$@" && return 0
   printf '  %s %s\n' "${RED}✗${RESET}" "${BOLD}$label${RESET}" >&2
   die
-}
-
-# Bytes as "1.2 GB" or "340 MB".
-size() { awk -v b="$1" 'BEGIN { if (b >= 1e9) printf "%.1f GB", b / 1e9; else printf "%.0f MB", b / 1e6 }'; }
-# The bytes between two counts over some seconds, as "12.3 MB/s" or "640 KB/s".
-speed() { awk -v a="$1" -v b="$2" -v t="$3" 'BEGIN { r = (b - a) / t; if (r < 0) r = 0; if (r >= 1e6) printf "%.1f MB/s", r / 1e6; else printf "%.0f KB/s", r / 1e3 }'; }
-
-# The compressed size of every layer the pull will download, as "<short id> <bytes>" lines (shared
-# layers once), asked of the registries before it starts (`docker manifest inspect`: each image's
-# layers for this machine's platform), so the bar's total is right from the start. Images already
-# here are left out; nothing when the registries can't be asked (offline, an older Docker).
-layer_sizes() {
-  local arch img
-  arch="$(docker version -f '{{.Server.Arch}}' 2>/dev/null || true)"
-  for img in $(docker compose config --images 2>/dev/null); do
-    docker image inspect "$img" >/dev/null 2>&1 && continue
-    docker manifest inspect -v "$img" 2>/dev/null | awk -v arch="$arch" '
-      /"Ref":/ { platform = "" }
-      /"architecture":/ { v = $0; gsub(/.*: *"|".*/, "", v); platform = v }
-      /"layers": *\[/ { layers = 1; next }
-      layers && /^[ \t]*\]/ { layers = 0 }
-      layers && /"digest":/ { d = $0; sub(/.*sha256:/, "", d); sub(/".*/, "", d) }
-      layers && /"size":/ { n = $0; gsub(/[^0-9]/, "", n); if (platform == "" || arch == "" || platform == arch) print substr(d, 1, 12), n }
-    ' || true
-  done | sort -u
-}
-
-# `docker compose pull` with a download bar from compose's JSON progress. The total comes from
-# layer_sizes (less the layers compose finds already here); without it, from the layers' sizes
-# as each starts, and the percentage never goes back. Every byte count stays in awk (printed
-# with %.0f: some awks print large numbers as 7.23839e+09, which bash can't count with), and
-# drawing runs apart from the pull, so nothing that goes wrong on screen interrupts the download.
-# No spinner: the line changes only when compose reports progress. The speed is over the last
-# few seconds (bash 3.2 has whole seconds only).
-pull_with_bar() {
-  local label="$1" sizes rc
-  printf '\n==> %s\n' "$label" >>"$LOG"
-  if [ "$TTY" != 1 ]; then
-    printf '==> %s\n' "$label"
-    docker compose pull >>"$LOG" 2>&1
-    return
-  fi
-  # Where from, once (not again on each retry; again after a switch to GitHub).
-  if [ -z "${NOTED:-}" ]; then
-    local from
-    from="$(get COLTEX_IMAGES)"
-    case "${from:-$GHCR_IMAGES}" in
-      "$ALIYUN_IMAGES") note "$(T download_aliyun)" ;;
-      "$GHCR_IMAGES") note "$(T download_github)" ;;
-      *) note "$(T download_other registry="${from%%/*}")" ;;
-    esac
-  fi
-  NOTED=1
-  cursor_hide
-  printf '\r    %s' "$label"
-  # Asking the registries takes a few seconds; the line above is already there meanwhile.
-  sizes="$(mktemp "${TMPDIR:-/tmp}/coltex-layers.XXXXXX")"
-  layer_sizes >"$sizes" 2>/dev/null || true
-  set +e
-  docker compose --progress json pull 2>&1 | tee -a "$LOG" | awk -v sizes="$sizes" '
-    BEGIN { while ((getline line < sizes) > 0) { split(line, f, " "); want[f[1]] = f[2] + 0; known += f[2] + 0 } last = -1 }
-    !/"parent_id"/ { next }
-    {
-      id = ""; if (match($0, /"id":"[^"]*"/)) id = substr($0, RSTART + 6, RLENGTH - 7)
-      if ($0 ~ /"text":"Already exists"/) { if ((id in want) && !(id in here)) { here[id] = 1; known -= want[id] } next }
-      if (!(id in want) && match($0, /"total":[0-9]+/)) extra[id] = substr($0, RSTART + 8, RLENGTH - 8) + 0
-      if ($0 ~ /"text":"Downloading"/ && match($0, /"current":[0-9]+/)) got[id] = substr($0, RSTART + 10, RLENGTH - 10) + 0
-      if ($0 ~ /"text":"(Download complete|Pull complete)"/) { if (id in want) got[id] = want[id]; else if (id in extra) got[id] = extra[id] }
-      s = 0; t = known
-      for (k in got) s += got[k]
-      for (k in extra) t += extra[k]
-      if (t <= 0) next
-      if (s > t) s = t
-      p = int(s * 100 / t); if (p < last) p = last
-      # Also every megabyte, for the speed.
-      if (p != last || t != lastt || s - lasts >= 1e6) { printf "%d %d %.0f %.0f\n", p, int(p * 20 / 100), s, t; fflush(); last = p; lastt = t; lasts = s }
-    }' | {
-    ( t0=$SECONDS c0=0 t1=$SECONDS c1=0 drawn=-1 shown=-1 rate=""
-      while read -r pct filled cur tot; do
-        # At most once a second, unless the percentage moved.
-        [ "$pct" != "$shown" ] || [ "$SECONDS" != "$drawn" ] || continue
-        if [ $((SECONDS - t1)) -ge 3 ]; then t0=$t1 c0=$c1 t1=$SECONDS c1=$cur; fi
-        [ $((SECONDS - t0)) -lt 1 ] || rate=" · $(speed "$c0" "$cur" $((SECONDS - t0)))"
-        # The track in its own grey, not dimmed blue: some terminals (PuTTY, xterm.js) draw
-        # dim text at full strength, and the bar looked full from the start.
-        bar="$BLUE"
-        for ((k = 0; k < 20; k++)); do [ "$k" = "$filled" ] && bar+="$GRAY"; bar+="━"; done
-        printf '\r%s    %s %s%s %3d%%  %s' "${ESC}[2K" "$(pad "$label" 16)" "$bar" "$RESET" "$pct" \
-          "${DIM}$(size "$cur") / $(size "$tot")$rate${RESET}"
-        drawn=$SECONDS shown=$pct
-      done ) 2>/dev/null
-    cat >/dev/null
-  }
-  rc=${PIPESTATUS[0]}
-  set -e
-  rm -f "$sizes"
-  cursor_show
-  if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
-  return "$rc"
-}
-
-# Whether the pull failed because there are no prebuilt images for this version (then they are
-# built here), rather than for the network or the registry (then that is the error).
-images_missing() { tail -n 40 "$LOG" | grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found'; }
-
-# The images: pulled with a bar, or plainly when this Compose has no JSON progress. A pull cut
-# off by the network is tried again (Docker keeps the layers it finished, so each try only
-# fetches the rest), up to PULL_TRIES times in all.
-PULL_TRIES=3
-pull_once() {
-  local label
-  label="$(T downloading)"
-  pull_with_bar "$label" && return 0
-  # A Compose without JSON progress said so instead of pulling.
-  if tail -n 3 "$LOG" | grep -qi 'progress'; then spin "$label" docker compose pull && return 0; fi
-  return 1
-}
-pull_images() {
-  local try=1
-  until pull_once; do
-    images_missing && return 1
-    [ "$try" -lt "$PULL_TRIES" ] || return 1
-    try=$((try + 1))
-    note "$(T pull_retry n="$try" max="$PULL_TRIES")"
-    sleep 3
-  done
 }
 
 # ---- Docker --------------------------------------------------------------------------

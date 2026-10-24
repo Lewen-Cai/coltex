@@ -94,7 +94,6 @@ msg_en() {
   Starting over
     coltex reset                      delete all data and start again from the setup page
     coltex uninstall                  remove ColTex from this machine (Docker stays)' ;;
-    pull_retry) M='The download was cut off; trying again ({n}/{max})…' ;;
     pull_hint) M='If ghcr.io is slow from here (in mainland China, say): run the install command again with --images aliyun, the same images on Alibaba Cloud (settings and data stay). If the connection keeps breaking: set "max-concurrent-downloads": 1 and "max-download-attempts": 10 in /etc/docker/daemon.json and restart Docker.' ;;
     fixing_data) M='Giving the data folder to the user the containers run as ({owner})…' ;;
     reset_warning) M='This deletes everything in this ColTex: accounts, projects and their history, the database, and the data folder (Tailscale’s device keys too). The settings in .env stay. It can’t be undone.' ;;
@@ -104,6 +103,12 @@ msg_en() {
     uninstall_warning) M='This removes ColTex from this machine: its containers, the database, the data folder (every project and its history), its images, the coltex command and the ColTex folder. Docker stays. It can’t be undone; make a backup first if you want to keep anything.' ;;
     uninstall_confirm) M='Type uninstall to go ahead:' ;;
     uninstall_done) M='ColTex has been removed, {dir} too. Docker itself stays installed.' ;;
+    downloading) M='Downloading' ;;
+    download_aliyun) M='Downloading the images from Alibaba Cloud. They are large, so please be patient…' ;;
+    download_github) M='Downloading the images from GitHub. They are large, so please be patient…' ;;
+    download_other) M='Downloading the images from {registry}. They are large, so please be patient…' ;;
+    pull_retry) M='The download was cut off; trying again ({n}/{max}). Finished layers are kept.' ;;
+    starting) M='Starting the services' ;;
   esac
 }
 msg_zh_CN() {
@@ -146,7 +151,6 @@ msg_zh_CN() {
   从头开始
     coltex reset                      删除所有数据，从初始设置页重新开始
     coltex uninstall                  从这台机器上移除 ColTex（Docker 保留）' ;;
-    pull_retry) M='下载中断，正在重试（{n}/{max}）…' ;;
     pull_hint) M='如果从这里访问 ghcr.io 很慢（比如在中国大陆）：加上 --images aliyun 重新运行安装命令，从阿里云下载同样的镜像（设置和数据都会保留）。如果连接总是中断：在 /etc/docker/daemon.json 中设置 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然后重启 Docker。' ;;
     fixing_data) M='正在把 data 文件夹交给容器运行时使用的用户（{owner}）…' ;;
     reset_warning) M='这会删除这个 ColTex 里的一切：账号、项目及其历史、数据库和 data 文件夹（包括 Tailscale 的设备密钥）。.env 里的设置会保留。此操作无法撤销。' ;;
@@ -156,6 +160,12 @@ msg_zh_CN() {
     uninstall_warning) M='这会从这台机器上移除 ColTex：容器、数据库、data 文件夹（所有项目及其历史）、镜像、coltex 命令和 ColTex 文件夹。Docker 本身会保留。此操作无法撤销；如有需要保留的内容，请先备份。' ;;
     uninstall_confirm) M='输入 uninstall 继续：' ;;
     uninstall_done) M='ColTex 已移除，{dir} 也已删除。Docker 本身仍保留。' ;;
+    downloading) M='下载镜像' ;;
+    download_aliyun) M='正在从阿里云下载镜像，镜像体积较大，请耐心等待…' ;;
+    download_github) M='正在从 GitHub 下载镜像，镜像体积较大，请耐心等待…' ;;
+    download_other) M='正在从 {registry} 下载镜像，镜像体积较大，请耐心等待…' ;;
+    pull_retry) M='下载中断，正在重试（{n}/{max}）。已下载完的层会保留。' ;;
+    starting) M='启动服务' ;;
   esac
 }
 msg_zh_TW() {
@@ -198,7 +208,6 @@ msg_zh_TW() {
   從頭開始
     coltex reset                      刪除所有資料，從初始設定頁面重新開始
     coltex uninstall                  從這台機器移除 ColTex（Docker 會保留）' ;;
-    pull_retry) M='下載中斷，正在重試（{n}/{max}）…' ;;
     pull_hint) M='如果從這裡存取 ghcr.io 很慢（例如在中國大陸）：加上 --images aliyun 重新執行安裝指令，從阿里雲下載同樣的映像檔（設定和資料都會保留）。如果連線一直中斷：在 /etc/docker/daemon.json 中設定 "max-concurrent-downloads": 1 和 "max-download-attempts": 10，然後重新啟動 Docker。' ;;
     fixing_data) M='正在把 data 資料夾交給容器執行時使用的使用者（{owner}）…' ;;
     reset_warning) M='這會刪除這個 ColTex 裡的一切：帳號、專案及其歷史、資料庫和 data 資料夾（包括 Tailscale 的裝置金鑰）。.env 裡的設定會保留。此操作無法復原。' ;;
@@ -208,6 +217,12 @@ msg_zh_TW() {
     uninstall_warning) M='這會從這台機器上移除 ColTex：容器、資料庫、data 資料夾（所有專案及其歷史）、映像檔、coltex 指令和 ColTex 資料夾。Docker 本身會保留。此操作無法復原；如有需要保留的內容，請先備份。' ;;
     uninstall_confirm) M='輸入 uninstall 繼續：' ;;
     uninstall_done) M='ColTex 已移除，{dir} 也已刪除。Docker 本身仍保留。' ;;
+    downloading) M='下載映像檔' ;;
+    download_aliyun) M='正在從阿里雲下載映像檔，映像檔較大，請耐心等候…' ;;
+    download_github) M='正在從 GitHub 下載映像檔，映像檔較大，請耐心等候…' ;;
+    download_other) M='正在從 {registry} 下載映像檔，映像檔較大，請耐心等候…' ;;
+    pull_retry) M='下載中斷，正在重試（{n}/{max}）。已下載完成的層會保留。' ;;
+    starting) M='啟動服務' ;;
   esac
 }
 msg_ja() {
@@ -250,7 +265,6 @@ msg_ja() {
   最初からやり直す
     coltex reset                            すべてのデータを削除し、セットアップページからやり直す
     coltex uninstall                        このマシンから ColTex を削除（Docker は残ります）' ;;
-    pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）…' ;;
     pull_hint) M='ここから ghcr.io が遅い場合（中国本土など）：インストールコマンドに --images aliyun を付けてもう一度実行すると、同じイメージを Alibaba Cloud からダウンロードします（設定とデータは残ります）。接続が何度も切れる場合：/etc/docker/daemon.json に "max-concurrent-downloads": 1 と "max-download-attempts": 10 を設定し、Docker を再起動してください。' ;;
     fixing_data) M='data フォルダーの所有者を、コンテナーを実行するユーザー（{owner}）にしています…' ;;
     reset_warning) M='この ColTex のすべてを削除します：アカウント、プロジェクトとその履歴、データベース、data フォルダー（Tailscale のデバイスキーも）。.env の設定は残ります。元に戻せません。' ;;
@@ -260,6 +274,12 @@ msg_ja() {
     uninstall_warning) M='このマシンから ColTex を削除します：コンテナ、データベース、data フォルダー（すべてのプロジェクトとその履歴）、イメージ、coltex コマンド、ColTex のフォルダー。Docker 自体は残ります。元に戻せません。残したいものがあれば先にバックアップしてください。' ;;
     uninstall_confirm) M='続けるには uninstall と入力してください：' ;;
     uninstall_done) M='ColTex を削除しました（{dir} も削除済み）。Docker 自体はインストールされたままです。' ;;
+    downloading) M='ダウンロード中' ;;
+    download_aliyun) M='Alibaba Cloud からイメージをダウンロードしています。サイズが大きいので、しばらくお待ちください…' ;;
+    download_github) M='GitHub からイメージをダウンロードしています。サイズが大きいので、しばらくお待ちください…' ;;
+    download_other) M='{registry} からイメージをダウンロードしています。サイズが大きいので、しばらくお待ちください…' ;;
+    pull_retry) M='ダウンロードが途切れました。再試行しています（{n}/{max}）。完了したレイヤーは保持されます。' ;;
+    starting) M='サービスを起動中' ;;
   esac
 }
 msg_ko() {
@@ -302,7 +322,6 @@ msg_ko() {
   처음부터 다시
     coltex reset                      모든 데이터를 삭제하고 초기 설정 페이지부터 다시 시작
     coltex uninstall                  이 컴퓨터에서 ColTex 제거(Docker는 유지)' ;;
-    pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max})…' ;;
     pull_hint) M='여기서 ghcr.io가 느리다면(예: 중국 본토): 설치 명령에 --images aliyun을 붙여 다시 실행하면 같은 이미지를 Alibaba Cloud에서 받습니다(설정과 데이터는 유지됩니다). 연결이 계속 끊긴다면: /etc/docker/daemon.json에 "max-concurrent-downloads": 1과 "max-download-attempts": 10을 설정하고 Docker를 다시 시작하세요.' ;;
     fixing_data) M='data 폴더의 소유자를 컨테이너를 실행하는 사용자({owner})로 바꾸는 중…' ;;
     reset_warning) M='이 ColTex의 모든 것을 삭제합니다: 계정, 프로젝트와 그 기록, 데이터베이스, data 폴더(Tailscale 기기 키 포함). .env의 설정은 유지됩니다. 되돌릴 수 없습니다.' ;;
@@ -312,6 +331,12 @@ msg_ko() {
     uninstall_warning) M='이 컴퓨터에서 ColTex를 제거합니다: 컨테이너, 데이터베이스, data 폴더(모든 프로젝트와 그 기록), 이미지, coltex 명령과 ColTex 폴더. Docker 자체는 남습니다. 되돌릴 수 없으니, 남겨 둘 것이 있다면 먼저 백업하세요.' ;;
     uninstall_confirm) M='계속하려면 uninstall을 입력하세요:' ;;
     uninstall_done) M='ColTex를 제거했습니다. {dir}도 삭제했습니다. Docker 자체는 그대로 설치되어 있습니다.' ;;
+    downloading) M='다운로드 중' ;;
+    download_aliyun) M='Alibaba Cloud에서 이미지를 다운로드하고 있습니다. 용량이 커서 시간이 걸리니 잠시 기다려 주세요…' ;;
+    download_github) M='GitHub에서 이미지를 다운로드하고 있습니다. 용량이 커서 시간이 걸리니 잠시 기다려 주세요…' ;;
+    download_other) M='{registry}에서 이미지를 다운로드하고 있습니다. 용량이 커서 시간이 걸리니 잠시 기다려 주세요…' ;;
+    pull_retry) M='다운로드가 끊겼습니다. 다시 시도합니다({n}/{max}). 다 받은 레이어는 유지됩니다.' ;;
+    starting) M='서비스 시작 중' ;;
   esac
 }
 msg_es() {
@@ -354,7 +379,6 @@ msg_es() {
   Empezar de nuevo
     coltex reset                      borra todos los datos y vuelve a empezar desde la configuración inicial
     coltex uninstall                  quita ColTex de esta máquina (Docker se queda)' ;;
-    pull_retry) M='La descarga se cortó; reintentando ({n}/{max})…' ;;
     pull_hint) M='Si ghcr.io va lento desde aquí (en China continental, por ejemplo): vuelve a ejecutar la orden de instalación con --images aliyun, las mismas imágenes en Alibaba Cloud (los ajustes y los datos se mantienen). Si la conexión se corta una y otra vez: pon "max-concurrent-downloads": 1 y "max-download-attempts": 10 en /etc/docker/daemon.json y reinicia Docker.' ;;
     fixing_data) M='Dando la carpeta data al usuario con el que se ejecutan los contenedores ({owner})…' ;;
     reset_warning) M='Esto borra todo lo de este ColTex: cuentas, proyectos y su historial, la base de datos y la carpeta data (también las claves del dispositivo de Tailscale). Los ajustes de .env se mantienen. No se puede deshacer.' ;;
@@ -364,6 +388,12 @@ msg_es() {
     uninstall_warning) M='Esto quita ColTex de esta máquina: sus contenedores, la base de datos, la carpeta data (todos los proyectos y su historial), sus imágenes, el comando coltex y la carpeta de ColTex. Docker se mantiene. No se puede deshacer; haz antes una copia de seguridad si quieres conservar algo.' ;;
     uninstall_confirm) M='Escribe uninstall para continuar:' ;;
     uninstall_done) M='ColTex se ha quitado, también {dir}. Docker sigue instalado.' ;;
+    downloading) M='Descargando' ;;
+    download_aliyun) M='Descargando las imágenes desde Alibaba Cloud. Son grandes, así que ten paciencia…' ;;
+    download_github) M='Descargando las imágenes desde GitHub. Son grandes, así que ten paciencia…' ;;
+    download_other) M='Descargando las imágenes desde {registry}. Son grandes, así que ten paciencia…' ;;
+    pull_retry) M='La descarga se cortó; reintentando ({n}/{max}). Las capas ya descargadas se conservan.' ;;
+    starting) M='Iniciando los servicios' ;;
   esac
 }
 msg_fr() {
@@ -406,7 +436,6 @@ msg_fr() {
   Repartir de zéro
     coltex reset                      supprime toutes les données et repart de la page de configuration
     coltex uninstall                  retire ColTex de cette machine (Docker reste installé)' ;;
-    pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max})…' ;;
     pull_hint) M='Si ghcr.io est lent depuis ici (en Chine continentale, par exemple) : relancez la commande d’installation avec --images aliyun, les mêmes images sur Alibaba Cloud (réglages et données sont conservés). Si la connexion coupe sans cesse : mettez "max-concurrent-downloads": 1 et "max-download-attempts": 10 dans /etc/docker/daemon.json et redémarrez Docker.' ;;
     fixing_data) M='Attribution du dossier data à l’utilisateur des conteneurs ({owner})…' ;;
     reset_warning) M='Ceci supprime tout dans ce ColTex : comptes, projets et leur historique, la base de données et le dossier data (y compris les clés d’appareil de Tailscale). Les réglages de .env restent. C’est irréversible.' ;;
@@ -416,6 +445,12 @@ msg_fr() {
     uninstall_warning) M='Cela supprime ColTex de cette machine : ses conteneurs, la base de données, le dossier data (tous les projets et leur historique), ses images, la commande coltex et le dossier de ColTex. Docker reste. C’est irréversible ; faites d’abord une sauvegarde si vous voulez garder quelque chose.' ;;
     uninstall_confirm) M='Tapez uninstall pour continuer :' ;;
     uninstall_done) M='ColTex a été supprimé, {dir} aussi. Docker reste installé.' ;;
+    downloading) M='Téléchargement' ;;
+    download_aliyun) M='Téléchargement des images depuis Alibaba Cloud. Elles sont volumineuses, merci de patienter…' ;;
+    download_github) M='Téléchargement des images depuis GitHub. Elles sont volumineuses, merci de patienter…' ;;
+    download_other) M='Téléchargement des images depuis {registry}. Elles sont volumineuses, merci de patienter…' ;;
+    pull_retry) M='Le téléchargement a été interrompu ; nouvel essai ({n}/{max}). Les couches terminées sont conservées.' ;;
+    starting) M='Démarrage des services' ;;
   esac
 }
 msg_de() {
@@ -458,7 +493,6 @@ msg_de() {
   Neu anfangen
     coltex reset                      alle Daten löschen und auf der Einrichtungsseite neu beginnen
     coltex uninstall                  ColTex von diesem Rechner entfernen (Docker bleibt)' ;;
-    pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max})…' ;;
     pull_hint) M='Wenn ghcr.io von hier aus langsam ist (etwa in Festlandchina): den Installationsbefehl erneut mit --images aliyun ausführen, dieselben Images bei Alibaba Cloud (Einstellungen und Daten bleiben). Wenn die Verbindung immer wieder abbricht: "max-concurrent-downloads": 1 und "max-download-attempts": 10 in /etc/docker/daemon.json setzen und Docker neu starten.' ;;
     fixing_data) M='Der Ordner data wird dem Benutzer der Container übergeben ({owner})…' ;;
     reset_warning) M='Das löscht alles in diesem ColTex: Konten, Projekte und ihren Verlauf, die Datenbank und den Ordner data (auch die Geräteschlüssel von Tailscale). Die Einstellungen in .env bleiben. Es lässt sich nicht rückgängig machen.' ;;
@@ -468,6 +502,12 @@ msg_de() {
     uninstall_warning) M='Dies entfernt ColTex von diesem Rechner: die Container, die Datenbank, den Ordner data (alle Projekte und ihr Verlauf), die Images, den Befehl coltex und den ColTex-Ordner. Docker bleibt. Das lässt sich nicht rückgängig machen; legen Sie vorher ein Backup an, wenn Sie etwas behalten möchten.' ;;
     uninstall_confirm) M='Geben Sie uninstall ein, um fortzufahren:' ;;
     uninstall_done) M='ColTex wurde entfernt, auch {dir}. Docker selbst bleibt installiert.' ;;
+    downloading) M='Wird heruntergeladen' ;;
+    download_aliyun) M='Die Images werden von Alibaba Cloud heruntergeladen. Sie sind groß, bitte etwas Geduld…' ;;
+    download_github) M='Die Images werden von GitHub heruntergeladen. Sie sind groß, bitte etwas Geduld…' ;;
+    download_other) M='Die Images werden von {registry} heruntergeladen. Sie sind groß, bitte etwas Geduld…' ;;
+    pull_retry) M='Der Download wurde unterbrochen; neuer Versuch ({n}/{max}). Fertige Layer bleiben erhalten.' ;;
+    starting) M='Dienste werden gestartet' ;;
   esac
 }
 msg_pt_BR() {
@@ -510,7 +550,6 @@ msg_pt_BR() {
   Recomeçar do zero
     coltex reset                      exclui todos os dados e recomeça a partir da página de configuração inicial
     coltex uninstall                  remove o ColTex desta máquina (o Docker permanece)' ;;
-    pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max})…' ;;
     pull_hint) M='Se o ghcr.io estiver lento daqui (na China continental, por exemplo): execute de novo o comando de instalação com --images aliyun, as mesmas imagens na Alibaba Cloud (configurações e dados ficam). Se a conexão cair repetidamente: defina "max-concurrent-downloads": 1 e "max-download-attempts": 10 em /etc/docker/daemon.json e reinicie o Docker.' ;;
     fixing_data) M='Passando a pasta data para o usuário dos contêineres ({owner})…' ;;
     reset_warning) M='Isto apaga tudo neste ColTex: contas, projetos e seu histórico, o banco de dados e a pasta data (inclusive as chaves de dispositivo do Tailscale). As configurações do .env ficam. Não pode ser desfeito.' ;;
@@ -520,6 +559,12 @@ msg_pt_BR() {
     uninstall_warning) M='Isto remove o ColTex desta máquina: seus contêineres, o banco de dados, a pasta data (todos os projetos e o histórico deles), suas imagens, o comando coltex e a pasta do ColTex. O Docker continua. Não dá para desfazer; faça um backup antes se quiser guardar algo.' ;;
     uninstall_confirm) M='Digite uninstall para continuar:' ;;
     uninstall_done) M='O ColTex foi removido, e {dir} também. O Docker continua instalado.' ;;
+    downloading) M='Baixando' ;;
+    download_aliyun) M='Baixando as imagens da Alibaba Cloud. Elas são grandes, então tenha paciência…' ;;
+    download_github) M='Baixando as imagens do GitHub. Elas são grandes, então tenha paciência…' ;;
+    download_other) M='Baixando as imagens de {registry}. Elas são grandes, então tenha paciência…' ;;
+    pull_retry) M='O download foi interrompido; tentando de novo ({n}/{max}). As camadas já baixadas são mantidas.' ;;
+    starting) M='Iniciando os serviços' ;;
   esac
 }
 msg_it() {
@@ -562,7 +607,6 @@ msg_it() {
   Ricominciare da capo
     coltex reset                      elimina tutti i dati e ricomincia dalla pagina di configurazione
     coltex uninstall                  rimuove ColTex da questa macchina (Docker resta)' ;;
-    pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max})…' ;;
     pull_hint) M='Se ghcr.io è lento da qui (nella Cina continentale, per esempio): esegui di nuovo il comando di installazione con --images aliyun, le stesse immagini su Alibaba Cloud (impostazioni e dati restano). Se la connessione cade di continuo: imposta "max-concurrent-downloads": 1 e "max-download-attempts": 10 in /etc/docker/daemon.json e riavvia Docker.' ;;
     fixing_data) M='Assegno la cartella data all’utente dei container ({owner})…' ;;
     reset_warning) M='Questo elimina tutto in questo ColTex: account, progetti e la loro cronologia, il database e la cartella data (anche le chiavi del dispositivo Tailscale). Le impostazioni in .env restano. Non si può annullare.' ;;
@@ -572,6 +616,12 @@ msg_it() {
     uninstall_warning) M='Questo rimuove ColTex da questa macchina: i container, il database, la cartella data (tutti i progetti e la loro cronologia), le immagini, il comando coltex e la cartella di ColTex. Docker resta. Non si può annullare; fai prima un backup se vuoi conservare qualcosa.' ;;
     uninstall_confirm) M='Digita uninstall per continuare:' ;;
     uninstall_done) M='ColTex è stato rimosso, anche {dir}. Docker resta installato.' ;;
+    downloading) M='Download in corso' ;;
+    download_aliyun) M='Download delle immagini da Alibaba Cloud. Sono grandi, quindi ci vorrà un po’…' ;;
+    download_github) M='Download delle immagini da GitHub. Sono grandi, quindi ci vorrà un po’…' ;;
+    download_other) M='Download delle immagini da {registry}. Sono grandi, quindi ci vorrà un po’…' ;;
+    pull_retry) M='Il download si è interrotto; nuovo tentativo ({n}/{max}). I layer già scaricati vengono mantenuti.' ;;
+    starting) M='Avvio dei servizi' ;;
   esac
 }
 msg_ru() {
@@ -614,7 +664,6 @@ msg_ru() {
   Начать заново
     coltex reset                      удалить все данные и начать заново со страницы первоначальной настройки
     coltex uninstall                  удалить ColTex с этой машины (Docker остаётся)' ;;
-    pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max})…' ;;
     pull_hint) M='Если ghcr.io отсюда работает медленно (например, в материковом Китае): запустите команду установки снова с --images aliyun — те же образы в Alibaba Cloud (настройки и данные сохранятся). Если соединение постоянно рвётся: задайте "max-concurrent-downloads": 1 и "max-download-attempts": 10 в /etc/docker/daemon.json и перезапустите Docker.' ;;
     fixing_data) M='Папка data передаётся пользователю, от имени которого работают контейнеры ({owner})…' ;;
     reset_warning) M='Будет удалено всё в этом ColTex: учётные записи, проекты и их история, база данных и папка data (и ключи устройства Tailscale). Настройки в .env останутся. Отменить это нельзя.' ;;
@@ -624,6 +673,12 @@ msg_ru() {
     uninstall_warning) M='Это удалит ColTex с этой машины: контейнеры, базу данных, папку data (все проекты и их историю), образы, команду coltex и папку ColTex. Docker останется. Это нельзя отменить; если нужно что-то сохранить, сначала сделайте резервную копию.' ;;
     uninstall_confirm) M='Введите uninstall, чтобы продолжить:' ;;
     uninstall_done) M='ColTex удалён, вместе с {dir}. Сам Docker остаётся установленным.' ;;
+    downloading) M='Загрузка' ;;
+    download_aliyun) M='Загрузка образов из Alibaba Cloud. Они большие, наберитесь терпения…' ;;
+    download_github) M='Загрузка образов с GitHub. Они большие, наберитесь терпения…' ;;
+    download_other) M='Загрузка образов из {registry}. Они большие, наберитесь терпения…' ;;
+    pull_retry) M='Загрузка прервалась; повторная попытка ({n}/{max}). Загруженные слои сохраняются.' ;;
+    starting) M='Запуск сервисов' ;;
   esac
 }
 msg_tr() {
@@ -666,7 +721,6 @@ msg_tr() {
   Baştan başlama
     coltex reset                        tüm verileri sil ve kurulum sayfasından yeniden başla
     coltex uninstall                    ColTex’i bu makineden kaldır (Docker kalır)' ;;
-    pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max})…' ;;
     pull_hint) M='ghcr.io buradan yavaşsa (örneğin Çin anakarasında): kurulum komutunu --images aliyun ile yeniden çalıştırın; aynı imajlar Alibaba Cloud’dan iner (ayarlar ve veriler kalır). Bağlantı sürekli kopuyorsa: /etc/docker/daemon.json içinde "max-concurrent-downloads": 1 ve "max-download-attempts": 10 ayarlayıp Docker’ı yeniden başlatın.' ;;
     fixing_data) M='data klasörü kapsayıcıları çalıştıran kullanıcıya veriliyor ({owner})…' ;;
     reset_warning) M='Bu, bu ColTex’teki her şeyi siler: hesaplar, projeler ve geçmişleri, veritabanı ve data klasörü (Tailscale cihaz anahtarları da). .env içindeki ayarlar kalır. Geri alınamaz.' ;;
@@ -676,6 +730,12 @@ msg_tr() {
     uninstall_warning) M='Bu, ColTex’i bu makineden kaldırır: konteynerleri, veritabanını, data klasörünü (tüm projeler ve geçmişleri), imajları, coltex komutunu ve ColTex klasörünü. Docker kalır. Geri alınamaz; saklamak istediğiniz bir şey varsa önce yedek alın.' ;;
     uninstall_confirm) M='Devam etmek için uninstall yazın:' ;;
     uninstall_done) M='ColTex kaldırıldı, {dir} de silindi. Docker kurulu kalmaya devam ediyor.' ;;
+    downloading) M='İndiriliyor' ;;
+    download_aliyun) M='İmajlar Alibaba Cloud’dan indiriliyor. Boyutları büyük, lütfen sabırla bekleyin…' ;;
+    download_github) M='İmajlar GitHub’dan indiriliyor. Boyutları büyük, lütfen sabırla bekleyin…' ;;
+    download_other) M='İmajlar {registry} üzerinden indiriliyor. Boyutları büyük, lütfen sabırla bekleyin…' ;;
+    pull_retry) M='İndirme kesildi; yeniden deneniyor ({n}/{max}). Tamamlanan katmanlar korunur.' ;;
+    starting) M='Hizmetler başlatılıyor' ;;
   esac
 }
 msg_vi() {
@@ -718,7 +778,6 @@ msg_vi() {
   Bắt đầu lại
     coltex reset                      xóa toàn bộ dữ liệu và bắt đầu lại từ trang thiết lập
     coltex uninstall                  gỡ ColTex khỏi máy này (Docker được giữ lại)' ;;
-    pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max})…' ;;
     pull_hint) M='Nếu ghcr.io chậm từ đây (ví dụ ở Trung Quốc đại lục): chạy lại lệnh cài đặt với --images aliyun để tải cùng các image từ Alibaba Cloud (thiết lập và dữ liệu được giữ nguyên). Nếu kết nối cứ bị ngắt: đặt "max-concurrent-downloads": 1 và "max-download-attempts": 10 trong /etc/docker/daemon.json rồi khởi động lại Docker.' ;;
     fixing_data) M='Đang giao thư mục data cho người dùng chạy các container ({owner})…' ;;
     reset_warning) M='Thao tác này xóa mọi thứ trong ColTex này: tài khoản, dự án và lịch sử của chúng, cơ sở dữ liệu và thư mục data (cả khóa thiết bị của Tailscale). Các thiết lập trong .env được giữ lại. Không thể hoàn tác.' ;;
@@ -728,6 +787,12 @@ msg_vi() {
     uninstall_warning) M='Thao tác này gỡ ColTex khỏi máy này: các container, cơ sở dữ liệu, thư mục data (mọi dự án và lịch sử của chúng), các image, lệnh coltex và thư mục ColTex. Docker vẫn được giữ lại. Không thể hoàn tác; hãy sao lưu trước nếu muốn giữ lại gì đó.' ;;
     uninstall_confirm) M='Nhập uninstall để tiếp tục:' ;;
     uninstall_done) M='Đã gỡ ColTex, cả {dir}. Docker vẫn được giữ nguyên.' ;;
+    downloading) M='Đang tải xuống' ;;
+    download_aliyun) M='Đang tải các image từ Alibaba Cloud. Dung lượng khá lớn, vui lòng chờ…' ;;
+    download_github) M='Đang tải các image từ GitHub. Dung lượng khá lớn, vui lòng chờ…' ;;
+    download_other) M='Đang tải các image từ {registry}. Dung lượng khá lớn, vui lòng chờ…' ;;
+    pull_retry) M='Quá trình tải bị ngắt; đang thử lại ({n}/{max}). Các lớp đã tải xong được giữ lại.' ;;
+    starting) M='Đang khởi động các dịch vụ' ;;
   esac
 }
 msg_id() {
@@ -770,7 +835,6 @@ msg_id() {
   Mulai dari awal
     coltex reset                      hapus semua data dan mulai lagi dari halaman penyiapan
     coltex uninstall                  hapus ColTex dari mesin ini (Docker tetap ada)' ;;
-    pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max})…' ;;
     pull_hint) M='Jika ghcr.io lambat dari sini (misalnya di Tiongkok daratan): jalankan lagi perintah instalasi dengan --images aliyun, image yang sama di Alibaba Cloud (pengaturan dan data tetap ada). Jika koneksi terus terputus: atur "max-concurrent-downloads": 1 dan "max-download-attempts": 10 di /etc/docker/daemon.json lalu mulai ulang Docker.' ;;
     fixing_data) M='Menyerahkan folder data ke pengguna yang menjalankan kontainer ({owner})…' ;;
     reset_warning) M='Ini menghapus semua isi ColTex ini: akun, proyek beserta riwayatnya, basis data, dan folder data (termasuk kunci perangkat Tailscale). Pengaturan di .env tetap ada. Tidak bisa dibatalkan.' ;;
@@ -780,13 +844,225 @@ msg_id() {
     uninstall_warning) M='Ini menghapus ColTex dari mesin ini: kontainernya, basis data, folder data (semua proyek dan riwayatnya), image-nya, perintah coltex, dan folder ColTex. Docker tetap ada. Tidak bisa dibatalkan; buat cadangan dulu jika ada yang ingin disimpan.' ;;
     uninstall_confirm) M='Ketik uninstall untuk melanjutkan:' ;;
     uninstall_done) M='ColTex sudah dihapus, termasuk {dir}. Docker tetap terpasang.' ;;
+    downloading) M='Mengunduh' ;;
+    download_aliyun) M='Mengunduh image dari Alibaba Cloud. Ukurannya besar, mohon bersabar…' ;;
+    download_github) M='Mengunduh image dari GitHub. Ukurannya besar, mohon bersabar…' ;;
+    download_other) M='Mengunduh image dari {registry}. Ukurannya besar, mohon bersabar…' ;;
+    pull_retry) M='Unduhan terputus; mencoba lagi ({n}/{max}). Lapisan yang sudah selesai tetap disimpan.' ;;
+    starting) M='Menjalankan layanan' ;;
   esac
 }
 # <<< messages
+# ---- The terminal: a download bar and steps on one line each, like install.sh's -------------
+TTY=0
+[ -t 1 ] && TTY=1
+ESC=$'\033'
+RESET="" BOLD="" DIM="" BLUE="" GRAY="" GREEN="" RED=""
+if [ "$TTY" = 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  RESET="${ESC}[0m" BOLD="${ESC}[1m" DIM="${ESC}[2m"
+  case "${COLORTERM:-}" in
+    truecolor | 24bit)
+      BLUE="${ESC}[38;2;37;99;235m" GRAY="${ESC}[38;2;128;128;128m" GREEN="${ESC}[38;2;22;163;74m" RED="${ESC}[38;2;220;38;38m" ;;
+    *)
+      BLUE="${ESC}[38;5;27m" GRAY="${ESC}[38;5;244m" GREEN="${ESC}[38;5;34m" RED="${ESC}[38;5;160m" ;;
+  esac
+fi
+cursor_hide() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25l" || true; }
+cursor_show() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25h" || true; }
+# Where the images are (the same as in install.sh), for the line saying where they come from.
+GHCR_IMAGES="ghcr.io/lewen-cai"
+ALIYUN_IMAGES="crpi-jf7w2fwdvslokqcw.cn-guangzhou.personal.cr.aliyuncs.com/coltex"
+# What the downloads print, shown only when one fails.
+LOG="$(mktemp "${TMPDIR:-/tmp}/coltex-pull.XXXXXX")"
+trap 'cursor_show; rm -f "$LOG"' EXIT
+trap 'cursor_show; printf "%s\n" "$RESET"; exit 130' INT TERM
+
+# >>> shared (the same in install.sh and coltex, checked by apps/server/test/shell-scripts.test.ts;
+# they need TTY, ESC, the colours, cursor_hide/cursor_show, LOG, T, get, GHCR_IMAGES and ALIYUN_IMAGES)
+SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+# Columns a string takes: one per character (UTF-8 continuation bytes don't count), two for
+# CJK and Hangul (lead bytes E3-ED) and full-width forms (EF BC/BD).
+width() {
+  local s="$1" bytes cont wide full
+  bytes=$(printf '%s' "$s" | LC_ALL=C wc -c | tr -d ' ')
+  cont=$(printf '%s' "$s" | LC_ALL=C tr -cd '\200-\277' | LC_ALL=C wc -c | tr -d ' ')
+  wide=$(printf '%s' "$s" | LC_ALL=C tr -cd '\343-\355' | LC_ALL=C wc -c | tr -d ' ')
+  full=$( (printf '%s' "$s" | LC_ALL=C grep -o $'\357[\274\275]' || true) | wc -l | tr -d ' ')
+  echo $((bytes - cont + wide + full))
+}
+# The string padded with spaces to $2 columns.
+pad() {
+  local w
+  w=$(width "$1")
+  printf '%s%*s' "$1" $(($2 > w ? $2 - w : 0)) ''
+}
+
+done_line() { printf '\r%s  %s %s\n' "${ESC}[2K" "${GREEN}✓${RESET}" "$1"; }
+note() { printf '  %s\n' "${DIM}$*${RESET}"; }
+
+# Run a command with a spinner (output to the log); ✓ when it worked, else its exit code
+# with the line cleared.
+spin() {
+  local label="$1" pid rc=0 i=0
+  shift
+  printf '\n==> %s\n' "$label" >>"$LOG"
+  if [ "$TTY" != 1 ]; then
+    printf '==> %s\n' "$label"
+    "$@" >>"$LOG" 2>&1 || return $?
+    return 0
+  fi
+  cursor_hide
+  "$@" >>"$LOG" 2>&1 &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    printf '\r  %s %s' "${BLUE}${SPIN[i % 10]}${RESET}" "$label"
+    i=$((i + 1))
+    sleep 0.08
+  done
+  wait "$pid" || rc=$?
+  cursor_show
+  if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
+  return "$rc"
+}
+
+# Bytes as "1.2 GB" or "340 MB".
+size() { awk -v b="$1" 'BEGIN { if (b >= 1e9) printf "%.1f GB", b / 1e9; else printf "%.0f MB", b / 1e6 }'; }
+# The bytes between two counts over some seconds, as "12.3 MB/s" or "640 KB/s".
+speed() { awk -v a="$1" -v b="$2" -v t="$3" 'BEGIN { r = (b - a) / t; if (r < 0) r = 0; if (r >= 1e6) printf "%.1f MB/s", r / 1e6; else printf "%.0f KB/s", r / 1e3 }'; }
+
+# The compressed size of every layer the pull will download, as "<short id> <bytes>" lines (shared
+# layers once), asked of the registries before it starts (`docker manifest inspect`: each image's
+# layers for this machine's platform), so the bar's total is right from the start. Images already
+# here are left out; nothing when the registries can't be asked (offline, an older Docker).
+layer_sizes() {
+  local arch img
+  arch="$(docker version -f '{{.Server.Arch}}' 2>/dev/null || true)"
+  for img in $(docker compose config --images "$@" 2>/dev/null); do
+    docker image inspect "$img" >/dev/null 2>&1 && continue
+    docker manifest inspect -v "$img" 2>/dev/null | awk -v arch="$arch" '
+      /"Ref":/ { platform = "" }
+      /"architecture":/ { v = $0; gsub(/.*: *"|".*/, "", v); platform = v }
+      /"layers": *\[/ { layers = 1; next }
+      layers && /^[ \t]*\]/ { layers = 0 }
+      layers && /"digest":/ { d = $0; sub(/.*sha256:/, "", d); sub(/".*/, "", d) }
+      layers && /"size":/ { n = $0; gsub(/[^0-9]/, "", n); if (platform == "" || arch == "" || platform == arch) print substr(d, 1, 12), n }
+    ' || true
+  done | sort -u
+}
+
+# `docker compose pull` with a download bar from compose's JSON progress. The total comes from
+# layer_sizes (less the layers compose finds already here); without it, from the layers' sizes
+# as each starts, and the percentage never goes back. Every byte count stays in awk (printed
+# with %.0f: some awks print large numbers as 7.23839e+09, which bash can't count with), and
+# drawing runs apart from the pull, so nothing that goes wrong on screen interrupts the download.
+# No spinner: the line changes only when compose reports progress. The speed is over the last
+# few seconds (bash 3.2 has whole seconds only).
+pull_with_bar() {
+  local label="$1" sizes rc
+  shift
+  printf '\n==> %s\n' "$label" >>"$LOG"
+  if [ "$TTY" != 1 ]; then
+    printf '==> %s\n' "$label"
+    docker compose pull "$@" >>"$LOG" 2>&1
+    return
+  fi
+  # Where from, once (not again on each retry; again after a switch to GitHub).
+  if [ -z "${NOTED:-}" ]; then
+    local from
+    from="$(get COLTEX_IMAGES)"
+    case "${from:-$GHCR_IMAGES}" in
+      "$ALIYUN_IMAGES") note "$(T download_aliyun)" ;;
+      "$GHCR_IMAGES") note "$(T download_github)" ;;
+      *) note "$(T download_other registry="${from%%/*}")" ;;
+    esac
+  fi
+  NOTED=1
+  cursor_hide
+  printf '\r    %s' "$label"
+  # Asking the registries takes a few seconds; the line above is already there meanwhile.
+  sizes="$(mktemp "${TMPDIR:-/tmp}/coltex-layers.XXXXXX")"
+  layer_sizes "$@" >"$sizes" 2>/dev/null || true
+  set +e
+  docker compose --progress json pull "$@" 2>&1 | tee -a "$LOG" | awk -v sizes="$sizes" '
+    BEGIN { while ((getline line < sizes) > 0) { split(line, f, " "); want[f[1]] = f[2] + 0; known += f[2] + 0 } last = -1 }
+    !/"parent_id"/ { next }
+    {
+      id = ""; if (match($0, /"id":"[^"]*"/)) id = substr($0, RSTART + 6, RLENGTH - 7)
+      if ($0 ~ /"text":"Already exists"/) { if ((id in want) && !(id in here)) { here[id] = 1; known -= want[id] } next }
+      if (!(id in want) && match($0, /"total":[0-9]+/)) extra[id] = substr($0, RSTART + 8, RLENGTH - 8) + 0
+      if ($0 ~ /"text":"Downloading"/ && match($0, /"current":[0-9]+/)) got[id] = substr($0, RSTART + 10, RLENGTH - 10) + 0
+      if ($0 ~ /"text":"(Download complete|Pull complete)"/) { if (id in want) got[id] = want[id]; else if (id in extra) got[id] = extra[id] }
+      s = 0; t = known
+      for (k in got) s += got[k]
+      for (k in extra) t += extra[k]
+      if (t <= 0) next
+      if (s > t) s = t
+      p = int(s * 100 / t); if (p < last) p = last
+      # Also every megabyte, for the speed.
+      if (p != last || t != lastt || s - lasts >= 1e6) { printf "%d %d %.0f %.0f\n", p, int(p * 20 / 100), s, t; fflush(); last = p; lastt = t; lasts = s }
+    }' | {
+    ( t0=$SECONDS c0=0 t1=$SECONDS c1=0 drawn=-1 shown=-1 rate=""
+      while read -r pct filled cur tot; do
+        # At most once a second, unless the percentage moved.
+        [ "$pct" != "$shown" ] || [ "$SECONDS" != "$drawn" ] || continue
+        if [ $((SECONDS - t1)) -ge 3 ]; then t0=$t1 c0=$c1 t1=$SECONDS c1=$cur; fi
+        [ $((SECONDS - t0)) -lt 1 ] || rate=" · $(speed "$c0" "$cur" $((SECONDS - t0)))"
+        # The track in its own grey, not dimmed blue: some terminals (PuTTY, xterm.js) draw
+        # dim text at full strength, and the bar looked full from the start.
+        bar="$BLUE"
+        for ((k = 0; k < 20; k++)); do [ "$k" = "$filled" ] && bar+="$GRAY"; bar+="━"; done
+        printf '\r%s    %s %s%s %3d%%  %s' "${ESC}[2K" "$(pad "$label" 16)" "$bar" "$RESET" "$pct" \
+          "${DIM}$(size "$cur") / $(size "$tot")$rate${RESET}"
+        drawn=$SECONDS shown=$pct
+      done ) 2>/dev/null
+    cat >/dev/null
+  }
+  rc=${PIPESTATUS[0]}
+  set -e
+  rm -f "$sizes"
+  cursor_show
+  if [ "$rc" = 0 ]; then done_line "$label"; else printf '\r%s' "${ESC}[2K"; fi
+  return "$rc"
+}
+
+# Whether the pull failed because there are no prebuilt images for this version (then they are
+# built here), rather than for the network or the registry (then that is the error).
+images_missing() { tail -n 40 "$LOG" | grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found'; }
+
+# The images (all, or the services given): pulled with a bar, or plainly when this Compose has no JSON progress. A pull cut
+# off by the network is tried again (Docker keeps the layers it finished, so each try only
+# fetches the rest), up to PULL_TRIES times in all.
+PULL_TRIES=3
+pull_once() {
+  local label
+  label="$(T downloading)"
+  pull_with_bar "$label" "$@" && return 0
+  # A Compose without JSON progress said so instead of pulling.
+  if tail -n 3 "$LOG" | grep -qi 'progress'; then spin "$label" docker compose pull "$@" && return 0; fi
+  return 1
+}
+pull_images() {
+  local try=1
+  until pull_once "$@"; do
+    images_missing && return 1
+    [ "$try" -lt "$PULL_TRIES" ] || return 1
+    try=$((try + 1))
+    note "$(T pull_retry n="$try" max="$PULL_TRIES")"
+    sleep 3
+  done
+}
+# <<< shared
+
 # The images ColTex's own containers run now.
 running_images() {
   local id
   for id in $(compose ps -q server compiler 2>/dev/null); do docker inspect -f '{{.Image}}' "$id" 2>/dev/null || true; done
+}
+# `docker compose up -d` as one line that turns into ✓; on failure, the end of its output.
+up() {
+  spin "$(T starting)" docker compose up -d "$@" && return 0
+  printf '\n%s\n\n' "${DIM}$(tail -n 15 "$LOG" | sed 's/^/    /')${RESET}" >&2
+  exit 1
 }
 # Start the given services (default: all) on this version's images: pulled from ghcr.io, or
 # built here with COLTEX_BUILD=1 or when there are none for this version. Afterwards the
@@ -797,17 +1073,18 @@ deploy() {
   quiet_bind
   if [ "$(get COLTEX_BUILD)" = 1 ]; then
     ensure_data
-    compose up -d --build "$@"
-  elif pull "$@"; then
+    up --build "$@"
+  elif pull_images "$@"; then
     ensure_data
-    compose up -d "$@"
-  elif missing; then
+    up "$@"
+  elif images_missing; then
     # Only when there are none for this version; a network or registry error is not a reason
     # to build TeX Live here.
     T no_prebuilt version="$(get COLTEX_IMAGE_TAG)"
     ensure_data
-    compose up -d --build "$@"
+    up --build "$@"
   else
+    printf '\n%s\n\n' "${DIM}$(tail -n 15 "$LOG" | sed 's/^/    /')${RESET}" >&2
     T pull_failed >&2
     T pull_hint >&2
     exit 1
@@ -815,24 +1092,6 @@ deploy() {
   after=" $(running_images | tr '\n' ' ') "
   for old in $before; do
     case "$after" in *" $old "*) ;; *) docker image rm "$old" >/dev/null 2>&1 || true ;; esac
-  done
-}
-# `docker compose pull`, shown as it goes and kept in $PULLED, so a failure can say why. Cut off
-# by the network, it is tried again (Docker keeps the layers it finished), 3 times in all.
-PULLED="$(mktemp "${TMPDIR:-/tmp}/coltex-pull.XXXXXX")"
-trap 'rm -f "$PULLED"' EXIT
-missing() { grep -qiE 'manifest unknown|no matching manifest|manifest for .* not found|failed to resolve reference.*not found' "$PULLED"; }
-pull() {
-  local rc try=1
-  while :; do
-    set +e
-    compose pull "$@" 2>&1 | tee "$PULLED"
-    rc=${PIPESTATUS[0]}
-    set -e
-    [ "$rc" != 0 ] && ! missing && [ "$try" -lt 3 ] || return "$rc"
-    try=$((try + 1))
-    T pull_retry n="$try" max=3 >&2
-    sleep 3
   done
 }
 # The user id owning a file (GNU and busybox stat, then BSD's).
@@ -875,6 +1134,13 @@ net() {
   "$@"
 }
 
+# After the update's checkout: the new image tag, then the images and the containers.
+finish_update() {
+  T updating from="$1" to="$(current)"
+  setting COLTEX_IMAGE_TAG "$2"
+  deploy
+}
+
 case "${1:-help}" in
   start) quiet_bind; ensure_data; compose up -d ;;
   stop) compose down ;;
@@ -899,14 +1165,23 @@ case "${1:-help}" in
     fi
     [ -n "$to" ] || { T no_release >&2; exit 1; }
     if [ "$to" = main ]; then
-      net git fetch --depth 1 origin main && git checkout -q -B main FETCH_HEAD
+      net git fetch -q --depth 1 origin main && git checkout -q -B main FETCH_HEAD
     else
       if [ "$to" = "$from" ]; then T latest version="$from"; exit 0; fi
-      net git fetch --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
+      net git fetch -q --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
     fi
-    T updating from="$from" to="$(current)"
-    setting COLTEX_IMAGE_TAG "$to"
-    deploy
+    # The rest is done by the version just checked out, so whatever it needs on the way (a
+    # setting to add, an image address that moved) is done by its own code. One that can't (an
+    # older coltex, or one that doesn't parse) leaves it to this one.
+    if bash -n "$DIR/coltex" 2>/dev/null && grep -q '^  finish-update)' "$DIR/coltex"; then
+      rm -f "$LOG"
+      exec bash "$DIR/coltex" finish-update "$from" "$to"
+    fi
+    finish_update "$from" "$to"
+    ;;
+  finish-update)
+    # The second half of `coltex update`, run by the coltex of the version it updated to.
+    finish_update "$2" "$3"
     ;;
   deploy)
     # Used by install.sh.
