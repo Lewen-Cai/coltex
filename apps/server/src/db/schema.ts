@@ -272,6 +272,15 @@ export const aiUserGroups = pgTable(
   t => [index('ai_user_groups_group_idx').on(t.groupId)],
 )
 
+/** A person's interface settings (UserPreferences), so they follow the account rather than the browser. */
+export const userPreferences = pgTable('user_preferences', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  theme: text('theme'),
+  updatedAt: timestamps.updatedAt,
+})
+
 /** The model and thinking level a person last picked in the assistant panel. */
 export const aiPreferences = pgTable('ai_preferences', {
   userId: text('user_id')

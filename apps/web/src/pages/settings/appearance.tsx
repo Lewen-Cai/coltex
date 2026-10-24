@@ -1,4 +1,4 @@
-import { Check, Coffee, Leaf, Moon, ScrollText, Sun, Trees } from 'lucide-react'
+import { Check, Flower2, Grape, Leaf, Moon, Sun, Trees } from 'lucide-react'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LOCALES, setLocale, t, tk, useLocale } from '@/lib/i18n'
@@ -9,21 +9,21 @@ type Palette = { bg: string; panel: string; line: string; primary: string }
 
 const PALETTES: Record<ThemeChoice, Palette> = {
   light: { bg: 'oklch(0.985 0.003 247)', panel: 'oklch(1 0 0)', line: 'oklch(0 0 0 / 10%)', primary: 'oklch(0.585 0.215 257)' },
-  dark: { bg: 'oklch(0.17 0.015 262)', panel: 'oklch(0.21 0.018 262)', line: 'oklch(1 0 0 / 15%)', primary: 'oklch(0.66 0.19 255)' },
+  dark: { bg: 'oklch(0.235 0.014 262)', panel: 'oklch(0.27 0.016 262)', line: 'oklch(1 0 0 / 15%)', primary: 'oklch(0.66 0.19 255)' },
   forest: { bg: 'oklch(0.982 0.004 160)', panel: 'oklch(1 0 0)', line: 'oklch(0 0 0 / 10%)', primary: 'oklch(0.549 0.145 151)' },
-  moss: { bg: 'oklch(0.17 0.014 165)', panel: 'oklch(0.21 0.017 165)', line: 'oklch(1 0 0 / 15%)', primary: 'oklch(0.63 0.15 150)' },
-  sepia: { bg: 'oklch(0.962 0.018 80)', panel: 'oklch(0.983 0.012 82)', line: 'oklch(0.3 0.03 55 / 14%)', primary: 'oklch(0.56 0.15 42)' },
-  espresso: { bg: 'oklch(0.18 0.012 60)', panel: 'oklch(0.22 0.015 60)', line: 'oklch(1 0 0 / 15%)', primary: 'oklch(0.74 0.14 68)' },
+  moss: { bg: 'oklch(0.235 0.013 165)', panel: 'oklch(0.27 0.015 165)', line: 'oklch(1 0 0 / 15%)', primary: 'oklch(0.63 0.15 150)' },
+  lavender: { bg: 'oklch(0.984 0.005 300)', panel: 'oklch(1 0 0)', line: 'oklch(0 0 0 / 10%)', primary: 'oklch(0.56 0.2 293)' },
+  plum: { bg: 'oklch(0.235 0.018 300)', panel: 'oklch(0.27 0.02 300)', line: 'oklch(1 0 0 / 15%)', primary: 'oklch(0.68 0.17 295)' },
 }
 
 // Light themes on the first row, their dark counterparts under them.
 const THEMES = [
   { id: 'light', label: tk('Light'), icon: Sun },
   { id: 'forest', label: tk('Forest'), icon: Trees },
-  { id: 'sepia', label: tk('Sepia'), icon: ScrollText },
+  { id: 'lavender', label: tk('Lavender'), icon: Flower2 },
   { id: 'dark', label: tk('Dark'), icon: Moon },
   { id: 'moss', label: tk('Moss'), icon: Leaf },
-  { id: 'espresso', label: tk('Espresso'), icon: Coffee },
+  { id: 'plum', label: tk('Plum'), icon: Grape },
 ] as const
 
 /** A miniature of the console in the given theme, so the choice is visual. */

@@ -19,6 +19,7 @@ import { useAiAvailable } from './lib/ai.ts'
 import { hasSavedLocale, resolveLocale, setLocale, useLocale } from './lib/i18n.ts'
 import { useNotificationStream } from './lib/notifications.ts'
 import { navigate, useHashRoute } from './lib/router.ts'
+import { useAccountTheme } from './lib/theme.ts'
 
 // Heavy parts load on demand: the editor (CodeMirror, pdf.js) and the admin pages (charts).
 const EditorPage = lazy(() => import('./components/EditorPage.tsx').then(m => ({ default: m.EditorPage })))
@@ -94,6 +95,8 @@ function Routes() {
   const session = authClient.useSession()
   const [needsSetup, setNeedsSetup] = useState<boolean>()
   useNotificationStream(session.data?.user.id)
+  // Signed in: their account's theme; otherwise the default.
+  useAccountTheme(session.isPending ? undefined : (session.data?.user.id ?? null))
 
   useEffect(() => {
     api.setupStatus().then(

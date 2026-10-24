@@ -44,14 +44,13 @@ Los lectores y los revisores pueden preguntar al agente de IA, pero este no pued
 
 Una skill es un conjunto de instrucciones para una tarea que haces una y otra vez, por ejemplo «acortar un resumen al límite de la revista» o «comprobar que todas las figuras están referenciadas». Las skills usan el formato Agent Skills (un `SKILL.md` con un nombre, una descripción y las instrucciones), así que las skills escritas para otros agentes de IA también funcionan aquí.
 
-- **Tus skills** están en **Configuración → Skills de IA**; solo tú las ves. Las **skills del proyecto** están en la configuración del proyecto (**Skills de IA**): todos los miembros que tienen el agente de IA pueden usarlas, y los editores las añaden y modifican.
+- **Tus skills** están en **Configuración → Skills de IA**; solo tú las ves, y puedes usarlas en todos los proyectos.
 - Para añadir skills que ya tienes, usa **Importar**: **Subir archivos** acepta un `SKILL.md` con sus archivos de referencia, o un `.zip` de carpetas de skills; **Subir carpeta** acepta la carpeta de una skill, o una carpeta que contenga varias. Los scripts de una skill se guardan como texto que el agente de IA puede leer; nada de una skill se ejecuta nunca.
 - Usa una escribiendo `/` y eligiéndola, y añade tu mensaje (`/polish-abstract keep it under 200 words`). El agente de IA también lee las descripciones y carga una skill por su cuenta cuando tu petición encaja con ella.
-- Pide al agente de IA que convierta algo en una skill («guarda como skill lo que acabamos de hacer para arreglar la bibliografía»): redacta una en el chat, y tú la editas o la guardas en tus skills o en las del proyecto.
+- Pide al agente de IA que convierta algo en una skill («guarda como skill lo que acabamos de hacer para arreglar la bibliografía»): redacta una en el chat, y tú la editas o la guardas en tus skills.
 - En **Configuración → Skills de IA**, tus skills aparecen a la izquierda; elige una para leer sus instrucciones y archivos de referencia, o **Crear con IA** para abrir un chat con el agente de IA para escribir skills (**Mejorar en el chat** en una de tus skills empieza un mensaje sobre ella). El chat sigue la skill integrada **skill-creator**: te pregunta cómo usarías la skill, la redacta (con archivos de referencia cuando ayudan) y puede probar un borrador con un texto que pegues. Los borradores solo se guardan cuando tú los guardas; guardar uno con un nombre que ya usas te pregunta antes de reemplazarlo. El chat se conserva hasta que empiezas uno nuevo.
 - ColTex incluye skills integradas (en **Integradas**). Puedes leerlas y descargarlas, pero no modificarlas; si tienes una skill propia con el mismo nombre, se usa la tuya.
   - **skill-creator**: para escribir skills (el chat de skills la sigue).
-- Cuando una de tus skills tiene el mismo nombre que una skill del proyecto, se usa la tuya.
 
 ## Tus propias herramientas de IA (MCP)
 

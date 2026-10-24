@@ -629,6 +629,13 @@ export const LearnedWordsImport = z.object({ words: z.array(z.string()).max(10_0
 export const LearnedWordsImported = z.object({ added: z.number(), skipped: z.number() })
 export type LearnedWordsImported = z.infer<typeof LearnedWordsImported>
 
+/** The interface's colour themes (the web app's lib/theme.ts): blue, green and violet, each light and dark. */
+export const ThemeChoice = z.enum(['light', 'dark', 'forest', 'moss', 'lavender', 'plum'])
+export type ThemeChoice = z.infer<typeof ThemeChoice>
+/** A person's interface settings, kept with their account; null: never chosen (the default). */
+export const UserPreferences = z.object({ theme: ThemeChoice.nullable() })
+export type UserPreferences = z.infer<typeof UserPreferences>
+
 export const CompileStatus = z.enum(['success', 'failure', 'timeout', 'error'])
 export type CompileStatus = z.infer<typeof CompileStatus>
 

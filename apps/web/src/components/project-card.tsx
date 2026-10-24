@@ -13,15 +13,16 @@ export const ENGINE_LABEL = { pdflatex: 'pdfLaTeX', xelatex: 'XeLaTeX', lualatex
 /** Translate at render: `t(ROLE_LABEL[role])`. */
 export const ROLE_LABEL = { owner: tk('Owner'), editor: tk('Can edit'), reviewer: tk('Can review'), viewer: tk('Can view') } as const
 
-/** Deterministic, pleasant hue per project for the card header: blues to indigos. */
-function hue(id: string): number {
+/** Deterministic shift per project around the theme's hue (`--theme-hue` in index.css), so cards differ but stay in its colour. */
+function hueShift(id: string): number {
   let hash = 0
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
-  return 200 + (hash % 70)
+  return (hash % 40) - 20
 }
 
 // The gradient reads the hue from `--hue`, so dark mode can swap in deeper tones.
 const HEADER =
+  '[--hue:calc(var(--theme-hue)_+_var(--hue-shift))] ' +
   'bg-[linear-gradient(135deg,oklch(0.93_0.05_var(--hue)),oklch(0.85_0.1_calc(var(--hue)_+_25)))] ' +
   'dark:bg-[linear-gradient(135deg,oklch(0.34_0.07_var(--hue)),oklch(0.27_0.1_calc(var(--hue)_+_25)))]'
 
@@ -37,7 +38,7 @@ export function ProjectCard({ project, index = 0 }: { project: ProjectSummary; i
     >
       <Card className="group relative gap-0 overflow-hidden py-0 transition-shadow hover:shadow-lg hover:shadow-primary/10">
         <a href={`#/project/${project.id}`} className="absolute inset-0 z-0" aria-label={t('Open {name}', { name: project.name })} />
-        <div className={`relative h-24 overflow-hidden ${HEADER}`} style={{ '--hue': hue(project.id) } as CSSProperties}>
+        <div className={`relative h-24 overflow-hidden ${HEADER}`} style={{ '--hue-shift': hueShift(project.id) } as CSSProperties}>
           {/* A sheet of paper peeking out: the project as a document. */}
           <div className="absolute bottom-0 left-5 h-16 w-28 translate-y-3 rounded-t-md bg-white/90 p-2 shadow-sm dark:bg-slate-300/80 transition-transform duration-300 group-hover:translate-y-1">
             <div className="mb-1.5 h-1.5 w-14 rounded-full bg-slate-300 dark:bg-slate-500" />

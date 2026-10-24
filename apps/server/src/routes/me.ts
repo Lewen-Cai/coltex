@@ -1,16 +1,33 @@
 import { and, asc, count, eq } from 'drizzle-orm'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { LearnedWord, LearnedWords, LearnedWordsImport, LearnedWordsImported } from '@coltex/shared'
+import { LearnedWord, LearnedWords, LearnedWordsImport, LearnedWordsImported, ThemeChoice, UserPreferences } from '@coltex/shared'
 import { requireUser } from '../auth/fastify.ts'
-import { learnedWords } from '../db/schema.ts'
+import { learnedWords, userPreferences } from '../db/schema.ts'
 import type { Deps } from '../deps.ts'
 import { BadRequestError } from '../errors.ts'
 
 /** Generous for a personal dictionary; it is sent to the browser whenever the editor opens. */
 const MAX_LEARNED_WORDS = 10_000
 
-/** The signed-in user's own settings: the spelling dictionary. */
+/** The signed-in user's own settings: interface preferences and the spelling dictionary. */
 export const meRoutes: FastifyPluginAsyncZod<Deps> = async (app, { db }) => {
+  app.get('/me/preferences', { schema: { response: { 200: UserPreferences } } }, async req => {
+    const [row] = await db.select().from(userPreferences).where(eq(userPreferences.userId, requireUser(req).id))
+    const theme = ThemeChoice.safeParse(row?.theme)
+    // A theme that no longer exists reads as never chosen.
+    return { theme: theme.success ? theme.data : null }
+  })
+
+  app.put('/me/preferences', { schema: { body: UserPreferences, response: { 200: UserPreferences } } }, async req => {
+    const userId = requireUser(req).id
+    const { theme } = req.body
+    await db
+      .insert(userPreferences)
+      .values({ userId, theme })
+      .onConflictDoUpdate({ target: userPreferences.userId, set: { theme, updatedAt: new Date() } })
+    return { theme }
+  })
+
   app.get('/me/dictionary', { schema: { response: { 200: LearnedWords } } }, async req => {
     const rows = await db
       .select({ word: learnedWords.word })

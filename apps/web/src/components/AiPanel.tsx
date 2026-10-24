@@ -218,7 +218,7 @@ export function AiPanel(props: Props) {
               <Item
                 key={entry.item.id}
                 item={entry.item}
-                skillScopes={props.canEdit ? ['personal', 'project'] : ['personal']}
+                skillScopes={['personal']}
                 onSaveSkill={(body, scope, replace) => session.saveSkill(entry.item.id, { ...body, scope, replace }).then(() => undefined)}
                 onOpenFile={props.onOpenFile}
                 // Only the latest card can show its diff: the draft has moved on since older turns.
@@ -357,11 +357,13 @@ export function SessionStatus({
   state,
   allowance,
   permission,
+  className,
 }: {
   status: AiStatus
   state: AiSessionState | undefined
   allowance?: AiAllowance | null
   permission?: AiPermission
+  className?: string
 }) {
   const auto = status.auto.on
   const model = status.model
@@ -372,7 +374,7 @@ export function SessionStatus({
   if (!thinking && !window && !allowance && !permission) return null
   const PermissionIcon = permission && PERMISSION_ICON[permission]
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pt-1.5 text-xs text-muted-foreground">
+    <div className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pt-1.5 text-xs text-muted-foreground', className)}>
       {allowance?.exceeded && (
         <span className="basis-full text-destructive">
           {t('You have reached your AI usage limit. It resets on {date}.', {

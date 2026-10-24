@@ -4,7 +4,7 @@ All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTe
 
 ## v0.0.3 (unreleased)
 
-Fixes for the Cloudflare Tunnel, ports, the data folder and downloads, the images on Alibaba Cloud for mainland China, and three new maintenance commands.
+Fixes for the Cloudflare Tunnel, ports, the data folder and downloads, the images on Alibaba Cloud for mainland China, three new maintenance commands, and themes kept with your account.
 
 ### Fixed
 
@@ -15,6 +15,9 @@ Fixes for the Cloudflare Tunnel, ports, the data folder and downloads, the image
 
 ### Improved
 
+- The theme is kept with your account instead of the browser, so it follows you to other browsers, and the sign-in page always shows ColTex's default blue. Dark and Moss use dark grey instead of near-black. Sepia and Espresso are replaced by Lavender and Plum (violet). Project cards take the theme's colour.
+- The skills chat (Settings → AI skills) has a floating message box with the model, thinking level and usage inside it.
+- Skills are personal: the project settings no longer have an AI skills section, and skills the AI agent drafts are saved to your skills.
 - Cloudflare Tunnel: when QUIC can't get through (a firewall, or a proxy that drops UDP), it switches to HTTP/2 by itself. A rate-limited temporary link (429) is asked for again less and less often instead of every 5 seconds. Common errors are explained in plain words, each line once, and changing the tunnel warns that its hostnames stay on the old one (Error 1033).
 - The compiler images come in layers of about a gigabyte instead of one TeX Live layer of up to 7 GB, so a download that breaks only repeats the part it was on.
 - Downloads cut off by the network are tried again (three times in all, keeping the finished layers), in the installer and in `coltex update`. When it still fails, it says how to use a mirror of ghcr.io and which Docker settings help on a poor connection.

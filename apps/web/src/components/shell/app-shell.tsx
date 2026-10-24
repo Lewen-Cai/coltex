@@ -56,6 +56,7 @@ import { adminItems, isSettingsRoute, personalItems, settingsItemActive, setting
 import { useAiAvailable } from '@/lib/ai'
 import { helpSection, helpSections, helpTitle, isHelpRoute } from '@/pages/help/nav'
 import { useTags } from '@/lib/tags'
+import { forgetTheme } from '@/lib/theme'
 import { inView, useProjects } from '@/pages/projects-data'
 import { TagDialogHost, deleteTag, openTagDialog } from '@/components/tag-dialog'
 import { ProjectDialogs } from './project-dialogs'
@@ -88,6 +89,7 @@ function crumbs(route: string, user: SessionUser): { label: string; href?: strin
 
 async function signOut() {
   await authClient.signOut()
+  forgetTheme()
   // A full reload clears every page's state (and avoids pages refetching with a dead session).
   window.location.assign('/')
 }

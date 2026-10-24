@@ -44,14 +44,13 @@ Người xem và người duyệt có thể hỏi tác tử AI, nhưng nó khôn
 
 Skill là một bộ hướng dẫn cho một công việc bạn làm đi làm lại, ví dụ “rút gọn tóm tắt cho vừa giới hạn của tạp chí” hoặc “kiểm tra mọi hình đều được tham chiếu”. Skill dùng định dạng Agent Skills (một tệp `SKILL.md` gồm tên, mô tả và hướng dẫn), nên các skill viết cho tác tử AI khác cũng dùng được ở đây.
 
-- **Skill của bạn** nằm trong **Cài đặt → Skill AI**; chỉ bạn thấy chúng. **Skill của dự án** nằm trong cài đặt dự án (**Skill AI**): mọi thành viên có tác tử AI đều dùng được, người chỉnh sửa thêm và thay đổi chúng.
+- **Skill của bạn** nằm trong **Cài đặt → Skill AI**; chỉ bạn thấy chúng, và bạn có thể dùng chúng trong mọi dự án.
 - Thêm các skill bạn đã có bằng **Nhập**: **Tải tệp lên** nhận một tệp `SKILL.md` cùng các tệp tham khảo của nó, hoặc một tệp `.zip` chứa các thư mục skill; **Tải thư mục lên** nhận thư mục của một skill, hoặc một thư mục chứa nhiều skill. Các script trong skill được giữ dưới dạng văn bản để tác tử AI đọc; không có gì trong skill bị chạy.
 - Dùng một skill bằng cách gõ `/` và chọn nó, rồi thêm tin nhắn của bạn (`/polish-abstract keep it under 200 words`). Tác tử AI cũng đọc phần mô tả và tự nạp một skill khi yêu cầu của bạn phù hợp.
-- Hãy nhờ tác tử AI biến một việc thành skill (“lưu cách chúng ta vừa sửa tài liệu tham khảo thành một skill”): nó soạn nháp skill trong cuộc trò chuyện, và bạn sửa hoặc lưu vào skill của bạn hay của dự án.
+- Hãy nhờ tác tử AI biến một việc thành skill (“lưu cách chúng ta vừa sửa tài liệu tham khảo thành một skill”): nó soạn nháp skill trong cuộc trò chuyện, và bạn sửa hoặc lưu vào skill của bạn.
 - Trong **Cài đặt → Skill AI**, các skill của bạn được liệt kê ở bên trái; chọn một skill để đọc hướng dẫn và tệp tham khảo của nó, hoặc **Tạo bằng AI** để mở cuộc trò chuyện với tác tử AI nhằm viết skill (**Cải thiện trong cuộc trò chuyện** trên một skill của bạn sẽ bắt đầu một tin nhắn về skill đó). Cuộc trò chuyện làm theo skill tích hợp sẵn **skill-creator**: nó hỏi bạn sẽ dùng skill ra sao, soạn nháp skill (kèm tệp tham khảo khi hữu ích), và có thể thử bản nháp trên đoạn văn bản bạn dán vào. Bản nháp chỉ được lưu khi bạn lưu; lưu với một tên bạn đã dùng sẽ hỏi trước khi thay thế. Cuộc trò chuyện được giữ cho đến khi bạn bắt đầu cuộc mới.
 - ColTex có sẵn các skill tích hợp (liệt kê trong **Tích hợp sẵn**). Bạn có thể đọc và tải chúng xuống nhưng không thay đổi được; một skill của riêng bạn trùng tên sẽ được dùng thay thế.
   - **skill-creator**: viết skill (cuộc trò chuyện về skill làm theo nó).
-- Khi một skill của bạn trùng tên với một skill của dự án, skill của bạn được dùng.
 
 ## Công cụ AI của riêng bạn (MCP)
 

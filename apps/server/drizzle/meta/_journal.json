@@ -239,6 +239,13 @@
       "when": 1792698962597,
       "tag": "0033_token_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792804883979,
+      "tag": "0034_user_preferences",
+      "breakpoints": true
     }
   ]
 }

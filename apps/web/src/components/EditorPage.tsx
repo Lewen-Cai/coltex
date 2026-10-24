@@ -1481,7 +1481,6 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
         onWordCount={() => setWordCountOpen(true)}
         onCopy={() => project && openCopyProject(projectId, project.name)}
         onConvert={() => project && openConvert(projectId, project.name)}
-        aiAvailable={aiAvailable}
       />
       <WordCountDialog
         projectId={projectId}

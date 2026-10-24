@@ -6,11 +6,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>ColTex</title>
     <script>
-      // Apply the saved theme before the first paint (see src/lib/theme.ts).
+      // Apply the signed-in person's theme before the first paint (see src/lib/theme.ts).
       try {
-        var c = localStorage.getItem('coltex:theme')
-        if (c === 'dark' || c === 'moss' || c === 'espresso') document.documentElement.classList.add('dark')
-        if (c === 'forest' || c === 'moss' || c === 'sepia' || c === 'espresso') document.documentElement.dataset.theme = c
+        var c = (localStorage.getItem('coltex:theme') || '').split(':').pop()
+        if (c === 'dark' || c === 'moss' || c === 'plum') document.documentElement.classList.add('dark')
+        if (c === 'forest' || c === 'moss' || c === 'lavender' || c === 'plum') document.documentElement.dataset.theme = c
       } catch (e) {}
     </script>
   </head>

@@ -44,14 +44,13 @@ Görüntüleyiciler ve inceleyiciler YZ ajanına soru sorabilir, ancak ajan onla
 
 Skill, tekrar tekrar yaptığınız bir görev için bir talimat kümesidir; örneğin "özeti derginin sınırına kadar kısalt" veya "her şekle başvurulduğunu denetle". Skills, Agent Skills biçimini (ad, açıklama ve talimatları içeren bir `SKILL.md`) kullanır; bu nedenle başka YZ ajanları için yazılmış skills burada da çalışır.
 
-- **Kişisel skills** **Ayarlar → YZ skills** bölümündedir; onları yalnızca siz görürsünüz. **Proje skills** proje ayarlarındadır (**YZ skills**): YZ ajanına erişimi olan her üye onları kullanabilir, düzenleyiciler ekler ve değiştirir.
+- **Kişisel skills** **Ayarlar → YZ skills** bölümündedir; onları yalnızca siz görürsünüz ve her projede kullanabilirsiniz.
 - Hazır skills için **İçe aktar** kullanın: **Dosya yükle**, başvuru dosyalarıyla birlikte bir `SKILL.md` veya skill klasörlerinden oluşan bir `.zip` alır; **Klasör yükle**, tek bir skill klasörünü veya birkaç skill içeren bir klasörü alır. Bir skill içindeki betikler YZ ajanının okuyabileceği metin olarak saklanır; bir skill içindeki hiçbir şey asla çalıştırılmaz.
 - Bir skill kullanmak için `/` yazıp onu seçin, ardından mesajınızı ekleyin (`/polish-abstract keep it under 200 words`). YZ ajanı açıklamaları da okur ve isteğiniz bir skill açıklamasına uyduğunda o skill kendiliğinden yüklenir.
-- YZ ajanından bir şeyden skill oluşturmasını isteyin ("kaynakçayı az önce nasıl düzelttiğimizi skill olarak kaydet"): sohbette bir taslak hazırlar; siz onu düzenler ya da kişisel skill veya proje skill olarak kaydedersiniz.
+- YZ ajanından bir şeyden skill oluşturmasını isteyin ("kaynakçayı az önce nasıl düzelttiğimizi skill olarak kaydet"): sohbette bir taslak hazırlar; siz onu düzenler ya da kişisel skill olarak kaydedersiniz.
 - **Ayarlar → YZ skills** bölümünde kişisel skills solda listelenir; talimatlarını ve başvuru dosyalarını okumak için birini seçin ya da skill yazmak üzere YZ ajanıyla bir sohbet açmak için **YZ ile oluştur** düğmesine tıklayın (kişisel skills arasından birinde **Sohbette iyileştir**, o skill hakkında bir mesaj başlatır). Sohbet yerleşik **skill-creator** adlı skill talimatlarını izler: skill ile ne yapmak istediğinizi sorar, taslağını hazırlar (yararlı olduğunda başvuru dosyalarıyla) ve bir taslağı yapıştırdığınız bir metin üzerinde deneyebilir. Taslaklar yalnızca siz kaydettiğinizde kaydedilir; zaten kullandığınız bir adla kaydetmek, değiştirmeden önce sorar. Sohbet, yeni bir sohbet başlatana kadar saklanır.
 - ColTex yerleşik skills ile gelir (**Yerleşik** altında listelenir). Onları okuyabilir ve indirebilirsiniz ama değiştiremezsiniz; aynı adlı kişisel bir skill varsa onun yerine o kullanılır.
   - **skill-creator**: skill yazma (skills sohbeti bunu izler).
-- Kişisel bir skill bir proje skill ile aynı ada sahipse kişisel olan kullanılır.
 
 ## Kendi YZ araçlarınız (MCP)
 

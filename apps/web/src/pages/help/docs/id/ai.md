@@ -44,14 +44,13 @@ Pelihat dan peninjau dapat bertanya kepada agen AI, tetapi agen itu tidak dapat 
 
 Skill adalah sekumpulan instruksi untuk tugas yang Anda lakukan berulang kali, misalnya "persingkat abstrak sesuai batas jurnal" atau "periksa bahwa setiap gambar dirujuk". Skill menggunakan format Agent Skills (sebuah `SKILL.md` dengan nama, deskripsi, dan instruksi), sehingga skill yang ditulis untuk agen AI lain juga berfungsi di sini.
 
-- **Skill Anda** ada di **Pengaturan → Skill AI**; hanya Anda yang melihatnya. **Skill proyek** ada di pengaturan proyek (**Skill AI**): setiap anggota yang memiliki agen AI dapat menggunakannya, editor menambah dan mengubahnya.
+- **Skill Anda** ada di **Pengaturan → Skill AI**; hanya Anda yang melihatnya, dan Anda dapat menggunakannya di setiap proyek.
 - Tambahkan skill yang sudah Anda miliki dengan **Impor**: **Unggah file** menerima `SKILL.md` beserta file referensinya, atau `.zip` berisi folder skill; **Unggah folder** menerima folder sebuah skill, atau folder yang berisi beberapa skill. Skrip dalam skill disimpan sebagai teks yang dapat dibaca agen AI; tidak ada isi skill yang pernah dijalankan.
 - Gunakan dengan mengetik `/` lalu memilihnya, kemudian tambahkan pesan Anda (`/polish-abstract keep it under 200 words`). Agen AI juga membaca deskripsinya dan memuat skill sendiri ketika permintaan Anda cocok dengannya.
-- Minta agen AI menjadikan sesuatu sebuah skill ("simpan cara kita memperbaiki bibliografi tadi sebagai skill"): agen membuat drafnya di obrolan, lalu Anda mengeditnya atau menyimpannya ke skill Anda atau skill proyek.
+- Minta agen AI menjadikan sesuatu sebuah skill ("simpan cara kita memperbaiki bibliografi tadi sebagai skill"): agen membuat drafnya di obrolan, lalu Anda mengeditnya atau menyimpannya ke skill Anda.
 - Di **Pengaturan → Skill AI**, skill Anda tercantum di sebelah kiri; pilih salah satunya untuk membaca instruksi dan file referensinya, atau **Buat dengan AI** untuk membuka obrolan dengan agen AI guna menulis skill (**Perbaiki di obrolan** pada salah satu skill Anda memulai pesan tentang skill itu). Obrolan ini mengikuti skill bawaan **skill-creator**: agen menanyakan bagaimana Anda akan menggunakan skill itu, membuat drafnya (dengan file referensi jika membantu), dan dapat mencoba draf pada teks yang Anda tempel. Draf hanya disimpan ketika Anda menyimpannya; menyimpan dengan nama yang sudah Anda gunakan akan meminta konfirmasi sebelum mengganti. Obrolan disimpan sampai Anda memulai yang baru.
 - ColTex dilengkapi skill bawaan (tercantum di bawah **Bawaan**). Anda dapat membaca dan mengunduhnya tetapi tidak dapat mengubahnya; skill Anda sendiri dengan nama yang sama akan digunakan sebagai gantinya.
   - **skill-creator**: menulis skill (obrolan skill mengikutinya).
-- Ketika salah satu skill Anda memiliki nama yang sama dengan skill proyek, skill Anda yang digunakan.
 
 ## Alat AI Anda sendiri (MCP)
 

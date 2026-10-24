@@ -61,6 +61,7 @@ import type {
   CompileResult,
   LearnedWords,
   LearnedWordsImported,
+  UserPreferences,
   ProjectSources,
   ReplaceBody,
   ReplaceResult,
@@ -286,6 +287,10 @@ export const api = {
   editChat: (id: string, messageId: string, content: string) =>
     request<void>(`/api/projects/${id}/chat/${messageId}`, json('PATCH', { content })),
   deleteChat: (id: string, messageId: string) => request<void>(`/api/projects/${id}/chat/${messageId}`, { method: 'DELETE' }),
+
+  // ---- Interface preferences (per user) ----
+  preferences: () => request<UserPreferences>('/api/me/preferences'),
+  setPreferences: (prefs: UserPreferences) => request<UserPreferences>('/api/me/preferences', json('PUT', prefs)),
 
   // ---- Spelling dictionary (per user) ----
   learnedWords: () => request<LearnedWords>('/api/me/dictionary'),

@@ -44,14 +44,13 @@ Betrachter und Prüfer können den KI-Agenten fragen, aber er kann für sie nich
 
 Ein Skill ist eine Sammlung von Anweisungen für eine Aufgabe, die Sie immer wieder erledigen, zum Beispiel „ein Abstract auf das Limit der Zeitschrift kürzen“ oder „prüfen, ob jede Abbildung referenziert wird“. Skills verwenden das Format Agent Skills (eine `SKILL.md` mit Name, Beschreibung und Anweisungen), daher funktionieren auch Skills, die für andere KI-Agenten geschrieben wurden.
 
-- **Ihre Skills** finden Sie unter **Einstellungen → KI-Skills**; nur Sie sehen sie. **Projekt-Skills** stehen in den Projekteinstellungen (**KI-Skills**): Jedes Mitglied, das den KI-Agenten nutzen kann, kann sie verwenden; Bearbeiter fügen sie hinzu und ändern sie.
+- **Ihre Skills** finden Sie unter **Einstellungen → KI-Skills**; nur Sie sehen sie, und Sie können sie in jedem Projekt verwenden.
 - Vorhandene Skills fügen Sie mit **Importieren** hinzu: **Dateien hochladen** nimmt eine `SKILL.md` mit ihren Referenzdateien oder eine `.zip` mit Skill-Ordnern; **Ordner hochladen** nimmt den Ordner eines Skills oder einen Ordner mit mehreren. Skripte in einem Skill werden als Text aufbewahrt, den der KI-Agent lesen kann; nichts in einem Skill wird je ausgeführt.
 - Verwenden Sie einen, indem Sie `/` tippen und ihn auswählen, und schreiben Sie dann Ihre Nachricht dazu (`/polish-abstract keep it under 200 words`). Der KI-Agent liest außerdem die Beschreibungen und lädt einen Skill von sich aus, wenn Ihre Anfrage dazu passt.
-- Bitten Sie den KI-Agenten, etwas zu einem Skill zu machen („speichere, wie wir gerade das Literaturverzeichnis repariert haben, als Skill“): Er entwirft einen im Chat, und Sie bearbeiten ihn oder speichern ihn in Ihren Skills oder denen des Projekts.
+- Bitten Sie den KI-Agenten, etwas zu einem Skill zu machen („speichere, wie wir gerade das Literaturverzeichnis repariert haben, als Skill“): Er entwirft einen im Chat, und Sie bearbeiten ihn oder speichern ihn in Ihren Skills.
 - Unter **Einstellungen → KI-Skills** sind Ihre Skills links aufgelistet; wählen Sie einen aus, um seine Anweisungen und Referenzdateien zu lesen, oder **Mit KI erstellen**, um einen Chat mit dem KI-Agenten zum Schreiben von Skills zu öffnen (**Im Chat verbessern** bei einem Ihrer Skills beginnt eine Nachricht dazu). Der Chat folgt dem integrierten Skill **skill-creator**: Er fragt, wie Sie den Skill verwenden würden, entwirft ihn (mit Referenzdateien, wenn sie helfen) und kann einen Entwurf an eingefügtem Text ausprobieren. Entwürfe werden erst gespeichert, wenn Sie sie speichern; wenn Sie einen unter einem bereits verwendeten Namen speichern, wird vor dem Ersetzen nachgefragt. Der Chat bleibt erhalten, bis Sie einen neuen beginnen.
 - ColTex bringt integrierte Skills mit (aufgelistet unter **Integriert**). Sie können sie lesen und herunterladen, aber nicht ändern; ein eigener Skill mit gleichem Namen wird stattdessen verwendet.
   - **skill-creator**: Skills schreiben (der Skills-Chat folgt ihm).
-- Hat einer Ihrer Skills denselben Namen wie ein Projekt-Skill, wird Ihrer verwendet.
 
 ## Ihre eigenen KI-Tools (MCP)
 

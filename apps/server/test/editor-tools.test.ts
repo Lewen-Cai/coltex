@@ -154,6 +154,18 @@ describe('compile options, sources, spelling', () => {
     assert.equal((await patch({ spellCheckLanguage: 'en_GB' }, bob)).statusCode, 404)
   })
 
+  test('the theme is kept with each account', async () => {
+    const prefs = (method: 'GET' | 'PUT', cookie: string, payload?: object) =>
+      t.app.inject({ method, url: '/api/me/preferences', headers: { cookie }, ...(payload ? { payload } : {}) })
+    assert.deepEqual((await prefs('GET', admin)).json(), { theme: null })
+    assert.deepEqual((await prefs('PUT', admin, { theme: 'plum' })).json(), { theme: 'plum' })
+    assert.deepEqual((await prefs('PUT', admin, { theme: 'forest' })).json(), { theme: 'forest' })
+    assert.deepEqual((await prefs('GET', admin)).json(), { theme: 'forest' })
+    assert.deepEqual((await prefs('GET', bob)).json(), { theme: null })
+    assert.equal((await prefs('PUT', admin, { theme: 'sepia' })).statusCode, 400)
+    assert.equal((await t.app.inject({ method: 'GET', url: '/api/me/preferences' })).statusCode, 401)
+  })
+
   test('each user has their own dictionary', async () => {
     const dict = (method: 'GET' | 'POST' | 'DELETE', cookie: string, word?: string) =>
       t.app.inject({ method, url: '/api/me/dictionary', headers: { cookie }, ...(word === undefined ? {} : { payload: { word } }) })

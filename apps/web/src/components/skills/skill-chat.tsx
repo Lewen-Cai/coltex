@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { ArrowUp, BookOpen, Loader2, PenLine, Sparkles, Square, SquarePen, Wand2 } from 'lucide-react'
 import { aiPick, useAiStatus, useSkillChat } from '@/lib/ai'
@@ -19,6 +19,9 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
   const [text, setText] = useState('')
   const scroller = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLTextAreaElement>(null)
+  const composer = useRef<HTMLDivElement>(null)
+  // The composer floats over the end of the conversation: the list keeps room for it.
+  const [composerHeight, setComposerHeight] = useState(0)
   const running = state?.running ?? false
   const allowance = useAiAllowance(running)
 
@@ -33,10 +36,18 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
     }
   }, [prefill])
 
+  useLayoutEffect(() => {
+    const el = composer.current
+    if (!el) return
+    const observer = new ResizeObserver(() => setComposerHeight(el.offsetHeight))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   useEffect(() => {
     const el = scroller.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [state?.items])
+  }, [state?.items, composerHeight])
 
   const submit = (message = text) => {
     const trimmed = message.trim()
@@ -61,86 +72,90 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
         </Button>
       </div>
 
-      <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-sm">
-        <div className="mx-auto max-w-3xl space-y-3">
-          {state && state.items.length === 0 && (
-            <div className="mx-auto max-w-md space-y-3 pt-10">
-              <p className="text-center font-semibold">{t('Create a skill with the AI agent')}</p>
-              <div className="space-y-1.5">
-                {suggestions.map((s, i) => (
-                  <motion.button
-                    key={s.text}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    onClick={() => submit(s.text)}
-                    className="flex w-full items-center gap-2.5 rounded-lg border bg-card px-3 py-2 text-left text-sm text-foreground/85 shadow-xs transition-colors hover:border-primary/40 hover:bg-accent"
-                  >
-                    <s.icon className="size-3.5 shrink-0 text-muted-foreground" />
-                    <span className="flex-1">{s.text}</span>
-                  </motion.button>
-                ))}
+      <div className="relative min-h-0 flex-1">
+        <div ref={scroller} className="h-full overflow-y-auto px-4 pt-4 text-sm" style={{ paddingBottom: composerHeight + 16 }}>
+          <div className="mx-auto max-w-3xl space-y-3">
+            {state && state.items.length === 0 && (
+              <div className="mx-auto max-w-md space-y-3 pt-10">
+                <p className="text-center font-semibold">{t('Create a skill with the AI agent')}</p>
+                <div className="space-y-1.5">
+                  {suggestions.map((s, i) => (
+                    <motion.button
+                      key={s.text}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      onClick={() => submit(s.text)}
+                      className="flex w-full items-center gap-2.5 rounded-lg border bg-card px-3 py-2 text-left text-sm text-foreground/85 shadow-xs transition-colors hover:border-primary/40 hover:bg-accent"
+                    >
+                      <s.icon className="size-3.5 shrink-0 text-muted-foreground" />
+                      <span className="flex-1">{s.text}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {state &&
+              groupItems(state.items).map(entry =>
+                entry.kind === 'tools' ? (
+                  <ToolGroup key={entry.id} items={entry.items} />
+                ) : (
+                  <Item
+                    key={entry.item.id}
+                    item={entry.item}
+                    skillScopes={['personal']}
+                    onSaveSkill={async (body, scope, replace) => {
+                      await chat.saveSkill(entry.item.id, { ...body, scope, replace })
+                      onSaved()
+                    }}
+                  />
+                ),
+              )}
+            {running && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" /> {t('Working…')}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div ref={composer} className="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-4">
+          <div className="pointer-events-auto mx-auto max-w-3xl">
+            {error && (
+              <div className="mb-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-1.5 text-sm break-words text-destructive">{error}</div>
+            )}
+            <div className="rounded-xl border bg-card shadow-lg transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <textarea
+                ref={input}
+                value={text}
+                onChange={e => setText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault()
+                    submit()
+                  }
+                }}
+                rows={Math.min(6, Math.max(2, text.split('\n').length))}
+                placeholder={t('Describe the skill you want, or paste text to try a draft on…')}
+                className="block min-h-0 w-full resize-none bg-transparent px-3 pt-2.5 text-sm outline-none"
+              />
+              <div className="flex items-center gap-2 px-1.5 pb-1.5">
+                {status && <ModelPicker status={status} onChoose={choose} />}
+                <div className="min-w-0 flex-1">
+                  {status && <SessionStatus status={status} state={state} allowance={allowance} className="pt-0" />}
+                </div>
+                {running ? (
+                  <Button variant="secondary" size="icon-sm" onClick={() => void chat.abort()} aria-label={t('Stop')}>
+                    <Square className="fill-current" />
+                  </Button>
+                ) : (
+                  <Button size="icon-sm" onClick={() => submit()} disabled={!text.trim() || busy} aria-label={t('Send')}>
+                    <ArrowUp />
+                  </Button>
+                )}
               </div>
             </div>
-          )}
-          {state &&
-            groupItems(state.items).map(entry =>
-              entry.kind === 'tools' ? (
-                <ToolGroup key={entry.id} items={entry.items} />
-              ) : (
-                <Item
-                  key={entry.item.id}
-                  item={entry.item}
-                  skillScopes={['personal']}
-                  onSaveSkill={async (body, scope, replace) => {
-                    await chat.saveSkill(entry.item.id, { ...body, scope, replace })
-                    onSaved()
-                  }}
-                />
-              ),
-            )}
-          {running && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" /> {t('Working…')}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {error && <div className="border-t border-destructive/20 bg-destructive/10 px-4 py-1.5 text-sm break-words text-destructive">{error}</div>}
-
-      <div className="shrink-0 border-t px-4 py-3">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-lg border bg-background transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-            <textarea
-              ref={input}
-              value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                  e.preventDefault()
-                  submit()
-                }
-              }}
-              rows={Math.min(6, Math.max(2, text.split('\n').length))}
-              placeholder={t('Describe the skill you want, or paste text to try a draft on…')}
-              className="block min-h-0 w-full resize-none bg-transparent px-2.5 pt-2 text-sm outline-none"
-            />
-            <div className="flex items-center gap-1 px-1.5 pb-1.5">
-              {status && <ModelPicker status={status} onChoose={choose} />}
-              <span className="flex-1" />
-              {running ? (
-                <Button variant="secondary" size="icon-sm" onClick={() => void chat.abort()} aria-label={t('Stop')}>
-                  <Square className="fill-current" />
-                </Button>
-              ) : (
-                <Button size="icon-sm" onClick={() => submit()} disabled={!text.trim() || busy} aria-label={t('Send')}>
-                  <ArrowUp />
-                </Button>
-              )}
-            </div>
           </div>
-          {status && <SessionStatus status={status} state={state} allowance={allowance} />}
         </div>
       </div>
     </div>
