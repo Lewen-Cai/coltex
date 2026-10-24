@@ -2,7 +2,7 @@
 
 All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTex is at 0.0.x, any release may change things.
 
-## v0.0.3 (unreleased)
+## v0.0.3
 
 Fixes for the Cloudflare Tunnel, ports, the data folder and downloads, the images on Alibaba Cloud for mainland China, three new maintenance commands, and themes kept with your account.
 
