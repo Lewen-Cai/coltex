@@ -73,7 +73,7 @@ Lệnh này bật Tailscale, in liên kết đăng nhập và mã QR trong termi
 
 `TS_HOSTNAME` thay đổi tên thiết bị. Máy chủ tự chạy Tailscale: không cần container hay đặc quyền bổ sung. Khóa thiết bị được giữ trong `data/tailscale` và không có trong bản sao lưu; sau khi khôi phục, hãy đăng nhập lại.
 
-Nếu máy chủ đã tự chạy Tailscale, bạn không cần bản tích hợp sẵn: hãy mở ColTex tại IP Tailscale hoặc tên MagicDNS của máy chủ kèm `:3690`.
+Nếu máy chủ đã tự chạy Tailscale, hai bản sẽ không ảnh hưởng lẫn nhau: bản tích hợp sẵn là một thiết bị riêng và dùng mạng userspace, nên không thay đổi bất kỳ cài đặt mạng nào của máy chủ. Bạn cũng không nhất thiết cần nó: hãy mở ColTex tại IP Tailscale hoặc tên MagicDNS của máy chủ kèm `:3690`.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex cũng có sẵn Cloudflare Tunnel, chỉ đóng vai trò đường hầm:
 Bật nó bằng công tắc trên thẻ Cloudflare Tunnel trong **Cài đặt → Mạng**, rồi chọn liên kết tạm thời hoặc một tunnel (tunnel đã lưu, hoặc tunnel mới từ lệnh đã dán), hoặc trong terminal bằng `coltex cloudflare quick` / `coltex cloudflare token`. Khi đã kết nối, các địa chỉ của nó tự xuất hiện trong liên kết mời. Token được lưu mã hóa và không bao giờ hiển thị lại.
 
 Nếu tunnel không kết nối được tới Cloudflare qua QUIC (do tường lửa, hoặc proxy chặn UDP), ColTex sẽ tự chuyển nó sang HTTP/2. Khi trycloudflare.com giới hạn liên kết tạm thời (429 Too Many Requests), ColTex sẽ thử lại ngày càng thưa hơn. Khi bạn đổi tunnel, hãy chuyển các public hostname của nó sang tunnel mới trong bảng điều khiển Cloudflare; cho đến lúc đó, chúng sẽ trả về Error 1033.
+
+Nếu máy chủ đã chạy cloudflared cho một tunnel riêng của nó, hai bên không xung đột, nhưng đừng đưa token của tunnel đó cho ColTex: Cloudflare sẽ coi cả hai là connector của cùng một tunnel và chia các yêu cầu giữa chúng, nên các hostname khác của máy chủ đôi khi sẽ đi tới ColTex và lỗi (502). Hãy thêm một public hostname cho ColTex vào tunnel đó (service `http://localhost:3690`) và để bản tích hợp sẵn tắt, hoặc tạo một tunnel riêng cho ColTex.
 
 ## Cài đặt máy chủ
 

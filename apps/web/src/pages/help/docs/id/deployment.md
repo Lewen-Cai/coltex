@@ -73,7 +73,7 @@ Perintah ini mengaktifkan Tailscale, mencetak tautan masuk dan kode QR di termin
 
 `TS_HOSTNAME` mengubah nama perangkat. Server menjalankan Tailscale sendiri: tanpa kontainer atau hak istimewa tambahan. Kunci perangkatnya disimpan di `data/tailscale` dan tidak termasuk dalam cadangan; setelah pemulihan, masuk lagi.
 
-Jika server sudah menjalankan Tailscale sendiri, Anda tidak memerlukan yang bawaan: buka ColTex di IP Tailscale atau nama MagicDNS server dengan `:3690`.
+Jika server sudah menjalankan Tailscale sendiri, keduanya tidak saling mengganggu: Tailscale bawaan adalah perangkat tersendiri dan menggunakan jaringan userspace, sehingga tidak mengubah pengaturan jaringan server sama sekali. Anda juga tidak memerlukannya: buka ColTex di IP Tailscale atau nama MagicDNS server dengan `:3690`.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex juga memiliki Cloudflare Tunnel bawaan, hanya sebagai terowongan: orang t
 Aktifkan dengan sakelar pada kartu Cloudflare Tunnel di **Pengaturan → Jaringan**, lalu pilih tautan sementara atau terowongan (yang tersimpan, atau yang baru dari perintah yang ditempel), atau di terminal dengan `coltex cloudflare quick` / `coltex cloudflare token`. Setelah terhubung, alamatnya muncul di tautan undangan dengan sendirinya. Token disimpan terenkripsi dan tidak pernah ditampilkan lagi.
 
 Jika terowongan tidak dapat menjangkau Cloudflare melalui QUIC (firewall, atau proksi yang membuang UDP), ColTex otomatis mengalihkannya ke HTTP/2. Ketika trycloudflare.com membatasi tautan sementara (429 Too Many Requests), ColTex mencoba lagi dengan jeda yang makin lama. Saat Anda mengganti terowongan, pindahkan nama host publiknya ke terowongan baru di dasbor Cloudflare; sampai saat itu, nama host tersebut menjawab dengan Error 1033.
+
+Jika server sudah menjalankan cloudflared untuk terowongannya sendiri, keduanya tidak berbenturan, tetapi jangan berikan token terowongan itu kepada ColTex: Cloudflare akan menganggap keduanya sebagai konektor dari terowongan yang sama dan membagi permintaan di antara keduanya, sehingga nama host lain milik server kadang-kadang sampai ke ColTex dan gagal (502). Tambahkan nama host publik untuk ColTex ke terowongan itu (layanan `http://localhost:3690`) dan biarkan yang bawaan mati, atau buat terowongan terpisah untuk ColTex.
 
 ## Pengaturan server
 

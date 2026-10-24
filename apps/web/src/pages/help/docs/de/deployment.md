@@ -73,7 +73,7 @@ Der Befehl schaltet Tailscale ein, gibt den Anmeldelink und einen QR-Code im Ter
 
 `TS_HOSTNAME` ändert den Gerätenamen. Der Server betreibt Tailscale selbst: kein zusätzlicher Container, keine zusätzlichen Rechte. Seine Geräteschlüssel liegen in `data/tailscale` und sind nicht in Backups enthalten; melden Sie sich nach einer Wiederherstellung erneut an.
 
-Läuft auf dem Server bereits Tailscale, brauchen Sie das integrierte nicht: Öffnen Sie ColTex unter der Tailscale-IP oder dem MagicDNS-Namen des Servers mit `:3690`.
+Läuft auf dem Server bereits Tailscale, kommen sich die beiden nicht in die Quere: Das integrierte ist ein eigenes Gerät und verwendet Userspace-Networking, ändert also keine Netzwerkeinstellungen des Servers. Sie brauchen es aber auch nicht: Öffnen Sie ColTex unter der Tailscale-IP oder dem MagicDNS-Namen des Servers mit `:3690`.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex hat auch Cloudflare Tunnel eingebaut, nur als Tunnel: Personen melden sic
 Schalten Sie ihn mit dem Schalter der Karte Cloudflare Tunnel unter **Einstellungen → Netzwerk** ein und wählen Sie dann einen temporären Link oder einen Tunnel (den gespeicherten oder einen neuen aus dem eingefügten Befehl), oder im Terminal mit `coltex cloudflare quick` / `coltex cloudflare token`. Sobald er verbunden ist, erscheinen seine Adressen von selbst in Einladungslinks. Das Token wird verschlüsselt gespeichert und nie wieder angezeigt.
 
 Kann der Tunnel Cloudflare nicht über QUIC erreichen (eine Firewall oder ein Proxy, der UDP verwirft), stellt ColTex ihn von selbst auf HTTP/2 um. Wenn trycloudflare.com temporäre Links begrenzt (429 Too Many Requests), fragt ColTex immer seltener erneut an. Wenn Sie den Tunnel wechseln, verschieben Sie seine öffentlichen Hostnamen im Cloudflare-Dashboard auf den neuen Tunnel; bis dahin antworten sie mit Error 1033.
+
+Betreibt der Server bereits cloudflared für einen eigenen Tunnel, kollidieren die beiden nicht, aber geben Sie ColTex nicht das Token dieses Tunnels: Cloudflare würde beide als Connectoren desselben Tunnels behandeln und die Anfragen zwischen ihnen aufteilen, sodass die anderen Hostnamen des Servers manchmal bei ColTex landen und fehlschlagen würden (502). Fügen Sie entweder diesem Tunnel einen öffentlichen Hostnamen für ColTex hinzu (Dienst `http://localhost:3690`) und lassen Sie den integrierten ausgeschaltet, oder erstellen Sie einen separaten Tunnel für ColTex.
 
 ## Servereinstellungen
 

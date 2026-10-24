@@ -73,7 +73,7 @@ coltex tailscale up
 
 设备名用 `TS_HOSTNAME` 修改。Tailscale 由服务器自己运行，不需要额外的容器或权限；它的设备密钥保存在 `data/tailscale`，不在备份里，恢复备份后重新登录即可。
 
-如果服务器本身已经装了 Tailscale，也可以不用自带的：直接用服务器的 Tailscale IP 或 MagicDNS 名称加 `:3690` 访问。
+如果服务器本身已经装了 Tailscale，两者不会冲突：自带的是一台独立的设备，用的是用户态网络，不改服务器的任何网络设置。也可以不用自带的：直接用服务器的 Tailscale IP 或 MagicDNS 名称加 `:3690` 访问。
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex 也自带 Cloudflare Tunnel，只用它的通道：登录仍然是 ColTex
 开启方式：打开 **设置 → 网络** 里 Cloudflare Tunnel 卡片的开关，再选临时链接或隧道（使用已保存的隧道，或粘贴命令连接新隧道）；或者在终端运行 `coltex cloudflare quick` / `coltex cloudflare token`。连上后它的地址会自动出现在邀请链接里。令牌加密保存，不会再显示。
 
 如果隧道无法通过 QUIC 连上 Cloudflare（被防火墙拦住，或代理丢弃了 UDP），ColTex 会自动改用 HTTP/2。trycloudflare.com 限制临时链接时（429 Too Many Requests），ColTex 会越来越少地重试。更换隧道时，请在 Cloudflare 后台把公网主机名移到新隧道；移过去之前，访问这些域名会出现 Error 1033。
+
+如果服务器上已经在用 cloudflared 跑自己的隧道，两者不会冲突，但不要把那个隧道的令牌填进 ColTex：Cloudflare 会把两边当成同一个隧道的两个连接器，把请求分给它们，服务器上其他域名的请求有时会落到 ColTex 这边而打不开（502）。可以在那个隧道里给 ColTex 加一个公网主机名（服务填 `http://localhost:3690`），不开自带的隧道；或者给 ColTex 单独建一个隧道。
 
 ## 服务器设置
 

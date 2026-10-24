@@ -73,7 +73,7 @@ It turns Tailscale on, prints the sign-in link and a QR code in the terminal, wa
 
 `TS_HOSTNAME` changes the device name. The server runs Tailscale itself: no extra container or privileges. Its device keys are kept in `data/tailscale` and are not in backups; after a restore, sign in again.
 
-If the server already runs Tailscale itself, you don't need the built-in one: open ColTex at the server's Tailscale IP or MagicDNS name with `:3690`.
+If the server already runs Tailscale itself, the two don't get in each other's way: the built-in one is a device of its own and uses userspace networking, so it changes none of the server's network settings. You don't need it either: open ColTex at the server's Tailscale IP or MagicDNS name with `:3690`.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex also has Cloudflare Tunnel built in, as a tunnel only: people still sign 
 Turn it on with the switch of the Cloudflare Tunnel card in **Settings → Network**, then pick a temporary link or a tunnel (the saved one, or a new one from the pasted command), or in a terminal with `coltex cloudflare quick` / `coltex cloudflare token`. Once connected, its addresses appear in invitation links by themselves. The token is stored encrypted and never shown again.
 
 If the tunnel can't reach Cloudflare over QUIC (a firewall, or a proxy that drops UDP), ColTex switches it to HTTP/2 by itself. When trycloudflare.com limits temporary links (429 Too Many Requests), ColTex asks again less and less often. When you change the tunnel, move its public hostnames to the new tunnel in the Cloudflare dashboard; until then they answer with Error 1033.
+
+If the server already runs cloudflared for a tunnel of its own, the two don't conflict, but don't give ColTex that tunnel's token: Cloudflare would treat both as connectors of the same tunnel and share the requests between them, so the server's other hostnames would sometimes reach ColTex and fail (502). Either add a public hostname for ColTex to that tunnel (service `http://localhost:3690`) and leave the built-in one off, or create a separate tunnel for ColTex.
 
 ## Server settings
 

@@ -73,7 +73,7 @@ coltex tailscale up
 
 `TS_HOSTNAME`으로 기기 이름을 바꿉니다. 서버가 Tailscale을 직접 실행하므로 추가 컨테이너나 권한이 필요 없습니다. 기기 키는 `data/tailscale`에 보관되며 백업에는 포함되지 않습니다. 복원한 뒤에는 다시 로그인하세요.
 
-서버에서 이미 Tailscale을 직접 실행하고 있다면 내장 Tailscale은 필요 없습니다. 서버의 Tailscale IP나 MagicDNS 이름에 `:3690`을 붙여 ColTex를 여세요.
+서버에서 이미 Tailscale을 직접 실행하고 있어도 둘은 서로 방해하지 않습니다. 내장 Tailscale은 독립된 기기이며 userspace networking을 사용하므로 서버의 네트워크 설정을 전혀 바꾸지 않습니다. 또한 내장 Tailscale이 꼭 필요하지도 않습니다. 서버의 Tailscale IP나 MagicDNS 이름에 `:3690`을 붙여 ColTex를 여세요.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex에는 Cloudflare Tunnel도 터널 용도로만 내장되어 있습니다.
 **설정 → 네트워크**의 Cloudflare Tunnel 카드 스위치로 켠 다음 임시 링크나 터널(저장된 터널 또는 붙여넣은 명령으로 만든 새 터널)을 고르거나, 터미널에서 `coltex cloudflare quick` / `coltex cloudflare token`을 실행합니다. 연결되면 그 주소가 초대 링크에 저절로 나타납니다. 토큰은 암호화되어 저장되며 다시 표시되지 않습니다.
 
 터널이 QUIC로 Cloudflare에 연결할 수 없으면(방화벽 또는 UDP를 버리는 프록시 때문에) ColTex가 자동으로 HTTP/2로 전환합니다. trycloudflare.com이 임시 링크를 제한하면(429 Too Many Requests) ColTex는 점점 더 간격을 두고 다시 요청합니다. 터널을 변경할 때는 Cloudflare 대시보드에서 공개 호스트 이름을 새 터널로 옮기세요. 옮기기 전까지는 Error 1033으로 응답합니다.
+
+서버에서 이미 자체 터널용 cloudflared를 실행하고 있어도 둘은 충돌하지 않지만, 그 터널의 토큰을 ColTex에 주지는 마세요. Cloudflare가 둘을 같은 터널의 커넥터로 취급해 요청을 나눠 보내므로, 서버의 다른 호스트 이름으로 가는 요청이 가끔 ColTex에 도달해 실패합니다(502). 그 터널에 ColTex용 공개 호스트 이름(서비스 `http://localhost:3690`)을 추가하고 내장 터널은 꺼 두거나, ColTex용 터널을 따로 만드세요.
 
 ## 서버 설정
 

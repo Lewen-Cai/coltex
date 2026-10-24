@@ -73,7 +73,7 @@ Bu komut Tailscale’i açar, oturum açma bağlantısını ve bir QR kodunu ter
 
 `TS_HOSTNAME` cihaz adını değiştirir. Sunucu Tailscale’i kendisi çalıştırır: ek kapsayıcı veya ayrıcalık gerekmez. Cihaz anahtarları `data/tailscale` içinde tutulur ve yedeklere dahil değildir; geri yüklemeden sonra yeniden oturum açın.
 
-Sunucu zaten Tailscale’i kendisi çalıştırıyorsa yerleşik olana ihtiyacınız yoktur: ColTex’i sunucunun Tailscale IP’si veya MagicDNS adı ile `:3690` kullanarak açın.
+Sunucu zaten Tailscale’i kendisi çalıştırıyorsa ikisi birbirine engel olmaz: yerleşik olan kendi başına bir cihazdır ve kullanıcı alanı ağı (userspace networking) kullanır; bu yüzden sunucunun ağ ayarlarının hiçbirini değiştirmez. Ona ihtiyacınız da yoktur: ColTex’i sunucunun Tailscale IP’si veya MagicDNS adı ile `:3690` kullanarak açın.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex’te Cloudflare Tunnel da yalnızca bir tünel olarak yerleşiktir: kişi
 Onu **Ayarlar → Ağ** bölümündeki Cloudflare Tunnel kartının anahtarıyla açın, ardından geçici bir bağlantı veya bir tünel seçin (kayıtlı olanı ya da yapıştırılan komuttan yeni bir tane); veya bir terminalde `coltex cloudflare quick` / `coltex cloudflare token` kullanın. Bağlandığında adresleri davet bağlantılarında kendiliğinden görünür. Belirteç şifreli saklanır ve bir daha asla gösterilmez.
 
 Tünel Cloudflare’e QUIC üzerinden ulaşamazsa (bir güvenlik duvarı veya UDP’yi engelleyen bir vekil sunucu), ColTex onu kendiliğinden HTTP/2’ye geçirir. trycloudflare.com geçici bağlantıları sınırladığında (429 Too Many Requests), ColTex giderek daha seyrek yeniden dener. Tüneli değiştirdiğinizde genel ana makine adlarını Cloudflare panelinde yeni tünele taşıyın; o zamana kadar bu adlar Error 1033 ile yanıt verir.
+
+Sunucu kendi tüneli için zaten cloudflared çalıştırıyorsa ikisi çakışmaz, ancak o tünelin belirtecini ColTex’e vermeyin: Cloudflare ikisini aynı tünelin bağlayıcıları olarak görür ve istekleri aralarında paylaştırır; bu yüzden sunucunun diğer ana makine adları zaman zaman ColTex’e ulaşır ve başarısız olur (502). Ya o tünele ColTex için bir genel ana makine adı ekleyin (hizmet `http://localhost:3690`) ve yerleşik olanı kapalı bırakın ya da ColTex için ayrı bir tünel oluşturun.
 
 ## Sunucu ayarları
 

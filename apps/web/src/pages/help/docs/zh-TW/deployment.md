@@ -73,7 +73,7 @@ coltex tailscale up
 
 `TS_HOSTNAME` 可以變更裝置名稱。Tailscale 由伺服器自己執行：不需要額外的容器或權限。它的裝置金鑰保存在 `data/tailscale` 中，不會包含在備份裡；還原後請重新登入。
 
-如果伺服器本身已經在執行 Tailscale，就不需要內建的 Tailscale：直接用伺服器的 Tailscale IP 或 MagicDNS 名稱加上 `:3690` 開啟 ColTex 即可。
+如果伺服器本身已經在執行 Tailscale，兩者不會互相干擾：內建的 Tailscale 是一台獨立的裝置，並使用使用者空間網路（userspace networking），因此不會變更伺服器的任何網路設定。你也可以不使用它：直接用伺服器的 Tailscale IP 或 MagicDNS 名稱加上 `:3690` 開啟 ColTex 即可。
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex 也內建 Cloudflare Tunnel，僅作為通道使用：大家仍然用自�
 在 **設定 → 網路** 中，用 Cloudflare Tunnel 卡片上的開關開啟它，然後選擇臨時連結或通道（已儲存的通道，或從貼上的指令建立新通道）；也可以在終端機中執行 `coltex cloudflare quick` / `coltex cloudflare token`。連線後，它的位址會自動出現在邀請連結中。權杖會加密儲存，之後不會再顯示。
 
 如果通道無法透過 QUIC 連上 Cloudflare（防火牆，或會丟棄 UDP 的代理），ColTex 會自動改用 HTTP/2。當 trycloudflare.com 限制臨時連結（429 Too Many Requests）時，ColTex 重新請求的間隔會越來越長。更換通道時，請在 Cloudflare 主控台中把它的公開主機名稱移到新通道；在那之前，這些主機名稱會回應 Error 1033。
+
+如果伺服器本身已經為自己的通道執行 cloudflared，兩者不會衝突，但請不要把那個通道的權杖交給 ColTex：Cloudflare 會把兩者視為同一個通道的連接器，並在它們之間分配請求，導致伺服器的其他主機名稱有時會連到 ColTex 而失敗（502）。請為 ColTex 在那個通道中新增一個公開主機名稱（服務設為 `http://localhost:3690`），並保持內建的通道關閉；或者為 ColTex 另外建立一個通道。
 
 ## 伺服器設定
 

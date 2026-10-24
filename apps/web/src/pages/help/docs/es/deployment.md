@@ -73,7 +73,7 @@ Activa Tailscale, muestra el enlace de inicio de sesión y un código QR en la t
 
 `TS_HOSTNAME` cambia el nombre del dispositivo. El servidor ejecuta Tailscale por sí mismo: sin contenedores ni privilegios adicionales. Las claves del dispositivo se guardan en `data/tailscale` y no están en las copias de seguridad; después de una restauración, vuelve a iniciar sesión.
 
-Si el servidor ya ejecuta Tailscale por su cuenta, no necesitas el integrado: abre ColTex en la IP de Tailscale del servidor o en su nombre de MagicDNS con `:3690`.
+Si el servidor ya ejecuta Tailscale por su cuenta, los dos no se estorban: el integrado es un dispositivo propio y usa red en espacio de usuario (userspace networking), así que no cambia ninguna configuración de red del servidor. Tampoco lo necesitas: abre ColTex en la IP de Tailscale del servidor o en su nombre de MagicDNS con `:3690`.
 
 ## Cloudflare Tunnel
 
@@ -85,6 +85,8 @@ ColTex también lleva Cloudflare Tunnel integrado, solo como túnel: las persona
 Actívalo con el interruptor de la tarjeta de Cloudflare Tunnel en **Configuración → Red** y elige después un enlace temporal o un túnel (el guardado, o uno nuevo a partir del comando pegado), o en una terminal con `coltex cloudflare quick` / `coltex cloudflare token`. Una vez conectado, sus direcciones aparecen solas en los enlaces de invitación. El token se guarda cifrado y no se vuelve a mostrar.
 
 Si el túnel no puede llegar a Cloudflare por QUIC (un cortafuegos, o un proxy que descarta UDP), ColTex lo cambia a HTTP/2 por sí solo. Cuando trycloudflare.com limita los enlaces temporales (429 Too Many Requests), ColTex vuelve a pedirlos cada vez con menos frecuencia. Si cambias el túnel, mueve sus nombres de host públicos al nuevo túnel en el panel de Cloudflare; hasta entonces responden con Error 1033.
+
+Si el servidor ya ejecuta cloudflared para un túnel propio, los dos no entran en conflicto, pero no le des a ColTex el token de ese túnel: Cloudflare trataría a ambos como conectores del mismo túnel y repartiría las solicitudes entre ellos, así que los otros nombres de host del servidor llegarían a veces a ColTex y fallarían (502). Añade a ese túnel un nombre de host público para ColTex (servicio `http://localhost:3690`) y deja el integrado desactivado, o crea un túnel aparte para ColTex.
 
 ## Configuración del servidor
 
