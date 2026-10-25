@@ -177,8 +177,62 @@ export const projectMembers = pgTable(
     /** Archived or in the trash, for this member only (like Overleaf); at most one is set. */
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     trashedAt: timestamp('trashed_at', { withTimezone: true }),
+    /**
+     * Set when the membership comes from the project being shared with a
+     * group (groups/service.ts keeps these rows in step with the groups);
+     * null when the person was added on their own, which group changes never touch.
+     */
+    groupId: text('group_id').references(() => userGroups.id, { onDelete: 'cascade' }),
   },
   t => [primaryKey({ columns: [t.projectId, t.userId] }), index('project_members_user_id_idx').on(t.userId)],
+)
+
+/**
+ * Named groups of people (user's decision 2026-10-25): anyone may make one in
+ * Settings → Groups and invite anyone on the server; an invitation counts once
+ * accepted. Projects (and templates) can be shared with a group.
+ */
+export const userGroups = pgTable('user_groups', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+  ...timestamps,
+})
+
+export const userGroupMembers = pgTable(
+  'user_group_members',
+  {
+    groupId: text('group_id')
+      .notNull()
+      .references(() => userGroups.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** Owners rename the group, invite, remove people and delete it. */
+    role: text('role', { enum: ['owner', 'member'] }).notNull(),
+    /** Invited until they accept. */
+    status: text('status', { enum: ['invited', 'joined'] }).notNull(),
+    invitedBy: text('invited_by').references(() => user.id, { onDelete: 'set null' }),
+    ...timestamps,
+  },
+  t => [primaryKey({ columns: [t.groupId, t.userId] }), index('user_group_members_user_idx').on(t.userId)],
+)
+
+/** A project shared with a group: its joined members get the role (project_members rows with group_id). */
+export const projectGroupShares = pgTable(
+  'project_group_shares',
+  {
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    groupId: text('group_id')
+      .notNull()
+      .references(() => userGroups.id, { onDelete: 'cascade' }),
+    role: text('role', { enum: ['editor', 'reviewer', 'viewer'] }).notNull(),
+    sharedBy: text('shared_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamps.createdAt,
+  },
+  t => [primaryKey({ columns: [t.projectId, t.groupId] }), index('project_group_shares_group_idx').on(t.groupId)],
 )
 
 /**
@@ -493,13 +547,15 @@ export const notifications = pgTable(
     // Null for notifications about the account itself.
     projectId: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
     actorId: text('actor_id').references(() => user.id, { onDelete: 'set null' }),
-    kind: text('kind', { enum: ['mention', 'reply', 'added', 'owner', 'password_reset', 'two_factor_reset', 'account_locked'] }).notNull(),
+    kind: text('kind', { enum: ['mention', 'reply', 'added', 'owner', 'password_reset', 'two_factor_reset', 'account_locked', 'group_invite'] }).notNull(),
     source: text('source', { enum: ['chat', 'comment'] }),
     threadId: text('thread_id').references(() => commentThreads.id, { onDelete: 'cascade' }),
     commentMessageId: text('comment_message_id').references(() => commentMessages.id, { onDelete: 'cascade' }),
     chatMessageId: text('chat_message_id').references(() => chatMessages.id, { onDelete: 'cascade' }),
     excerpt: text('excerpt').notNull().default(''),
     role: text('role', { enum: ['owner', 'editor', 'reviewer', 'viewer'] }),
+    /** The group someone was invited to (`group_invite`); goes with the group. */
+    groupId: text('group_id').references(() => userGroups.id, { onDelete: 'cascade' }),
     readAt: timestamp('read_at', { withTimezone: true }),
     createdAt: timestamps.createdAt,
   },

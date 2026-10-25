@@ -6,6 +6,7 @@ export const PERSONAL: SettingsItem[] = [
   { title: tk('Account'), href: '#/settings', route: '/settings' },
   { title: tk('Appearance'), href: '#/settings/appearance', route: '/settings/appearance' },
   { title: tk('Sync services'), href: '#/settings/sync', route: '/settings/sync' },
+  { title: tk('Groups'), href: '#/settings/groups', route: '/settings/groups' },
   { title: tk('AI agent'), href: '#/settings/ai', route: '/settings/ai' },
   { title: tk('AI skills'), href: '#/settings/skills', route: '/settings/skills' },
 ]

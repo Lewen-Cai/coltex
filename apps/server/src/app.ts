@@ -38,6 +38,7 @@ import { notificationRoutes } from './routes/notifications.ts'
 import { projectListRoutes } from './routes/project-list.ts'
 import { reviewRoutes } from './routes/review.ts'
 import { convertRoutes } from './routes/convert.ts'
+import { groupRoutes } from './routes/groups.ts'
 import { projectRoutes } from './routes/projects.ts'
 
 export async function buildApp(
@@ -106,6 +107,7 @@ export async function buildApp(
       await api.register(reviewRoutes, deps)
       await api.register(chatRoutes, deps)
       await api.register(convertRoutes, deps)
+      await api.register(groupRoutes, deps)
       await api.register(adminRoutes, deps)
       await api.register(signInRoutes, deps)
       await api.register(networkRoutes, deps)

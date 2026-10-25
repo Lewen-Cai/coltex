@@ -2,7 +2,7 @@ import { and, count, desc, eq, inArray, isNotNull, isNull, lt, or, type SQL } fr
 import { customAlphabet } from 'nanoid'
 import { mentionedIds, type Notification, type NotificationEvent, type NotificationPage } from '@coltex/shared'
 import type { Db } from '../db/client.ts'
-import { commentMessages, commentThreads, notifications, projectDocs, projectMembers, projects, user } from '../db/schema.ts'
+import { commentMessages, commentThreads, notifications, projectDocs, projectMembers, projects, user, userGroups } from '../db/schema.ts'
 import { NotFoundError } from '../errors.ts'
 
 const newId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16)
@@ -60,6 +60,8 @@ export class NotificationService {
         path: projectDocs.path,
         excerpt: notifications.excerpt,
         role: notifications.role,
+        groupId: notifications.groupId,
+        groupName: userGroups.name,
       })
       .from(notifications)
       .leftJoin(projects, eq(projects.id, notifications.projectId))
@@ -67,6 +69,7 @@ export class NotificationService {
       .leftJoin(user, eq(user.id, notifications.actorId))
       .leftJoin(commentThreads, eq(commentThreads.id, notifications.threadId))
       .leftJoin(projectDocs, eq(projectDocs.id, commentThreads.docId))
+      .leftJoin(userGroups, eq(userGroups.id, notifications.groupId))
       .where(and(eq(notifications.userId, userId), visible, ...where))
   }
 
@@ -83,6 +86,7 @@ export class NotificationService {
       path: r.path,
       excerpt: r.excerpt,
       role: r.role,
+      group: r.groupId && r.groupName !== null ? { id: r.groupId, name: r.groupName } : null,
     }
   }
 
@@ -269,6 +273,17 @@ export class NotificationService {
   }
 
   /** A user left or was removed from a project: their notifications about it go too. */
+  /** An invitation to a group (Settings → Groups). */
+  async groupInvite(groupId: string, actorId: string, userId: string): Promise<void> {
+    await this.create([{ userId, projectId: null, actorId, kind: 'group_invite', groupId, excerpt: '' }])
+  }
+
+  /** The invitation was answered or taken back: its notification goes. */
+  async forgetGroupInvite(groupId: string, userId: string): Promise<void> {
+    await this.db.delete(notifications).where(and(eq(notifications.groupId, groupId), eq(notifications.userId, userId), eq(notifications.kind, 'group_invite')))
+    this.emit(userId, { unread: await this.unreadCount(userId) })
+  }
+
   async forgetProject(projectId: string, userId: string): Promise<void> {
     await this.db.delete(notifications).where(and(eq(notifications.projectId, projectId), eq(notifications.userId, userId)))
     this.emit(userId, { unread: await this.unreadCount(userId) })

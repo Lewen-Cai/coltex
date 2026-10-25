@@ -51,6 +51,8 @@ import type {
   ConvertTargetId,
   ShareRole,
   UserMatch,
+  Group,
+  ProjectGroupShare,
   ReviewState,
   TrackChangesState,
   HistoryPage,
@@ -474,6 +476,17 @@ export const api = {
 
   // ---- Sharing and ownership ----
   searchUsers: (q: string) => request<UserMatch[]>(`/api/users/search?q=${encodeURIComponent(q)}`),
+  myGroups: () => request<Group[]>('/api/me/groups'),
+  createGroup: (name: string) => request<Group>('/api/groups', json('POST', { name })),
+  renameGroup: (id: string, name: string) => request<void>(`/api/groups/${id}`, json('PATCH', { name })),
+  deleteGroup: (id: string) => request<void>(`/api/groups/${id}`, { method: 'DELETE' }),
+  inviteToGroup: (id: string, userId: string) => request<void>(`/api/groups/${id}/invites`, json('POST', { userId })),
+  acceptGroup: (id: string) => request<void>(`/api/groups/${id}/accept`, { method: 'POST' }),
+  removeFromGroup: (id: string, userId: string) => request<void>(`/api/groups/${id}/members/${userId}`, { method: 'DELETE' }),
+  setGroupRole: (id: string, userId: string, role: 'owner' | 'member') => request<void>(`/api/groups/${id}/members/${userId}`, json('PATCH', { role })),
+  projectGroups: (id: string) => request<ProjectGroupShare[]>(`/api/projects/${id}/groups`),
+  shareWithGroup: (id: string, groupId: string, role: ShareRole) => request<void>(`/api/projects/${id}/groups/${groupId}`, json('PUT', { role })),
+  unshareGroup: (id: string, groupId: string) => request<void>(`/api/projects/${id}/groups/${groupId}`, { method: 'DELETE' }),
   transferOwnership: (id: string, userId: string) => request<void>(`/api/projects/${id}/transfer`, json('POST', { userId })),
 
   // ---- Journal template conversion ----

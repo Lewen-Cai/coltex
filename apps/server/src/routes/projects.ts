@@ -17,7 +17,7 @@ import type { Deps } from '../deps.ts'
 
 const IdParams = z.object({ id: ProjectId })
 
-export const projectRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects, store, collab, aiSessions, history, notifications, templates }) => {
+export const projectRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects, store, collab, aiSessions, history, notifications, templates, groups }) => {
   app.get('/projects', { schema: { response: { 200: z.array(ProjectSummary) } } }, req =>
     projects.listForUser(requireUser(req).id),
   )
@@ -134,6 +134,8 @@ export const projectRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects
     await projects.removeMember(req.params.id, req.params.userId)
     collab.closeUser(req.params.id, req.params.userId)
     await notifications.forgetProject(req.params.id, req.params.userId)
+    // Someone also in a group the project is shared with keeps it through the group.
+    await groups.sync([[req.params.id, req.params.userId]], me.id)
     return reply.code(204).send()
   })
 

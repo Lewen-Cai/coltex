@@ -1,18 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Crown, Ellipsis, Plus, Search, UserMinus, UserPlus } from 'lucide-react'
+import { Crown, Ellipsis, Plus, UserMinus, UserPlus, Users } from 'lucide-react'
 import { toast } from 'sonner'
-import type { ProjectMember, ProjectRole, ShareRole, UserMatch } from '@coltex/shared'
+import type { ProjectGroupShare, ProjectMember, ProjectRole, ShareRole } from '@coltex/shared'
 import { api } from '../lib/api.ts'
-import { inSentence, t, tk } from '../lib/i18n.ts'
-import { cn } from '../lib/utils.ts'
+import { inSentence, plural, t, tk } from '../lib/i18n.ts'
 import { confirmDialog } from './confirm.tsx'
 import { Badge } from './ui/badge.tsx'
 import { Button } from './ui/button.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog.tsx'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu.tsx'
-import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group.tsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select.tsx'
+import { PersonPicker, type PickedGroup } from './person-picker.tsx'
 import { UserAvatar } from './user-avatar.tsx'
 
 // Translated at render with t().
@@ -40,113 +39,6 @@ function RoleSelect({ value, onChange, size = 'default' }: { value: ShareRole; o
   )
 }
 
-/** Small labelled select used by the link form. */
-/**
- * Who to add: type part of a name or email and pick one of the accounts on
- * this server (sharing is only with people who have an account).
- */
-function PersonPicker({ value, onChange, exclude }: { value: string; onChange: (email: string) => void; exclude: Set<string> }) {
-  const [matches, setMatches] = useState<UserMatch[]>([])
-  const [open, setOpen] = useState(false)
-  const [active, setActive] = useState(0)
-  const picked = useRef(false)
-
-  useEffect(() => {
-    const q = value.trim()
-    // Picking fills in the email; that shouldn't search again.
-    if (!q || picked.current) {
-      picked.current = false
-      setMatches([])
-      return
-    }
-    let live = true
-    const timer = window.setTimeout(() => {
-      api.searchUsers(q).then(
-        found => {
-          if (!live) return
-          setMatches(found.filter(u => !exclude.has(u.id)))
-          setActive(0)
-        },
-        () => live && setMatches([]),
-      )
-    }, 200)
-    return () => {
-      live = false
-      window.clearTimeout(timer)
-    }
-  }, [value, exclude])
-
-  const pick = (u: UserMatch) => {
-    picked.current = true
-    onChange(u.email)
-    setOpen(false)
-  }
-
-  const shown = open && matches.length > 0
-  return (
-    <div className="relative min-w-0 flex-1">
-      <InputGroup>
-        <InputGroupInput
-          required
-          autoComplete="off"
-          role="combobox"
-          aria-expanded={shown}
-          aria-autocomplete="list"
-          placeholder={t('Name or email of someone with an account')}
-          value={value}
-          onChange={e => {
-            onChange(e.target.value)
-            setOpen(true)
-          }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => setOpen(false)}
-          onKeyDown={e => {
-            if (!shown) return
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-              e.preventDefault()
-              setActive(i => (i + (e.key === 'ArrowDown' ? 1 : matches.length - 1)) % matches.length)
-            } else if (e.key === 'Enter') {
-              e.preventDefault()
-              pick(matches[active]!)
-            } else if (e.key === 'Escape') {
-              e.preventDefault()
-              e.stopPropagation()
-              setOpen(false)
-            }
-          }}
-        />
-        <InputGroupAddon>
-          <Search />
-        </InputGroupAddon>
-      </InputGroup>
-      {shown && (
-        <ul role="listbox" className="absolute top-full right-0 left-0 z-50 mt-1 grid max-h-64 gap-0.5 overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
-          {matches.map((u, i) => (
-            <li
-              key={u.id}
-              role="option"
-              aria-selected={i === active}
-              // Keep the focus in the input; pick before it blurs.
-              onMouseDown={e => {
-                e.preventDefault()
-                pick(u)
-              }}
-              onMouseEnter={() => setActive(i)}
-              className={cn('flex cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5', i === active && 'bg-accent text-accent-foreground')}
-            >
-              <UserAvatar id={u.id} name={u.name} className="size-6 text-[11px]" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm">{u.name}</span>
-                <span className="block truncate text-xs text-muted-foreground">{u.email}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
 export function ShareDialog({
   projectId,
   projectName,
@@ -166,13 +58,26 @@ export function ShareDialog({
   onChanged?: () => void
 }) {
   const [members, setMembers] = useState<ProjectMember[]>()
-  const [email, setEmail] = useState('')
+  const [shares, setShares] = useState<ProjectGroupShare[]>([])
+  const [myGroups, setMyGroups] = useState<PickedGroup[]>([])
+  const [text, setText] = useState('')
+  const [group, setGroup] = useState<PickedGroup>()
   const [role, setRole] = useState<ShareRole>('editor')
-  const memberIds = useMemo(() => new Set(members?.map(m => m.userId)), [members])
+  const exclude = useMemo(() => new Set([...(members ?? []).map(m => m.userId), ...shares.map(s => s.groupId)]), [members, shares])
 
   const load = useCallback(async () => {
-    setMembers(await api.listMembers(projectId))
+    const [m, s] = await Promise.all([api.listMembers(projectId), api.projectGroups(projectId)])
+    setMembers(m)
+    setShares(s)
   }, [projectId])
+  useEffect(() => {
+    // The groups the owner can share with: those they have joined.
+    if (open && canManage)
+      api.myGroups().then(
+        gs => setMyGroups(gs.filter(g => g.status === 'joined').map(g => ({ id: g.id, name: g.name, members: g.members.filter(m => m.status === 'joined').length }))),
+        () => setMyGroups([]),
+      )
+  }, [open, canManage])
   useEffect(() => {
     if (open) load().catch(e => toast.error((e as Error).message))
   }, [load, open])
@@ -191,8 +96,26 @@ export function ShareDialog({
 
   const add = async (e: FormEvent) => {
     e.preventDefault()
-    const address = email.trim()
-    if (await run(() => api.addMember(projectId, address, role), t('Added {email}', { email: address }))) setEmail('')
+    if (group && text === group.name) {
+      const g = group
+      if (await run(() => api.shareWithGroup(projectId, g.id, role), t('Shared with {group}', { group: g.name }))) {
+        setText('')
+        setGroup(undefined)
+      }
+      return
+    }
+    const address = text.trim()
+    if (await run(() => api.addMember(projectId, address, role), t('Added {email}', { email: address }))) setText('')
+  }
+
+  const unshare = async (s: ProjectGroupShare) => {
+    const ok = await confirmDialog({
+      title: t('Stop sharing with {group}?', { group: s.name }),
+      description: t('Its members lose access to this project right away, unless they were added on their own.'),
+      confirmLabel: t('Stop sharing'),
+      destructive: true,
+    })
+    if (ok) await run(() => api.unshareGroup(projectId, s.groupId), t('No longer shared with {group}', { group: s.name }))
   }
 
   const makeOwner = async (m: ProjectMember) => {
@@ -214,6 +137,45 @@ export function ShareDialog({
     if (ok) await run(() => api.removeMember(projectId, m.userId), t('Removed {name}', { name: m.name }))
   }
 
+  const groupList = shares.length > 0 && (
+    <div className="grid gap-1">
+      {shares.map(s => (
+        <div key={s.groupId} className="flex items-center gap-3 rounded-lg px-1 py-1.5">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <Users className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium">{s.name}</div>
+            <div className="truncate text-xs text-muted-foreground">{plural(s.members, '{n} member', '{n} members')}</div>
+          </div>
+          {canManage ? (
+            <>
+              <RoleSelect
+                size="sm"
+                value={s.role}
+                onChange={r => void run(() => api.shareWithGroup(projectId, s.groupId, r), t('{name}: {role}', { name: s.name, role: inSentence(t(ROLE_TEXT[r])) }))}
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" aria-label={t('Actions for {name}', { name: s.name })}>
+                    <Ellipsis />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem variant="destructive" onSelect={() => void unshare(s)}>
+                    <UserMinus /> {t('Stop sharing')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Badge variant="secondary">{t(ROLE_TEXT[s.role])}</Badge>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+
   const memberList = (
     <div className="grid gap-1">
       <AnimatePresence initial={false}>
@@ -232,9 +194,11 @@ export function ShareDialog({
                 {m.name}
                 {m.userId === userId && <span className="font-normal text-muted-foreground"> {t('(you)')}</span>}
               </div>
-              <div className="truncate text-xs text-muted-foreground">{m.email}</div>
+              <div className="truncate text-xs text-muted-foreground">
+                {m.viaGroup ? t('{email} · through {group}', { email: m.email, group: m.viaGroup.name }) : m.email}
+              </div>
             </div>
-            {m.role === 'owner' || !canManage ? (
+            {m.role === 'owner' || !canManage || m.viaGroup ? (
               <Badge variant={m.role === 'owner' ? 'default' : 'secondary'}>{t(ROLE_TEXT[m.role])}</Badge>
             ) : (
               <>
@@ -280,13 +244,32 @@ export function ShareDialog({
         <div className="grid gap-3">
           {canManage && (
             <form onSubmit={add} className="flex gap-2">
-              <PersonPicker value={email} onChange={setEmail} exclude={memberIds} />
+              <PersonPicker
+                value={text}
+                onChange={v => {
+                  setText(v)
+                  if (group && v !== group.name) setGroup(undefined)
+                }}
+                onPick={p => {
+                  if (p.kind === 'group') {
+                    setGroup(p.group)
+                    setText(p.group.name)
+                  } else {
+                    setGroup(undefined)
+                    setText(p.user.email)
+                  }
+                }}
+                exclude={exclude}
+                groups={myGroups}
+                placeholder={myGroups.length ? t('Name or email of someone with an account, or a group') : t('Name or email of someone with an account')}
+              />
               <RoleSelect value={role} onChange={setRole} />
               <Button type="submit" size="icon" aria-label={t('Add')}>
                 <Plus />
               </Button>
             </form>
           )}
+          {groupList}
           {memberList}
         </div>
       </DialogContent>

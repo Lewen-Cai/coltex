@@ -38,6 +38,7 @@ const AdminUsersPage = lazy(() => import('@/pages/admin/users').then(m => ({ def
 const AccountSettingsPage = lazy(() => import('@/pages/settings/account').then(m => ({ default: m.AccountSettingsPage })))
 const AppearanceSettingsPage = lazy(() => import('@/pages/settings/appearance').then(m => ({ default: m.AppearanceSettingsPage })))
 const SyncSettingsPage = lazy(() => import('@/pages/settings/sync').then(m => ({ default: m.SyncSettingsPage })))
+const GroupsSettingsPage = lazy(() => import('@/pages/settings/groups').then(m => ({ default: m.GroupsSettingsPage })))
 const AiSettingsPage = lazy(() => import('@/pages/settings/ai').then(m => ({ default: m.AiSettingsPage })))
 const SkillsSettingsPage = lazy(() => import('@/pages/settings/skills').then(m => ({ default: m.SkillsSettingsPage })))
 
@@ -77,6 +78,7 @@ function consolePage(route: string, user: SessionUser): ReactNode {
 function settingsPage(route: string, user: SessionUser): ReactNode {
   if (route === '/settings/appearance') return <AppearanceSettingsPage />
   if (route === '/settings/sync') return <SyncSettingsPage />
+  if (route === '/settings/groups') return <GroupsSettingsPage user={user} />
   if (route === '/settings/ai') return <AiSettingsPage />
   if (route === '/settings/skills') return <AiOnly user={user}><SkillsSettingsPage /></AiOnly>
   if (user.role === 'admin' || user.role === 'manager') {

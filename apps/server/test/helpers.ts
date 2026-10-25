@@ -27,6 +27,7 @@ import { MemoryCounters, SignInGuard } from '../src/auth/sign-in-guard.ts'
 import { DocService } from '../src/collab/docs.ts'
 import { ConvertService } from '../src/convert/service.ts'
 import { WordExport } from '../src/convert/word.ts'
+import { GroupService } from '../src/groups/service.ts'
 import { CollabServer } from '../src/collab/server.ts'
 import { createDb, runMigrations } from '../src/db/client.ts'
 import { HistoryService } from '../src/history/service.ts'
@@ -230,7 +231,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir, conversations: new ConversationStore(db), skills })
   const accounts = new AccountService(db, auth, box)
   const app = await buildApp(
-    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), word: new WordExport({ store, collab, queue, outputsDir }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
+    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), word: new WordExport({ store, collab, queue, outputsDir }), groups: new GroupService(db, notifications, { closeUser: (projectId, userId) => collab.closeUser(projectId, userId) }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
     { logger: false, handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
   )
   return {

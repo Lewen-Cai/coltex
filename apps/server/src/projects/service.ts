@@ -1,8 +1,8 @@
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import { customAlphabet } from 'nanoid'
 import type { EngineSetting, ProjectMember, ProjectMeta, ProjectRole, ProjectSummary } from '@coltex/shared'
 import type { Db } from '../db/client.ts'
-import { projectMembers, projectTags, projects, tags, user } from '../db/schema.ts'
+import { projectMembers, projectTags, projects, tags, user, userGroups } from '../db/schema.ts'
 import { ConflictError, ForbiddenError, NotFoundError } from '../errors.ts'
 import type { ProjectStore } from '../storage/types.ts'
 
@@ -181,27 +181,48 @@ export class ProjectService {
 
   async listMembers(projectId: string): Promise<ProjectMember[]> {
     const rows = await this.db
-      .select({ userId: user.id, name: user.name, email: user.email, role: projectMembers.role })
+      .select({ userId: user.id, name: user.name, email: user.email, role: projectMembers.role, groupId: projectMembers.groupId, groupName: userGroups.name })
       .from(projectMembers)
       .innerJoin(user, eq(user.id, projectMembers.userId))
+      .leftJoin(userGroups, eq(userGroups.id, projectMembers.groupId))
       .where(eq(projectMembers.projectId, projectId))
       .orderBy(sql`case ${projectMembers.role} when 'owner' then 0 when 'editor' then 1 when 'reviewer' then 2 else 3 end`, user.name)
-    return rows
+    return rows.map(({ groupId, groupName, ...m }) => ({ ...m, viaGroup: groupId && groupName !== null ? { id: groupId, name: groupName } : null }))
+  }
+
+  /** The group a member has the project through, if not on their own. */
+  private async viaGroup(projectId: string, userId: string): Promise<string | null | undefined> {
+    const [row] = await this.db
+      .select({ name: userGroups.name, groupId: projectMembers.groupId })
+      .from(projectMembers)
+      .leftJoin(userGroups, eq(userGroups.id, projectMembers.groupId))
+      .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
+    if (!row) return undefined
+    return row.groupId ? (row.name ?? '') : null
   }
 
   async addMember(projectId: string, email: string, role: Exclude<ProjectRole, 'owner'>): Promise<ProjectMember> {
     const [target] = await this.db.select().from(user).where(eq(user.email, email.toLowerCase()))
     if (!target) throw new NotFoundError(`No ColTex user with email ${email}`)
+    // Someone who has the project through a group is added on their own: group changes no longer touch them.
+    const converted = await this.db
+      .update(projectMembers)
+      .set({ role, groupId: null })
+      .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, target.id), isNotNull(projectMembers.groupId)))
+      .returning()
+    if (converted.length) return { userId: target.id, name: target.name, email: target.email, role, viaGroup: null }
     const inserted = await this.db
       .insert(projectMembers)
       .values({ projectId, userId: target.id, role })
       .onConflictDoNothing()
       .returning()
     if (inserted.length === 0) throw new ConflictError(`${email} is already a member`)
-    return { userId: target.id, name: target.name, email: target.email, role }
+    return { userId: target.id, name: target.name, email: target.email, role, viaGroup: null }
   }
 
   async setMemberRole(projectId: string, userId: string, role: Exclude<ProjectRole, 'owner'>): Promise<void> {
+    const group = await this.viaGroup(projectId, userId)
+    if (group) throw new ConflictError(`They have this project through the group “${group}”, which sets their role`)
     const [row] = await this.db
       .update(projectMembers)
       .set({ role })
@@ -226,12 +247,14 @@ export class ProjectService {
         .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, fromUserId)))
       await tx
         .update(projectMembers)
-        .set({ role: 'owner' })
+        .set({ role: 'owner', groupId: null })
         .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, toUserId)))
     })
   }
 
   async removeMember(projectId: string, userId: string): Promise<void> {
+    const group = await this.viaGroup(projectId, userId)
+    if (group) throw new ConflictError(`This project is shared with the group “${group}”: leave the group, or stop sharing the project with it`)
     const [row] = await this.db
       .delete(projectMembers)
       .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId), sql`${projectMembers.role} <> 'owner'`))

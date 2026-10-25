@@ -134,8 +134,50 @@ export const ProjectMember = z.object({
   name: z.string(),
   email: z.string(),
   role: ProjectRole,
+  /** Set when they have the project through a group it is shared with, not on their own. */
+  viaGroup: z.object({ id: z.string(), name: z.string() }).nullable(),
 })
 export type ProjectMember = z.infer<typeof ProjectMember>
+
+// ---------------------------------------------------------------------------
+// Groups (Settings → Groups): named groups of people, joined by accepting an
+// invitation; projects and templates can be shared with them
+// ---------------------------------------------------------------------------
+
+export const GroupName = z.string().trim().min(1).max(80)
+
+export const GroupMember = z.object({
+  userId: z.string(),
+  name: z.string(),
+  email: z.string(),
+  role: z.enum(['owner', 'member']),
+  status: z.enum(['invited', 'joined']),
+})
+export type GroupMember = z.infer<typeof GroupMember>
+
+/** A group as one of its people sees it (members listed for those who joined). */
+export const Group = z.object({
+  id: z.string(),
+  name: z.string(),
+  /** This person's place in it. */
+  role: z.enum(['owner', 'member']),
+  status: z.enum(['invited', 'joined']),
+  invitedBy: z.object({ id: z.string().nullable(), name: z.string() }).nullable(),
+  members: z.array(GroupMember),
+  createdAt: z.string(),
+})
+export type Group = z.infer<typeof Group>
+
+export const GroupInviteBody = z.object({ userId: z.string().min(1) })
+
+/** A group a project is shared with, and the role its members get. */
+export const ProjectGroupShare = z.object({
+  groupId: z.string(),
+  name: z.string(),
+  role: ProjectRole.exclude(['owner']),
+  members: z.number(),
+})
+export type ProjectGroupShare = z.infer<typeof ProjectGroupShare>
 
 export const AddMemberBody = z.object({
   email: z.email(),
@@ -556,7 +598,7 @@ export function mentionedIds(content: string): string[] {
  * reset-2fa`), and for the system administrator `account_locked` (the actor's account was locked
  * after failed sign-ins).
  */
-export const NotificationKind = z.enum(['mention', 'reply', 'added', 'owner', 'password_reset', 'two_factor_reset', 'account_locked'])
+export const NotificationKind = z.enum(['mention', 'reply', 'added', 'owner', 'password_reset', 'two_factor_reset', 'account_locked', 'group_invite'])
 export type NotificationKind = z.infer<typeof NotificationKind>
 
 export const Notification = z.object({
@@ -577,6 +619,8 @@ export const Notification = z.object({
   excerpt: z.string(),
   /** The role given, for `added`. */
   role: ProjectRole.nullable(),
+  /** The group someone was invited to, for `group_invite`. */
+  group: z.object({ id: z.string(), name: z.string() }).nullable(),
 })
 export type Notification = z.infer<typeof Notification>
 

@@ -48,9 +48,10 @@ export async function markRead(ids?: string[], read = true): Promise<void> {
   setUnread((await api.markNotificationsRead(ids, read)).unread)
 }
 
-/** Where a notification leads: the chat, the comment thread, or the project (the account settings for one about the account; a locked account's sign-ins). */
+/** Where a notification leads: the chat, the comment thread, or the project (the account settings for one about the account; a locked account's sign-ins; Settings → Groups for an invitation). */
 export function notificationHref(n: Notification): string {
   if (n.kind === 'account_locked') return n.actor.id ? `/admin/sign-ins?user=${n.actor.id}` : '/admin/sign-ins'
+  if (n.kind === 'group_invite') return '/settings/groups'
   if (!n.project) return '/settings'
   const base = `/project/${n.project.id}`
   if (n.threadId) return `${base}?thread=${n.threadId}`
@@ -85,6 +86,8 @@ export function notificationTitle(n: Notification): string {
       return t('Two-step verification was turned off for your account from the server’s command line')
     case 'account_locked':
       return t('{name}’s account was locked after too many failed sign-ins', { name })
+    case 'group_invite':
+      return t('{name} invited you to the group {group}', { name, group: n.group?.name ?? t('a deleted group') })
   }
 }
 
