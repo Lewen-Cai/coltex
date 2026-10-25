@@ -5,6 +5,7 @@ import {
   Copy,
   Download,
   FileDown,
+  FileType,
   LayoutTemplate,
   LogOut,
   MoreHorizontal,
@@ -34,6 +35,7 @@ import { confirmDialog } from './confirm'
 import { openConvert } from './ConvertDialog'
 import { PROJECTS_CHANGED, openCopyProject, openRenameProject } from './shell/project-dialogs'
 import { openPublishTemplate } from './publish-template-dialog'
+import { openWordExport } from './word-export-dialog'
 import { TagBadge, openTagDialog } from './tag-dialog'
 
 const changed = () => window.dispatchEvent(new Event(PROJECTS_CHANGED))
@@ -259,6 +261,9 @@ export function ProjectActions({ project }: { project: ProjectSummary }) {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void downloadPdf(project)}>
           <FileDown /> {t('Download PDF')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => openWordExport(project.id, project.name)}>
+          <FileType /> {t('Export to Word…')}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => openConvert(project.id, project.name)}>
           <LayoutTemplate /> {t('Convert to template…')}

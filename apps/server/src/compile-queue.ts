@@ -11,6 +11,9 @@ import {
   TEXLIVE_QUEUE,
   TexLookupResult,
   CompileJob,
+  WORD_QUEUE,
+  WordJob,
+  WordResult,
   type CleanupJob,
   type CompileJobInput,
   type SynctexJob,
@@ -23,6 +26,8 @@ const buildSuffix = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
 const SYNCTEX_TIMEOUT_MS = 15_000
 /** Converting a large PDF manual to text the first time takes a while. */
 const TEXLIVE_TIMEOUT_MS = 90_000
+/** The compiler stops pandoc after two minutes; this covers the copy and the queue. */
+const WORD_TIMEOUT_MS = 180_000
 
 export type CompilerContainer = { name: string; used: number; limit: number | null; cpu: number | null; cpus: number | null }
 
@@ -50,6 +55,8 @@ export class CompileQueue {
   private readonly texliveQueue: Queue<TexLookupJob, TexLookupResult>
   private readonly texliveEvents: QueueEvents
   private readonly cleanupQueue: Queue<CleanupJob>
+  private readonly wordQueue: Queue<WordJob, WordResult>
+  private readonly wordEvents: QueueEvents
   /** Each project's latest build, which the next one waits for (see compile()). */
   private readonly projectTail = new Map<string, Promise<unknown>>()
   /** Told about every finished build (the admin overview records them). */
@@ -67,6 +74,8 @@ export class CompileQueue {
     this.texliveQueue = new Queue(TEXLIVE_QUEUE, { connection: this.connection })
     this.texliveEvents = new QueueEvents(TEXLIVE_QUEUE, { connection: this.eventsConnection.duplicate() })
     this.cleanupQueue = new Queue(CLEANUP_QUEUE, { connection: this.connection })
+    this.wordQueue = new Queue(WORD_QUEUE, { connection: this.connection })
+    this.wordEvents = new QueueEvents(WORD_QUEUE, { connection: this.eventsConnection.duplicate() })
   }
 
   /**
@@ -85,16 +94,40 @@ export class CompileQueue {
    * agent next to the author's own).
    */
   compile(input: Omit<CompileJobInput, 'buildId'>, signal?: AbortSignal): Promise<CompileResult> {
-    const before = this.projectTail.get(input.projectId) ?? Promise.resolve()
-    const result = before.catch(() => {}).then(() => this.runCompile(input, signal))
-    this.projectTail.set(input.projectId, result)
+    return this.serial(input.projectId, () => this.runCompile(input, signal), signal)
+  }
+
+  /** Run after the project's earlier jobs (builds and exports) have finished. */
+  private serial<T>(projectId: string, run: () => Promise<T>, signal?: AbortSignal): Promise<T> {
+    const before = this.projectTail.get(projectId) ?? Promise.resolve()
+    const result = before.catch(() => {}).then(run)
+    this.projectTail.set(projectId, result)
     const settled = () => {
-      if (this.projectTail.get(input.projectId) === result) this.projectTail.delete(input.projectId)
+      if (this.projectTail.get(projectId) === result) this.projectTail.delete(projectId)
     }
     result.then(settled, settled)
     if (!signal) return result
-    // Stopped while an earlier build of the project runs: answer now; runCompile skips it.
+    // Stopped while an earlier job of the project runs: answer now; run() then skips it.
     return Promise.race([result, new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }))])
+  }
+
+  /** Turn a project into a .docx (pandoc, in the compiler); the file is in the outputs directory. */
+  word(input: Omit<WordJob, 'exportId'>): Promise<WordResult> {
+    return this.serial(input.projectId, async () => {
+      if ((await this.wordQueue.getWorkersCount()) === 0) {
+        throw new ServiceUnavailableError('No compiler worker is running')
+      }
+      await this.beforeCompile?.(input.projectId)
+      await this.wordEvents.waitUntilReady()
+      const exportId = `${Date.now().toString(36)}-${buildSuffix()}`
+      const job = await this.wordQueue.add('word', WordJob.parse({ ...input, exportId }), { removeOnComplete: true, removeOnFail: 100 })
+      try {
+        return WordResult.parse(await job.waitUntilFinished(this.wordEvents, WORD_TIMEOUT_MS))
+      } catch (err) {
+        await job.remove().catch(() => {})
+        throw err
+      }
+    })
   }
 
   private async runCompile(input: Omit<CompileJobInput, 'buildId'>, signal?: AbortSignal): Promise<CompileResult> {
@@ -196,8 +229,8 @@ export class CompileQueue {
   }
 
   async close(): Promise<void> {
-    await Promise.all([this.compileEvents.close(), this.synctexEvents.close(), this.texliveEvents.close()])
-    await Promise.all([this.compileQueue.close(), this.synctexQueue.close(), this.texliveQueue.close(), this.cleanupQueue.close()])
+    await Promise.all([this.compileEvents.close(), this.synctexEvents.close(), this.texliveEvents.close(), this.wordEvents.close()])
+    await Promise.all([this.compileQueue.close(), this.synctexQueue.close(), this.texliveQueue.close(), this.cleanupQueue.close(), this.wordQueue.close()])
     this.connection.disconnect()
     this.eventsConnection.disconnect()
   }

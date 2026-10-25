@@ -37,12 +37,15 @@ import type {
   LinkedFile,
   LinkedFileSource,
   TemplateInfo,
+  ImportedTemplate,
   AdminStats,
   HistoryFile,
   HistoryFileChange,
   HistoryLabel,
   ConvertAnalysis,
   ConvertReport,
+  WordExportReady,
+  WordExportRequest,
   ConvertMetadata,
   ConvertOptions,
   ConvertTargetId,
@@ -182,6 +185,12 @@ export const api = {
   // ---- Templates ----
   listTemplates: () => request<TemplateInfo[]>('/api/templates'),
   removeTemplate: (id: string) => request<void>(`/api/templates/${id}`, { method: 'DELETE' }),
+  importTemplate: (file: File, { name, description }: { name: string; description: string }) =>
+    request<ImportedTemplate>(`/api/templates/import?${new URLSearchParams({ name, description })}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/zip' },
+      body: file,
+    }),
   getProjectTemplate: (id: string) => request<ProjectTemplateState>(`/api/projects/${id}/template`),
   publishTemplate: (id: string, body: { name: string; description: string }) =>
     request<ProjectTemplateState>(`/api/projects/${id}/template`, json('PUT', body)),
@@ -468,6 +477,8 @@ export const api = {
   transferOwnership: (id: string, userId: string) => request<void>(`/api/projects/${id}/transfer`, json('POST', { userId })),
 
   // ---- Journal template conversion ----
+  exportWord: (id: string, body: WordExportRequest) => request<WordExportReady>(`/api/projects/${id}/export/word`, json('POST', body)),
+  wordDownloadUrl: (id: string, exportId: string) => `/api/projects/${id}/export/word/${exportId}`,
   analyzeConvert: (id: string) => request<ConvertAnalysis>(`/api/projects/${id}/convert`),
   convert: (id: string, body: { target: ConvertTargetId; name: string; metadata: ConvertMetadata; options: ConvertOptions }) =>
     request<ConvertReport>(`/api/projects/${id}/convert`, json('POST', body)),

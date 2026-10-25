@@ -11,6 +11,7 @@ import type { BackupService } from './backup/service.ts'
 import type { CollabHooks } from './collab/server.ts'
 import type { CompileQueue } from './compile-queue.ts'
 import type { ConvertService } from './convert/service.ts'
+import type { WordExport } from './convert/word.ts'
 import type { Db } from './db/client.ts'
 import type { HistoryService } from './history/service.ts'
 import type { MonitorHistory } from './monitor-history.ts'
@@ -42,6 +43,7 @@ export type Deps = {
   history: HistoryService
   review: ReviewService
   convert: ConvertService
+  word: WordExport
   notifications: NotificationService
   monitor: MonitorHistory
   backup: BackupService

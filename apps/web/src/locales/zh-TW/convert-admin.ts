@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'ACM 期刊（acmsmall）',
   'Elsevier journal': 'Elsevier 期刊',
   'Plain article': '標準 article',
+  'Elsevier journal (CAS)': 'Elsevier 期刊（CAS）',
+  'Oxford University Press journal': '牛津大學出版社期刊',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran 期刊模式：雙欄，數字引用。',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran 會議模式：雙欄，作者區塊。',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf：雙欄，ACM 參考文獻格式。',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs：Lecture Notes in Computer Science 及其他 Springer 會議論文集。',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint：雙欄，適用於 Physical Review 和 AIP 期刊。',
   'The standard article class, e.g. for arXiv or a template-free draft.': '標準 article 文件類別，適合 arXiv 或不套用範本的草稿。',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc：Elsevier 的單欄 CAS 版面，旗下許多期刊（包括醫學期刊）都在使用。',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template：雙欄，數字引用，適用於 Oxford University Press 的期刊。',
   'Journal name (running header)': '期刊名稱（頁首）',
   'Conference name': '會議名稱',
   'Short name': '簡稱',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     '未填寫會議資訊；在新增 \\acmConference 之前，acmart 會在頁尾顯示預留的會議資訊。',
   'No journal name given; "Journal Name" is used as a placeholder.': '未填寫期刊名稱，暫以「Journal Name」代替。',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': '導言區中的期刊名稱、DOI、年份與日期都是預留內容，由期刊填寫。',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': '作者超過六位時，IEEE 會議的作者區塊會很擁擠，建議依所屬機構分組。',
   'No abstract found.': '找不到摘要。',
   "Couldn't tell whose email {emails} is; add it to the right author.": '無法判斷電子郵件 {emails} 屬於哪位作者，請手動加到對應的作者。',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': '取得臨時連結',
   'Change the tunnel': '更換通道',
   'Saved tunnel': '已儲存的通道',
+  'Export to Word': '匯出為 Word',
+  'Export to Word…': '匯出為 Word…',
+  'Exported to Word': '已匯出為 Word',
+  'Citation style': '引用格式',
+  'Like the document': '與文件相同',
+  'In this project': '本專案中',
+  'Word template': 'Word 範本',
+  None: '無',
 }
 
 export default messages

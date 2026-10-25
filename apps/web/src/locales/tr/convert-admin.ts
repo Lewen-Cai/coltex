@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'ACM Dergisi (acmsmall)',
   'Elsevier journal': 'Elsevier dergisi',
   'Plain article': 'Düz makale',
+  'Elsevier journal (CAS)': 'Elsevier dergisi (CAS)',
+  'Oxford University Press journal': 'Oxford University Press dergisi',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran, dergi kipi: iki sütun, numaralı atıflar.',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran, konferans kipi: iki sütun, yazar blokları.',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf: iki sütun, ACM kaynakça biçimi.',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs: Lecture Notes in Computer Science ve diğer Springer bildiri kitapları.',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint: iki sütun, Physical Review ve AIP dergileri için.',
   'The standard article class, e.g. for arXiv or a template-free draft.': 'Standart article sınıfı; ör. arXiv veya şablonsuz bir taslak için.',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc: Elsevier’in tek sütunlu CAS düzeni; tıp dergileri dahil pek çok dergisinde kullanılır.',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template: iki sütun, numaralı atıflar, Oxford University Press dergileri için.',
   'Journal name (running header)': 'Dergi adı (sayfa üst bilgisi)',
   'Conference name': 'Konferans adı',
   'Short name': 'Kısa ad',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     'Konferans bilgisi verilmedi; siz \\acmConference ekleyene kadar acmart alt bilgide yer tutucu bir etkinlik yazar.',
   'No journal name given; "Journal Name" is used as a placeholder.': 'Dergi adı verilmedi; yer tutucu olarak "Journal Name" kullanılıyor.',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': 'Önsözdeki dergi adı, DOI, yıllar ve tarihler yer tutucudur; bunları dergi doldurur.',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': 'IEEE konferans yazar blokları altıdan fazla yazarda kalabalıklaşır; kurumlara göre gruplamayı düşünün.',
   'No abstract found.': 'Özet bulunamadı.',
   "Couldn't tell whose email {emails} is; add it to the right author.": 'Şu e-postanın kime ait olduğu anlaşılamadı: {emails}. Doğru yazara ekleyin.',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': 'Geçici bağlantı al',
   'Change the tunnel': 'Tüneli değiştir',
   'Saved tunnel': 'Kayıtlı tünel',
+  'Export to Word': "Word'e aktar",
+  'Export to Word…': "Word'e aktar…",
+  'Exported to Word': "Word'e aktarıldı",
+  'Citation style': 'Kaynak gösterme stili',
+  'Like the document': 'Belgedeki gibi',
+  'In this project': 'Bu projede',
+  'Word template': 'Word şablonu',
+  None: 'Yok',
 }
 
 export default messages

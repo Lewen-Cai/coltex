@@ -27,10 +27,11 @@ FROM texlive/texlive:latest AS tex-standard
 FROM texlive/texlive:latest-full-doc-src AS tex-full
 FROM tex-${EDITION} AS assembled
 ARG EDITION
-# ghostscript for EPS and PostScript; poppler's pdftotext reads PDF manuals (full).
+# ghostscript for EPS and PostScript; poppler's pdftotext reads PDF manuals (full)
+# and pdftoppm turns PDF figures into pictures for Word; pandoc writes .docx.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      fonts-noto-cjk fonts-noto-core fonts-liberation2 ghostscript poppler-utils \
+      fonts-noto-cjk fonts-noto-core fonts-liberation2 ghostscript poppler-utils pandoc \
       $([ "$EDITION" = full ] && echo fonts-noto-cjk-extra) \
  && rm -rf /var/lib/apt/lists/* \
  && fc-cache -f

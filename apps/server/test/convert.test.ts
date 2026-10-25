@@ -88,4 +88,30 @@ describe('journal template conversion', () => {
     assert.equal(res.statusCode, 400)
     assert.match(res.json().error, /begin\{document\}/)
   })
+
+  test('Word export: the front matter goes to pandoc as a plain article, and the file is downloaded once', async () => {
+    const res = await call(viewer, 'POST', `/projects/${projectId}/export/word`, {})
+    assert.equal(res.statusCode, 200, res.body)
+    const job = t.wordJobs.at(-1)!
+    assert.equal(job.entry, '.coltex-word.tex')
+    const wrapper = job.overlay['.coltex-word.tex']!
+    assert.match(wrapper, /^\\documentclass\{article\}/)
+    assert.match(wrapper, /\\author\{Dan Brown.* \\and Eve Chen/)
+    assert.match(wrapper, /\\begin\{abstract\}/)
+    assert.match(wrapper, /\\bibliography\{refs\}/)
+    assert.equal(job.csl, 'ieee', 'IEEEtran references come out numbered')
+
+    const { id } = res.json() as { id: string }
+    assert.equal((await call(owner, 'GET', `/projects/${projectId}/export/word/${id}`)).statusCode, 404, 'only for whoever asked')
+    const file = await call(viewer, 'GET', `/projects/${projectId}/export/word/${id}`)
+    assert.equal(file.statusCode, 200)
+    assert.match(String(file.headers['content-disposition']), /Edge paper\.docx/)
+    assert.equal((await call(viewer, 'GET', `/projects/${projectId}/export/word/${id}`)).statusCode, 404, 'once')
+
+    const chosen = await call(viewer, 'POST', `/projects/${projectId}/export/word`, { citationStyle: 'vancouver' })
+    assert.equal(chosen.statusCode, 200)
+    assert.equal(t.wordJobs.at(-1)!.csl, 'vancouver')
+    const missing = await call(viewer, 'POST', `/projects/${projectId}/export/word`, { reference: 'journal.docx' })
+    assert.equal(missing.statusCode, 400, 'a Word template must be a file of the project')
+  })
 })

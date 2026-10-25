@@ -334,3 +334,14 @@ Zotero connection.
 
   apps/web/src/assets/zotero.png
     <- https://www.zotero.org/support/_media/logo/zotero_128x128x32.png
+
+Citation Style Language styles (https://github.com/citation-style-language/styles),
+CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/); each file names
+its authors. Upstream commit: d2cc4207b65000f5c2bdc0c44d7a26ed18ab6606
+
+  services/compiler/pandoc/csl/apa.csl <- apa.csl (unchanged)
+  services/compiler/pandoc/csl/vancouver.csl <- nlm-citation-sequence.csl (unchanged)
+  services/compiler/pandoc/csl/american-medical-association.csl <- american-medical-association.csl (unchanged)
+  services/compiler/pandoc/csl/ieee.csl <- ieee.csl (unchanged)
+  services/compiler/pandoc/csl/nature.csl <- nature.csl (unchanged)
+  services/compiler/pandoc/csl/chicago-author-date.csl <- chicago-author-date.csl (unchanged)

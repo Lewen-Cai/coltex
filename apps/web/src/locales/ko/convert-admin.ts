@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'ACM 저널(acmsmall)',
   'Elsevier journal': 'Elsevier 저널',
   'Plain article': '기본 article',
+  'Elsevier journal (CAS)': 'Elsevier 저널 (CAS)',
+  'Oxford University Press journal': '옥스퍼드 대학 출판부 저널',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran 저널 모드: 2단, 번호식 인용.',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran 학회 모드: 2단, 저자 블록.',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf: 2단, ACM 참고문헌 형식.',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs: Lecture Notes in Computer Science 및 기타 Springer 논문집.',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint: 2단, Physical Review 및 AIP 저널용.',
   'The standard article class, e.g. for arXiv or a template-free draft.': '표준 article 클래스. arXiv나 템플릿 없는 초안 등에 적합합니다.',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc: Elsevier의 1단 CAS 레이아웃으로, 의학 저널을 포함한 여러 Elsevier 저널이 사용합니다.',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template: 2단, 번호 인용, Oxford University Press 저널용.',
   'Journal name (running header)': '저널 이름(러닝 헤더)',
   'Conference name': '학회 이름',
   'Short name': '약칭',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     '학회 정보가 없습니다. \\acmConference를 추가하기 전까지 acmart가 바닥글에 자리 표시용 학회 정보를 출력합니다.',
   'No journal name given; "Journal Name" is used as a placeholder.': '저널 이름이 없어 "Journal Name"을 자리 표시자로 사용합니다.',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': '프리앰블의 저널 이름, DOI, 연도와 날짜는 자리 표시자이며 저널에서 채웁니다.',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': '저자가 6명을 넘으면 IEEE 학회 저자 블록이 복잡해집니다. 소속별로 묶는 것을 고려하세요.',
   'No abstract found.': '초록이 없습니다.',
   "Couldn't tell whose email {emails} is; add it to the right author.": '이메일 {emails}이(가) 어느 저자의 것인지 알 수 없습니다. 해당 저자에 직접 추가하세요.',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': '임시 링크 받기',
   'Change the tunnel': '터널 변경',
   'Saved tunnel': '저장된 터널',
+  'Export to Word': 'Word로 내보내기',
+  'Export to Word…': 'Word로 내보내기…',
+  'Exported to Word': 'Word로 내보냈습니다',
+  'Citation style': '인용 스타일',
+  'Like the document': '문서와 같게',
+  'In this project': '이 프로젝트',
+  'Word template': 'Word 템플릿',
+  None: '없음',
 }
 
 export default messages

@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import pg from 'pg'
-import { CompileJob, type CompileJobInput, type CompileResult, type SynctexJob, type SynctexResult, type TexLookupJob, type TexLookupResult } from '@coltex/shared'
+import { CompileJob, type CompileJobInput, type CompileResult, type SynctexJob, type SynctexResult, type TexLookupJob, type TexLookupResult, type WordJob, type WordResult } from '@coltex/shared'
 import { DbCredentialStore, SecretBox } from '../src/ai/credentials.ts'
 import { AiService } from '../src/ai/service.ts'
 import { AiSessionManager } from '../src/ai/session.ts'
@@ -26,6 +26,7 @@ import { IpPlaces } from '../src/auth/ip-place.ts'
 import { MemoryCounters, SignInGuard } from '../src/auth/sign-in-guard.ts'
 import { DocService } from '../src/collab/docs.ts'
 import { ConvertService } from '../src/convert/service.ts'
+import { WordExport } from '../src/convert/word.ts'
 import { CollabServer } from '../src/collab/server.ts'
 import { createDb, runMigrations } from '../src/db/client.ts'
 import { HistoryService } from '../src/history/service.ts'
@@ -121,6 +122,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   })
   const compiled: string[] = []
   const compileJobs: CompileJob[] = []
+  const wordJobs: WordJob[] = []
   /** Tests may replace this to simulate compile results (e.g. errors). */
   const compiler = {
     result: (_job: CompileJob): CompileResult => ({ buildId: 'b-1', status: 'success', outputFiles: ['output.pdf'], diagnostics: [], durationMs: 1 }),
@@ -131,6 +133,13 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
       const full = CompileJob.parse({ ...job, buildId: `b-${compileJobs.length + 1}` })
       compileJobs.push(full)
       return compiler.result(full)
+    },
+    async word(job: Omit<WordJob, 'exportId'>): Promise<WordResult> {
+      const exportId = `w-${wordJobs.length + 1}`
+      wordJobs.push({ ...job, exportId })
+      await fs.mkdir(path.join(outputsDir, '.exports'), { recursive: true })
+      await fs.writeFile(path.join(outputsDir, '.exports', `${exportId}.docx`), 'PK fake docx')
+      return { exportId, file: `.exports/${exportId}.docx`, warnings: [] }
     },
     async forget(projectId: string) {
       forgotten.push(projectId)
@@ -221,7 +230,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir, conversations: new ConversationStore(db), skills })
   const accounts = new AccountService(db, auth, box)
   const app = await buildApp(
-    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
+    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), word: new WordExport({ store, collab, queue, outputsDir }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
     { logger: false, handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
   )
   return {
@@ -245,6 +254,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     history,
     compiled,
     compileJobs,
+    wordJobs,
     compiler,
     forgotten,
     projectsDir,

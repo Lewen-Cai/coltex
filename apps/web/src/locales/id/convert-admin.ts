@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'Jurnal ACM (acmsmall)',
   'Elsevier journal': 'Jurnal Elsevier',
   'Plain article': 'Artikel polos',
+  'Elsevier journal (CAS)': 'Jurnal Elsevier (CAS)',
+  'Oxford University Press journal': 'Jurnal Oxford University Press',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran, mode jurnal: dua kolom, sitasi bernomor.',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran, mode konferensi: dua kolom, blok penulis.',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf: dua kolom, format referensi ACM.',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs: Lecture Notes in Computer Science dan prosiding Springer lainnya.',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint: dua kolom, untuk jurnal Physical Review dan AIP.',
   'The standard article class, e.g. for arXiv or a template-free draft.': 'Kelas article standar, mis. untuk arXiv atau draf tanpa templat.',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc: tata letak CAS satu kolom dari Elsevier, dipakai banyak jurnalnya, termasuk jurnal kedokteran.',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template: dua kolom, sitasi bernomor, untuk jurnal Oxford University Press.',
   'Journal name (running header)': 'Nama jurnal (judul berjalan)',
   'Conference name': 'Nama konferensi',
   'Short name': 'Nama pendek',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     'Detail konferensi tidak diisi; acmart mencetak tempat konferensi pengganti di footer sampai Anda menambahkan \\acmConference.',
   'No journal name given; "Journal Name" is used as a placeholder.': 'Nama jurnal tidak diisi; "Journal Name" digunakan sebagai pengganti sementara.',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': 'Judul jurnal, DOI, tahun, dan tanggal di preambul adalah pengganti sementara yang diisi oleh jurnal.',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': 'Blok penulis konferensi IEEE menjadi padat jika lebih dari enam penulis; pertimbangkan mengelompokkan berdasarkan afiliasi.',
   'No abstract found.': 'Abstrak tidak ditemukan.',
   "Couldn't tell whose email {emails} is; add it to the right author.": 'Tidak dapat menentukan pemilik email {emails}; tambahkan ke penulis yang tepat.',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': 'Dapatkan tautan sementara',
   'Change the tunnel': 'Ganti terowongan',
   'Saved tunnel': 'Terowongan tersimpan',
+  'Export to Word': 'Ekspor ke Word',
+  'Export to Word…': 'Ekspor ke Word…',
+  'Exported to Word': 'Diekspor ke Word',
+  'Citation style': 'Gaya sitasi',
+  'Like the document': 'Sama seperti dokumen',
+  'In this project': 'Di proyek ini',
+  'Word template': 'Templat Word',
+  None: 'Tidak ada',
 }
 
 export default messages

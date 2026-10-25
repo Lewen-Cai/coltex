@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'Журнал ACM (acmsmall)',
   'Elsevier journal': 'Журнал Elsevier',
   'Plain article': 'Простая статья (article)',
+  'Elsevier journal (CAS)': 'Журнал Elsevier (CAS)',
+  'Oxford University Press journal': 'Журнал Oxford University Press',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran, режим журнала: две колонки, числовые ссылки.',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran, режим конференции: две колонки, блоки авторов.',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf: две колонки, формат библиографии ACM.',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs: Lecture Notes in Computer Science и другие сборники трудов Springer.',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint: две колонки, для журналов Physical Review и AIP.',
   'The standard article class, e.g. for arXiv or a template-free draft.': 'Стандартный класс article, например для arXiv или черновика без шаблона.',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc: одноколоночный макет CAS от Elsevier, которым пользуются многие её журналы, в том числе медицинские.',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template: две колонки, числовые ссылки, для журналов Oxford University Press.',
   'Journal name (running header)': 'Название журнала (колонтитул)',
   'Conference name': 'Название конференции',
   'Short name': 'Краткое название',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     'Данные о конференции не указаны; пока вы не добавите \\acmConference, acmart выводит в нижнем колонтитуле место проведения-заглушку.',
   'No journal name given; "Journal Name" is used as a placeholder.': 'Название журнала не указано; в качестве заглушки используется «Journal Name».',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': 'Название журнала, DOI, годы и даты в преамбуле — заглушки, их заполняет журнал.',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': 'Если авторов больше шести, блоки авторов конференции IEEE становятся тесными; попробуйте сгруппировать их по аффилиациям.',
   'No abstract found.': 'Аннотация не найдена.',
   "Couldn't tell whose email {emails} is; add it to the right author.": 'Не удалось определить, чей адрес {emails}; добавьте его нужному автору.',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': 'Получить временную ссылку',
   'Change the tunnel': 'Сменить туннель',
   'Saved tunnel': 'Сохранённый туннель',
+  'Export to Word': 'Экспорт в Word',
+  'Export to Word…': 'Экспорт в Word…',
+  'Exported to Word': 'Экспортировано в Word',
+  'Citation style': 'Стиль цитирования',
+  'Like the document': 'Как в документе',
+  'In this project': 'В этом проекте',
+  'Word template': 'Шаблон Word',
+  None: 'Нет',
 }
 
 export default messages

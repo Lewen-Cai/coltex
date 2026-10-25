@@ -23,6 +23,7 @@ import { CompileQueue } from './compile-queue.ts'
 import { config } from './config.ts'
 import { DocService } from './collab/docs.ts'
 import { ConvertService } from './convert/service.ts'
+import { WordExport } from './convert/word.ts'
 import { CollabServer } from './collab/server.ts'
 import { createDb, runMigrations } from './db/client.ts'
 import { HistoryService } from './history/service.ts'
@@ -122,7 +123,7 @@ const linkedFiles = new LinkedFileService({
 const references = new ReferenceService({ db, box, store, collab, history, projects })
 const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
 const app = await buildApp(
-  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
+  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), word: new WordExport({ store, collab, queue, outputsDir: config.outputsDir }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
   { handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
 )
 

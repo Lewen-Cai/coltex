@@ -1,4 +1,4 @@
-export { ConvertError, extractPaper, structureAffiliation } from './extract.ts'
+export { ACK_MARK, BIB_MARK, ConvertError, extractPaper, structureAffiliation } from './extract.ts'
 export { convertPaper } from './render.ts'
 export { TARGETS, targetInfo } from './targets.ts'
 export { bibtexCompatible, transformTex } from './transform.ts'

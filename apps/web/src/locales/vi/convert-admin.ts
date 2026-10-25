@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'Tạp chí ACM (acmsmall)',
   'Elsevier journal': 'Tạp chí Elsevier',
   'Plain article': 'Article đơn giản',
+  'Elsevier journal (CAS)': 'Tạp chí Elsevier (CAS)',
+  'Oxford University Press journal': 'Tạp chí của Oxford University Press',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran, chế độ tạp chí: hai cột, trích dẫn dạng số.',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran, chế độ hội nghị: hai cột, khối tác giả.',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf: hai cột, định dạng trích dẫn ACM.',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs: Lecture Notes in Computer Science và các kỷ yếu khác của Springer.',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint: hai cột, cho các tạp chí Physical Review và AIP.',
   'The standard article class, e.g. for arXiv or a template-free draft.': 'Lớp article tiêu chuẩn, vd. cho arXiv hoặc bản nháp không dùng mẫu.',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc: bố cục CAS một cột của Elsevier, được nhiều tạp chí của hãng dùng, kể cả tạp chí y khoa.',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template: hai cột, trích dẫn đánh số, cho các tạp chí của Oxford University Press.',
   'Journal name (running header)': 'Tên tạp chí (đầu trang)',
   'Conference name': 'Tên hội nghị',
   'Short name': 'Tên viết tắt',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     'Chưa có thông tin hội nghị; acmart sẽ in địa điểm giữ chỗ ở chân trang cho đến khi bạn thêm \\acmConference.',
   'No journal name given; "Journal Name" is used as a placeholder.': 'Chưa có tên tạp chí; tạm dùng “Journal Name” để giữ chỗ.',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': 'Tên tạp chí, DOI, năm và ngày trong phần mở đầu là giá trị giữ chỗ, do tạp chí điền.',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': 'Khối tác giả của hội nghị IEEE sẽ chật chội khi có hơn sáu tác giả; hãy cân nhắc nhóm theo đơn vị công tác.',
   'No abstract found.': 'Không tìm thấy tóm tắt.',
   "Couldn't tell whose email {emails} is; add it to the right author.": 'Không xác định được email {emails} thuộc về ai; hãy thêm nó cho đúng tác giả.',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': 'Lấy liên kết tạm thời',
   'Change the tunnel': 'Đổi tunnel',
   'Saved tunnel': 'Tunnel đã lưu',
+  'Export to Word': 'Xuất sang Word',
+  'Export to Word…': 'Xuất sang Word…',
+  'Exported to Word': 'Đã xuất sang Word',
+  'Citation style': 'Kiểu trích dẫn',
+  'Like the document': 'Giống tài liệu',
+  'In this project': 'Trong dự án này',
+  'Word template': 'Mẫu Word',
+  None: 'Không',
 }
 
 export default messages

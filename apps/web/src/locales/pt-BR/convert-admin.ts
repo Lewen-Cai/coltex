@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'Periódico ACM (acmsmall)',
   'Elsevier journal': 'Periódico Elsevier',
   'Plain article': 'Artigo simples',
+  'Elsevier journal (CAS)': 'Periódico da Elsevier (CAS)',
+  'Oxford University Press journal': 'Periódico da Oxford University Press',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran, modo periódico: duas colunas, citações numéricas.',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran, modo conferência: duas colunas, blocos de autores.',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf: duas colunas, formato de referências ACM.',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs: Lecture Notes in Computer Science e outros anais da Springer.',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint: duas colunas, para periódicos Physical Review e AIP.',
   'The standard article class, e.g. for arXiv or a template-free draft.': 'A classe article padrão, por exemplo para o arXiv ou um rascunho sem modelo.',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc: o layout CAS de uma coluna da Elsevier, usado por muitos de seus periódicos, inclusive os de medicina.',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template: duas colunas, citações numéricas, para os periódicos da Oxford University Press.',
   'Journal name (running header)': 'Nome do periódico (cabeçalho)',
   'Conference name': 'Nome da conferência',
   'Short name': 'Nome curto',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     'Nenhum dado da conferência informado; a acmart imprime um local provisório no rodapé até você adicionar \\acmConference.',
   'No journal name given; "Journal Name" is used as a placeholder.': 'Nenhum nome de periódico informado; "Journal Name" é usado como marcador provisório.',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': 'O título do periódico, o DOI, os anos e as datas no preâmbulo são provisórios; o periódico os preenche.',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': 'Os blocos de autores de conferências IEEE ficam apertados com mais de seis autores; considere agrupar por afiliação.',
   'No abstract found.': 'Nenhum resumo encontrado.',
   "Couldn't tell whose email {emails} is; add it to the right author.": 'Não foi possível saber de quem é o e-mail {emails}; adicione-o ao autor certo.',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': 'Obter um link temporário',
   'Change the tunnel': 'Trocar o túnel',
   'Saved tunnel': 'Túnel salvo',
+  'Export to Word': 'Exportar para o Word',
+  'Export to Word…': 'Exportar para o Word…',
+  'Exported to Word': 'Exportado para o Word',
+  'Citation style': 'Estilo de citação',
+  'Like the document': 'Igual ao documento',
+  'In this project': 'Neste projeto',
+  'Word template': 'Modelo do Word',
+  None: 'Nenhum',
 }
 
 export default messages

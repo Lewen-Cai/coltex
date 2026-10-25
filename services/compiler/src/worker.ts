@@ -12,6 +12,9 @@ import {
   SynctexJob,
   TEXLIVE_QUEUE,
   TexLookupJob,
+  WORD_QUEUE,
+  WordJob,
+  type WordResult,
   type CompileResult,
   type Diagnostic,
   type SynctexResult,
@@ -24,6 +27,8 @@ import { runLatexmk } from './latexmk.ts'
 import { synctex } from './synctex.ts'
 import { texLookup } from './texlive.ts'
 import { reportResources } from './resources.ts'
+import { writeOverlay } from './overlay.ts'
+import { toWord } from './word.ts'
 import { Slots } from './slots.ts'
 
 /** Serialise builds of the same project; different projects run in parallel. */
@@ -32,9 +37,12 @@ function withProjectLock<T>(projectId: string, fn: () => Promise<T>): Promise<T>
   const prev = projectLocks.get(projectId) ?? Promise.resolve()
   const next = prev.catch(() => {}).then(fn)
   projectLocks.set(projectId, next)
-  next.finally(() => {
+  // Not .finally(): its promise rejects with a failed job's error, and an
+  // unhandled rejection ends the whole worker (every build in it).
+  const release = () => {
     if (projectLocks.get(projectId) === next) projectLocks.delete(projectId)
-  })
+  }
+  next.then(release, release)
   return next
 }
 
@@ -99,16 +107,6 @@ async function compile(job: CompileJob): Promise<CompileResult> {
     return await build(job, workDir, outDir, started)
   } finally {
     if (job.overlay) await fs.rm(workDir, { recursive: true, force: true })
-  }
-}
-
-/** Write trial files into the scratch directory, refusing paths that escape it. */
-async function writeOverlay(workDir: string, overlay: Record<string, string>): Promise<void> {
-  for (const [rel, content] of Object.entries(overlay)) {
-    const dest = path.resolve(workDir, rel)
-    if (path.isAbsolute(rel) || !dest.startsWith(workDir + path.sep)) throw new Error(`Invalid overlay path: ${rel}`)
-    await fs.mkdir(path.dirname(dest), { recursive: true })
-    await fs.writeFile(dest, content)
   }
 }
 
@@ -191,6 +189,16 @@ const texliveWorker = new Worker<TexLookupJob, TexLookupResult>(
   { connection, concurrency: 2 },
 )
 
+// Word exports (pandoc), under the project lock like builds: they read the same sources.
+const wordWorker = new Worker<WordJob, WordResult>(
+  WORD_QUEUE,
+  job => {
+    const data = WordJob.parse(job.data)
+    return withProjectLock(data.projectId, () => toWord(data, config))
+  },
+  { connection, concurrency: 2 },
+)
+
 // A deleted project's compile directory and outputs. Under the project lock, so
 // a build still running finishes first and its files go too.
 const cleanupWorker = new Worker<CleanupJob>(
@@ -208,7 +216,7 @@ const cleanupWorker = new Worker<CleanupJob>(
 const stopReporting = reportResources(connection, () => worker.concurrency)
 
 worker.on('ready', () => console.log(`[compiler] ready, ${slots.describe()}`))
-for (const w of [worker, synctexWorker, texliveWorker, cleanupWorker]) {
+for (const w of [worker, synctexWorker, texliveWorker, wordWorker, cleanupWorker]) {
   w.on('failed', (job, err) => console.error(`[compiler] ${w.name} job ${job?.id} failed:`, err))
 }
 
@@ -216,7 +224,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, async () => {
     stopReporting()
     stopSlots()
-    await Promise.all([worker.close(), synctexWorker.close(), texliveWorker.close(), cleanupWorker.close()])
+    await Promise.all([worker.close(), synctexWorker.close(), texliveWorker.close(), wordWorker.close(), cleanupWorker.close()])
     await connection.quit()
     process.exit(0)
   })

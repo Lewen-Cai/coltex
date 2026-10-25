@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'ACM 期刊（acmsmall）',
   'Elsevier journal': 'Elsevier 期刊',
   'Plain article': '标准 article',
+  'Elsevier journal (CAS)': 'Elsevier 期刊（CAS）',
+  'Oxford University Press journal': '牛津大学出版社期刊',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran 期刊模式：双栏，数字引用。',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran 会议模式：双栏，作者块。',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf：双栏，ACM 参考文献格式。',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs：Lecture Notes in Computer Science 及其他 Springer 会议论文集。',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint：双栏，适用于 Physical Review 和 AIP 期刊。',
   'The standard article class, e.g. for arXiv or a template-free draft.': '标准 article 文档类，适合 arXiv 或不套模板的草稿。',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc：Elsevier 的单栏 CAS 版式，其许多期刊（包括医学期刊）都在使用。',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template：双栏，数字引用，适用于 Oxford University Press 的期刊。',
   'Journal name (running header)': '期刊名称（页眉）',
   'Conference name': '会议名称',
   'Short name': '简称',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     '未填写会议信息；在添加 \\acmConference 之前，acmart 会在页脚显示占位的会议信息。',
   'No journal name given; "Journal Name" is used as a placeholder.': '未填写期刊名称，暂用 “Journal Name” 占位。',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': '导言区中的期刊名称、DOI、年份和日期都是占位内容，由期刊填写。',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': '作者超过六位时，IEEE 会议的作者块会很拥挤，建议按单位分组。',
   'No abstract found.': '未找到摘要。',
   "Couldn't tell whose email {emails} is; add it to the right author.": '无法判断邮箱 {emails} 属于哪位作者，请手动添加到对应作者。',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': '获取临时链接',
   'Change the tunnel': '更换隧道',
   'Saved tunnel': '已保存的隧道',
+  'Export to Word': '导出为 Word',
+  'Export to Word…': '导出为 Word…',
+  'Exported to Word': '已导出为 Word',
+  'Citation style': '引用格式',
+  'Like the document': '与文档相同',
+  'In this project': '本项目中',
+  'Word template': 'Word 模板',
+  None: '无',
 }
 
 export default messages

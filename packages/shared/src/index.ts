@@ -880,6 +880,10 @@ export const WordExportRequest = z.object({
 })
 export type WordExportRequest = z.infer<typeof WordExportRequest>
 
+/** An export that is ready: download it from …/export/word/:id (once). */
+export const WordExportReady = z.object({ id: z.string(), warnings: z.array(z.string()) })
+export type WordExportReady = z.infer<typeof WordExportReady>
+
 export const WordJob = z.object({
   projectId: ProjectId,
   exportId: z.string().regex(/^[a-z0-9]+-[a-z0-9]+$/),
@@ -1605,7 +1609,7 @@ export const ChangeDecisionResult = z.object({ count: z.number(), undoId: z.stri
 // Journal template conversion
 // ---------------------------------------------------------------------------
 
-export const ConvertTargetId = z.enum(['ieee-journal', 'ieee-conference', 'acm-sigconf', 'acm-journal', 'elsevier', 'lncs', 'revtex', 'article'])
+export const ConvertTargetId = z.enum(['ieee-journal', 'ieee-conference', 'acm-sigconf', 'acm-journal', 'elsevier', 'elsevier-cas', 'oup', 'lncs', 'revtex', 'article'])
 export type ConvertTargetId = z.infer<typeof ConvertTargetId>
 
 const Text = (max: number) => z.string().max(max)

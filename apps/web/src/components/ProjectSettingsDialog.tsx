@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check, ChevronsUpDown, Copy, Download, FileText, LayoutTemplate, RotateCcw, Share2, WholeWord } from 'lucide-react'
+import { Check, ChevronsUpDown, Copy, Download, FileText, FileType, LayoutTemplate, RotateCcw, Share2, WholeWord } from 'lucide-react'
 import type { EngineSetting, ProjectMeta, SpellCheckLanguage } from '@coltex/shared'
 import { copyText } from '../lib/clipboard.ts'
 import { EDITOR_THEMES } from '../lib/editor-themes.ts'
@@ -10,6 +10,7 @@ import { SHORTCUT_COMMANDS, bindingFromEvent, bindingsFor, commandWithKey, type 
 import { cn } from '../lib/utils.ts'
 import { spellLanguageName } from '../spelling/index.ts'
 import { openPublishTemplate } from './publish-template-dialog.tsx'
+import { openWordExport } from './word-export-dialog.tsx'
 import { Button } from './ui/button.tsx'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from './ui/command.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover.tsx'
@@ -445,6 +446,11 @@ export function ProjectSettingsDialog(props: Props) {
                 <button type="button" className={itemClass} onClick={act(props.onCopy)}>
                   <Copy /> {t('Make a copy')}
                 </button>
+                {project && (
+                  <button type="button" className={itemClass} onClick={act(() => openWordExport(project.id, project.name))}>
+                    <FileType /> {t('Export to Word…')}
+                  </button>
+                )}
                 <button type="button" className={itemClass} onClick={act(props.onConvert)}>
                   <LayoutTemplate /> {t('Convert to a journal template')}
                 </button>

@@ -3,6 +3,7 @@ import { ConfirmHost } from '@/components/confirm'
 import { ConvertDialogHost } from '@/components/ConvertDialog'
 import { CopyProjectDialogHost, RenameProjectDialogHost } from '@/components/shell/project-dialogs'
 import { PublishTemplateDialogHost } from '@/components/publish-template-dialog'
+import { WordExportDialogHost } from '@/components/word-export-dialog'
 import { AppShell } from '@/components/shell/app-shell'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -187,6 +188,7 @@ export function App() {
       <CopyProjectDialogHost />
       <RenameProjectDialogHost />
       <PublishTemplateDialogHost />
+      <WordExportDialogHost />
     </TooltipProvider>
   )
 }

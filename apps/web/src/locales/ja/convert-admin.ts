@@ -80,6 +80,8 @@ const messages: Record<string, string> = {
   'ACM Journal (acmsmall)': 'ACM ジャーナル（acmsmall）',
   'Elsevier journal': 'Elsevier ジャーナル',
   'Plain article': '標準の article',
+  'Elsevier journal (CAS)': 'Elsevier ジャーナル（CAS）',
+  'Oxford University Press journal': 'オックスフォード大学出版局のジャーナル',
   'IEEEtran, journal mode: two columns, numeric citations.': 'IEEEtran のジャーナルモード：2 段組、番号による引用。',
   'IEEEtran, conference mode: two columns, author blocks.': 'IEEEtran の会議モード：2 段組、著者ブロック。',
   'acmart sigconf: two columns, ACM reference format.': 'acmart sigconf：2 段組、ACM 参考文献形式。',
@@ -88,6 +90,8 @@ const messages: Record<string, string> = {
   'llncs: Lecture Notes in Computer Science and other Springer proceedings.': 'llncs：Lecture Notes in Computer Science およびその他の Springer 論文集向け。',
   'revtex4-2 reprint: two columns, for Physical Review and AIP journals.': 'revtex4-2 reprint：2 段組、Physical Review および AIP のジャーナル向け。',
   'The standard article class, e.g. for arXiv or a template-free draft.': '標準の article クラス。arXiv やテンプレートを使わない原稿向け。',
+  'cas-sc: Elsevier’s single-column CAS layout, used by many of its journals, medical ones among them.': 'cas-sc：Elsevier の 1 段組み CAS レイアウト。医学系を含む多くの同社ジャーナルで使われています。',
+  'oup-authoring-template: two columns, numeric citations, for Oxford University Press journals.': 'oup-authoring-template：2 段組み、番号付き引用。Oxford University Press のジャーナル向け。',
   'Journal name (running header)': 'ジャーナル名（柱）',
   'Conference name': '会議名',
   'Short name': '略称',
@@ -119,6 +123,7 @@ const messages: Record<string, string> = {
   'No conference details given; acmart prints its placeholder venue in the footer until you add \\acmConference.':
     '会議の情報が入力されていません。\\acmConference を追加するまで、acmart はフッターに仮の会議情報を表示します。',
   'No journal name given; "Journal Name" is used as a placeholder.': 'ジャーナル名が入力されていないため、仮に "Journal Name" を使用しています。',
+  'The journal title, DOI, years and dates in the preamble are placeholders that the journal fills in.': 'プリアンブルのジャーナル名、DOI、年、日付は仮の値で、ジャーナル側が記入します。',
   'IEEE conference author blocks get crowded beyond six authors; consider grouping by affiliation.': '著者が 6 人を超えると IEEE 会議の著者ブロックが窮屈になります。所属ごとにまとめることを検討してください。',
   'No abstract found.': '要旨が見つかりません。',
   "Couldn't tell whose email {emails} is; add it to the right author.": 'メールアドレス {emails} がどの著者のものか判別できませんでした。該当する著者に追加してください。',
@@ -352,6 +357,14 @@ const messages: Record<string, string> = {
   'Get a temporary link': '一時リンクを取得',
   'Change the tunnel': 'トンネルを変更',
   'Saved tunnel': '保存済みのトンネル',
+  'Export to Word': 'Word に書き出す',
+  'Export to Word…': 'Word に書き出す…',
+  'Exported to Word': 'Word に書き出しました',
+  'Citation style': '引用スタイル',
+  'Like the document': '文書と同じ',
+  'In this project': 'このプロジェクト内',
+  'Word template': 'Word テンプレート',
+  None: 'なし',
 }
 
 export default messages
