@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': 'Изменения черновика отброшены',
+  'Stopped; the draft was not applied': 'Остановлено; черновик не применён',
+  'Applied changes to {files}; stopped before the build finished.': 'Изменения применены к {files}; остановлено до окончания сборки.',
   'Applied changes to {files}. Build: {before} → {after} errors.': 'Изменения применены к {files}. Ошибок сборки: {before} → {after}.',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'Изменения ИИ-агента отменены, кроме {files}, где те же строки с тех пор были изменены.',

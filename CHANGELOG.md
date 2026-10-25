@@ -33,6 +33,7 @@ Export to Word, the AI agent on the web, 60 templates across twelve fields, grou
 - After installing, `coltex` wasn't found in new SSH sessions on systems whose login doesn't read `~/.bashrc`. The installer now adds `~/.local/bin` to the files a login reads too, and `coltex update` adds it to installs that had it only in `~/.bashrc`.
 - `coltex update` right after a release, while the Alibaba Cloud mirror didn't have its images yet, tried to build them from the sources instead of taking them from GitHub. It now downloads them from GitHub, and the next update uses the mirror again.
 - An update that stopped half way (the images not downloaded) said the new version was already installed when run again. Running it again now finishes it.
+- With automatic or full access, Stop didn't stop the AI agent while it applied its changes and built the project after a reply.
 
 ## v0.0.5
 

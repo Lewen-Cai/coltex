@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': 'Đã bỏ các thay đổi nháp',
+  'Stopped; the draft was not applied': 'Đã dừng; bản nháp chưa được áp dụng',
+  'Applied changes to {files}; stopped before the build finished.': 'Đã áp dụng thay đổi vào {files}; đã dừng trước khi biên dịch xong.',
   'Applied changes to {files}. Build: {before} → {after} errors.': 'Đã áp dụng thay đổi vào {files}. Biên dịch: {before} → {after} lỗi.',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'Đã hoàn tác các thay đổi của tác tử AI, trừ trong {files}, nơi những dòng đó đã được chỉnh sửa sau đó.',

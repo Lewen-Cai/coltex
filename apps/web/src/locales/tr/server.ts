@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': 'Taslak değişiklikleri atıldı',
+  'Stopped; the draft was not applied': 'Durduruldu; taslak uygulanmadı',
+  'Applied changes to {files}; stopped before the build finished.': 'Değişiklikler {files} dosyasına uygulandı; derleme bitmeden durduruldu.',
   'Applied changes to {files}. Build: {before} → {after} errors.': 'Değişiklikler uygulandı: {files}. Derleme hataları: {before} → {after}.',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'YZ ajanının değişiklikleri geri alındı; aynı satırların sonradan düzenlendiği şu dosyalar hariç: {files}.',

@@ -59,6 +59,9 @@ export type AiDeps = {
 
 type AppliedFile = { path: string; kind: 'modified' | 'created'; original: string; applied: string }
 
+/** The author stopped an automatic apply after its files were written (they stay; Undo takes them back). */
+class StoppedAfterApply extends Error {}
+
 function summary(result: CompileResult): AiCompileSummary {
   return { buildId: result.buildId, status: result.status, errors: errorCount(result.diagnostics) }
 }
@@ -78,6 +81,8 @@ export class AiSession extends AgentChat {
   private title?: string
   /** Stops a compaction in progress. */
   private compacting?: AbortController
+  /** Stops the builds of an automatic apply (they run after the reply, while Stop is still shown). */
+  private applying?: AbortController
   private readonly changeset: Changeset
   private readonly toolContext: ToolContext
   private notes: string[] = []
@@ -331,6 +336,7 @@ export class AiSession extends AgentChat {
     this.stopped = true
     super.abort()
     this.compacting?.abort()
+    this.applying?.abort()
   }
 
   discard(): void {
@@ -347,12 +353,18 @@ export class AiSession extends AgentChat {
   /** Auto and full access: the whole draft, applied as the turn ends (rolled back if the build got worse). */
   private async autoApply(project: ProjectMeta, user: SessionUser): Promise<void> {
     const files = this.changeset.paths().map(path => ({ path, content: this.changeset.get(path)!.proposed }))
+    const controller = new AbortController()
+    this.applying = controller
     try {
-      const result = await this.applyDraft({ files }, project, user, true)
+      const result = await this.applyDraft({ files }, project, user, true, controller.signal)
       if (result.compile) this.emit({ type: 'built', compile: result.compile })
     } catch (err) {
+      if (err instanceof StoppedAfterApply) this.notice('info', err.message)
+      else if (controller.signal.aborted) this.notice('info', 'Stopped; the draft was not applied')
       // A clash with someone's edits: the draft stays, for the author to look at.
-      this.notice('error', err instanceof Error ? err.message : String(err))
+      else this.notice('error', err instanceof Error ? err.message : String(err))
+    } finally {
+      this.applying = undefined
     }
   }
 
@@ -404,9 +416,9 @@ export class AiSession extends AgentChat {
     return `Moved ${from} to ${to} in the project.`
   }
 
-  private async compileProject(project: ProjectMeta): Promise<CompileResult> {
+  private async compileProject(project: ProjectMeta, signal?: AbortSignal): Promise<CompileResult> {
     const engine = await engineFor(this.deps.store, project)
-    return this.deps.queue.compile({ projectId: project.id, rootFile: project.rootFile, engine, clean: false })
+    return this.deps.queue.compile({ projectId: project.id, rootFile: project.rootFile, engine, clean: false }, signal)
   }
 
   private async readText(path: string): Promise<string | undefined> {
@@ -447,7 +459,7 @@ export class AiSession extends AgentChat {
     }
   }
 
-  private async applyDraft(body: AiApplyBody, project: ProjectMeta, user: SessionUser, auto = false): Promise<AiApplyResult> {
+  private async applyDraft(body: AiApplyBody, project: ProjectMeta, user: SessionUser, auto = false, signal?: AbortSignal): Promise<AiApplyResult> {
     const accepted = body.files.map(f => {
       const entry = this.changeset.get(f.path)
       if (!entry) throw new BadRequestError(`${f.path} is not part of the AI agent's changes`)
@@ -456,7 +468,8 @@ export class AiSession extends AgentChat {
     const { collab, history } = this.deps
 
     await collab.flushProject(this.projectId)
-    const before = await this.compileProject(project)
+    const before = await this.compileProject(project, signal)
+    signal?.throwIfAborted()
     // The state before the change becomes a version of its own (one-click rollback).
     const snapshot = (await history.checkpoint(this.projectId))!
 
@@ -489,9 +502,19 @@ export class AiSession extends AgentChat {
     if (applied.some(f => f.kind === 'created')) await collab.treeChanged(this.projectId)
     history.noteChange(this.projectId, user.id, 'ai')
 
-    const after = await this.compileProject(project)
     const partial = accepted.some(a => a.content !== a.entry.proposed) || accepted.length < this.changeset.size
     const files = applied.map(f => f.path)
+    let after: CompileResult
+    try {
+      after = await this.compileProject(project, signal)
+    } catch (err) {
+      if (!signal?.aborted) throw err
+      this.lastApplied = { snapshot, at: new Date().toISOString(), files: applied }
+      this.changeset.clear()
+      this.emitChanges()
+      this.notes.push(`Your draft was applied to the project (${files.join(', ')}), but the author stopped the build that checks it.`)
+      throw new StoppedAfterApply(`Applied changes to ${files.join(', ')}; stopped before the build finished.`)
+    }
     this.changeset.clear()
     this.emitChanges()
 
@@ -501,7 +524,11 @@ export class AiSession extends AgentChat {
       const message = `The changes made the build worse (${errorCount(before.diagnostics)} → ${errorCount(after.diagnostics)} errors), so they were rolled back${reverted.conflicts.length ? `, except ${reverted.conflicts.join(', ')} which changed meanwhile` : ''}.`
       this.notes.push(`${auto ? 'Your draft was applied' : 'The author applied your changes'} but they made the real build worse, so ColTex rolled them back. ${compileNote(after)}`)
       this.notice('error', message)
-      const compile = await this.compileProject(project)
+      // Stopped meanwhile: the rollback is done, only its build is skipped.
+      const compile = await this.compileProject(project, signal).catch((err: unknown) => {
+        if (signal?.aborted) return undefined
+        throw err
+      })
       return { outcome: 'reverted', before: summary(before), after: summary(after), compile, message }
     }
 

@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': 'Perubahan draf dibuang',
+  'Stopped; the draft was not applied': 'Dihentikan; draf tidak diterapkan',
+  'Applied changes to {files}; stopped before the build finished.': 'Perubahan diterapkan ke {files}; dihentikan sebelum build selesai.',
   'Applied changes to {files}. Build: {before} → {after} errors.': 'Perubahan diterapkan ke {files}. Kompilasi: {before} → {after} galat.',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'Perubahan agen AI diurungkan, kecuali di {files} karena baris yang sama telah diedit sejak itu.',

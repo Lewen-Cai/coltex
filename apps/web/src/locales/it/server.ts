@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': 'Modifiche della bozza scartate',
+  'Stopped; the draft was not applied': 'Interrotto; la bozza non è stata applicata',
+  'Applied changes to {files}; stopped before the build finished.': 'Modifiche applicate a {files}; interrotto prima della fine della compilazione.',
   'Applied changes to {files}. Build: {before} → {after} errors.': 'Modifiche applicate a {files}. Compilazione: {before} → {after} errori.',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'Modifiche dell’agente IA annullate, tranne in {files}, dove le stesse righe sono state modificate nel frattempo.',

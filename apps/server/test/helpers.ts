@@ -127,12 +127,17 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   /** Tests may replace this to simulate compile results (e.g. errors). */
   const compiler = {
     result: (_job: CompileJob): CompileResult => ({ buildId: 'b-1', status: 'success', outputFiles: ['output.pdf'], diagnostics: [], durationMs: 1 }),
+    /** Tests may hold builds here (e.g. one that is still running when the author stops). */
+    wait: (_job: CompileJob): Promise<void> => Promise.resolve(),
   }
   const queue = {
-    async compile(job: Omit<CompileJobInput, 'buildId'>): Promise<CompileResult> {
+    async compile(job: Omit<CompileJobInput, 'buildId'>, signal?: AbortSignal): Promise<CompileResult> {
       compiled.push(job.projectId)
       const full = CompileJob.parse({ ...job, buildId: `b-${compileJobs.length + 1}` })
       compileJobs.push(full)
+      signal?.throwIfAborted()
+      const stopped = new Promise<never>((_, reject) => signal?.addEventListener('abort', () => reject(signal.reason), { once: true }))
+      await Promise.race([compiler.wait(full), stopped])
       return compiler.result(full)
     },
     async word(job: Omit<WordJob, 'exportId'>): Promise<WordResult> {

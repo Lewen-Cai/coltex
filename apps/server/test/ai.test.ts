@@ -86,7 +86,7 @@ describe('AI agent', () => {
     ])
   }
 
-  async function askForFix() {
+  async function askForFix(wait = true) {
     scriptFix()
     const res = await api('POST', `/projects/${projectId}/ai/session/messages`, admin, {
       text: 'Fix the errors please',
@@ -94,7 +94,7 @@ describe('AI agent', () => {
       openFile: { path: 'main.tex', line: 11 },
     })
     assert.equal(res.statusCode, 202, res.body)
-    await idle()
+    if (wait) await idle()
   }
 
   before(async () => {
@@ -380,6 +380,45 @@ describe('AI agent', () => {
     } finally {
       await api('PUT', '/ai/permission', admin, { permission: 'manual' })
       for (const p of ['chapters', 'figs', 'old.tex']) await api('DELETE', `/projects/${projectId}/${p.endsWith('.tex') ? 'files' : 'folders'}/${p}`, admin)
+      await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    }
+  })
+
+  test('Stop ends an automatic apply that is still building', async () => {
+    const realBuilds = () => t.compileJobs.filter(j => j.projectId === projectId && !j.overlay).length
+    const hold = (n: number) => {
+      const start = realBuilds()
+      t.compiler.wait = job => (job.overlay || realBuilds() - start <= n ? Promise.resolve() : new Promise(() => {}))
+    }
+    const notices = async () => (await state()).items.flatMap(i => (i.kind === 'notice' ? [i.text] : []))
+    try {
+      await api('PUT', '/ai/permission', admin, { permission: 'auto' })
+      // Stopped while the build before applying runs: nothing is applied, the draft stays.
+      await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+      hold(0)
+      await askForFix(false)
+      await waitFor(async () => realBuilds() > 0 && (await state()).running, 'the build before applying')
+      await api('POST', `/projects/${projectId}/ai/session/abort`, admin)
+      await idle()
+      assert.ok(!(await readMain()).includes(FIXED_LINE), 'not applied')
+      assert.equal((await state()).changes.files.length, 1, 'the draft stays')
+      assert.ok((await notices()).includes('Stopped; the draft was not applied'))
+
+      // Stopped while the build after applying runs: the change stays, and Undo can take it back.
+      await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+      hold(1)
+      await askForFix(false)
+      await waitFor(async () => (await readMain()).includes(FIXED_LINE), 'the draft to be written')
+      await api('POST', `/projects/${projectId}/ai/session/abort`, admin)
+      await idle()
+      const s = await state()
+      assert.equal(s.changes.files.length, 0)
+      assert.deepEqual(s.lastApplied?.files, ['main.tex'])
+      assert.ok((await notices()).includes('Applied changes to main.tex; stopped before the build finished.'))
+    } finally {
+      t.compiler.wait = () => Promise.resolve()
+      await api('PUT', '/ai/permission', admin, { permission: 'manual' })
+      await writeMain(base)
       await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
     }
   })

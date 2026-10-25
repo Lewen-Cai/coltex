@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': '已捨棄草稿修改',
+  'Stopped; the draft was not applied': '已停止，草稿沒有套用',
+  'Applied changes to {files}; stopped before the build finished.': '已將修改套用到 {files}；編譯完成前已停止。',
   'Applied changes to {files}. Build: {before} → {after} errors.': '已將修改套用到 {files}。編譯錯誤：{before} → {after} 個。',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     '已復原 AI 代理的修改，但 {files} 中的相同行之後已被修改，因此未復原。',

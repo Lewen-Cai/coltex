@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': '下書きの変更を破棄しました',
+  'Stopped; the draft was not applied': '停止しました。下書きは適用されていません',
+  'Applied changes to {files}; stopped before the build finished.': '{files} に変更を適用しました。ビルドの完了前に停止しました。',
   'Applied changes to {files}. Build: {before} → {after} errors.': '{files} に変更を適用しました。ビルドのエラー：{before} → {after} 件。',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'AI エージェントの変更を元に戻しました。ただし、その後同じ行が編集された {files} は除きます。',

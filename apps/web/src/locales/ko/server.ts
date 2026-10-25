@@ -36,6 +36,8 @@ const messages: Record<string, string> = {
 
   // AI assistant: session, apply and undo
   'Draft changes discarded': '초안 변경 내용을 버렸습니다',
+  'Stopped; the draft was not applied': '중지했습니다. 초안은 적용되지 않았습니다',
+  'Applied changes to {files}; stopped before the build finished.': '{files}에 변경 내용을 적용했습니다. 빌드가 끝나기 전에 중지했습니다.',
   'Applied changes to {files}. Build: {before} → {after} errors.': '{files}에 변경 내용을 적용했습니다. 빌드 오류: {before} → {after}개.',
   "Undid the AI agent's changes, except in {files} where the same lines were edited since.":
     'AI 에이전트의 변경 내용을 실행 취소했습니다. 단, 이후 같은 줄이 편집된 {files}은(는) 제외했습니다.',
