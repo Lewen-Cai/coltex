@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AiApplyBody, AiItem, AiMessageBody, AiPreference, AiSaveProposedSkill, AiSessionState, AiStatus, AiStreamEvent, CompileResult } from '@coltex/shared'
 import { toast } from 'sonner'
 import { api } from './api.ts'
+import { openEventStream } from './event-stream.ts'
 
 /**
  * Whether the assistant is set up for the current user (checked once per
@@ -107,13 +108,11 @@ export function useAiSession(projectId: string, enabled: boolean, onBuilt?: (com
 
   useEffect(() => {
     if (!enabled) return
-    const source = new EventSource(api.aiEventsUrl(projectId))
-    source.onmessage = ev => {
-      const event = JSON.parse(ev.data) as AiStreamEvent
+    return openEventStream(api.aiEventsUrl(projectId), data => {
+      const event = JSON.parse(data) as AiStreamEvent
       if (event.type === 'built') built.current?.(event.compile)
       else setState(prev => reduce(prev, event))
-    }
-    return () => source.close()
+    })
   }, [projectId, enabled, epoch])
 
   const guard = useCallback(async <T,>(action: () => Promise<T>): Promise<T | undefined> => {
@@ -187,9 +186,7 @@ export function useSkillChat() {
   const [epoch, setEpoch] = useState(0)
 
   useEffect(() => {
-    const source = new EventSource(api.skillChatEventsUrl)
-    source.onmessage = ev => setState(prev => reduce(prev, JSON.parse(ev.data) as AiStreamEvent))
-    return () => source.close()
+    return openEventStream(api.skillChatEventsUrl, data => setState(prev => reduce(prev, JSON.parse(data) as AiStreamEvent)))
   }, [epoch])
 
   const guard = useCallback(async <T,>(action: () => Promise<T>): Promise<T | undefined> => {

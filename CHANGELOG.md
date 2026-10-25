@@ -34,6 +34,7 @@ Export to Word, the AI agent on the web, 60 templates across twelve fields, grou
 - `coltex update` right after a release, while the Alibaba Cloud mirror didn't have its images yet, tried to build them from the sources instead of taking them from GitHub. It now downloads them from GitHub, and the next update uses the mirror again.
 - An update that stopped half way (the images not downloaded) said the new version was already installed when run again. Running it again now finishes it.
 - With automatic or full access, Stop didn't stop the AI agent while it applied its changes and built the project after a reply.
+- When the server restarted behind a proxy that answered with an error meanwhile (such as 502), the AI panel showed a reply in progress, and new notifications didn't arrive, until the page was reloaded. They now reconnect by themselves.
 
 ## v0.0.5
 

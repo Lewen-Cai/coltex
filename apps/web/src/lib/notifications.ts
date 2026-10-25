@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 import type { Notification, NotificationEvent, ProjectRole } from '@coltex/shared'
 import { api } from './api.ts'
+import { openEventStream } from './event-stream.ts'
 import { inSentence, t, tk } from './i18n.ts'
 import { mentionsToText } from './mentions.ts'
 import { navigate } from './router.ts'
@@ -100,9 +101,8 @@ export function notificationExcerpt(n: Notification, users: Record<string, strin
 export function useNotificationStream(userId: string | undefined): void {
   useEffect(() => {
     if (!userId) return
-    const source = new EventSource(api.notificationEventsUrl())
-    source.onmessage = message => {
-      const e = JSON.parse(message.data as string) as NotificationEvent
+    return openEventStream(api.notificationEventsUrl(), data => {
+      const e = JSON.parse(data) as NotificationEvent
       setUnread(e.unread)
       if (!e.notification) return
       const n = e.notification
@@ -117,7 +117,6 @@ export function useNotificationStream(userId: string | undefined): void {
         description: [where, short].filter(Boolean).join(' · ') || undefined,
         action: { label: t('Open'), onClick: () => openNotification(n) },
       })
-    }
-    return () => source.close()
+    })
   }, [userId])
 }
