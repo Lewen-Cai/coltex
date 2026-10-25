@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': '이 프로젝트',
   'Word template': 'Word 템플릿',
   None: '없음',
+  // More conversion targets
+  'Two columns': '2단',
+  'One column': '1단',
+  'Elsevier journal (CAS, two columns)': 'Elsevier 저널(CAS, 2단)',
+  'AMS journal': 'AMS 저널',
+  'ACS journal': 'ACS 저널',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc: Elsevier의 2단 CAS 레이아웃.',
+  'amsart: for mathematics journals, with AMS references.': 'amsart: 수학 저널용, AMS 참고문헌.',
+  'apa7: for psychology and social science journals, APA references.': 'apa7: 심리학·사회과학 저널용, APA 참고문헌.',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701: The Astrophysical Journal, The Astronomical Journal 등 AAS 저널용.',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras: 2단, 영국왕립천문학회 Monthly Notices용.',
+  'achemso: for American Chemical Society journals.': 'achemso: 미국화학회(ACS) 저널용.',
+  'ACS journal code (optional)': 'ACS 저널 코드(선택)',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '원래 클래스나 뺀 패키지에 있던 명령에 간단한 정의를 넣었습니다: {list}.',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX는 모든 저자에게 이메일과 소속이 필요합니다. 빠진 곳에는 임시 값을 넣었습니다.',
 }
 
 export default messages

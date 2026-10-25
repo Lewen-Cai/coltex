@@ -7,13 +7,11 @@ import {
   Check,
   CircleAlert,
   CircleCheck,
-  Columns2,
   ExternalLink,
   Info,
   LayoutTemplate,
   Plus,
   Sparkles,
-  Square,
   Trash2,
   TriangleAlert,
   UserRound,
@@ -63,17 +61,6 @@ export function ConvertDialogHost() {
 }
 
 type Step = 'target' | 'details' | 'result'
-
-const PUBLISHER_BADGE: Record<string, string> = { IEEE: 'IEEE', ACM: 'ACM', Elsevier: 'ELS', Springer: 'LNCS', 'APS / AIP': 'APS', LaTeX: 'TeX' }
-
-const PUBLISHER_TINT: Record<string, string> = {
-  IEEE: 'from-sky-500 to-blue-600',
-  ACM: 'from-indigo-500 to-violet-600',
-  Elsevier: 'from-orange-500 to-amber-500',
-  Springer: 'from-yellow-500 to-amber-600',
-  'APS / AIP': 'from-teal-500 to-emerald-600',
-  LaTeX: 'from-slate-500 to-slate-700',
-}
 
 function ConvertDialog({ projectId, projectName, open, onOpenChange }: { projectId: string; projectName: string; open: boolean; onOpenChange: (o: boolean) => void }) {
   const [analysis, setAnalysis] = useState<ConvertAnalysis>()
@@ -251,23 +238,20 @@ function TargetStep({ analysis, value, onChange }: { analysis: ConvertAnalysis; 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.03 }}
             onClick={() => onChange(target.id)}
+            aria-pressed={value === target.id}
             className={cn(
-              'group relative flex items-start gap-3 rounded-xl border bg-card p-3 text-left transition-all hover:border-primary/40 hover:shadow-sm',
-              value === target.id && 'border-primary ring-2 ring-primary/20',
+              'flex flex-col rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/50',
+              value === target.id && 'border-primary bg-primary/5 ring-1 ring-primary',
             )}
           >
-            <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-[12px] font-bold text-white shadow-sm', PUBLISHER_TINT[target.publisher] ?? 'from-slate-500 to-slate-700')}>
-              {PUBLISHER_BADGE[target.publisher] ?? target.publisher.slice(0, 4)}
+            <span className="flex items-baseline justify-between gap-3">
+              <span className="text-sm font-medium">{t(target.label)}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{target.publisher}</span>
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1.5 text-sm font-semibold">
-                {t(target.label)}
-                {target.twoColumn ? <Columns2 className="size-3.5 text-muted-foreground" /> : <Square className="size-3 text-muted-foreground" />}
-              </span>
-              <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{t(target.description)}</span>
-              <span className="mt-1 block font-mono text-[11px] text-muted-foreground/80">{target.documentClass}.cls</span>
+            <span className="mt-1 text-xs leading-snug text-muted-foreground">{t(target.description)}</span>
+            <span className="mt-1.5 text-[11px] text-muted-foreground">
+              <span className="font-mono">{target.documentClass}.cls</span> · {target.twoColumn ? t('Two columns') : t('One column')}
             </span>
-            {value === target.id && <CircleCheck className="size-5 shrink-0 text-primary" />}
           </motion.button>
         ))}
       </div>
@@ -448,7 +432,7 @@ function DetailsStep(props: {
             <span className="text-xs text-muted-foreground">
               {target.documentClass === 'acmart'
                 ? t('(anonymous, with line numbers)')
-                : target.documentClass === 'elsarticle'
+                : target.documentClass === 'elsarticle' || target.documentClass === 'cas-sc'
                   ? t('(double-spaced)')
                   : t('(the template’s submission layout)')}
             </span>

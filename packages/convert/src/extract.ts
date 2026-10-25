@@ -1,4 +1,4 @@
-import { clean, cut, findEnvs, findMacros, mask, splitTop, unbrace, type Group } from './scan.ts'
+import { clean, cut, findEnvs, findMacros, mask, readGroup, splitTop, unbrace, type Group } from './scan.ts'
 import type { Affiliation, Author, Bibliography, Paper, TargetOptions, UsedPackage } from './types.ts'
 
 export class ConvertError extends Error {}
@@ -19,8 +19,23 @@ const FRONT_CONFIG = [
   'ccsdesc', 'settopmatter', 'received', 'citestyle', 'acmBadge',
   // elsarticle
   'journal', 'cortext', 'fntext',
-  // revtex
+  // revtex; Springer Nature (\pacs[JEL Classification]{..})
   'pacs',
+  // Elsevier CAS
+  'shortauthors', 'cormark', 'fnmark', 'credit', 'tnotemark', 'tnotetext', 'nonumnote',
+  // BMC
+  'dochead', 'startlocaldefs', 'endlocaldefs',
+  // OUP
+  'journaltitle', 'DOI', 'pubyear', 'access', 'appnotes', 'firstpage', 'authormark', 'revised', 'accepted', 'editor', 'vol', 'issue', 'corresp',
+  // AMS classes
+  'subjclass', 'dedicatory', 'curraddr', 'urladdr',
+  // jmlr (PMLR, JMLR)
+  'jmlrvolume', 'jmlryear', 'jmlrworkshop', 'jmlrpages', 'jmlrproceedings', 'jmlrsubmitted', 'jmlrpublished', 'jmlrheading', 'ShortHeadings', 'editors',
+  // apa7 (volume: its journal layout)
+  'leftheader', 'authornote', 'course', 'professor', 'duedate', 'note', 'volume',
+  // mnras, AASTeX, achemso, nrc2, spie, aiaa-tc, asmeconf, jacow
+  'pagerange', 'correspondingauthor', 'submitjournal', 'abbreviations', 'correspond', 'authorinfo', 'AIAAconference', 'AIAAcopyright',
+  'ConfName', 'ConfDate', 'ConfCity', 'ConfAcronym', 'PaperNo',
 ]
 
 /** Commands with their argument counts, as [name, optional, mandatory]. */
@@ -29,8 +44,19 @@ const ARGS: Record<string, [number, number]> = {
   markboth: [0, 2], acmConference: [1, 3], acmBooktitle: [0, 1], acmYear: [0, 1], acmDOI: [0, 1], acmISBN: [0, 1],
   acmPrice: [0, 1], acmSubmissionID: [0, 1], acmJournal: [0, 1], acmVolume: [0, 1], acmNumber: [0, 1],
   acmArticle: [0, 1], acmMonth: [0, 1], acmArticleSeq: [0, 1], setcopyright: [0, 1], copyrightyear: [0, 1],
-  ccsdesc: [1, 1], settopmatter: [0, 1], received: [1, 1], citestyle: [0, 1], acmBadge: [1, 1], journal: [0, 1],
-  cortext: [1, 1], fntext: [1, 1], pacs: [0, 1],
+  ccsdesc: [1, 1], settopmatter: [0, 1], received: [1, 3], citestyle: [0, 1], acmBadge: [1, 1], journal: [0, 1],
+  cortext: [1, 1], fntext: [1, 1], pacs: [1, 1],
+  shortauthors: [0, 1], cormark: [1, 0], fnmark: [1, 0], credit: [0, 1], tnotemark: [1, 0], tnotetext: [1, 1], nonumnote: [0, 1],
+  subjclass: [1, 1], dedicatory: [0, 1], curraddr: [0, 1], urladdr: [0, 1],
+  jmlrvolume: [0, 1], jmlryear: [0, 1], jmlrworkshop: [0, 1], jmlrpages: [0, 1], jmlrproceedings: [0, 2], jmlrsubmitted: [0, 1], jmlrpublished: [0, 1],
+  jmlrheading: [0, 7], ShortHeadings: [0, 2], editors: [0, 1],
+  leftheader: [0, 1], authornote: [0, 1], course: [0, 1], professor: [0, 1], duedate: [0, 1], note: [0, 1], volume: [0, 1],
+  pagerange: [0, 1], correspondingauthor: [0, 1], submitjournal: [0, 1], abbreviations: [0, 1], correspond: [0, 1], authorinfo: [0, 1],
+  AIAAconference: [0, 1], AIAAcopyright: [0, 1], ConfName: [0, 1], ConfDate: [0, 1], ConfCity: [0, 1], ConfAcronym: [0, 1], PaperNo: [0, 1],
+  dochead: [0, 1],
+  journaltitle: [0, 1], DOI: [0, 1], pubyear: [0, 1], access: [0, 1], appnotes: [0, 1], firstpage: [0, 1], authormark: [0, 1],
+  // acmart: \received[stage]{date}; OUP: \received{day}{month}{year}.
+  revised: [0, 3], accepted: [0, 3], editor: [0, 1], vol: [0, 1], issue: [0, 1], corresp: [1, 1],
 }
 
 const COUNTRIES = new Set(
@@ -114,20 +140,41 @@ export function plain(s: string): string {
   return clean(out.replace(/\\(?:it|bf|rm|sf|sc|em|small|footnotesize|scriptsize|normalsize|large|Large|centering|upshape|itshape|bfseries)\b\s*/g, ''))
 }
 
-/** An author's name without affiliation markers (\textsuperscript{1}, $^{1,*}$, \footnotemark). */
+/**
+ * An author's name without affiliation markers (\textsuperscript{1},
+ * $^{1,*}$, \footnotemark) and with the name parts that Springer Nature, OUP
+ * and BMC classes tag (\fnm{Jane} \spfx{van der} \sur{Berg}, \snm, \inits)
+ * written out; a degree (\dgr{MD}) follows after a comma.
+ */
 function cleanName(s: string): string {
   return plain(
     s
       .replace(/\\textsuperscript\{[^}]*\}/g, '')
       .replace(/\$\^\{?[^$]*\}?\$/g, '')
-      .replace(/\\(?:footnotemark|IEEEauthorrefmark|thanksref|corref|fnref)(?:\[[^\]]*\])?(?:\{[^}]*\})?/g, ''),
-  ).replace(/[\s,]+$/, '')
+      .replace(/\\(?:footnotemark|IEEEauthorrefmark|thanksref|corref|fnref|cormark|ORCID|orcidlink|inits)(?:\[[^\]]*\])?(?:\{[^}]*\})?/g, '')
+      .replace(/\\dgr\s*\{([^{}]*)\}/g, ', $1')
+      .replace(/\\(?:fnm|sur|snm|spfx|sfx|tanm|particle)\s*\{([^{}]*)\}/g, '$1'),
+  )
+    .replace(/\s+,/g, ',')
+    .replace(/[\s,]+$/, '')
+}
+
+/** An ORCID given inside a name (OUP's \ORCID{..}, \orcidlink{..}). */
+function orcidIn(s: string): string | undefined {
+  return s.match(/\\(?:ORCID|orcidlink)\s*\{([^{}]*)\}/)?.[1]?.trim() || undefined
 }
 
 function lines(s: string): string[] {
-  return splitTop(s, '\\\\')
-    .map(l => plain(l))
-    .filter(Boolean)
+  return (
+    splitTop(s, '\\\\')
+      // A line set in a group of its own with a font switch ({\normalsize\itshape University, City}),
+      // not a braced name ({Jane Doe, MD}) that must stay whole.
+      .map(l => {
+        const p = plain(l)
+        return /^\s*\{\s*\\[a-zA-Z]/.test(l) && /^\{[^{}]*\}$/.test(p) ? p.slice(1, -1).trim() : p
+      })
+      .filter(Boolean)
+  )
 }
 
 /** Remove a macro (with its arguments) from a string, returning the arguments of each hit. */
@@ -186,6 +233,45 @@ function keyvalAffiliation(inner: string): { raw: string; structured: Omit<Affil
   return { raw, structured }
 }
 
+/**
+ * Springer Nature, OUP and BMC affiliations, tagged part by part:
+ * \orgdiv{..}, \orgname{..}, \orgaddress{\street{..}, \city{..}, \postcode{..}, \state{..}, \country{..}}
+ * (BMC: \cny for the country).
+ */
+function taggedAffiliation(inner: string): { raw: string; structured: Omit<Affiliation, 'id' | 'raw'> } | undefined {
+  if (!/\\(?:orgname|orgdiv|orgaddress)\b/.test(inner)) return undefined
+  const m = mask(inner)
+  const get = (...names: string[]) => {
+    for (const name of names) {
+      const hit = findMacros(m, inner, name, { args: 1 })[0]
+      const text = hit?.args[0] ? plain(hit.args[0].inner).replace(/^[\s,]+|[\s,]+$/g, '') : ''
+      if (text) return text
+    }
+    return undefined
+  }
+  const structured = {
+    department: get('orgdiv'),
+    institution: get('orgname'),
+    city: get('city'),
+    country: get('country', 'cny'),
+  }
+  const parts = [structured.department, structured.institution, get('street'), structured.city, get('state'), get('postcode'), structured.country]
+  return { raw: parts.filter(Boolean).join(', '), structured }
+}
+
+/** One affiliation in whatever form it was written: acmart's fields, key=value, tagged parts, or text lines. */
+function affiliationEntry(inner: string): { raw: string; structured?: Omit<Affiliation, 'id' | 'raw'>; emails: string[] } {
+  const acm = /\\(institution|country|city)\b/.test(inner) && !/\\(?:orgname|orgdiv|orgaddress)\b/.test(inner) ? acmAffiliation(inner) : undefined
+  const tagged = acm ? undefined : (keyvalAffiliation(inner) ?? taggedAffiliation(inner))
+  if (acm || tagged) {
+    // An email written into a tagged affiliation (\orgaddress{..}, \email{..}) is still the author's.
+    const emails = [...clean(inner).matchAll(new RegExp(EMAIL_RE.source, 'g'))].map(e => e[0])
+    return { ...(acm ?? tagged)!, emails }
+  }
+  const text = takeEmails(lines(inner))
+  return { raw: text.lines.join(', '), emails: text.emails }
+}
+
 /** Find front-matter hits in order: [kind, hit] for the sequence-style classes (acmart, revtex, amsart). */
 type Hit = { kind: string; start: number; end: number; opts: Group[]; args: Group[] }
 
@@ -221,13 +307,11 @@ function sequenceAuthors(m: string, src: string, to: number, table: AffiliationT
       if (pending.length && pending.every(p => p.affiliations.length)) pending = []
       pending.push(author)
     } else if (h.kind === 'affiliation' || h.kind === 'address' || h.kind === 'additionalaffiliation' || h.kind === 'altaffiliation') {
-      const acm = /\\(institution|country|city)\b/.test(arg) ? acmAffiliation(arg) : undefined
-      const kv = acm ? undefined : keyvalAffiliation(arg)
-      const text = acm || kv ? undefined : takeEmails(lines(arg))
-      const id = acm ? table.add(acm.raw, acm.structured) : kv ? table.add(kv.raw, kv.structured) : table.add(text!.lines.join(', '))
+      const entry = affiliationEntry(arg)
+      const id = table.add(entry.raw, entry.structured)
       const targets = pending.length ? pending : authors.slice(-1)
       for (const a of targets) if (!a.affiliations.includes(id)) a.affiliations.push(id)
-      if (text) assignEmails(targets, text.emails)
+      assignEmails(targets, entry.emails)
     } else if (h.kind === 'email') {
       const last = authors.at(-1)
       if (last && !last.email) last.email = clean(arg)
@@ -242,6 +326,14 @@ function sequenceAuthors(m: string, src: string, to: number, table: AffiliationT
   return { authors, ranges: top }
 }
 
+/** Several names on one line: "A, B and C". A braced name keeps its comma ("{Jane Doe, MD}"). */
+function splitNames(line: string): string[] {
+  return splitTop(line, ',')
+    .flatMap(part => part.split(/^\s*and\s+|\s+and\s+/))
+    .map(n => unbrace(n.trim()))
+    .filter(Boolean)
+}
+
 /** \author{A \and B} with "\\"-separated lines (article, report, many others). */
 function blockAuthors(arg: string, table: AffiliationTable): Author[] {
   return splitTop(arg, '\\and').flatMap(part => {
@@ -252,7 +344,7 @@ function blockAuthors(arg: string, table: AffiliationTable): Author[] {
     const emails = others.map(emailIn)
     const affLines = others.filter((_, i) => !emails[i])
     // Several names on one line ("A, B and C") share the affiliation.
-    const names = nameLine!.split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean)
+    const names = splitNames(nameLine!)
     const affId = affLines.length ? table.add(affLines.join(', ')) : undefined
     return names.map((name, i) => ({
       name: cleanName(name),
@@ -269,11 +361,7 @@ function ieeeAuthors(arg: string, table: AffiliationTable): Author[] {
     let rest = arg
     rest = takeMacro(rest, 'IEEEmembership', 0, 1).rest
     const { rest: noThanks, hits: thanks } = takeMacro(rest, 'thanks', 0, 1)
-    const names = clean(noThanks)
-      .replace(/\\IEEEauthorrefmark\{[^}]*\}/g, '')
-      .split(/\s*,\s*(?:and\s+)?|\s+and\s+/)
-      .map(n => n.trim())
-      .filter(Boolean)
+    const names = splitNames(clean(noThanks).replace(/\\IEEEauthorrefmark\{[^}]*\}/g, ''))
     const note = thanks.map(t => clean(t.args[0] ?? '')).join(' ')
     return names.map((name, i) => ({ name: cleanName(name), affiliations: [], note: i === 0 && note ? note : undefined }))
   }
@@ -281,7 +369,7 @@ function ieeeAuthors(arg: string, table: AffiliationTable): Author[] {
     const m = mask(part)
     const n = findMacros(m, part, 'IEEEauthorblockN', { args: 1 })
     const a = findMacros(m, part, 'IEEEauthorblockA', { args: 1 })
-    const names = n.flatMap(h => lines(h.args[0]?.inner ?? '').flatMap(l => l.split(/\s*,\s*(?:and\s+)?|\s+and\s+/)))
+    const names = n.flatMap(h => lines(h.args[0]?.inner ?? '').flatMap(splitNames))
       .map(s => s.replace(/\\IEEEauthorrefmark\{[^}]*\}/g, '').replace(/\$\^\{?[\w,*†‡]+\}?\$/g, '').trim())
       .filter(Boolean)
     const affLines = a.flatMap(h => lines(h.args[0]?.inner ?? ''))
@@ -289,6 +377,107 @@ function ieeeAuthors(arg: string, table: AffiliationTable): Author[] {
     const rest = affLines.filter(l => !emailIn(l)).map(l => l.replace(/^\\textit\{(.*)\}$/, '$1'))
     const affId = rest.length ? table.add(rest.join(', ')) : undefined
     return names.map(name => ({ name: cleanName(name), affiliations: affId ? [affId] : [], email: names.length === 1 ? email : undefined }))
+  })
+}
+
+/** jmlr (PMLR, JMLR): \author{\Name{A} \Email{a@x}\\ \addr Dept, University \AND \Name{B} …}. */
+function jmlrAuthors(arg: string, table: AffiliationTable): Author[] {
+  return splitTop(arg.replace(/\\(?:AND|And)(?![a-zA-Z])/g, '\\and'), '\\and').flatMap(part => {
+    const m = mask(part)
+    const names = findMacros(m, part, 'Name', { args: 1 }).map(h => cleanName(h.args[0]?.inner ?? '')).filter(Boolean)
+    if (!names.length) return []
+    const email = findMacros(m, part, 'Email', { args: 1 })[0]?.args[0]?.inner.trim()
+    const addr = part.match(/\\addr(?![a-zA-Z])([\s\S]*)$/)?.[1]
+    const affLines = addr ? lines(addr) : []
+    const affId = affLines.length ? table.add(affLines.join(', ')) : undefined
+    return names.map(name => ({ name, affiliations: affId ? [affId] : [], email: names.length === 1 ? email || undefined : undefined }))
+  })
+}
+
+/** apa7: \authorsnames[1,2]{A, B} with \authorsaffiliations{{I1}, {I2}}. */
+function apaAuthors(m: string, src: string, to: number, table: AffiliationTable): { authors: Author[]; ranges: { start: number; end: number }[] } {
+  const names = findMacros(m, src, 'authorsnames', { opts: 1, args: 1 }, 0, to)[0]
+  const affs = findMacros(m, src, 'authorsaffiliations', { args: 1 }, 0, to)[0]
+  if (!names) return { authors: [], ranges: [] }
+  const ids = splitTop(affs?.args[0]?.inner ?? '', ',')
+    .map(a => unbrace(a.trim()))
+    .filter(Boolean)
+    .map(a => table.add(plain(a)))
+  // [1,2] gives each author's affiliation, [{1,2},3] several; without it all share the first.
+  const keys = names.opts[0] ? splitTop(names.opts[0].inner, ',').map(k => unbrace(k.trim()).split(',').map(n => Number(n.trim()))) : []
+  const authors = splitTop(names.args[0]?.inner ?? '', ',')
+    .map(n => cleanName(unbrace(n.trim())))
+    .filter(Boolean)
+    .map((name, i) => ({ name, affiliations: (keys[i] ?? [1]).map(k => ids[k - 1]).filter((x): x is string => !!x) }))
+  return { authors, ranges: affs ? [names, affs] : [names] }
+}
+
+/** An affiliation mark: $^{1,2}$, \textsuperscript{a}, \supit{a} or ^{1}, with its keys. */
+const MARK = /\$\^\{?([^${}]*)\}?\$|\\textsuperscript\s*\{([^{}]*)\}|\\supit\s*\{([^{}]*)\}/g
+
+function marksOf(s: string): string[] {
+  return [...s.matchAll(MARK)].flatMap(m => (m[1] ?? m[2] ?? m[3] ?? '').split(',')).map(k => k.trim()).filter(k => k && !/^[*∗†‡§]$|\\ast|\\dagger/.test(k))
+}
+
+/**
+ * Names marked with affiliation keys, and affiliations headed by the same keys
+ * (mnras, Nature, SPIE, JPSJ): "A$^{1}$, B$^{1,2}$ \& C$^{2}$" with
+ * "$^{1}$Dept…" lines. Unmarked affiliation lines are numbered in order.
+ */
+function markedAuthors(namesPart: string, affLines: string[], table: AffiliationTable): Author[] {
+  const keyed = new Map<string, string>()
+  affLines.forEach((line, i) => {
+    const lead = line.match(/^\s*(?:\$\^\{?([^${}]*)\}?\$|\\textsuperscript\s*\{([^{}]*)\}|\\supit\s*\{([^{}]*)\})/)
+    const key = (lead?.[1] ?? lead?.[2] ?? lead?.[3] ?? String(i + 1)).trim()
+    const text = plain(line.slice(lead ? lead[0].length : 0)).replace(/[;.]\s*$/, '').trim()
+    if (text) keyed.set(key, table.add(text))
+  })
+  const { rest, hits: thanks } = takeMacro(namesPart, 'thanks', 0, 1)
+  // "First Author,$^{1}$" (MNRAS): the mark after the comma is still the name's, and a mark
+  // ends a name ("A$^{1}$ B$^{2}$" on lines of their own).
+  const separated = rest
+    .replace(/,\s*(?=\$\^|\\textsuperscript|\\supit)/g, '')
+    .replace(MARK, m => `${m},`)
+    .replace(/\\(?:&|and)(?![a-zA-Z])/g, ',')
+  const names = splitTop(separated, ',')
+    .flatMap(part => part.split(/\s+and\s+/))
+    .map(s => s.trim())
+    .filter(s => plain(s.replace(MARK, '')).length > 1)
+  const only = keyed.size === 1 ? [...keyed.values()] : []
+  const authors: Author[] = names.map(n => {
+    const ids = marksOf(n).map(k => keyed.get(k)).filter((x): x is string => !!x)
+    return { name: cleanName(unbrace(n.replace(MARK, '').trim())), affiliations: ids.length ? [...new Set(ids)] : only }
+  })
+  const emails = thanks.map(t => emailIn(clean(t.args[0] ?? ''))).filter((e): e is string => !!e)
+  if (authors[0] && emails[0]) authors[0].email = emails[0]
+  return authors
+}
+
+/** asmeconf: \SetAuthors{A\affil{1}\CorrespondingAuthor{a@x}, B\affil{2}} with \SetAffiliation{1}{..}. */
+function asmeAuthors(m: string, src: string, to: number, table: AffiliationTable): { authors: Author[]; ranges: { start: number; end: number }[] } {
+  const set = findMacros(m, src, 'SetAuthors', { args: 1 }, 0, to)[0]
+  const affs = findMacros(m, src, 'SetAffiliation', { args: 2 }, 0, to)
+  const keyed = new Map(affs.map(a => [clean(a.args[0]?.inner ?? ''), table.add(plain(a.args[1]?.inner ?? ''))]))
+  const authors = splitTop(set?.args[0]?.inner ?? '', ',').flatMap(part => {
+    const pm = mask(part)
+    const keys = findMacros(pm, part, 'affil', { args: 1 }).flatMap(h => clean(h.args[0]?.inner ?? '').split(','))
+    const email = findMacros(pm, part, 'CorrespondingAuthor', { args: 1 })[0]?.args[0]?.inner.trim()
+    const name = cleanName(part.replace(/\\(?:affil|CorrespondingAuthor)\s*\{[^{}]*\}|\\JointFirstAuthor/g, ''))
+    if (!name) return []
+    return [{ name, affiliations: keys.map(k => keyed.get(k.trim())).filter((x): x is string => !!x), ...(email ? { email, corresponding: true } : {}) }]
+  })
+  return { authors, ranges: [...(set ? [set] : []), ...affs] }
+}
+
+/** jacow: \author{A\thanks{..}, Laboratory, City, Country\\ B, University, City, Country}: a name, then where. */
+function jacowAuthors(arg: string, table: AffiliationTable): Author[] {
+  return splitTop(arg, '\\\\').flatMap(line => {
+    const { rest, hits: thanks } = takeMacro(line, 'thanks', 0, 1)
+    const [name, ...where] = splitTop(rest, ',').map(s => plain(s))
+    if (!name) return []
+    const email = thanks.map(t => emailIn(clean(t.args[0] ?? ''))).find(Boolean)
+    const id = where.length ? table.add(where.join(', ')) : undefined
+    return [{ name: cleanName(name), affiliations: id ? [id] : [], ...(email ? { email } : {}) }]
   })
 }
 
@@ -343,37 +532,113 @@ function authblkAuthors(m: string, src: string, to: number, table: AffiliationTa
   return { authors, ranges: [...affils, ...authorHits] }
 }
 
-/** elsarticle: \author[a,b]{Name\corref{c1}} \ead{..} \affiliation[a]{..} / \address[a]{..}. */
-function elsevierAuthors(m: string, src: string, to: number, table: AffiliationTable): { authors: Author[]; ranges: { start: number; end: number }[] } | undefined {
+/** Classes whose \author[..] options point at labelled affiliations. */
+const LABELLED_CLASSES = ['elsarticle', 'cas-sc', 'cas-dc', 'sn-jnl', 'oup-authoring-template', 'bmcart']
+
+/** key={value} options, as BMC writes them ("addressref={aff1,aff2}, email={..}"). */
+function optionValues(opt: string): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const part of splitTop(opt, ',')) {
+    const eq = part.indexOf('=')
+    if (eq !== -1) out[part.slice(0, eq).trim().toLowerCase()] = unbrace(part.slice(eq + 1))
+  }
+  return out
+}
+
+/** A corresponding-author key in an \author[..] list: OUP's $\ast$, or a plain *. */
+const CORRESPONDING_KEY = /^(?:\$\\ast\$|\\ast|\*|\$\*\$|\\textasteriskcentered)$/
+
+/**
+ * Authors pointing at labelled affiliations: elsarticle and Elsevier CAS
+ * (\author[a,b]{Name\corref{c1}}[orcid=..] \cormark[1] \ead{..}
+ * \affiliation[a]{organization={..}, ..}), Springer Nature
+ * (\author*[1,2]{\fnm{..} \sur{..}}\email{..}\equalcont{..}
+ * \affil[1]{\orgdiv{..}, \orgname{..}, \orgaddress{..}}) and OUP
+ * (\author[1,$\ast$]{Name\ORCID{..}} \address[1]{..} \corresp[$\ast$]{.. email}).
+ * What follows an author up to the next one (\email, \ead, \cormark, \equalcont) is theirs.
+ */
+function labelledAuthors(m: string, src: string, to: number, table: AffiliationTable, notes: string[]): { authors: Author[]; ranges: { start: number; end: number }[] } | undefined {
   const authorHits = findMacros(m, src, 'author', { opts: 1, args: 1 }, 0, to)
-  if (!authorHits.some(h => h.opts.length)) return undefined
-  const affHits = [...findMacros(m, src, 'affiliation', { opts: 1, args: 1 }, 0, to), ...findMacros(m, src, 'address', { opts: 1, args: 1 }, 0, to)]
+  if (!authorHits.some(h => h.opts.length || h.star)) return undefined
+  const affHits = ['affiliation', 'address', 'affil'].flatMap(name => findMacros(m, src, name, { opts: 1, args: 1 }, 0, to)).sort((a, b) => a.start - b.start)
   const labels = new Map<string, string>()
+  const affEmails = new Map<string, string[]>()
   for (const h of affHits) {
-    const inner = h.args[0]?.inner ?? ''
-    const kv = keyvalAffiliation(inner)
-    labels.set(h.opts[0]?.inner.trim() ?? '', kv ? table.add(kv.raw, kv.structured) : table.add(lines(inner).join(', ')))
+    const entry = affiliationEntry(h.args[0]?.inner ?? '')
+    if (!entry.raw) continue
+    const id = table.add(entry.raw, entry.structured)
+    const opt = h.opts[0]?.inner ?? ''
+    // BMC: \address[id=aff1]{..}
+    labels.set(optionValues(opt).id ?? opt.trim(), id)
+    affEmails.set(id, [...(affEmails.get(id) ?? []), ...entry.emails])
   }
-  const eads = findMacros(m, src, 'ead', { opts: 1, args: 1 }, 0, to)
-  const authors: Author[] = authorHits.map(h => {
-    const keys = (h.opts[0]?.inner ?? '').split(',').map(k => k.trim())
+  const ranges: { start: number; end: number }[] = [...affHits]
+  const after = (i: number) => (authorHits[i + 1]?.start ?? to)
+  const authors: Author[] = authorHits.map((h, i) => {
+    // BMC: \author[addressref={aff1,aff2},corref={aff1},email={..}]{..}
+    const opt = h.opts[0]?.inner ?? ''
+    const kv = /=/.test(opt) ? optionValues(opt) : undefined
+    const keys = (kv ? (kv.addressref ?? '') : opt).split(',').map(k => k.trim()).filter(Boolean)
     let name = h.args[0]?.inner ?? ''
-    const corr = /\\corref\b/.test(name)
-    for (const c of ['corref', 'fnref', 'tnoteref']) name = takeMacro(name, c, 0, 1).rest
-    return { name: cleanName(name), affiliations: keys.flatMap(k => (labels.has(k) ? [labels.get(k)!] : [])), corresponding: corr || undefined }
+    const corresponding = h.star || /\\corref\b/.test(name) || keys.some(k => CORRESPONDING_KEY.test(k)) || !!kv?.corref
+    const orcid = orcidIn(name)
+    for (const c of ['corref', 'fnref', 'tnoteref', 'ORCID', 'orcidlink']) name = takeMacro(name, c, 0, 1).rest
+    const author: Author = { name: cleanName(name), affiliations: keys.flatMap(k => (labels.has(k) ? [labels.get(k)!] : [])) }
+    if (corresponding) author.corresponding = true
+    if (orcid) author.orcid = orcid
+    if (kv?.email) author.email = clean(kv.email)
+    // Elsevier CAS: \author[..]{Name}[orcid=.., ...] carries its details after the name.
+    const details = h.args.length ? readGroup(m, src, h.end, '[') : undefined
+    if (details && !/\n\s*\n/.test(src.slice(h.end, details.start))) {
+      const id = details.inner.match(/\borcid\s*=\s*\{?([0-9X-]{19})\}?/i)?.[1]
+      if (id && !author.orcid) author.orcid = id
+      ranges.push({ start: h.start, end: details.end })
+    } else ranges.push(h)
+    const notesOf: string[] = []
+    for (const [kind, o, a] of [['email', 0, 1], ['ead', 1, 1], ['cormark', 1, 0], ['equalcont', 0, 1], ['presentaddress', 0, 1]] as const) {
+      for (const e of findMacros(m, src, kind, { opts: o, args: a }, h.end, after(i))) {
+        if (kind === 'ead' && e.opts[0]?.inner.trim() === 'url') {
+          ranges.push(e)
+          continue
+        }
+        if (affHits.some(x => x.start <= e.start && e.end <= x.end)) continue
+        const text = clean(e.args[0]?.inner ?? '')
+        if ((kind === 'email' || kind === 'ead') && text && !author.email) author.email = text
+        if (kind === 'cormark') author.corresponding = true
+        if (kind === 'equalcont' && text) notesOf.push(text)
+        if (kind === 'presentaddress' && text) notesOf.push(`Present address: ${text}`)
+        ranges.push(e)
+      }
+    }
+    if (notesOf.length) author.note = notesOf.join(' ')
+    return author
   })
-  // \ead follows its author.
-  for (const e of eads) {
-    if (e.opts[0]?.inner.trim() === 'url') continue
-    const owner = [...authorHits].reverse().findIndex(h => h.start < e.start)
-    const author = owner === -1 ? undefined : authors[authorHits.length - 1 - owner]
-    if (author && !author.email) author.email = clean(e.args[0]?.inner ?? '')
+  // One affiliation without labels belongs to everyone who has none.
+  if (labels.size === 1 && [...labels.keys()][0] === '') {
+    for (const a of authors) if (!a.affiliations.length) a.affiliations = [...labels.values()]
   }
-  return { authors, ranges: [...authorHits, ...affHits, ...eads] }
+  // OUP: the corresponding author's address is in \corresp[$\ast$]{...}.
+  for (const c of findMacros(m, src, 'corresp', { opts: 1, args: 1 }, 0, to)) {
+    const email = emailIn(c.args[0]?.inner ?? '')
+    const owner = authors.find(a => a.corresponding && !a.email)
+    if (email && owner) owner.email = email
+    ranges.push(c)
+  }
+  for (const [id, list] of affEmails) {
+    if (!assignEmails(authors.filter(a => a.affiliations.includes(id) && !a.email), list)) {
+      notes.push(`Couldn't tell whose email ${list.join(', ')} is; add it to the right author.`)
+    }
+  }
+  return { authors, ranges }
 }
 
 function splitKeywords(s: string): string[] {
-  const text = s.replace(/\\(and|sep)\b/g, ';')
+  // BMC: \kwd{a} \kwd{b}; AASTeX: \uat{Cosmology}{343} --- …; MNRAS: a -- b
+  const text = s
+    .replace(/\\kwd\s*\{([^{}]*)\}/g, '$1;')
+    .replace(/\\uat\s*\{([^{}]*)\}\s*\{[^{}]*\}/g, '$1')
+    .replace(/\\(and|sep)\b/g, ';')
+    .replace(/\s-{2,3}\s/g, ';')
   return text
     .split(/[;,，；]|\s+·\s+/)
     .map(k => clean(k).replace(/\.$/, ''))
@@ -438,7 +703,65 @@ export function extractPaper(input: string, read?: (path: string) => string | un
   const table = new AffiliationTable()
   let authors: Author[] = []
   const authorHits = findMacros(m, src, 'author', { opts: 1, args: 1 }, 0, frontEnd)
-  if (sourceClass === 'IEEEtran' || authorHits.some(h => h.args[0]?.inner.includes('\\IEEEauthorblockN'))) {
+  if (sourceClass === 'jmlr' || authorHits.some(h => /\\Name\s*\{/.test(h.args[0]?.inner ?? ''))) {
+    for (const h of authorHits) {
+      authors.push(...jmlrAuthors(h.args[0]?.inner ?? '', table))
+      remove(h)
+    }
+  } else if (findMacros(m, src, 'authorsnames', { opts: 1, args: 1 }, 0, frontEnd).length) {
+    const r = apaAuthors(m, src, frontEnd, table)
+    authors = r.authors
+    r.ranges.forEach(remove)
+  } else if (sourceClass === 'asmeconf' || findMacros(m, src, 'SetAuthors', { args: 1 }, 0, frontEnd).length) {
+    const r = asmeAuthors(m, src, frontEnd, table)
+    authors = r.authors
+    r.ranges.forEach(remove)
+  } else if (sourceClass === 'jacow') {
+    for (const h of authorHits) {
+      authors.push(...jacowAuthors(h.args[0]?.inner ?? '', table))
+      remove(h)
+    }
+  } else if (['mnras', 'spie', 'nature', 'jpsj2'].includes(sourceClass) && authorHits[0]) {
+    // Names with marks, then the affiliations those marks point to.
+    const arg = authorHits[0].args[0]?.inner ?? ''
+    let names = arg
+    let affLines: string[] = []
+    if (sourceClass === 'spie') {
+      const at = arg.search(/\\skiplinehalf(?![a-zA-Z])/)
+      if (at !== -1) {
+        names = arg.slice(0, at)
+        affLines = splitTop(arg.slice(at + '\\skiplinehalf'.length), '\\\\')
+      }
+    } else if (sourceClass === 'mnras') {
+      const parts = splitTop(arg, '\\\\')
+      const marked = (p: string) => /^\s*\$\^/.test(p)
+      names = parts.filter(p => !marked(p)).join(' ')
+      affLines = parts.filter(marked)
+    } else if (sourceClass === 'jpsj2') {
+      const inst = findMacros(m, src, 'inst', { args: 1 }, 0, frontEnd)[0]
+      affLines = inst ? splitTop(inst.args[0]?.inner ?? '', '\\\\') : []
+      remove(inst)
+    } else {
+      const env = findEnvs(m, src, 'affiliations', {}, 0, end)[0]
+      if (env) {
+        affLines = src.slice(env.bodyStart, env.bodyEnd).split(/\\item(?![a-zA-Z])/).slice(1)
+        remove(env)
+      }
+    }
+    authors = markedAuthors(names, affLines, table)
+    remove(authorHits[0])
+  } else if (sourceClass === 'nrc2' && authorHits[0]) {
+    const address = findMacros(m, src, 'address', { args: 1 }, 0, frontEnd)[0]
+    authors = blockAuthors(authorHits[0].args[0]?.inner ?? '', table)
+    // "F. Author. Department…" lines, one per author in order.
+    const ids = splitTop(address?.args[0]?.inner ?? '', '\\\\')
+      .map(l => plain(l).replace(/^(?:[A-Z][a-z]*\.?\s*-?)+[A-Z][\w'-]+\.\s+/, '').replace(/\.\s*$/, ''))
+      .filter(Boolean)
+      .map(l => table.add(l))
+    authors.forEach((a, i) => (a.affiliations = ids[i] ? [ids[i]!] : ids.slice(0, 1)))
+    remove(authorHits[0])
+    remove(address)
+  } else if (sourceClass === 'IEEEtran' || authorHits.some(h => h.args[0]?.inner.includes('\\IEEEauthorblockN'))) {
     for (const h of authorHits) {
       authors.push(...ieeeAuthors(h.args[0]?.inner ?? '', table))
       remove(h)
@@ -450,15 +773,17 @@ export function extractPaper(input: string, read?: (path: string) => string | un
       remove(h)
     }
     remove(inst)
-  } else if (findMacros(m, src, 'affil', { opts: 1, args: 1 }, 0, frontEnd).length) {
-    const r = authblkAuthors(m, src, frontEnd, table, notes)
-    authors = r.authors
-    r.ranges.forEach(remove)
   } else {
-    const els = sourceClass === 'elsarticle' ? elsevierAuthors(m, src, frontEnd, table) : undefined
-    if (els) {
-      authors = els.authors
-      els.ranges.forEach(remove)
+    const front = m.slice(0, frontEnd)
+    const labelled =
+      LABELLED_CLASSES.includes(sourceClass) || /\\(?:fnm|sur|orgname|orgdiv)\s*\{/.test(front) ? labelledAuthors(m, src, frontEnd, table, notes) : undefined
+    if (labelled) {
+      authors = labelled.authors
+      labelled.ranges.forEach(remove)
+    } else if (findMacros(m, src, 'affil', { opts: 1, args: 1 }, 0, frontEnd).length) {
+      const r = authblkAuthors(m, src, frontEnd, table, notes)
+      authors = r.authors
+      r.ranges.forEach(remove)
     } else if (
       authorHits.length > 1 ||
       ['acmart', 'revtex4-2', 'revtex4-1', 'amsart', 'elsarticle'].includes(sourceClass) ||
@@ -488,16 +813,29 @@ export function extractPaper(input: string, read?: (path: string) => string | un
   if (absEnv) {
     abstract = src.slice(absEnv.bodyStart, absEnv.bodyEnd).trim()
     remove(absEnv)
+  } else {
+    // Springer Nature, OUP and others take the abstract as an argument: \abstract{...} before \maketitle.
+    // jpsj2 calls it \abst{...}.
+    const cmd = ['abstract', 'abst'].flatMap(name => findMacros(m, src, name, { args: 1 }, 0, frontEnd)).find(h => h.args.length)
+    if (cmd) {
+      abstract = cmd.args[0]!.inner.trim()
+      remove(cmd)
+    }
   }
+  // OUP's and BMC's structured abstracts head their parts with \subheading{..} or \parttitle{..}, which only they define.
+  abstract = abstract.replace(/\\(?:subheading|parttitle)\s*\{([^{}]*)\}/g, '\\textbf{$1}')
   for (const env of ['IEEEkeywords', 'keyword', 'keywords']) {
     for (const k of findEnvs(m, src, env, {}, 0, frontEnd)) {
       keywords.push(...splitKeywords(src.slice(k.bodyStart, k.bodyEnd)))
       remove(k)
     }
   }
-  for (const k of findMacros(m, src, 'keywords', { args: 1 }, 0, frontEnd)) {
-    keywords.push(...splitKeywords(k.args[0]?.inner ?? ''))
-    remove(k)
+  // OUP: \keywords[Key words]{..}; the heading isn't kept. ascelike \KeyWords, aomart \keyword (one each), jpsj2 \kword.
+  for (const name of ['keywords', 'KeyWords', 'keyword', 'kword']) {
+    for (const k of findMacros(m, src, name, { opts: 1, args: 1 }, 0, frontEnd)) {
+      keywords.push(...splitKeywords(k.args[0]?.inner ?? ''))
+      remove(k)
+    }
   }
   if (ieeeIndex) {
     const inner = ieeeIndex.args[0]?.inner ?? ''
@@ -532,16 +870,16 @@ export function extractPaper(input: string, read?: (path: string) => string | un
   for (const name of FRONT_CONFIG) {
     const [o, a] = ARGS[name] ?? [0, 0]
     for (const h of findMacros(m, src, name, { opts: o, args: a }, 0, frontEnd)) {
-      if (name === 'journal' && h.args[0]) hints.journal = clean(h.args[0].inner)
+      if ((name === 'journal' || name === 'journaltitle') && h.args[0] && !/^Journal Title/i.test(clean(h.args[0].inner))) hints.journal = clean(h.args[0].inner)
       if (name === 'acmConference' && h.args.length === 3) {
         hints.venue = { short: h.opts[0] ? clean(h.opts[0].inner) : undefined, name: clean(h.args[0]!.inner), date: clean(h.args[1]!.inner), location: clean(h.args[2]!.inner) }
       }
       remove(h)
     }
   }
-  for (const env of ['CCSXML', 'frontmatter']) {
+  for (const env of ['CCSXML', 'frontmatter', 'fmbox', 'abstractbox']) {
     for (const e of findEnvs(m, src, env, {}, 0, frontEnd)) {
-      if (env === 'frontmatter') {
+      if (env !== 'CCSXML') {
         // Keep what's inside (it was all extracted); drop the wrapper only.
         remove({ start: e.start, end: e.bodyStart })
         remove({ start: e.bodyEnd, end: e.end })
@@ -564,7 +902,10 @@ export function extractPaper(input: string, read?: (path: string) => string | un
   let bibliography: Bibliography = { kind: 'none' }
   const style = findMacros(m, src, 'bibliographystyle', { args: 1 })[0]
   const bibCmds = findMacros(m, src, 'bibliography', { args: 1 }, bodyStart, end)
-  const biblatex = packages.find(p => p.name === 'biblatex')
+  // biblatex-chicago is biblatex with Chicago's styles (and must be loaded as itself); jacow loads
+  // biblatex with its biblatex option.
+  if (sourceClass === 'jacow' && classOptions.includes('biblatex') && !packages.some(p => p.name === 'biblatex')) packages.push({ name: 'biblatex' })
+  const biblatex = packages.find(p => p.name === 'biblatex' || p.name === 'biblatex-chicago')
   const resources = findMacros(m, src, 'addbibresource', { opts: 1, args: 1 }, preambleStart, begin)
   const prints = findMacros(m, src, 'printbibliography', { opts: 1 }, bodyStart, end)
   const files = (s: string) => s.split(',').map(f => clean(f).replace(/\.bib$/, '')).filter(Boolean)
@@ -583,6 +924,12 @@ export function extractPaper(input: string, read?: (path: string) => string | un
     bibliography = { kind: 'inline' }
   }
   remove(style)
+  // Springer Nature picks the reference style (and natbib's mode) with a class option.
+  if (sourceClass === 'sn-jnl') {
+    const numbered = snNumbered(classOptions)
+    if (bibliography.kind === 'bibtex' && (!bibliography.style || bibliography.style.startsWith('sn-'))) bibliography.style = numbered ? 'unsrtnat' : 'plainnat'
+    if (!packages.some(p => p.name === 'natbib' || p.name === 'apacite')) packages.push({ name: 'natbib', options: numbered ? 'numbers,sort&compress' : undefined })
+  }
 
   // ---- acknowledgments ----
   let acknowledgments: string | undefined
@@ -597,11 +944,28 @@ export function extractPaper(input: string, read?: (path: string) => string | un
     }
   }
   if (acknowledgments === undefined) {
-    const re = /\\(?:section|subsection|subsubsection|paragraph)\*?\s*\{\s*(?:Acknowledge?ments?|Acknowledgment|致谢|鸣谢)\s*\}/gi
+    // jmlr: \acks{..}; achemso: \begin{acknowledgement}.
+    const cmd = findMacros(m, src, 'acks', { args: 1 }, bodyStart, end)[0]
+    // achemso's acknowledgement, jpsj2's acknowledgment and asmejour's.
+    const env = ['acknowledgement', 'acknowledgment'].map(name => findEnvs(m, src, name, {}, bodyStart, end)[0]).find(Boolean)
+    if (cmd) {
+      acknowledgments = (cmd.args[0]?.inner ?? '').trim()
+      marks.push({ at: cmd.start, text: ACK_MARK })
+      remove(cmd)
+    } else if (env) {
+      acknowledgments = src.slice(env.bodyStart, env.bodyEnd).trim()
+      marks.push({ at: env.start, text: ACK_MARK })
+      remove(env)
+    }
+  }
+  if (acknowledgments === undefined) {
+    // Springer Nature's back matter heads it with \bmhead{Acknowledgements}.
+    // SPIE heads them with a bare \acknowledgments.
+    const re = /\\(?:section|subsection|subsubsection|paragraph|bmhead)\*?\s*\{\s*(?:Acknowledge?ments?|Acknowledgment|致谢|鸣谢)\s*\}|\\acknowledge?ments(?![a-zA-Z])(?!\s*\{)/gi
     re.lastIndex = bodyStart
     const head = re.exec(m)
     if (head && head.index < end) {
-      const stop = /\\(?:section|chapter|appendix\b|bibliography\b|bibliographystyle|printbibliography)|\\begin\{thebibliography\}|\\end\{document\}/g
+      const stop = /\\(?:section|chapter|appendix\b|bmhead\b|backmatter\b|bibliography\b|bibliographystyle|printbibliography)|\\begin\{(?:thebibliography|appendices)\}|\\end\{document\}/g
       stop.lastIndex = head.index + head[0].length
       const next = stop.exec(m)
       const until = next ? next.index : end
@@ -617,7 +981,7 @@ export function extractPaper(input: string, read?: (path: string) => string | un
     if (/^\s*\\shortauthors\s*$/.test(h.args[0]?.inner ?? '')) remove(h)
   }
   const preambleRanges = [...removed.filter(r => r.end <= begin), { start: 0, end: preambleStart }]
-  const preamble = tidy(cut(src.slice(0, begin), preambleRanges))
+  const preamble = sourcePreamble(sourceClass, tidy(cut(src.slice(0, begin), preambleRanges)))
   let body = src.slice(bodyStart, end)
   const bodyRanges = removed.filter(r => r.start >= bodyStart && r.end <= end).map(r => ({ start: r.start - bodyStart, end: r.end - bodyStart }))
   // Insert the marks where the removed parts were.
@@ -640,6 +1004,26 @@ export function extractPaper(input: string, read?: (path: string) => string | un
     notes,
     hints,
   }
+}
+
+/** Springer Nature reference styles: numbered unless an author-year one was chosen without `Numbered`. */
+function snNumbered(options: string[]): boolean {
+  if (options.includes('Numbered')) return true
+  return !options.some(o => ['sn-basic', 'sn-mathphys-ay', 'sn-vancouver-ay', 'sn-apa', 'sn-chicago'].includes(o))
+}
+
+/** Theorem styles a source class defined for amsthm, as the nearest standard ones. */
+const THEOREM_STYLES: Record<string, Record<string, string>> = {
+  'sn-jnl': { thmstyleone: 'plain', thmstyletwo: 'remark', thmstylethree: 'definition', thmstylefour: 'remark' },
+}
+
+/** Adapt preamble commands that only the source class understands. */
+function sourcePreamble(sourceClass: string, preamble: string): string {
+  // sn-jnl's \unnumbered turns off section numbers.
+  if (sourceClass === 'sn-jnl') preamble = preamble.replace(/\\unnumbered(?![a-zA-Z@])/g, '\\setcounter{secnumdepth}{0}')
+  const styles = THEOREM_STYLES[sourceClass]
+  if (!styles) return preamble
+  return preamble.replace(/\\theoremstyle\s*\{\s*([A-Za-z]+)\s*\}/g, (all, name: string) => (styles[name] ? `\\theoremstyle{${styles[name]}}` : all))
 }
 
 /** Cut ranges and put each mark where its range began. */

@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': 'Di proyek ini',
   'Word template': 'Templat Word',
   None: 'Tidak ada',
+  // More conversion targets
+  'Two columns': 'Dua kolom',
+  'One column': 'Satu kolom',
+  'Elsevier journal (CAS, two columns)': 'Jurnal Elsevier (CAS, dua kolom)',
+  'AMS journal': 'Jurnal AMS',
+  'ACS journal': 'Jurnal ACS',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc: tata letak CAS dua kolom dari Elsevier.',
+  'amsart: for mathematics journals, with AMS references.': 'amsart: untuk jurnal matematika, dengan referensi AMS.',
+  'apa7: for psychology and social science journals, APA references.': 'apa7: untuk jurnal psikologi dan ilmu sosial, referensi APA.',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701: untuk The Astrophysical Journal, The Astronomical Journal, dan jurnal AAS lainnya.',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras: dua kolom, untuk Monthly Notices of the Royal Astronomical Society.',
+  'achemso: for American Chemical Society journals.': 'achemso: untuk jurnal American Chemical Society.',
+  'ACS journal code (optional)': 'Kode jurnal ACS (opsional)',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Perintah yang disediakan kelas lama atau paket yang ditinggalkan diberi definisi sederhana: {list}.',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX mewajibkan email dan afiliasi untuk setiap penulis; tempat yang kosong diisi teks pengganti.',
 }
 
 export default messages

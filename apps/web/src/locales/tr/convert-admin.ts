@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': 'Bu projede',
   'Word template': 'Word şablonu',
   None: 'Yok',
+  // More conversion targets
+  'Two columns': 'İki sütun',
+  'One column': 'Tek sütun',
+  'Elsevier journal (CAS, two columns)': 'Elsevier dergisi (CAS, iki sütun)',
+  'AMS journal': 'AMS dergisi',
+  'ACS journal': 'ACS dergisi',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc: Elsevier’in iki sütunlu CAS düzeni.',
+  'amsart: for mathematics journals, with AMS references.': 'amsart: matematik dergileri için, AMS kaynakçası.',
+  'apa7: for psychology and social science journals, APA references.': 'apa7: psikoloji ve sosyal bilim dergileri için, APA kaynakçası.',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701: The Astrophysical Journal, The Astronomical Journal ve diğer AAS dergileri için.',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras: iki sütun, Monthly Notices of the Royal Astronomical Society için.',
+  'achemso: for American Chemical Society journals.': 'achemso: American Chemical Society dergileri için.',
+  'ACS journal code (optional)': 'ACS dergi kodu (isteğe bağlı)',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Eski sınıfın ya da çıkarılan bir paketin sağladığı komutlara basit tanımlar verildi: {list}.',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX her yazar için bir e-posta ve bir kurum ister; eksik olan yerlere yer tutucular kondu.',
 }
 
 export default messages

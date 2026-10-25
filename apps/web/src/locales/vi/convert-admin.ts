@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': 'Trong dự án này',
   'Word template': 'Mẫu Word',
   None: 'Không',
+  // More conversion targets
+  'Two columns': 'Hai cột',
+  'One column': 'Một cột',
+  'Elsevier journal (CAS, two columns)': 'Tạp chí Elsevier (CAS, hai cột)',
+  'AMS journal': 'Tạp chí AMS',
+  'ACS journal': 'Tạp chí ACS',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc: bố cục CAS hai cột của Elsevier.',
+  'amsart: for mathematics journals, with AMS references.': 'amsart: cho tạp chí toán học, tài liệu tham khảo AMS.',
+  'apa7: for psychology and social science journals, APA references.': 'apa7: cho tạp chí tâm lý học và khoa học xã hội, tài liệu tham khảo APA.',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701: cho The Astrophysical Journal, The Astronomical Journal và các tạp chí AAS khác.',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras: hai cột, cho Monthly Notices of the Royal Astronomical Society.',
+  'achemso: for American Chemical Society journals.': 'achemso: cho các tạp chí của American Chemical Society.',
+  'ACS journal code (optional)': 'Mã tạp chí ACS (không bắt buộc)',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Đã định nghĩa đơn giản các lệnh mà lớp cũ hoặc một gói bị bỏ cung cấp: {list}.',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX yêu cầu mỗi tác giả có email và đơn vị; đã điền giá trị tạm ở những chỗ còn thiếu.',
 }
 
 export default messages

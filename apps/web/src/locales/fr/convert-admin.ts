@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': 'Dans ce projet',
   'Word template': 'Modèle Word',
   None: 'Aucun',
+  // More conversion targets
+  'Two columns': 'Deux colonnes',
+  'One column': 'Une colonne',
+  'Elsevier journal (CAS, two columns)': 'Revue Elsevier (CAS, deux colonnes)',
+  'AMS journal': 'Revue de l’AMS',
+  'ACS journal': 'Revue de l’ACS',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc : la mise en page CAS sur deux colonnes d’Elsevier.',
+  'amsart: for mathematics journals, with AMS references.': 'amsart : pour les revues de mathématiques, références AMS.',
+  'apa7: for psychology and social science journals, APA references.': 'apa7 : pour les revues de psychologie et de sciences sociales, références APA.',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701 : pour The Astrophysical Journal, The Astronomical Journal et les autres revues de l’AAS.',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras : deux colonnes, pour les Monthly Notices of the Royal Astronomical Society.',
+  'achemso: for American Chemical Society journals.': 'achemso : pour les revues de l’American Chemical Society.',
+  'ACS journal code (optional)': 'Code de revue ACS (facultatif)',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Définitions simples données aux commandes que fournissaient l’ancienne classe ou un package écarté : {list}.',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX exige une adresse e-mail et une affiliation pour chaque auteur ; des valeurs provisoires ont été mises là où elles manquaient.',
 }
 
 export default messages

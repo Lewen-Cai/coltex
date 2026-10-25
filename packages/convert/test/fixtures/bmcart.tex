@@ -1,0 +1,97 @@
+\documentclass[twocolumn]{bmcart}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\startlocaldefs
+\newcommand{\HR}{\mathrm{HR}}
+\endlocaldefs
+
+\begin{document}
+
+\begin{frontmatter}
+
+\begin{fmbox}
+\dochead{Research}
+
+\title{Telemonitoring After Heart Failure Discharge: a Randomised Trial}
+
+\author[
+  addressref={aff1,aff2},
+  corref={aff1},
+  email={k.osei@ug.edu.gh}
+]{\inits{K.}\fnm{Kwame} \snm{Osei}}
+\author[
+  addressref={aff2},
+  email={l.moreau@chu-lyon.fr}
+]{\inits{L.}\fnm{Louise} \snm{Moreau}}
+
+\address[id=aff1]{
+  \orgdiv{Department of Medicine},
+  \orgname{University of Ghana Medical School},
+  \city{Accra},
+  \cny{Ghana}
+}
+\address[id=aff2]{
+  \orgname{Hospices Civils de Lyon},
+  \street{103 Grande Rue de la Croix-Rousse},
+  \postcode{69004}
+  \city{Lyon},
+  \cny{France}
+}
+
+\end{fmbox}
+
+\begin{abstractbox}
+
+\begin{abstract}
+\parttitle{Background}
+Readmission after heart failure is frequent.
+
+\parttitle{Methods}
+We randomised 600 patients to telemonitoring or usual care.
+
+\parttitle{Results}
+Telemonitoring reduced readmission ($\HR = 0.78$).
+\end{abstract}
+
+\begin{keyword}
+\kwd{heart failure}
+\kwd{telemonitoring}
+\kwd{randomised trial}
+\end{keyword}
+
+\end{abstractbox}
+
+\end{frontmatter}
+
+\section*{Background}
+
+Heart failure readmissions are costly \cite{knuth}.
+
+\section*{Methods}
+
+Patients were followed for a year \cite{lamport}.
+
+\begin{figure}[h]
+\includegraphics[width=0.8\textwidth]{fig.png}
+\caption{Time to first readmission.}
+\end{figure}
+
+\section*{Results}
+
+Fewer patients were readmitted.
+
+\begin{backmatter}
+
+\section*{Acknowledgements}
+We thank the participating patients.
+
+\section*{Funding}
+None.
+
+\bibliographystyle{bmc-mathphys}
+\bibliography{refs}
+
+\end{backmatter}
+\end{document}

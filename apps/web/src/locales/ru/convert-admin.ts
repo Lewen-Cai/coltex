@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': 'В этом проекте',
   'Word template': 'Шаблон Word',
   None: 'Нет',
+  // More conversion targets
+  'Two columns': 'Две колонки',
+  'One column': 'Одна колонка',
+  'Elsevier journal (CAS, two columns)': 'Журнал Elsevier (CAS, две колонки)',
+  'AMS journal': 'Журнал AMS',
+  'ACS journal': 'Журнал ACS',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc: вёрстка CAS от Elsevier в две колонки.',
+  'amsart: for mathematics journals, with AMS references.': 'amsart: для математических журналов, ссылки AMS.',
+  'apa7: for psychology and social science journals, APA references.': 'apa7: для журналов по психологии и социальным наукам, ссылки APA.',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701: для The Astrophysical Journal, The Astronomical Journal и других журналов AAS.',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras: две колонки, для Monthly Notices of the Royal Astronomical Society.',
+  'achemso: for American Chemical Society journals.': 'achemso: для журналов Американского химического общества.',
+  'ACS journal code (optional)': 'Код журнала ACS (необязательно)',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Командам из прежнего класса или исключённого пакета даны простые определения: {list}.',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX требует e-mail и место работы для каждого автора; где их не было, поставлены заглушки.',
 }
 
 export default messages

@@ -69,8 +69,16 @@ export type TargetId =
   | 'acm-sigconf'
   | 'acm-journal'
   | 'elsevier'
+  | 'elsevier-cas'
+  | 'oup'
   | 'lncs'
   | 'revtex'
+  | 'elsevier-cas-dc'
+  | 'amsart'
+  | 'apa7'
+  | 'aastex'
+  | 'mnras'
+  | 'achemso'
   | 'article'
 
 export type TargetField = { key: 'journal' | 'venue.name' | 'venue.short' | 'venue.date' | 'venue.location'; label: string; required: boolean; placeholder?: string }

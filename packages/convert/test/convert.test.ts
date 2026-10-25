@@ -226,3 +226,246 @@ test('theorem environments the source class provided are declared for the target
   assert.ok(fromAcm.includes('\\usepackage{amsthm}'))
   assert.ok(!convert(fixture('acmart.tex'), 'lncs').files['main.tex']!.includes('\\newtheorem'))
 })
+
+test('Springer Nature (sn-jnl): tagged names and affiliations, \\abstract{}, back matter', () => {
+  const p = extractPaper(fixture('sn-jnl.tex'))
+  assert.equal(p.title, 'Statin Use and Postoperative Delirium in Older Adults: a Cohort Study')
+  assert.equal(p.shortTitle, 'Statins and Delirium')
+  assert.deepEqual(p.authors.map(a => [a.name, a.affiliations, a.email, !!a.corresponding, a.note]), [
+    ['Hanna van der Berg', ['a1', 'a2'], 'h.vanderberg@umcg.nl', true, undefined],
+    ['Tomás Ortega, MD', ['a2'], 'tortega@ub.edu', false, 'These authors contributed equally to this work.'],
+    ['Wei Chen', ['a1'], undefined, false, 'These authors contributed equally to this work.'],
+  ])
+  assert.deepEqual(p.affiliations[0], {
+    id: 'a1',
+    raw: 'Department of Anaesthesiology, University Medical Center Groningen, Hanzeplein 1, Groningen, 9713 GZ, Netherlands',
+    department: 'Department of Anaesthesiology',
+    institution: 'University Medical Center Groningen',
+    city: 'Groningen',
+    country: 'Netherlands',
+  })
+  assert.ok(p.abstract.startsWith('\\textbf{Purpose:} To estimate') && p.abstract.endsWith('less postoperative delirium.'))
+  assert.ok(p.abstract.includes('\n\n\\textbf{Methods:}'))
+  assert.deepEqual(p.keywords, ['delirium', 'statins', 'geriatric surgery', 'cohort study'])
+  assert.equal(p.acknowledgments, 'We thank the nursing staff of both hospitals.')
+  // The reference style is a class option: Vancouver, numbered, in citation order.
+  assert.deepEqual(p.bibliography, { kind: 'bibtex', files: ['refs'], style: 'unsrtnat' })
+  assert.deepEqual(p.packages.at(-1), { name: 'natbib', options: 'numbers,sort&compress' })
+  assert.ok(p.preamble.includes('\\theoremstyle{plain}') && p.preamble.includes('\\theoremstyle{definition}') && !p.preamble.includes('thmstyle'))
+  assert.ok(!/\\(?:email|equalcont|abstract|keywords|pacs|maketitle|affil|author)\b/.test(p.body))
+  assert.ok(p.body.includes('\\bmhead{Supplementary information}') && p.body.includes('%%COLTEX:ACKNOWLEDGMENTS%%\n\\section*{Declarations}'))
+})
+
+test('Springer Nature constructs other classes lack are adapted', () => {
+  const t = transformTex('\\backmatter\n\\bmhead{Data availability}\nOn request.\n\\toprule a\\\\\\botrule', { natbib: true, twoColumn: false, family: 'article' })
+  assert.equal(t.text, '\n\\section*{Data availability}\nOn request.\n\\toprule a\\\\\\bottomrule')
+  // The widest label sn-jnl's lists take as an option: other classes would print it or choke on it.
+  const lists = transformTex('\\begin{enumerate}[1.]\n\\item A\\begin{enumerate}[(a)]\\item B\\end{enumerate}\n\\end{enumerate} \\begin{itemize}\n[x]\\end{itemize}', { natbib: true, twoColumn: false, family: 'article', dropListWidths: true })
+  assert.equal(lists.text, '\\begin{enumerate}\n\\item A\\begin{enumerate}\\item B\\end{enumerate}\n\\end{enumerate} \\begin{itemize}\n[x]\\end{itemize}')
+  const ieee = transformTex('\\begin{appendices}\n\\section{A}\n\\end{appendices}', { natbib: false, twoColumn: true, family: 'IEEEtran' })
+  assert.equal(ieee.text, '\\appendices\n\\section{A}\n')
+})
+
+test('an sn-jnl paper converts to every target with its front matter', () => {
+  const src = fixture('sn-jnl.tex')
+  const original = extractPaper(src)
+  for (const t of TARGETS) {
+    const main = convert(src, t.id, { journal: 'J' }).files['main.tex']!
+    assert.ok(!/\\(?:fnm|sur|orgname|bmhead|backmatter|botrule|equalcont)\b|thmstyle/.test(main), t.id)
+    const back = extractPaper(main)
+    assert.equal(back.title, original.title, t.id)
+    assert.deepEqual(back.authors.map(a => a.name), original.authors.map(a => a.name), t.id)
+    assert.deepEqual(back.keywords, original.keywords, t.id)
+    assert.ok(back.abstract.includes('Statin use was associated with less postoperative delirium.'), t.id)
+  }
+  const article = convert(src, 'article').files['main.tex']!
+  assert.ok(article.includes('\\usepackage[numbers,sort&compress]{natbib}') && article.includes('\\usepackage{booktabs}'))
+  assert.ok(article.includes('\\bibliographystyle{unsrtnat}'))
+  assert.ok(article.indexOf('{hyperref}') > article.indexOf('{authblk}'))
+  assert.ok(article.includes('\\author[2]{{Tomás Ortega, MD}\\thanks{\\texttt{tortega@ub.edu}}\\thanks{These authors contributed equally to this work.}}'))
+})
+
+test('Elsevier CAS target: \\cormark, shared footnotes, keywords before \\maketitle', () => {
+  const main = convert(fixture('sn-jnl.tex'), 'elsevier-cas').files['main.tex']!
+  assert.ok(main.includes('\\documentclass[a4paper,fleqn]{cas-sc}'))
+  assert.ok(main.includes('\\usepackage[numbers,sort&compress]{natbib}'))
+  assert.ok(main.includes('\\shortauthors{van der Berg et al.}'))
+  assert.ok(main.includes('\\author[1,2]{Hanna van der Berg}\n\\cormark[1]\n\\ead{h.vanderberg@umcg.nl}'))
+  assert.ok(main.includes('\\author[2]{Tomás Ortega, MD}\n\\fnmark[1]') && main.includes('\\author[1]{Wei Chen}\n\\fnmark[1]'))
+  assert.ok(main.includes('\\cortext[1]{Corresponding author}\n\\fntext[1]{These authors contributed equally to this work.}\n'))
+  assert.ok(/\\end\{keywords\}\s*\\maketitle/.test(main))
+  assert.ok(main.includes('\\bibliographystyle{cas-model2-names}'))
+  // From an article without natbib, the target still gets it for its reference style.
+  assert.ok(convert(fixture('article-plain.tex'), 'elsevier-cas').files['main.tex']!.includes('\\usepackage[numbers]{natbib}'))
+})
+
+test('OUP target: numbered addresses, corresponding author and a one-paragraph abstract', () => {
+  const out = convert(fixture('sn-jnl.tex'), 'oup', { journal: 'Age and Ageing' })
+  const main = out.files['main.tex']!
+  assert.ok(main.includes('\\documentclass[webpdf,modern,large]{oup-authoring-template}'))
+  assert.ok(main.includes('\\journaltitle{Age and Ageing}'))
+  assert.ok(main.includes('\\title[Statins and Delirium]{Statin Use'))
+  assert.ok(main.includes('\\author[1,2,$\\ast$]{Hanna van der Berg}\n\\author[2]{Tomás Ortega, MD}'))
+  assert.ok(main.includes('\\address[2]{Faculty of Medicine, University of Barcelona, Barcelona, 08036, Spain}'))
+  assert.ok(main.includes('\\corresp[$\\ast$]{Corresponding author. \\href{mailto:h.vanderberg@umcg.nl}{h.vanderberg@umcg.nl}}'))
+  assert.ok(main.includes('of delirium.\\\\\n\\textbf{Methods:}'))
+  assert.ok(!/\\usepackage(\[[^\]]*\])?\{appendix\}/.test(main) && main.includes('\\begin{appendices}'))
+  assert.ok(out.notes.some(n => n.text.includes('placeholders')))
+})
+
+test('OUP and Elsevier CAS sources', () => {
+  const oup = extractPaper(`\\documentclass[webpdf,modern,large]{oup-authoring-template}
+\\journaltitle{Bioinformatics}
+\\begin{document}
+\\title[Short]{A Long Title}
+\\author[1,$\\ast$]{Ann Lee\\ORCID{0000-0002-1825-0097}}
+\\author[2]{Ben Ray}
+\\authormark{Lee and Ray}
+\\address[1]{\\orgdiv{Department of Genetics}, \\orgname{University of Oxford}, \\orgaddress{\\street{South Parks Road}, \\postcode{OX1 3QU}, \\country{UK}}}
+\\address[2]{\\orgname{EMBL}, \\orgaddress{\\city{Heidelberg}, \\country{Germany}}}
+\\corresp[$\\ast$]{Corresponding author. \\href{mailto:ann.lee@ox.ac.uk}{ann.lee@ox.ac.uk}}
+\\received{Date}{0}{Year}
+\\abstract{\\subheading{Motivation} Genomes are long.\\\\ \\subheading{Results} We read them.}
+\\keywords[Key words]{genomics, alignment}
+\\maketitle
+\\section{Introduction}
+Text.
+\\end{document}`)
+  assert.deepEqual(oup.authors.map(a => [a.name, a.affiliations, a.email, !!a.corresponding, a.orcid]), [
+    ['Ann Lee', ['a1'], 'ann.lee@ox.ac.uk', true, '0000-0002-1825-0097'],
+    ['Ben Ray', ['a2'], undefined, false, undefined],
+  ])
+  assert.equal(oup.affiliations[0]!.raw, 'Department of Genetics, University of Oxford, South Parks Road, OX1 3QU, UK')
+  assert.equal(oup.affiliations[1]!.city, 'Heidelberg')
+  assert.equal(oup.abstract, '\\textbf{Motivation} Genomes are long.\\\\ \\textbf{Results} We read them.')
+  assert.deepEqual(oup.keywords, ['genomics', 'alignment'])
+  assert.equal(oup.hints.journal, 'Bioinformatics')
+  assert.equal(oup.body.trim(), '\\section{Introduction}\nText.')
+
+  const cas = extractPaper(`\\documentclass[a4paper,fleqn]{cas-sc}
+\\begin{document}
+\\shorttitle{Short}
+\\shortauthors{Kim et al.}
+\\title [mode = title]{Sepsis Prediction}
+\\author[1]{Min Kim}[orcid=0000-0001-7511-2910]
+\\cormark[1]
+\\ead{min.kim@snu.ac.kr}
+\\credit{Writing}
+\\author[1,2]{Lea Roth}
+\\affiliation[1]{organization={Seoul National University Hospital}, city={Seoul}, country={South Korea}}
+\\affiliation[2]{organization={Charité}, city={Berlin}, country={Germany}}
+\\cortext[1]{Corresponding author}
+\\begin{abstract}
+We predict sepsis.
+\\end{abstract}
+\\begin{keywords}
+sepsis \\sep prediction
+\\end{keywords}
+\\maketitle
+\\section{Introduction}
+Text.
+\\end{document}`)
+  assert.equal(cas.title, 'Sepsis Prediction')
+  assert.deepEqual(cas.authors.map(a => [a.name, a.affiliations, a.email, !!a.corresponding, a.orcid]), [
+    ['Min Kim', ['a1'], 'min.kim@snu.ac.kr', true, '0000-0001-7511-2910'],
+    ['Lea Roth', ['a1', 'a2'], undefined, false, undefined],
+  ])
+  assert.equal(cas.affiliations[1]!.institution, 'Charité')
+  assert.deepEqual(cas.keywords, ['sepsis', 'prediction'])
+  assert.equal(cas.body.trim(), '\\section{Introduction}\nText.')
+})
+
+test('BMC (bmcart): key=value authors, \\parttitle abstracts, \\kwd keywords, the backmatter environment', () => {
+  const p = extractPaper(fixture('bmcart.tex'))
+  assert.deepEqual(p.authors.map(a => [a.name, a.affiliations, a.email, !!a.corresponding]), [
+    ['Kwame Osei', ['a1', 'a2'], 'k.osei@ug.edu.gh', true],
+    ['Louise Moreau', ['a2'], 'l.moreau@chu-lyon.fr', false],
+  ])
+  assert.deepEqual(p.affiliations[0], {
+    id: 'a1',
+    raw: 'Department of Medicine, University of Ghana Medical School, Accra, Ghana',
+    department: 'Department of Medicine',
+    institution: 'University of Ghana Medical School',
+    city: 'Accra',
+    country: 'Ghana',
+  })
+  assert.ok(p.abstract.startsWith('\\textbf{Background}\nReadmission') && p.abstract.includes('\\textbf{Results}'))
+  assert.deepEqual(p.keywords, ['heart failure', 'telemonitoring', 'randomised trial'])
+  assert.equal(p.acknowledgments, 'We thank the participating patients.')
+  assert.equal(p.preamble, '\\newcommand{\\HR}{\\mathrm{HR}}')
+  assert.ok(!/fmbox|abstractbox|dochead|frontmatter/.test(p.body))
+  const main = convert(fixture('bmcart.tex'), 'article').files['main.tex']!
+  assert.ok(!main.includes('backmatter') && main.includes('\\bibliographystyle{plainnat}') && main.includes('\\usepackage{natbib}'))
+})
+
+// The built-in templates (apps/server/templates), read as the conversion dialog reads a project.
+// scripts/template-matrix.ts compiles every one of them converted to every target.
+const templatesDir = new URL('../../../apps/server/templates/', import.meta.url)
+function template(id: string) {
+  const dir = new URL(`${id}/`, templatesDir)
+  const main = fs.readFileSync(new URL('main.tex', dir), 'utf8')
+  const refs = fs.existsSync(new URL('references.bib', dir)) ? fs.readFileSync(new URL('references.bib', dir), 'utf8') : ''
+  const paper = extractPaper(main)
+  const to = (target: Parameters<typeof convertPaper>[1], options = {}) =>
+    convertPaper(paper, target, options, { rootFile: 'main.tex', texFiles: { 'main.tex': main }, bibFiles: { 'references.bib': refs } })
+  return { paper, to }
+}
+
+test('layout commands of packages the target leaves out get definitions before they are used', () => {
+  // clinical-study's \doublespacing (setspace) and \linenumbers (lineno), in its preamble.
+  const oup = template('clinical-study').to('oup').files['main.tex']!
+  assert.ok(!/\\usepackage(\[[^\]]*\])?\{setspace\}/.test(oup), 'setspace is left out')
+  const defined = oup.indexOf('\\providecommand{\\doublespacing}')
+  assert.ok(defined !== -1 && defined < oup.indexOf('\n\\doublespacing'), 'defined before its use')
+  const revtex = template('clinical-study').to('revtex').files['main.tex']!
+  assert.ok(!/\\usepackage\{lineno\}/.test(revtex), 'REVTeX numbers lines itself')
+  assert.ok(revtex.indexOf('\\providecommand{\\linenumbers}') < revtex.indexOf('\n\\linenumbers'))
+})
+
+test('class-specific commands of the sources: jmlr, AMS, Elsevier CAS, Nature, MNRAS', () => {
+  const jmlr = template('jmlr').to('article').files['main.tex']!
+  assert.ok(!/\\jmlr(volume|year|workshop)|\\editors/.test(jmlr))
+  assert.match(jmlr, /\\providecommand\{\\floatconts\}/)
+  assert.match(jmlr, /\\newtheorem\{theorem\}/, 'jmlr provided theorem')
+  const ams = template('amsart').to('elsevier').files['main.tex']!
+  assert.ok(!/\\subjclass/.test(ams))
+  assert.match(ams, /\\usepackage\{amsthm\}/, 'amsart had amsthm built in')
+  const cas = template('elsevier-cas').to('article').files['main.tex']!
+  assert.ok(!/\[pos=/.test(cas), 'CAS float keys become placements')
+  assert.match(cas, /\\providecommand\{\\printcredits\}/)
+  const nature = template('nature').to('oup').files['main.tex']!
+  assert.match(nature, /\\newenvironment\{methods\}/)
+  assert.ok(!/\\begin\{description\}/.test(nature.split('\\begin{document}')[0]!), 'OUP has no description environment')
+  const mnras = template('amsart').to('mnras').files['main.tex']!
+  assert.match(mnras, /\\let\\proof\\relax\n\\let\\endproof\\relax\n\\usepackage\{amsthm\}/, 'mnras keeps its own proof')
+  // SPIE's bare \acknowledgments heading is read as the acknowledgments.
+  assert.match(template('spie').paper.acknowledgments ?? '', /^Thank the people/)
+})
+
+test('authors and affiliations of the classes the new templates use', () => {
+  for (const id of ['jmlr', 'apa7', 'mnras', 'nature', 'spie', 'jpsj', 'jacow', 'asme-conference', 'nrc', 'aastex', 'acs-journal', 'annals-math', 'asce', 'aiaa']) {
+    const p = template(id).paper
+    assert.ok(p.authors.length >= 2, `${id}: ${p.authors.map(a => a.name).join(' / ')}`)
+    assert.ok(p.affiliations.length >= 1, `${id} affiliations`)
+    assert.ok(p.abstract.length > 20, `${id} abstract`)
+  }
+  assert.deepEqual(template('mnras').paper.authors.map(a => a.name), ['First Author', 'Second Author'])
+  assert.deepEqual(template('nature').paper.authors.map(a => a.affiliations.length), [1, 2, 1])
+  assert.deepEqual(template('aastex').paper.keywords, ['Cosmology', 'Type Ia supernovae'])
+  assert.equal(template('jmlr').paper.authors[0]!.email, 'first@example.org')
+  assert.equal(template('humanities-chicago').paper.bibliography.kind, 'biblatex')
+})
+
+test('the new targets: AMS, APA 7, AASTeX, MNRAS, ACS and Elsevier CAS in two columns', () => {
+  const t = template('elsevier')
+  assert.match(t.to('amsart').files['main.tex']!, /\\documentclass\{amsart\}[\s\S]*\\address\{[\s\S]*\\maketitle/)
+  const apa = t.to('apa7').files['main.tex']!
+  assert.match(apa, /\\authorsnames\[1,2\]\{First Author, Second Author\}/)
+  assert.match(apa, /\\bibliographystyle\{apacite\}/)
+  const aas = template('lncs').to('aastex').files['main.tex']!
+  assert.equal((aas.match(/\\email\{/g) ?? []).length, 2, 'every author has an email (AASTeX stops otherwise)')
+  assert.match(t.to('mnras').files['main.tex']!, /\\author\[[^\]]*\]\{\nFirst Author\$\^\{1\}\$/)
+  assert.match(t.to('achemso', { journal: 'jpccck' }).files['main.tex']!, /\\documentclass\[journal=jpccck,manuscript=article\]\{achemso\}/)
+  assert.match(t.to('elsevier-cas-dc').files['main.tex']!, /\]\{cas-dc\}/)
+  assert.equal(TARGETS.length, 16)
+})

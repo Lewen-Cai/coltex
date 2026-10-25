@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': 'このプロジェクト内',
   'Word template': 'Word テンプレート',
   None: 'なし',
+  // More conversion targets
+  'Two columns': '2 段組',
+  'One column': '1 段組',
+  'Elsevier journal (CAS, two columns)': 'Elsevier ジャーナル（CAS、2 段組）',
+  'AMS journal': 'AMS ジャーナル',
+  'ACS journal': 'ACS ジャーナル',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc：Elsevier の 2 段組 CAS レイアウト。',
+  'amsart: for mathematics journals, with AMS references.': 'amsart：数学のジャーナル向け、AMS 形式の参考文献。',
+  'apa7: for psychology and social science journals, APA references.': 'apa7：心理学・社会科学のジャーナル向け、APA 形式の参考文献。',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701：The Astrophysical Journal、The Astronomical Journal など AAS のジャーナル向け。',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras：2 段組、英国王立天文学会の Monthly Notices 向け。',
+  'achemso: for American Chemical Society journals.': 'achemso：米国化学会（ACS）のジャーナル向け。',
+  'ACS journal code (optional)': 'ACS ジャーナルコード（任意）',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '元のクラスや外したパッケージにあったコマンドに簡単な定義を与えました：{list}。',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX ではすべての著者にメールアドレスと所属が必要です。足りない箇所には仮の値を入れました。',
 }
 
 export default messages

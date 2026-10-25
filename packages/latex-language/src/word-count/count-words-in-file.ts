@@ -175,6 +175,19 @@ const countWordsInParsedFile = (
     $Environment(nodeRef) {
       return handleEnvironment(nodeRef)
     },
+    // ColTex: front matter given in the preamble, e.g. OUP's \abstract{...}.
+    UnknownCommand(nodeRef) {
+      const macro = nodeRef.node.getChild('$CtrlSeq')
+      if (
+        macro &&
+        content.substring(macro.from + 1, macro.to) === 'abstract' &&
+        nodeRef.node.getChild('TextArgument')
+      ) {
+        data.headers++
+        iterateNode(nodeRef, 'abstract')
+        return false
+      }
+    },
   })
 
   const bodyMatcher = NodeType.match<
@@ -215,6 +228,13 @@ const countWordsInParsedFile = (
       switch (commandName) {
         case 'thanks':
           iterateNode(nodeRef, 'other')
+          return false
+        // ColTex: the abstract as an argument (Springer Nature's sn-jnl, OUP,
+        // MDPI: \abstract{...}) counts like the abstract environment.
+        case 'abstract':
+          if (!nodeRef.node.getChild('TextArgument')) return
+          data.headers++
+          iterateNode(nodeRef, 'abstract')
           return false
       }
 

@@ -519,7 +519,7 @@ export type ProjectTree = z.infer<typeof ProjectTree>
  * Starting point for a new project: a built-in template (`apps/server/templates/<id>`)
  * or a project someone published as a template on this server.
  */
-export const TemplateField = z.enum(['general', 'medicine', 'cs', 'physics', 'math', 'social'])
+export const TemplateField = z.enum(['general', 'cs', 'engineering', 'physics', 'astronomy', 'chemistry', 'biology', 'medicine', 'math', 'economics', 'social', 'earth'])
 export type TemplateField = z.infer<typeof TemplateField>
 
 export const TemplateInfo = z.object({
@@ -1653,7 +1653,10 @@ export const ChangeDecisionResult = z.object({ count: z.number(), undoId: z.stri
 // Journal template conversion
 // ---------------------------------------------------------------------------
 
-export const ConvertTargetId = z.enum(['ieee-journal', 'ieee-conference', 'acm-sigconf', 'acm-journal', 'elsevier', 'elsevier-cas', 'oup', 'lncs', 'revtex', 'article'])
+export const ConvertTargetId = z.enum([
+  'ieee-journal', 'ieee-conference', 'acm-sigconf', 'acm-journal', 'elsevier', 'elsevier-cas', 'elsevier-cas-dc', 'oup', 'lncs', 'revtex',
+  'amsart', 'apa7', 'aastex', 'mnras', 'achemso', 'article',
+])
 export type ConvertTargetId = z.infer<typeof ConvertTargetId>
 
 const Text = (max: number) => z.string().max(max)

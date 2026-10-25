@@ -8,7 +8,15 @@ export type BodyContext = {
   twoColumn: boolean
   /** Target class family (IEEEtran, acmart, …): its own constructs are kept. */
   family: string
+  /**
+   * The source class's lists took the widest label as an option
+   * (\begin{enumerate}[1.]), which the target's lists don't: drop it.
+   */
+  dropListWidths?: boolean
 }
+
+/** Classes whose enumerate and itemize take the widest label as an optional argument. */
+export const WIDEST_LABEL_LISTS = new Set(['sn-jnl', 'IEEEtran', 'oup-authoring-template', 'cas-sc', 'cas-dc', 'elsarticle'])
 
 export type TransformCounts = {
   citations: number
@@ -133,7 +141,60 @@ export function transformTex(src: string, ctx: BodyContext): { text: string; cou
       bump('\\qedhere → \\qed')
     }
   }
-  if (ctx.family !== 'elsarticle') {
+  // The appendix package's appendices environment clashes with IEEEtran's \appendices and
+  // breaks in llncs (no \@chapapp); both classes switch to appendices with a command.
+  if (ctx.family === 'IEEEtran' || ctx.family === 'llncs') {
+    for (const e of findEnvs(m, src, 'appendices')) {
+      edits.push({ start: e.start, end: e.bodyStart, text: ctx.family === 'IEEEtran' ? '\\appendices' : '\\appendix' })
+      edits.push({ start: e.bodyEnd, end: e.end, text: '' })
+      bump('appendices environment')
+    }
+  }
+  // Springer Nature's back matter: \bmhead{..} run-in headings and the \backmatter switch.
+  for (const h of findMacros(m, src, 'bmhead', { args: 1 })) {
+    edits.push({ start: h.start, end: h.end, text: `\\section*{${h.args[0]?.inner ?? ''}}` })
+    bump('\\bmhead → \\section*')
+  }
+  // BMC's back matter is an environment around the declarations and the references.
+  for (const e of findEnvs(m, src, 'backmatter')) {
+    edits.push({ start: e.start, end: e.bodyStart, text: '' })
+    edits.push({ start: e.bodyEnd, end: e.end, text: '' })
+    bump('backmatter environment')
+  }
+  for (const h of findMacros(m, src, 'backmatter')) {
+    edits.push({ start: h.start, end: h.end, text: '' })
+    bump('\\backmatter')
+  }
+  // sn-jnl's rule under a table: booktabs' \bottomrule, next to booktabs' \toprule and \midrule
+  // (OUP has a \botrule too, but it doesn't mix with booktabs' rules).
+  for (const h of findMacros(m, src, 'botrule')) {
+    edits.push({ start: h.start, end: h.end, text: '\\bottomrule' })
+    bump('\\botrule → \\bottomrule')
+  }
+  if (ctx.dropListWidths) {
+    // Nested lists too, so not findEnvs (outermost only).
+    for (const match of m.matchAll(/\\begin\{(enumerate|itemize)\}/g)) {
+      const at = match.index! + match[0].length
+      const opt = readGroup(m, src, at, '[')
+      if (opt && opt.start === at) {
+        edits.push({ start: opt.start, end: opt.end, text: '' })
+        bump(`${match[1]} label width`)
+      }
+    }
+  }
+
+  // Elsevier CAS takes float options as keys (\begin{figure}[width=.9\textwidth,pos=htbp]); others want placements.
+  if (ctx.family !== 'cas-sc' && ctx.family !== 'cas-dc') {
+    for (const match of m.matchAll(/\\begin\{(figure|table)(\*?)\}/g)) {
+      const at = match.index! + match[0].length
+      const opt = readGroup(m, src, at, '[')
+      if (!opt || opt.start !== at || !opt.inner.includes('=')) continue
+      const pos = opt.inner.match(/(?:^|,)\s*pos\s*=\s*([!htbpH]+)/)?.[1]
+      edits.push({ start: opt.start, end: opt.end, text: pos ? `[${pos}]` : '' })
+      bump('float options (Elsevier CAS)')
+    }
+  }
+  if (ctx.family !== 'elsarticle' && ctx.family !== 'cas-sc' && ctx.family !== 'cas-dc') {
     for (const e of findEnvs(m, src, 'highlights')) {
       edits.push({ start: e.start, end: e.end, text: '' })
       bump('highlights environment (Elsevier)')
@@ -198,6 +259,8 @@ const ACMART_THEOREMS = ['theorem', 'conjecture', 'proposition', 'lemma', 'corol
 export const CLASS_THEOREMS: Record<string, { numbered: string[]; unnumbered: string[] }> = {
   llncs: { numbered: LLNCS_THEOREMS, unnumbered: LLNCS_UNNUMBERED },
   acmart: { numbered: ACMART_THEOREMS, unnumbered: ['proof'] },
+  // jmlr (through jmlrutils)
+  jmlr: { numbered: ['theorem', 'example', 'lemma', 'proposition', 'remark', 'corollary', 'definition', 'conjecture', 'axiom'], unnumbered: ['proof'] },
 }
 
 /** amsthm commands that only configure styles; llncs has neither amsthm nor these. */

@@ -365,6 +365,21 @@ const messages: Record<string, string> = {
   'In this project': '本项目中',
   'Word template': 'Word 模板',
   None: '无',
+  // More conversion targets
+  'Two columns': '双栏',
+  'One column': '单栏',
+  'Elsevier journal (CAS, two columns)': 'Elsevier 期刊（CAS，双栏）',
+  'AMS journal': 'AMS 期刊',
+  'ACS journal': 'ACS 期刊',
+  'cas-dc: Elsevier’s double-column CAS layout.': 'cas-dc：Elsevier 的双栏 CAS 版式。',
+  'amsart: for mathematics journals, with AMS references.': 'amsart：用于数学期刊，AMS 参考文献。',
+  'apa7: for psychology and social science journals, APA references.': 'apa7：用于心理学和社会科学期刊，APA 参考文献。',
+  'aastex701: for The Astrophysical Journal, The Astronomical Journal and other AAS journals.': 'aastex701：用于 The Astrophysical Journal、The Astronomical Journal 等 AAS 期刊。',
+  'mnras: two columns, for Monthly Notices of the Royal Astronomical Society.': 'mnras：双栏，用于英国皇家天文学会月刊（MNRAS）。',
+  'achemso: for American Chemical Society journals.': 'achemso：用于美国化学会（ACS）期刊。',
+  'ACS journal code (optional)': 'ACS 期刊代码（可选）',
+  'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '为原文档类或被移除的宏包提供的命令给出了简单定义：{list}。',
+  'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX 要求每位作者都有邮箱和单位；缺少的地方已填入占位内容。',
 }
 
 export default messages

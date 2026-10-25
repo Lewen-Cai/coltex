@@ -106,4 +106,25 @@ describe('word count (ColTex)', () => {
   test('an unknown root gives zero counts', () => {
     expect(countProjectWords({ files: new Map(), rootFile: 'main.tex' }).textWords).toBe(0)
   })
+
+  test('an abstract given as an argument counts as the abstract (Springer Nature, OUP)', () => {
+    const sn = new Map([
+      [
+        'main.tex',
+        doc(
+          '\\title{T}\n\\author*[1]{\\fnm{Ann} \\sur{Lee}}\n\\abstract{\\textbf{Purpose:} Four words of purpose.\n\n\\textbf{Results:} Two more.}\n\\keywords{a, b}\n\\maketitle\n\\section{Intro}\nBody text here.',
+          '\\documentclass[sn-nature]{sn-jnl}',
+        ),
+      ],
+    ])
+    const data = countProjectWords({ files: sn, rootFile: 'main.tex', locale: 'en_US' })
+    expect(data.abstractWords).toBe(8) // Purpose Four words of purpose Results Two more
+    expect(data.textWords).toBe(3) // Body text here (the abstract isn't counted twice)
+    expect(data.headers).toBe(3) // title, abstract, section
+    // OUP may put it in the preamble; \abstract without an argument is left alone.
+    const oup = new Map([['main.tex', doc('\\maketitle\nText.\n\\abstract\nNot an abstract.', '\\documentclass{oup-authoring-template}\n\\abstract{In the preamble.}')]])
+    const fromPreamble = countProjectWords({ files: oup, rootFile: 'main.tex', locale: 'en_US' })
+    expect(fromPreamble.abstractWords).toBe(3)
+    expect(fromPreamble.textWords).toBe(4)
+  })
 })
