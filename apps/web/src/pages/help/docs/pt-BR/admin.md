@@ -10,9 +10,22 @@ O administrador do sistema vê as páginas de Administração em **Configuraçõ
   - **Administrador**: lidera uma **equipe**, por exemplo um orientador e seus alunos. Os membros que um administrador convida entram na equipe dele, e o administrador gerencia só esses membros.
   - **Administrador do sistema**: existe exatamente um, a conta criada na configuração inicial. Ele administra a instância inteira (serviços de IA, backups, rede) e vê todos. Ninguém pode se tornar um segundo, para que uma conta de administrador não consiga tomar conta da instância.
 - **Convites**: links de uso único, para um e-mail ou (com o e-mail em branco) para qualquer pessoa com o link, com data de expiração. Os links de um convite pendente continuam na lista (**Link**), um para cada endereço pelo qual o ColTex pode ser acessado (rede local, Tailscale, Cloudflare). O administrador do sistema convida membros ou administradores e escolhe o **Grupo de IA** da nova conta. Os administradores convidam só membros, para a própria equipe; esses membros recebem o grupo de IA do administrador. Os administradores veem e revogam só os próprios convites.
-- **Gerenciar usuários**: o administrador do sistema vê todas as contas, torna pessoas membros ou administradores, move membros entre equipes (**Equipe** no menu da linha), redefine senhas e suspende ou exclui contas. Um administrador vê a si mesmo e à sua equipe, e redefine senhas, suspende ou exclui só os membros da própria equipe. Excluir uma conta exclui os projetos dela.
+- **Gerenciar usuários**: o administrador do sistema vê todas as contas, torna pessoas membros ou administradores, move membros entre equipes (**Equipe** no menu da linha), redefine senhas, abre **Logins e dispositivos** e suspende ou exclui contas. A lista marca com **Bloqueada** as contas bloqueadas e com **Duas etapas** as que têm a verificação em duas etapas ativada. Um administrador vê a si mesmo e à sua equipe, e redefine senhas, suspende ou exclui só os membros da própria equipe. Excluir uma conta exclui os projetos dela.
 - Para passar a função de administrador do sistema para outra pessoa (ou recuperá-la quando essa conta for perdida), execute `coltex cli system-admin <email>` no servidor; o administrador do sistema anterior passa a ser administrador.
 - Esqueceu uma senha, inclusive a do administrador do sistema? Execute `coltex cli reset-password <email>` no servidor: ele pede a nova senha duas vezes e desconecta essa conta em todos os lugares. O dono da conta recebe uma notificação de que isso aconteceu, e o log do servidor (`coltex logs`) registra o ocorrido.
+- Perdeu o celular da verificação em duas etapas e os códigos de recuperação? `coltex reset-2fa <email>` a desativa para essa conta (com uma notificação ao dono e uma linha no log do servidor).
+
+## Logins
+
+Só o administrador do sistema vê **Logins**: todos os logins na instância (inclusive tentativas com e-mails que não têm conta), com o resultado, o navegador e o sistema, e o endereço com a localização. Clique em uma pessoa (ou use **Logins e dispositivos** em Gerenciar usuários) para ver os logins dela e os dispositivos em que ela está conectada; **Sair** encerra a sessão de um dispositivo, **Sair de todos os lugares**, a de todos. Todos os demais veem só os próprios, em **Configurações → Conta**.
+
+O ColTex protege o login por conta própria, sem serviços externos. Um endereço conta como conhecido para uma conta quando ela entrou a partir dele nos últimos 90 dias.
+
+- A partir de endereços desconhecidos, as falhas contam para a conta, qualquer que seja o endereço: a partir da terceira tentativa, o navegador primeiro resolve um pequeno desafio (prova de trabalho, cerca de um segundo, automático); depois de 5 falhas, 15 minutos de espera; depois de 10, a conta fica **bloqueada** para endereços desconhecidos. O administrador do sistema recebe uma notificação e a desbloqueia aqui ou em Gerenciar usuários (**Desbloquear**).
+- A partir de endereços conhecidos, cada 5 falhas significam 15 minutos de espera, e eles nunca são bloqueados: o dono ainda consegue entrar de onde costuma trabalhar enquanto a conta está bloqueada.
+- Um endereço na internet que falha 20 vezes em uma hora, com quaisquer contas, fica bloqueado por um dia; os endereços bloqueados aparecem no topo de **Logins** com **Desbloquear**. Endereços da rede local ou da tailnet nunca são bloqueados: várias pessoas podem compartilhar um.
+
+Ficou sem acesso você mesmo? Execute `coltex unlock <email>` (ou `coltex unlock <address>` para um endereço bloqueado) no servidor.
 
 ## Serviços de IA
 
@@ -29,7 +42,7 @@ O administrador do sistema vê as páginas de Administração em **Configuraçõ
 
 - Os arquivos dos projetos ficam no disco local ou em um armazenamento compatível com S3, definido quando o servidor inicia (`STORAGE` e `S3_*`). O histórico, os resultados das compilações e as cópias de trabalho do compilador ficam no diretório de dados.
 - Os **backups via WebDAV** vão para uma pasta no Nextcloud, ownCloud, um NAS ou qualquer servidor WebDAV. Cada backup é um único arquivo com o banco de dados, os arquivos de todos os projetos e o histórico deles. Agende-os diariamente ou semanalmente e escolha quantos manter. Use uma senha de app quando o servidor oferecer.
-> **Criptografia**: backups criptografados (AES-256) também contêm o segredo da instância, então os serviços de IA conectados continuam funcionando após uma restauração. **Guarde a senha em outro lugar: sem ela, não é possível abrir um backup.**
+> **Criptografia**: backups criptografados (AES-256) também contêm o segredo da instância, então os serviços de IA conectados e a verificação em duas etapas continuam funcionando após uma restauração. **Guarde a senha em outro lugar: sem ela, não é possível abrir um backup.** Se você restaurar um backup sem criptografia em um servidor novo (com um novo segredo da instância), as pessoas com verificação em duas etapas não conseguem entrar até você executar `coltex reset-2fa <email>` para elas.
 - A restauração é feita no servidor com o comando `restore`, com o servidor parado; veja o guia de operações.
 
 ## Monitoramento

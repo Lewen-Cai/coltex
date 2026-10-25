@@ -5,7 +5,11 @@
 - **Không gian làm việc**: mọi dự án bạn sở hữu hoặc là thành viên; tìm kiếm, chuyển giữa dạng danh sách và dạng thẻ, lọc theo chủ sở hữu.
 - **Được chia sẻ với tôi**: các dự án người khác đã mời bạn tham gia.
 
-Menu của một dự án (⋯) có: mở, tạo bản sao, tải xuống .zip, tải xuống PDF, chuyển sang mẫu khác, xuất bản thành mẫu (chủ sở hữu), lưu trữ và chuyển vào thùng rác. Chọn nhiều dự án trong danh sách để thao tác cùng lúc.
+Menu của một dự án (⋯) có: mở, đổi tên (chủ sở hữu và người chỉnh sửa), tạo bản sao, tải xuống .zip, tải xuống PDF, chuyển sang mẫu khác, xuất bản thành mẫu (chủ sở hữu), lưu trữ và chuyển vào thùng rác. Chọn nhiều dự án trong danh sách để thao tác cùng lúc.
+
+## Đổi tên
+
+Chủ sở hữu và người chỉnh sửa đổi tên một dự án bằng **Đổi tên…** trong menu của nó, hoặc bằng cách nhấp vào tên dự án ở phía trên trình soạn thảo: Enter để lưu, Esc để hủy. Mọi người thấy tên mới ngay lập tức, kể cả trong các trình soạn thảo đang mở.
 
 ## Thẻ
 

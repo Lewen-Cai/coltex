@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## クイックスタート
+
+Docker の入った Linux または macOS のマシン（Linux ではインストーラーが Docker をセットアップできます）と、2 コア以上の CPU、4 GB 以上のメモリが必要です。イメージは x86-64 と ARM64 向けにビルド済みです。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+その後 `http://<サーバー>:3690` を開き、管理者アカウントを作成します。
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="ColTex のエディター：ファイル、LaTeX ソース、コンパイルされた PDF、AI エージェント" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex は、研究グループや研究室、あるいは個人のための Ove
 - Overleaf の zip のインポートとエクスポート、URL や別のプロジェクトからのリンクファイル、タグ、アーカイブ、ゴミ箱。
 - 一般公開のアカウント登録はなく、アカウントは招待リンクから作成します。システム管理者は 1 人で、管理者はそれぞれ自分が招待したチームを管理します。
 - 監視、WebDAV バックアップ（暗号化も可能）、ローカルまたは S3 互換のストレージ、ライトテーマとダークテーマ、14 言語のインターフェース（英語、中国語、日本語、韓国語、スペイン語、フランス語、ドイツ語、ポルトガル語、イタリア語、ロシア語、トルコ語、ベトナム語、インドネシア語）。
+- アカウントの保護：認証アプリによる 2 段階認証、各アドレスの所在地（サーバー上で調べます）付きのサインイン記録、見知らぬアドレスからの失敗が続くとアカウントをロックするパスワード推測対策。いずれも外部サービスを使いません。
 
 <a id="install"></a>
 ## インストール
-
-Docker の入った Linux または macOS のマシン（Linux ではインストーラーが Docker をセットアップできます）と、2 コア以上の CPU、4 GB 以上のメモリが必要です。イメージは x86-64 と ARM64 向けにビルド済みです。
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 ダウンロードが途中で切れた場合（`curl: (35) Recv failure: Connection reset by peer`。GitHub につながりにくい環境でよく起こります）は、同じコマンドをもう一度実行してください。
 
@@ -110,7 +116,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 別のポート |
 | `--version v0.0.1` | 特定のリリース（開発ブランチは `main`） |
 | `--build` | イメージをダウンロードせず、このマシンでソースからビルドします |
-| `--images REGISTRY` | イメージのダウンロード元：`aliyun`（Alibaba Cloud 上の同じイメージ）、`ghcr`（`ghcr.io/lewen-cai`）、または ghcr.io の別のミラー。指定しない場合、中国本土では Alibaba Cloud、それ以外では ghcr.io を使います（Docker の `registry-mirrors` は Docker Hub にのみ適用され、ghcr.io には適用されません） |
+| `--images REGISTRY` | イメージのダウンロード元：`aliyun`（Alibaba Cloud 上の同じイメージ）、`ghcr`（`ghcr.io/lewen-cai`）、または ghcr.io の別のミラー。指定しない場合、このマシンから応答の速いほうを使います（Docker の `registry-mirrors` は Docker Hub にのみ適用され、ghcr.io には適用されません） |
 
 インターネットからアクセスできるサーバーでは、暗号化されていない `http://` でログインしないでください。`--domain`、Tailscale、または Cloudflare トンネルを使ってください。
 
@@ -139,13 +145,6 @@ coltex uninstall       # remove ColTex from this machine: containers, data, imag
 4. **ストレージとバックアップ**：WebDAV のフォルダー（Nextcloud、NAS など）への毎日または毎週のバックアップ。
 
 ヘルプドキュメントは内蔵されています：ユーザーメニューの **ヘルプドキュメント**。サーバーの運用（環境変数、S3、バックアップの復元）については [docs/operations.md](../docs/operations.md)（英語）を参照してください。
-
-<a id="feedback"></a>
-## 開発初期です：Issue をお寄せください
-
-ColTex はまだ若いプロジェクト（0.0.x）です。毎日使われテストされていますが、すべての問題が見つかっているわけではありません。何かが壊れた、表示がおかしい、使いにくいといったことがあれば、[Issue を作成](https://github.com/Lewen-Cai/coltex/issues)してください。どの報告も役に立ちます。
-
-役立つ報告には、バージョン（`coltex version`）、行ったことと起きたこと、そしてサーバーが関係する場合は `coltex logs` の該当する行が含まれます。パスワード、API キー、非公開の文書の内容は含めないでください。
 
 <a id="development"></a>
 ## 開発

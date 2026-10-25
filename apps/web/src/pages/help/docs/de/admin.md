@@ -10,9 +10,22 @@ Der Systemadministrator sieht die Verwaltungsseiten unter **Einstellungen** im A
   - **Admin**: leitet ein **Team**, etwa eine Betreuerin und ihre Studierenden. Die Mitglieder, die ein Admin einlädt, kommen in sein Team, und der Admin verwaltet nur sie.
   - **Systemadmin**: Es gibt genau einen, das bei der Ersteinrichtung angelegte Konto. Er betreibt die gesamte Instanz (KI-Dienste, Backups, Netzwerk) und sieht alle. Niemand kann zu einem zweiten gemacht werden, sodass ein einzelnes Admin-Konto die Instanz nicht übernehmen kann.
 - **Einladungen**: Links zur einmaligen Verwendung, für eine E-Mail-Adresse oder (bei leerem E-Mail-Feld) für alle mit dem Link, mit Ablaufdatum. Die Links einer ausstehenden Einladung bleiben in der Liste (**Link**), einer für jede Adresse, unter der ColTex erreichbar ist (LAN, Tailscale, Cloudflare). Der Systemadmin lädt Mitglieder oder Admins ein und wählt die **KI-Gruppe** des neuen Kontos. Admins laden nur Mitglieder ein, in ihr eigenes Team; diese Mitglieder erhalten die KI-Gruppe des Admins. Admins sehen und widerrufen nur ihre eigenen Einladungen.
-- **Benutzer verwalten**: Der Systemadmin sieht alle Konten, macht Personen zu Mitgliedern oder Admins, verschiebt Mitglieder zwischen Teams (**Team** im Menü der Zeile), setzt Passwörter zurück und sperrt oder löscht Konten. Ein Admin sieht sich selbst und sein Team und setzt Passwörter nur für die Mitglieder seines Teams zurück, sperrt oder löscht nur diese. Wird ein Konto gelöscht, werden auch die Projekte gelöscht, deren Eigentümer es ist.
+- **Benutzer verwalten**: Der Systemadmin sieht alle Konten, macht Personen zu Mitgliedern oder Admins, verschiebt Mitglieder zwischen Teams (**Team** im Menü der Zeile), setzt Passwörter zurück, öffnet **Anmeldungen und Geräte** und sperrt oder löscht Konten. Die Liste kennzeichnet Konten, die **Gesperrt** sind, und solche mit eingeschalteter Bestätigung in zwei Schritten (**Zwei Schritte**). Ein Admin sieht sich selbst und sein Team und setzt Passwörter nur für die Mitglieder seines Teams zurück, sperrt oder löscht nur diese. Wird ein Konto gelöscht, werden auch die Projekte gelöscht, deren Eigentümer es ist.
 - Um die Rolle des Systemadmins an jemand anderen zu übergeben (oder sie zurückzuholen, wenn das Konto verloren ist), führen Sie `coltex cli system-admin <email>` auf dem Server aus; der bisherige Systemadmin wird zum Admin.
 - Passwort vergessen, auch das des Systemadmins? Führen Sie `coltex cli reset-password <email>` auf dem Server aus: Der Befehl fragt zweimal nach dem neuen Passwort und meldet dieses Konto überall ab. Die Person, der das Konto gehört, erhält eine Benachrichtigung darüber, und das Serverprotokoll (`coltex logs`) hält es fest.
+- Smartphone für die Bestätigung in zwei Schritten und die Wiederherstellungscodes verloren? `coltex reset-2fa <email>` schaltet sie für dieses Konto aus (mit einer Benachrichtigung an die Person, der das Konto gehört, und einer Zeile im Serverprotokoll).
+
+## Anmeldungen
+
+Nur der Systemadmin sieht **Anmeldungen**: jede Anmeldung bei der Instanz (auch Versuche mit E-Mail-Adressen ohne Konto), mit Ergebnis, Browser und System sowie der Adresse und ihrem Standort. Klicken Sie auf eine Person (oder verwenden Sie **Anmeldungen und Geräte** unter Benutzer verwalten), um ihre Anmeldungen und die Geräte zu sehen, auf denen sie angemeldet ist; **Abmelden** beendet die Sitzung eines Geräts, **Überall abmelden** alle. Alle anderen sehen nur ihre eigenen, unter **Einstellungen → Konto**.
+
+ColTex schützt die Anmeldung selbst, ohne externe Dienste. Eine Adresse gilt für ein Konto als bekannt, wenn sich das Konto in den letzten 90 Tagen von dort angemeldet hat.
+
+- Von unbekannten Adressen zählen Fehlversuche für das Konto, egal von welcher Adresse: Ab dem dritten Versuch löst der Browser zuerst ein kleines Rätsel (Proof of Work, etwa eine Sekunde, automatisch); nach 5 Fehlversuchen 15 Minuten Wartezeit; nach 10 wird das Konto für unbekannte Adressen **gesperrt**. Der Systemadmin erhält eine Benachrichtigung und entsperrt es hier oder unter Benutzer verwalten (**Entsperren**).
+- Von bekannten Adressen bedeuten je 5 Fehlversuche 15 Minuten Wartezeit, gesperrt werden sie nie: Die Person kann sich weiterhin von dort anmelden, wo sie gewöhnlich arbeitet, während ihr Konto gesperrt ist.
+- Eine Adresse im Internet, die innerhalb einer Stunde 20-mal scheitert, mit beliebigen Konten, wird für einen Tag blockiert; blockierte Adressen stehen oben unter **Anmeldungen** mit **Freigeben**. Adressen im lokalen Netzwerk oder im Tailnet werden nie blockiert: Mehrere Personen können sich eine teilen.
+
+Selbst ausgesperrt? Führen Sie `coltex unlock <email>` (oder `coltex unlock <address>` für eine blockierte Adresse) auf dem Server aus.
 
 ## KI-Dienste
 
@@ -29,7 +42,7 @@ Der Systemadministrator sieht die Verwaltungsseiten unter **Einstellungen** im A
 
 - Projektdateien liegen auf der lokalen Festplatte oder in S3-kompatiblem Speicher, festgelegt beim Start des Servers (`STORAGE` und `S3_*`). Verlauf, Build-Ausgaben und die Arbeitskopien des Compilers bleiben im Datenverzeichnis.
 - **WebDAV-Backups** gehen in einen Ordner auf Nextcloud, ownCloud, einem NAS oder einem beliebigen WebDAV-Server. Jedes Backup ist eine Datei mit der Datenbank, den Dateien jedes Projekts und ihrem Verlauf. Planen Sie sie täglich oder wöchentlich und wählen Sie, wie viele aufbewahrt werden. Verwenden Sie ein App-Passwort, wenn der Server eines anbietet.
-> **Verschlüsselung**: Verschlüsselte Backups (AES-256) enthalten auch das Instanzgeheimnis, sodass verbundene KI-Dienste nach einer Wiederherstellung weiter funktionieren. **Bewahren Sie das Passwort an anderer Stelle auf: Ohne es lässt sich ein Backup nicht öffnen.**
+> **Verschlüsselung**: Verschlüsselte Backups (AES-256) enthalten auch das Instanzgeheimnis, sodass verbundene KI-Dienste und die Bestätigung in zwei Schritten nach einer Wiederherstellung weiter funktionieren. **Bewahren Sie das Passwort an anderer Stelle auf: Ohne es lässt sich ein Backup nicht öffnen.** Nach der Wiederherstellung aus einem unverschlüsselten Backup auf einem neuen Server (mit neuem Instanzgeheimnis) können sich Personen mit Bestätigung in zwei Schritten erst anmelden, wenn Sie für sie `coltex reset-2fa <email>` ausführen.
 - Die Wiederherstellung erfolgt auf dem Server mit dem Befehl `restore`, während der Server gestoppt ist; siehe die Betriebsanleitung.
 
 ## Überwachung

@@ -5,7 +5,11 @@
 - **Çalışma alanı**: sahibi veya üyesi olduğunuz tüm projeler; arama yapın, liste ile kartlar arasında geçiş yapın, sahibe göre süzün.
 - **Benimle paylaşılanlar**: başkalarının sizi davet ettiği projeler.
 
-Bir projenin menüsünde (⋯) şunlar bulunur: açma, kopya oluşturma, .zip indirme, PDF indirme, şablona dönüştürme, şablon olarak yayımlama (sahipler), arşivleme ve çöp kutusuna taşıma. Birden çok proje üzerinde birlikte işlem yapmak için listede onları seçin.
+Bir projenin menüsünde (⋯) şunlar bulunur: açma, yeniden adlandırma (sahipler ve düzenleyiciler), kopya oluşturma, .zip indirme, PDF indirme, şablona dönüştürme, şablon olarak yayımlama (sahipler), arşivleme ve çöp kutusuna taşıma. Birden çok proje üzerinde birlikte işlem yapmak için listede onları seçin.
+
+## Yeniden adlandırma
+
+Sahipler ve düzenleyiciler bir projeyi menüsündeki **Yeniden adlandır…** ile ya da düzenleyicinin üstündeki adına tıklayarak yeniden adlandırır: Enter kaydeder, Esc iptal eder. Yeni adı herkes hemen görür; açık düzenleyicilerde de.
 
 ## Etiketler
 

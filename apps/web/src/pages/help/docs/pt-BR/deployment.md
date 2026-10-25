@@ -99,7 +99,7 @@ Estas são variáveis de ambiente do servidor. Com Docker, coloque-as no arquivo
 | `COLTEX_PORT` | A porta, 3690 por padrão |
 | `COLTEX_URL` | Um endereço público oferecido em todos os links, ex.: `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Outros endereços que o login aceita, separados por vírgula. Necessário só quando as páginas e a API estão em endereços diferentes |
-| `TRUST_PROXY` | Com um proxy reverso na frente (Caddy, Nginx): `uniquelocal` (proxy em uma rede privada) ou `true`. Sem ela, o servidor toma o proxy pelo visitante, e todos compartilham um único limite de tentativas de login |
+| `TRUST_PROXY` | Com um proxy reverso na frente (Caddy, Nginx): `uniquelocal` (proxy em uma rede privada) ou `true`. Sem ela, o servidor toma o proxy pelo visitante: todos compartilham um único endereço, então as falhas de login de uma pessoa contam contra todos, e os registros de login mostram o endereço do proxy. O Tailscale e o Cloudflare Tunnel integrados não precisam de nada aqui |
 | `TS_HOSTNAME` | O nome do dispositivo do Tailscale integrado, `coltex` por padrão |
 
 **Como as requisições chegam**, no fim de **Configurações → Rede**, mostra essas configurações e o IP que o servidor vê, e aponta problemas.
@@ -119,5 +119,6 @@ Estas são variáveis de ambiente do servidor. Com Docker, coloque-as no arquivo
 - Para um grupo pequeno, acessar o ColTex só pelo Tailscale ou por uma VPN é o mais simples: ele não fica visível na internet. Com o Cloudflare Tunnel ele é público, protegido pelo login do ColTex.
 - Na internet, use HTTPS (Caddy, como na configuração em nuvem).
 - Um firewall no servidor (ufw, firewalld) não fecha as portas que o Docker publica. Com `--domain`, a porta 3690 só responde no próprio servidor; usando Tailscale ou um túnel da Cloudflare, feche a 3690 no firewall do seu provedor de nuvem.
-- Não há cadastro público, só convites; as senhas têm regras de força; o login permite 3 tentativas a cada 10 segundos por IP.
+- Não há cadastro público, só convites; as senhas têm regras de força; cada pessoa pode ativar a verificação em duas etapas. As falhas de login primeiro deixam o login mais lento e depois bloqueiam uma conta para endereços desconhecidos, e um endereço que continua falhando fica bloqueado por um dia (veja [Administração](#/help/admin)).
+- As páginas do ColTex dizem aos navegadores para não exibi-lo dentro de outros sites (contra clickjacking) e para executar só os scripts dele; com `--domain`, o Caddy também diz para usarem só HTTPS (HSTS).
 - Uma porta incomum não impede os scanners; não conte com ela.

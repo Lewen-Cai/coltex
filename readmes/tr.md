@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## Hızlı başlangıç
+
+Docker yüklü bir Linux veya macOS makinesine (Linux’ta kurulum aracı Docker’ı kurabilir), en az 2 CPU çekirdeğine ve 4 GB belleğe ihtiyacınız var. İmajlar x86-64 ve ARM64 için hazır derlenmiştir.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+Ardından `http://<sunucu>:3690` adresini açın ve yönetici hesabını oluşturun.
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="ColTex düzenleyicisi: dosyalar, LaTeX kaynağı, derlenmiş PDF ve YZ ajanı" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex; bir araştırma grubu, bir laboratuvar ya da yalnızca kendiniz için, d
 - Overleaf zip içe ve dışa aktarma, bir URL’den veya başka bir projeden bağlanan dosyalar, etiketler, arşiv ve çöp kutusu.
 - Herkese açık kayıt yok: hesaplar davet bağlantılarından gelir. Bir sistem yöneticisi ve her biri davet ettiği ekibi yöneten yöneticiler.
 - İzleme, WebDAV yedekleri (isteğe bağlı şifreli), yerel veya S3 uyumlu depolama, açık ve koyu temalar ve 14 dilde arayüz (İngilizce, Çince, Japonca, Korece, İspanyolca, Fransızca, Almanca, Portekizce, İtalyanca, Rusça, Türkçe, Vietnamca ve Endonezce).
+- Hesap güvenliği: kimlik doğrulama uygulamasıyla iki adımlı doğrulama, her adresin konumunu (sunucuda bulunur) gösteren oturum açma kaydı ve tanımadık adreslerden gelen başarısız denemeler sürünce hesabı kilitleyen parola tahmini koruması; hepsi üçüncü taraf hizmeti olmadan.
 
 <a id="install"></a>
 ## Kurulum
-
-Docker yüklü bir Linux veya macOS makinesine (Linux’ta kurulum aracı Docker’ı kurabilir), en az 2 CPU çekirdeğine ve 4 GB belleğe ihtiyacınız var. İmajlar x86-64 ve ARM64 için hazır derlenmiştir.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 İndirme yarıda kesilirse (`curl: (35) Recv failure: Connection reset by peer`, GitHub’a erişmek zor olduğunda sık görülür) komutu yeniden çalıştırın.
 
@@ -110,7 +116,7 @@ Kurulum aracı dili ve TeX Live sürümünü (edition) sorar (ok tuşlarıyla), 
 | `--port 3690` | Başka bir bağlantı noktası |
 | `--version v0.0.1` | Belirli bir sürüm (geliştirme dalı için `main`) |
 | `--build` | İmajları indirmek yerine bu makinede kaynaklardan derler |
-| `--images REGISTRY` | İmajların nereden indirileceği: `aliyun` (Alibaba Cloud’daki aynı imajlar), `ghcr` (`ghcr.io/lewen-cai`) ya da başka bir ghcr.io aynası. Verilmezse kurulum programı Çin anakarasında Alibaba Cloud’u, başka yerlerde ghcr.io’yu kullanır (Docker’ın `registry-mirrors` ayarı ghcr.io için değil, yalnızca Docker Hub için geçerlidir) |
+| `--images REGISTRY` | İmajların nereden indirileceği: `aliyun` (Alibaba Cloud’daki aynı imajlar), `ghcr` (`ghcr.io/lewen-cai`) ya da başka bir ghcr.io aynası. Verilmezse kurulum programı ikisinden buradan daha hızlı yanıt vereni kullanır (Docker’ın `registry-mirrors` ayarı ghcr.io için değil, yalnızca Docker Hub için geçerlidir) |
 
 İnternetten erişilebilen bir sunucuda düz `http://` üzerinden oturum açmayın: `--domain`, Tailscale veya bir Cloudflare tüneli kullanın.
 
@@ -139,13 +145,6 @@ Her şey tarayıcıda, kullanıcı menüsündeki **Ayarlar** altında ayarlanır
 4. **Depolama ve yedekler**: bir WebDAV klasörüne (Nextcloud, bir NAS…) günlük veya haftalık yedekler.
 
 Yardım belgeleri yerleşiktir: kullanıcı menüsünde **Yardım belgeleri**. Sunucu işlemleri (ortam değişkenleri, S3, bir yedeği geri yükleme) [docs/operations.md](../docs/operations.md) dosyasındadır (İngilizce).
-
-<a id="feedback"></a>
-## İlk günler: lütfen issue açın
-
-ColTex henüz genç (0.0.x). Her gün kullanılıyor ve test ediliyor, ancak her şey henüz bulunmuş değil. Bir şey bozulursa, yanlış görünürse veya kullanımı zorsa lütfen [bir issue açın](https://github.com/Lewen-Cai/coltex/issues): her bildirim yardımcı olur.
-
-Yararlı bir bildirimde sürüm (`coltex version`), ne yaptığınız ve ne olduğu ve sunucu işin içindeyse `coltex logs` çıktısının ilgili satırları bulunur. Lütfen parolaları, API anahtarlarını ve özel belge içeriklerini eklemeyin.
 
 <a id="development"></a>
 ## Geliştirme

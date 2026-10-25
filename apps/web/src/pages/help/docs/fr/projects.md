@@ -5,7 +5,11 @@
 - **Espace de travail** : tous les projets dont vous êtes propriétaire ou membre ; recherchez, basculez entre liste et cartes, filtrez par propriétaire.
 - **Partagés avec moi** : les projets auxquels d’autres personnes vous ont invité.
 
-Le menu d’un projet (⋯) propose : ouvrir, faire une copie, télécharger le .zip, télécharger le PDF, convertir vers un modèle, publier comme modèle (propriétaires), archiver et mettre à la corbeille. Sélectionnez plusieurs projets dans la liste pour agir sur tous à la fois.
+Le menu d’un projet (⋯) propose : ouvrir, renommer (propriétaires et éditeurs), faire une copie, télécharger le .zip, télécharger le PDF, convertir vers un modèle, publier comme modèle (propriétaires), archiver et mettre à la corbeille. Sélectionnez plusieurs projets dans la liste pour agir sur tous à la fois.
+
+## Renommer
+
+Les propriétaires et les éditeurs renomment un projet avec **Renommer…** dans son menu, ou en cliquant sur son nom en haut de l’éditeur : Entrée enregistre, Échap annule. Tout le monde voit aussitôt le nouveau nom, y compris dans les éditeurs ouverts.
 
 ## Étiquettes
 

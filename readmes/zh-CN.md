@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## 快速开始
+
+需要一台装有 Docker 的 Linux 或 macOS 电脑（Linux 上安装脚本可以帮你装 Docker），至少 2 核 CPU、4 GB 内存。镜像已为 x86-64 和 ARM64 预先构建好。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+然后打开 `http://<服务器>:3690`，创建管理员账号。
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="ColTex 编辑器：文件、LaTeX 源码、编译出的 PDF 和 AI 智能体" width="900">
 </p>
@@ -74,19 +85,14 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 - 导入、导出 Overleaf 的 zip，关联来自网址或其他项目的文件，标签、归档和回收站。
 - 不开放注册，只能凭邀请链接创建账号。一个系统管理员，以及各自管理自己所邀请小组的管理员。
 - 运行监控、WebDAV 备份（可加密）、本地或 S3 兼容存储、浅色和深色主题，界面支持 14 种语言（简体和繁体中文、英语、日语、韩语、西班牙语、法语、德语、葡萄牙语、意大利语、俄语、土耳其语、越南语和印尼语）。
+- 账号安全：可用验证器应用开启两步验证；登录记录显示每次登录的地址和归属地（在服务器上查询）；防止猜密码，陌生地址多次失败后锁定账号。都不依赖第三方服务。
 
 <a id="install"></a>
 ## 安装
 
-需要一台装有 Docker 的 Linux 或 macOS 电脑（Linux 上安装脚本可以帮你装 Docker），至少 2 核 CPU、4 GB 内存。镜像已为 x86-64 和 ARM64 预先构建好。
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
-
 如果下载中途断开（`curl: (35) Recv failure: Connection reset by peer`，访问 GitHub 不稳定时常见），重新运行这条命令即可。
 
-脚本会先用方向键询问语言和 TeX Live 版本，然后把最新版本下载到 `~/coltex`，生成配置，带进度条下载预构建的镜像并启动 ColTex，最后打印访问地址。在中国大陆，它会自动从阿里云容器镜像服务下载镜像（和 ghcr.io 上的完全相同）。完整输出写在 `~/coltex/install.log`。然后打开 `http://<服务器>:3690`，创建管理员账号。远程访问（Tailscale、Cloudflare Tunnel）之后在 **设置 → 网络** 里开启。
+脚本会先用方向键询问语言和 TeX Live 版本，然后把最新版本下载到 `~/coltex`，生成配置，带进度条下载预构建的镜像并启动 ColTex，最后打印访问地址。它会自动选用响应更快的镜像源（阿里云容器镜像服务或 ghcr.io，镜像完全相同）。完整输出写在 `~/coltex/install.log`。然后打开 `http://<服务器>:3690`，创建管理员账号。远程访问（Tailscale、Cloudflare Tunnel）之后在 **设置 → 网络** 里开启。
 
 第一次启动要下载 TeX Live，有两个版本可选：
 
@@ -110,7 +116,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |
 | `--build` | 在本机从源码构建镜像，而不是下载预构建的镜像 |
-| `--images REGISTRY` | 从哪里下载镜像：`aliyun`（阿里云上的相同镜像）、`ghcr`（`ghcr.io/lewen-cai`）或其他 ghcr.io 镜像站的地址。不指定时，在中国大陆自动从阿里云下载，其他地区从 ghcr.io 下载。已安装的实例重新运行安装命令加上它即可切换，设置和数据都会保留（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
+| `--images REGISTRY` | 从哪里下载镜像：`aliyun`（阿里云上的相同镜像）、`ghcr`（`ghcr.io/lewen-cai`）或其他 ghcr.io 镜像站的地址。不指定时，安装脚本测一下两边哪个响应更快就用哪个。已安装的实例重新运行安装命令加上它即可切换，设置和数据都会保留（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
 
 如果服务器能从公网访问，不要通过明文 `http://` 登录：请用 `--domain`、Tailscale 或 Cloudflare 隧道。
 
@@ -139,13 +145,6 @@ coltex uninstall       # remove ColTex from this machine: containers, data, imag
 4. **存储与备份**：每天或每周备份到 WebDAV 文件夹（Nextcloud、NAS 等）。
 
 使用说明内置在 ColTex 里：用户菜单里的 **帮助文档**。服务器运维（环境变量、S3、恢复备份）见 [docs/operations.md](../docs/operations.md)（英文）。
-
-<a id="feedback"></a>
-## 早期版本：欢迎提 Issue
-
-ColTex 还很年轻（0.0.x）。虽然每天都在使用和测试，但问题不一定都找出来了。如果遇到出错、显示不对或者不好用的地方，欢迎[提一个 Issue](https://github.com/Lewen-Cai/coltex/issues)，每一份反馈都很有帮助。
-
-反馈时最好写上版本号（`coltex version`）、你做了什么、发生了什么；如果和服务器有关，附上 `coltex logs` 里的相关几行。请不要附上密码、API Key 或私密的文档内容。
 
 <a id="development"></a>
 ## 开发

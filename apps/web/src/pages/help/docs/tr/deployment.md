@@ -99,7 +99,7 @@ Bunlar sunucunun ortam değişkenleridir. Docker ile bunları `docker-compose.ym
 | `COLTEX_PORT` | Bağlantı noktası, varsayılan 3690 |
 | `COLTEX_URL` | Her bağlantıda sunulan genel bir adres, ör. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Oturum açmanın kabul ettiği diğer adresler, virgülle ayrılmış. Yalnızca sayfalar ve API farklı adreslerdeyse gerekir |
-| `TRUST_PROXY` | Önünde bir ters vekil sunucu (Caddy, Nginx) varken: `uniquelocal` (özel ağdaki vekil sunucu) veya `true`. Ayarlanmazsa sunucu vekil sunucuyu ziyaretçi sanar ve herkes aynı oturum açma hız sınırını paylaşır |
+| `TRUST_PROXY` | Önünde bir ters vekil sunucu (Caddy, Nginx) varken: `uniquelocal` (özel ağdaki vekil sunucu) veya `true`. Ayarlanmazsa sunucu vekil sunucuyu ziyaretçi sanar: herkes tek bir adresi paylaşır; bu yüzden bir kişinin başarısız oturum açmaları herkesin aleyhine sayılır ve oturum açma kayıtları vekil sunucunun adresini gösterir. Yerleşik Tailscale ve Cloudflare Tunnel için burada bir şey gerekmez |
 | `TS_HOSTNAME` | Yerleşik Tailscale’in cihaz adı, varsayılan `coltex` |
 
 **Ayarlar → Ağ** sayfasının altındaki **İsteklerin gelişi**, bu ayarları ve sunucunun gördüğü IP’yi gösterir ve sorunlara dikkat çeker.
@@ -119,5 +119,6 @@ Bunlar sunucunun ortam değişkenleridir. Docker ile bunları `docker-compose.ym
 - Küçük bir grup için ColTex’e yalnızca Tailscale veya bir VPN üzerinden erişmek en basit yoldur: internette hiç görünmez. Cloudflare Tunnel ile herkese açıktır ve ColTex’in oturum açma sistemiyle korunur.
 - İnternette HTTPS kullanın (bulut kurulumundaki gibi Caddy ile).
 - Sunucudaki bir güvenlik duvarı (ufw, firewalld), Docker’ın yayımladığı bağlantı noktalarını kapatmaz. `--domain` ile 3690 numaralı bağlantı noktası yalnızca sunucunun kendisinde yanıt verir; bunun yerine Tailscale veya bir Cloudflare tüneli kullanıyorsanız 3690’ı bulut sağlayıcınızın güvenlik duvarında kapatın.
-- Herkese açık kayıt yoktur, yalnızca davetler vardır; parolaların güç kuralları vardır; oturum açmada IP başına 10 saniyede 3 denemeye izin verilir.
+- Herkese açık kayıt yoktur, yalnızca davetler vardır; parolaların güç kuralları vardır; herkes iki adımlı doğrulamayı açabilir. Başarısız oturum açmalar önce yavaşlatılır, ardından hesap tanıdık olmayan adreslere karşı kilitlenir; sürekli başarısız olan bir adres bir gün boyunca engellenir (bkz. [Yönetim](#/help/admin)).
+- ColTex’in sayfaları tarayıcılara onu başka sitelerin içinde göstermemelerini (clickjacking’e karşı) ve yalnızca kendi betiklerini çalıştırmalarını söyler; `--domain` ile Caddy ayrıca yalnızca HTTPS kullanmalarını söyler (HSTS).
 - Alışılmadık bir bağlantı noktası tarayıcıları durdurmaz; buna güvenmeyin.

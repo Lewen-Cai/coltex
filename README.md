@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## Quick start
+
+You need a Linux or macOS machine with Docker (on Linux the installer can set it up), at least 2 CPU cores and 4 GB of memory. The images are prebuilt for x86-64 and ARM64.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+Then open `http://<server>:3690` and create the administrator account.
+
 <p align="center">
   <img src="./docs/images/editor.png" alt="The ColTex editor: files, the LaTeX source, the compiled PDF and the AI agent" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex is an alternative to Overleaf for a research group, a lab or just yoursel
 - Overleaf zip import and export, files linked from a URL or another project, tags, archive and trash.
 - No public sign-up: accounts come from invitation links. One system administrator, and admins who each manage the team they invited.
 - Monitoring, WebDAV backups (optionally encrypted), local or S3-compatible storage, light and dark themes, and an interface in 14 languages (English, Chinese, Japanese, Korean, Spanish, French, German, Portuguese, Italian, Russian, Turkish, Vietnamese and Indonesian).
+- Account security: two-step verification with an authenticator app, a record of sign-ins with each address's place (looked up on the server), and protection against password guessing that locks an account for unfamiliar addresses, all without third-party services.
 
 <a id="install"></a>
 ## Install
-
-You need a Linux or macOS machine with Docker (on Linux the installer can set it up), at least 2 CPU cores and 4 GB of memory. The images are prebuilt for x86-64 and ARM64.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 If the download is cut off (`curl: (35) Recv failure: Connection reset by peer`, common when GitHub is hard to reach), run the command again.
 
@@ -110,7 +116,7 @@ Both have every TeX Live package and compile the same documents, and the AI agen
 | `--port 3690` | Another port |
 | `--version v0.0.1` | A specific release (`main` for the development branch) |
 | `--build` | Build the images from the sources on this machine instead of downloading them |
-| `--images REGISTRY` | Where to download the images from: `aliyun` (the same images on Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) or another mirror of ghcr.io. Without it, the installer uses Alibaba Cloud in mainland China and ghcr.io elsewhere (Docker's `registry-mirrors` only applies to Docker Hub, not to ghcr.io) |
+| `--images REGISTRY` | Where to download the images from: `aliyun` (the same images on Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) or another mirror of ghcr.io. Without it, the installer uses whichever of the two answers faster from here (Docker's `registry-mirrors` only applies to Docker Hub, not to ghcr.io) |
 
 On a server reachable from the internet, don't sign in over plain `http://`: use `--domain`, Tailscale or a Cloudflare tunnel.
 
@@ -139,13 +145,6 @@ Everything is set in the browser, under **Settings** in the user menu:
 4. **Storage & backups**: daily or weekly backups to a WebDAV folder (Nextcloud, a NAS…).
 
 The help documentation is built in: **Help documentation** in the user menu. Server operations (environment variables, S3, restoring a backup) are in [docs/operations.md](docs/operations.md).
-
-<a id="feedback"></a>
-## Early days: please open issues
-
-ColTex is young (0.0.x). It is used and tested every day, but not everything has been found yet. If something breaks, looks wrong or is hard to use, please [open an issue](https://github.com/Lewen-Cai/coltex/issues): every report helps.
-
-A useful report has the version (`coltex version`), what you did and what happened, and if the server is involved, the relevant lines of `coltex logs`. Please leave out passwords, API keys and private document content.
 
 <a id="development"></a>
 ## Develop

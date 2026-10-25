@@ -99,7 +99,7 @@ ColTex 也內建 Cloudflare Tunnel，僅作為通道使用：大家仍然用自�
 | `COLTEX_PORT` | 連接埠，預設為 3690 |
 | `COLTEX_URL` | 每條連結都會提供的公開位址，例如 `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | 登入時接受的其他位址，以逗號分隔。只有在頁面和 API 位於不同位址時才需要 |
-| `TRUST_PROXY` | 前面有反向代理（Caddy、Nginx）時：`uniquelocal`（代理位於私人網路上）或 `true`。未設定時，伺服器會把代理當成訪客，所有人共用同一個登入頻率限制 |
+| `TRUST_PROXY` | 前面有反向代理（Caddy、Nginx）時：`uniquelocal`（代理位於私人網路上）或 `true`。未設定時，伺服器會把代理當成訪客：所有人共用同一個位址，因此一個人的登入失敗會算在所有人頭上，登入紀錄中顯示的也是代理的位址。內建的 Tailscale 和 Cloudflare Tunnel 不需要設定這一項 |
 | `TS_HOSTNAME` | 內建 Tailscale 的裝置名稱，預設為 `coltex` |
 
 **設定 → 網路** 底部的 **連線情況** 會顯示這些設定和伺服器看到的 IP，並指出問題。
@@ -119,5 +119,6 @@ ColTex 也內建 Cloudflare Tunnel，僅作為通道使用：大家仍然用自�
 - 對小團隊來說，只透過 Tailscale 或 VPN 連線到 ColTex 最簡單：它在網際網路上完全不可見。使用 Cloudflare Tunnel 時它是公開的，由 ColTex 的登入機制保護。
 - 在網際網路上，請使用 HTTPS（Caddy，如雲端伺服器的部署方式）。
 - 伺服器上的防火牆（ufw、firewalld）無法關閉 Docker 發佈的連接埠。使用 `--domain` 時，連接埠 3690 只會在伺服器本機上回應；如果改用 Tailscale 或 Cloudflare 通道，請在雲端供應商的防火牆中關閉 3690。
-- 沒有公開註冊，只有邀請；密碼有強度規則；登入限制每個 IP 每 10 秒 3 次嘗試。
+- 沒有公開註冊，只有邀請；密碼有強度規則；每個人都可以開啟兩步驟驗證。登入失敗會先減慢速度，之後對不熟悉的位址鎖定帳號，持續失敗的位址會被封鎖一天（請見 [管理](#/help/admin)）。
+- ColTex 的頁面會告訴瀏覽器不要在其他網站中顯示它（防止點擊劫持），並且只執行它自己的指令碼；使用 `--domain` 時，Caddy 還會告訴瀏覽器只使用 HTTPS（HSTS）。
 - 使用不常見的連接埠並不能阻擋掃描程式；不要依賴它。

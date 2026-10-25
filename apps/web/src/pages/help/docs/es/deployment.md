@@ -99,7 +99,7 @@ Son variables de entorno del servidor. Con Docker, ponlas en el archivo `.env` j
 | `COLTEX_PORT` | El puerto, 3690 por defecto |
 | `COLTEX_URL` | Una dirección pública que se ofrece en todos los enlaces, p. ej., `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Otras direcciones que acepta el inicio de sesión, separadas por comas. Solo hace falta cuando las páginas y la API están en direcciones distintas |
-| `TRUST_PROXY` | Con un proxy inverso delante (Caddy, Nginx): `uniquelocal` (proxy en una red privada) o `true`. Si no se define, el servidor toma el proxy por el visitante y todos comparten un mismo límite de intentos de inicio de sesión |
+| `TRUST_PROXY` | Con un proxy inverso delante (Caddy, Nginx): `uniquelocal` (proxy en una red privada) o `true`. Si no se define, el servidor toma el proxy por el visitante: todos comparten una misma dirección, así que los inicios de sesión fallidos de una persona cuentan contra todos, y los registros de inicio de sesión muestran la dirección del proxy. El Tailscale y el Cloudflare Tunnel integrados no necesitan nada aquí |
 | `TS_HOSTNAME` | El nombre de dispositivo del Tailscale integrado, `coltex` por defecto |
 
 **Cómo llegan las solicitudes**, al final de **Configuración → Red**, muestra esta configuración y la IP que ve el servidor, y señala los problemas.
@@ -119,5 +119,6 @@ Son variables de entorno del servidor. Con Docker, ponlas en el archivo `.env` j
 - Para un grupo pequeño, lo más sencillo es acceder a ColTex solo a través de Tailscale o una VPN: así no es visible en internet en absoluto. Con Cloudflare Tunnel es público, protegido por el inicio de sesión de ColTex.
 - En internet, usa HTTPS (Caddy, como en la configuración en la nube).
 - Un cortafuegos en el servidor (ufw, firewalld) no cierra los puertos que publica Docker. Con `--domain`, el puerto 3690 solo responde en el propio servidor; si usas Tailscale o un túnel de Cloudflare, cierra el 3690 en el cortafuegos de tu proveedor de nube.
-- No hay registro público, solo invitaciones; las contraseñas tienen reglas de seguridad; el inicio de sesión permite 3 intentos cada 10 segundos por IP.
+- No hay registro público, solo invitaciones; las contraseñas tienen reglas de seguridad; cada persona puede activar la verificación en dos pasos. Los inicios de sesión fallidos se ralentizan y después bloquean una cuenta para direcciones desconocidas, y una dirección que sigue fallando queda bloqueada durante un día (consulta [Administración](#/help/admin)).
+- Las páginas de ColTex indican a los navegadores que no lo muestren dentro de otros sitios (contra el clickjacking) y que solo ejecuten sus propios scripts; con `--domain`, Caddy también les indica que usen solo HTTPS (HSTS).
 - Un puerto poco habitual no detiene a los escáneres; no confíes en ello.

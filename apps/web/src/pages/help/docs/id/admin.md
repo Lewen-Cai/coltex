@@ -10,9 +10,22 @@ Administrator sistem melihat halaman Administrasi di bawah **Pengaturan** pada m
   - **Admin**: memimpin sebuah **tim**, misalnya seorang pembimbing dan mahasiswanya. Anggota yang diundang admin bergabung ke tim admin itu, dan admin hanya mengelola mereka.
   - **Admin sistem**: hanya ada satu, yaitu akun yang dibuat saat penyiapan pertama. Akun ini menjalankan seluruh instans (layanan AI, cadangan, jaringan) dan melihat semua orang. Tidak ada yang dapat dijadikan admin sistem kedua, sehingga satu akun admin tidak dapat mengambil alih instans.
 - **Undangan**: tautan sekali pakai, untuk satu email atau (jika email dikosongkan) untuk siapa pun yang memiliki tautan, dengan masa berlaku. Tautan undangan yang tertunda tetap ada di daftar (**Tautan**), satu untuk setiap alamat tempat ColTex dapat dijangkau (LAN, Tailscale, Cloudflare). Admin sistem mengundang anggota atau admin dan memilih **Grup AI** untuk akun baru. Admin hanya mengundang anggota, ke dalam tim mereka sendiri; anggota tersebut mendapat grup AI admin itu. Admin hanya melihat dan mencabut undangan mereka sendiri.
-- **Kelola pengguna**: admin sistem melihat setiap akun, menjadikan orang anggota atau admin, memindahkan anggota antartim (**Tim** di menu baris), mengatur ulang kata sandi, serta menangguhkan atau menghapus akun. Seorang admin melihat dirinya sendiri dan timnya, dan hanya mengatur ulang kata sandi, menangguhkan, atau menghapus anggota timnya. Menghapus akun akan menghapus proyek miliknya.
+- **Kelola pengguna**: admin sistem melihat setiap akun, menjadikan orang anggota atau admin, memindahkan anggota antartim (**Tim** di menu baris), mengatur ulang kata sandi, membuka **Catatan masuk dan perangkat**, serta menangguhkan atau menghapus akun. Daftar menandai akun yang **Dikunci** dan akun dengan verifikasi **2 langkah** aktif. Seorang admin melihat dirinya sendiri dan timnya, dan hanya mengatur ulang kata sandi, menangguhkan, atau menghapus anggota timnya. Menghapus akun akan menghapus proyek miliknya.
 - Untuk menyerahkan peran admin sistem kepada orang lain (atau mendapatkannya kembali jika akun itu hilang), jalankan `coltex cli system-admin <email>` di server; admin sistem sebelumnya menjadi admin.
 - Lupa kata sandi, termasuk kata sandi admin sistem? Jalankan `coltex cli reset-password <email>` di server: perintah ini meminta kata sandi baru dua kali dan mengeluarkan akun itu dari semua perangkat. Pemilik akun menerima notifikasi tentang hal ini, dan log server (`coltex logs`) mencatatnya.
+- Kehilangan ponsel untuk verifikasi 2 langkah sekaligus kode pemulihannya? `coltex reset-2fa <email>` mematikannya untuk akun itu (dengan notifikasi kepada pemiliknya dan satu baris di log server).
+
+## Catatan masuk
+
+Hanya admin sistem yang melihat **Catatan masuk**: setiap proses masuk ke instans (juga percobaan dengan email yang tidak memiliki akun), beserta hasilnya, peramban dan sistem, serta alamat beserta lokasinya. Klik seseorang (atau gunakan **Catatan masuk dan perangkat** di Kelola pengguna) untuk melihat proses masuknya dan perangkat tempat ia sedang masuk; **Keluar** mengakhiri sesi satu perangkat, **Keluar dari semua perangkat** mengakhiri semuanya. Orang lain hanya melihat catatannya sendiri, di **Pengaturan → Akun**.
+
+ColTex melindungi proses masuk dengan sendirinya, tanpa layanan luar. Sebuah alamat dianggap dikenal untuk suatu akun jika akun itu pernah masuk dari alamat tersebut dalam 90 hari terakhir.
+
+- Dari alamat yang tidak dikenal, kegagalan dihitung per akun, apa pun alamatnya: mulai percobaan ketiga, peramban terlebih dahulu menyelesaikan teka-teki kecil (proof of work, sekitar satu detik, otomatis); setelah 5 kegagalan, harus menunggu 15 menit; setelah 10, akun **dikunci** untuk alamat yang tidak dikenal. Admin sistem menerima notifikasi dan membukanya di sini atau di Kelola pengguna (**Buka kunci**).
+- Dari alamat yang dikenal, setiap 5 kegagalan berarti menunggu 15 menit, dan alamat itu tidak pernah dikunci: pemilik tetap dapat masuk dari tempat ia biasa bekerja selama akunnya dikunci.
+- Alamat di internet yang gagal 20 kali dalam satu jam, dengan akun apa pun, diblokir selama sehari; alamat yang diblokir tercantum di bagian atas **Catatan masuk** dengan **Buka blokir**. Alamat di jaringan lokal atau di tailnet tidak pernah diblokir: beberapa orang dapat berbagi satu alamat.
+
+Anda sendiri terkunci? Jalankan `coltex unlock <email>` (atau `coltex unlock <address>` untuk alamat yang diblokir) di server.
 
 ## Layanan AI
 
@@ -29,7 +42,7 @@ Administrator sistem melihat halaman Administrasi di bawah **Pengaturan** pada m
 
 - File proyek disimpan di disk lokal atau di penyimpanan yang kompatibel dengan S3, diatur saat server dimulai (`STORAGE` dan `S3_*`). Riwayat, keluaran kompilasi, dan salinan kerja kompilator tetap berada di direktori data.
 - **Cadangan WebDAV** disimpan ke folder di Nextcloud, ownCloud, NAS, atau server WebDAV mana pun. Setiap cadangan adalah satu file berisi basis data, file setiap proyek, dan riwayatnya. Jadwalkan setiap hari atau setiap minggu dan pilih berapa banyak yang disimpan. Gunakan kata sandi aplikasi jika server menyediakannya.
-> **Enkripsi**: cadangan terenkripsi (AES-256) juga berisi rahasia instans, sehingga layanan AI yang terhubung tetap berfungsi setelah pemulihan. **Simpan kata sandi ini di tempat lain: tanpanya cadangan tidak dapat dibuka.**
+> **Enkripsi**: cadangan terenkripsi (AES-256) juga berisi rahasia instans, sehingga layanan AI yang terhubung dan verifikasi 2 langkah tetap berfungsi setelah pemulihan. **Simpan kata sandi ini di tempat lain: tanpanya cadangan tidak dapat dibuka.** Jika dipulihkan dari cadangan tanpa enkripsi di server baru (dengan rahasia instans baru), orang dengan verifikasi 2 langkah tidak dapat masuk sampai Anda menjalankan `coltex reset-2fa <email>` untuk mereka.
 - Pemulihan dilakukan di server dengan perintah `restore` saat server dihentikan; lihat panduan operasional.
 
 ## Pemantauan

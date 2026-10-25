@@ -99,7 +99,7 @@ ColTex 也自带 Cloudflare Tunnel，只用它的通道：登录仍然是 ColTex
 | `COLTEX_PORT` | 对外的端口，默认 3690 |
 | `COLTEX_URL` | 每条链接都会提供的公开地址，比如 `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | 其他也允许登录的地址，用逗号分隔。只有页面和接口不在同一个地址时才需要 |
-| `TRUST_PROXY` | 前面有反向代理（Caddy、Nginx）时设为 `uniquelocal`（代理在内网）或 `true`。不设置时，服务器把代理当成访客，所有人共用一个登录频率限制 |
+| `TRUST_PROXY` | 前面有反向代理（Caddy、Nginx）时设为 `uniquelocal`（代理在内网）或 `true`。不设置时，服务器把代理当成访客：所有人共用一个地址，一个人的登录失败会算到所有人头上，登录记录里也只显示代理的地址。内置的 Tailscale 和 Cloudflare Tunnel 不需要设置它 |
 | `TS_HOSTNAME` | 自带 Tailscale 的设备名，默认 `coltex` |
 
 **设置 → 网络** 底部的“访问情况”显示这些设置和服务器看到的 IP，配置有问题时会给出提示。
@@ -119,5 +119,6 @@ ColTex 也自带 Cloudflare Tunnel，只用它的通道：登录仍然是 ColTex
 - 小团队最省心的做法是只通过 Tailscale 或 VPN 访问，公网上根本看不到这个服务。用 Cloudflare Tunnel 时服务是公开的，靠 ColTex 的登录保护。
 - 放到公网时用 HTTPS（云服务器场景里的 Caddy）。
 - 服务器上的防火墙（ufw、firewalld）挡不住 Docker 开放的端口。用了 `--domain` 后，3690 端口只在服务器本机可访问；如果改用 Tailscale 或 Cloudflare 隧道，请在云服务商的防火墙里关掉 3690。
-- ColTex 不开放注册，只能凭邀请创建账号。密码有强度要求，同一个 IP 每 10 秒最多尝试 3 次登录。
+- ColTex 不开放注册，只能凭邀请创建账号。密码有强度要求，每个人都可以开启两步验证。登录失败多了要等待，再多会对陌生地址锁定账号，一直失败的地址会被封禁一天（见[管理](#/help/admin)）。
+- ColTex 的页面告诉浏览器不要在其他网站里嵌入显示它（防点击劫持），只运行它自己的脚本；用 `--domain` 时，Caddy 还会告诉浏览器只用 HTTPS 访问（HSTS）。
 - 换一个不常见的端口挡不住扫描，不要把它当成防护手段。

@@ -10,9 +10,22 @@ The system administrator sees the Administration pages under **Settings** in the
   - **Admin**: leads a **team**, say a supervisor and their students. The members an admin invites join the admin's team, and the admin manages only them.
   - **System admin**: there is exactly one, the account made at first-run setup. It runs the whole instance (AI services, backups, network) and sees everyone. Nobody can be made a second one, so one admin account can't take the instance over.
 - **Invitations**: single-use links, for one email or (with the email left empty) for anyone with the link, with an expiry. A pending invitation's links stay in the list (**Link**), one for every address ColTex can be reached at (LAN, Tailscale, Cloudflare). The system admin invites members or admins and chooses the new account's **AI group**. Admins invite members only, into their own team; those members get the admin's AI group. Admins see and revoke only their own invitations.
-- **Manage users**: the system admin sees every account, makes people members or admins, moves members between teams (**Team** in the row's menu), resets passwords, and suspends or deletes accounts. An admin sees themselves and their team, and resets passwords, suspends or deletes only their team's members. Deleting an account deletes the projects it owns.
+- **Manage users**: the system admin sees every account, makes people members or admins, moves members between teams (**Team** in the row's menu), resets passwords, opens **Sign-ins and devices**, and suspends or deletes accounts. The list marks accounts that are **Locked** and those with **Two-step** verification on. An admin sees themselves and their team, and resets passwords, suspends or deletes only their team's members. Deleting an account deletes the projects it owns.
 - To hand the system admin role to someone else (or get it back when that account is lost), run `coltex cli system-admin <email>` on the server; the previous system admin becomes an admin.
 - Forgot a password, the system admin's included? Run `coltex cli reset-password <email>` on the server: it asks for the new password twice and signs that account out everywhere. The account's owner gets a notification that it happened, and the server's log (`coltex logs`) records it.
+- Lost the phone for two-step verification and the recovery codes? `coltex reset-2fa <email>` turns it off for that account (with a notification to its owner and a line in the server's log).
+
+## Sign-ins
+
+Only the system admin sees **Sign-ins**: every sign-in to the instance (also attempts with emails that have no account), with the result, browser and system, and the address with where it is. Click a person (or use **Sign-ins and devices** in Manage users) to see their sign-ins and the devices they are signed in on; **Sign out** ends one device's session, **Sign out everywhere** all of them. Everyone else sees only their own, in **Settings → Account**.
+
+ColTex protects sign-in by itself, without outside services. An address counts as familiar for an account when the account signed in from it in the last 90 days.
+
+- From unfamiliar addresses, failures count for the account, whatever the address: from the third attempt on, the browser first works out a small puzzle (proof of work, about a second, automatic); after 5 failures, 15 minutes' wait; after 10 the account is **locked** for unfamiliar addresses. The system admin gets a notification and unlocks it here or in Manage users (**Unlock**).
+- From familiar addresses, every 5 failures mean 15 minutes' wait, and they are never locked: the owner can still sign in from where they usually work while their account is locked.
+- An address on the internet that fails 20 times within an hour, with any accounts, is blocked for a day; blocked addresses are listed at the top of **Sign-ins** with **Unblock**. Addresses on the local network or the tailnet are never blocked: several people may share one.
+
+Locked out yourself? Run `coltex unlock <email>` (or `coltex unlock <address>` for a blocked address) on the server.
 
 ## AI services
 
@@ -29,7 +42,7 @@ The system administrator sees the Administration pages under **Settings** in the
 
 - Project files are kept on the local disk or in S3-compatible storage, set when the server starts (`STORAGE` and `S3_*`). History, build output and the compiler's working copies stay in the data directory.
 - **WebDAV backups** go to a folder on Nextcloud, ownCloud, a NAS or any WebDAV server. Each backup is one file with the database, every project's files and their history. Schedule them daily or weekly and choose how many to keep. Use an app password where the server offers one.
-> **Encryption**: encrypted backups (AES-256) also contain the instance secret, so connected AI services keep working after a restore. **Keep the password somewhere else: without it a backup can't be opened.**
+> **Encryption**: encrypted backups (AES-256) also contain the instance secret, so connected AI services and two-step verification keep working after a restore. **Keep the password somewhere else: without it a backup can't be opened.** Restored from an unencrypted backup on a new server (a new instance secret), people with two-step verification can't sign in until you run `coltex reset-2fa <email>` for them.
 - Restoring is done on the server with the `restore` command while the server is stopped; see the operations guide.
 
 ## Monitoring

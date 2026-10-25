@@ -2,6 +2,32 @@
 
 All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTex is at 0.0.x, any release may change things.
 
+## v0.0.5
+
+Two-step verification, a record of sign-ins and protection against password guessing, renaming projects, security headers, and `coltex update` with the installer's download bar.
+
+### New
+
+- Two-step verification, for whoever turns it on in Settings → Account: a code from an authenticator app after the password, 10 recovery codes, and "don't ask again on this device for 30 days". `coltex reset-2fa <email>` turns it off for someone who lost both.
+- Sign-in activity in Settings → Account: each sign-in with the result, the browser and the address with its place (country, region, city and network operator, looked up in a database on the server; addresses are never sent anywhere). Places are shown in the interface language: countries and first-level regions everywhere, and places in China in full.
+- Administration → Sign-ins, for the system administrator: everyone's sign-ins, locked accounts and blocked addresses, and each person's signed-in devices, which can be signed out one by one or all at once.
+- Sign-in protection, without third-party services: from unfamiliar addresses, a small proof of work in the browser from the third failed attempt, a 15-minute wait after five, and the account locked for unfamiliar addresses after ten, until the system administrator unlocks it (they get a notification; `coltex unlock <email>` on the server). Addresses where the account signed in before only wait. An address on the internet that fails 20 times in an hour is blocked for a day.
+- Rename a project from its menu in the project list, or by clicking its name at the top of the editor.
+
+### Improved
+
+- `coltex update` shows the same one-line download bar as the installer, with the speed, where the images come from and retries, and starting the services is one line too.
+- `coltex update` hands the rest of the update to the version it just got, so later versions can do what they need on the way.
+- ColTex's pages send security headers: no framing by other sites, only its own scripts (a Content Security Policy), no content sniffing, and no referrer to other sites. With `--domain`, Caddy adds HSTS.
+- The API description (`/api/openapi.json`) needs a signed-in account.
+- Dependencies updated to their patched releases.
+- The README starts with a quick start.
+
+### Fixed
+
+- Signing in with an email that has no account and a short password answered differently from a wrong password, which told that the account didn't exist.
+- The `--images` help said the installer picks Alibaba Cloud in mainland China; it uses whichever registry answers faster.
+
 ## v0.0.4
 
 Projects from Overleaf and VS Code compile and import cleanly, a simpler installer, grouped `coltex` help, and skills that are all your own.

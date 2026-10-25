@@ -5,7 +5,11 @@
 - **Area di lavoro**: tutti i progetti di cui sei proprietario o membro; cerca, passa dalla vista elenco alle schede, filtra per proprietario.
 - **Condivisi con me**: i progetti a cui altre persone ti hanno invitato.
 
-Il menu di un progetto (⋯) contiene: apri, crea una copia, scarica .zip, scarica PDF, converti in modello, pubblica come modello (proprietari), archivia e sposta nel cestino. Seleziona più progetti nell’elenco per agire su tutti insieme.
+Il menu di un progetto (⋯) contiene: apri, rinomina (proprietari ed editor), crea una copia, scarica .zip, scarica PDF, converti in modello, pubblica come modello (proprietari), archivia e sposta nel cestino. Seleziona più progetti nell’elenco per agire su tutti insieme.
+
+## Rinominare
+
+Proprietari ed editor rinominano un progetto con **Rinomina…** nel suo menu, oppure facendo clic sul suo nome in cima all’editor: Invio salva, Esc annulla. Tutti vedono subito il nuovo nome, anche negli editor aperti.
 
 ## Tag
 

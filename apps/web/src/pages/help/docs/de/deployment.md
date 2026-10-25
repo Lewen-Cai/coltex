@@ -99,7 +99,7 @@ Dies sind Umgebungsvariablen des Servers. Mit Docker tragen Sie sie in die Datei
 | `COLTEX_PORT` | Der Port, standardmäßig 3690 |
 | `COLTEX_URL` | Eine öffentliche Adresse, die in jedem Link angeboten wird, z. B. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Weitere Adressen, die die Anmeldung akzeptiert, durch Kommas getrennt. Nur nötig, wenn Seiten und API unter verschiedenen Adressen liegen |
-| `TRUST_PROXY` | Mit einem vorgeschalteten Reverse Proxy (Caddy, Nginx): `uniquelocal` (Proxy in einem privaten Netzwerk) oder `true`. Ist sie nicht gesetzt, hält der Server den Proxy für den Besucher, und alle teilen sich ein Anmeldelimit |
+| `TRUST_PROXY` | Mit einem vorgeschalteten Reverse Proxy (Caddy, Nginx): `uniquelocal` (Proxy in einem privaten Netzwerk) oder `true`. Ist sie nicht gesetzt, hält der Server den Proxy für den Besucher: Alle teilen sich eine Adresse, sodass die Fehlversuche einer Person für alle zählen und die Anmeldeprotokolle die Adresse des Proxys zeigen. Das integrierte Tailscale und Cloudflare Tunnel brauchen hier nichts |
 | `TS_HOSTNAME` | Der Gerätename des integrierten Tailscale, standardmäßig `coltex` |
 
 **Wie Anfragen ankommen** unten unter **Einstellungen → Netzwerk** zeigt diese Einstellungen und die IP, die der Server sieht, und weist auf Probleme hin.
@@ -119,5 +119,6 @@ Dies sind Umgebungsvariablen des Servers. Mit Docker tragen Sie sie in die Datei
 - Für eine kleine Gruppe ist es am einfachsten, ColTex nur über Tailscale oder ein VPN zu erreichen: Dann ist es im Internet gar nicht sichtbar. Mit Cloudflare Tunnel ist es öffentlich, geschützt durch die Anmeldung von ColTex.
 - Verwenden Sie im Internet HTTPS (Caddy, wie bei der Cloud-Konfiguration).
 - Eine Firewall auf dem Server (ufw, firewalld) schließt keine Ports, die Docker veröffentlicht. Mit `--domain` antwortet Port 3690 nur auf dem Server selbst; verwenden Sie stattdessen Tailscale oder einen Cloudflare-Tunnel, schließen Sie 3690 in der Firewall Ihres Cloud-Anbieters.
-- Es gibt keine öffentliche Registrierung, nur Einladungen; Passwörter unterliegen Stärkeregeln; die Anmeldung erlaubt 3 Versuche pro 10 Sekunden und IP.
+- Es gibt keine öffentliche Registrierung, nur Einladungen; Passwörter unterliegen Stärkeregeln; jede Person kann die Bestätigung in zwei Schritten einschalten. Fehlgeschlagene Anmeldungen werden verlangsamt und sperren dann ein Konto für unbekannte Adressen, und eine Adresse, die immer wieder scheitert, wird für einen Tag blockiert (siehe [Verwaltung](#/help/admin)).
+- Die Seiten von ColTex weisen Browser an, sie nicht innerhalb anderer Websites anzuzeigen (gegen Clickjacking) und nur die eigenen Skripte auszuführen; mit `--domain` weist Caddy sie außerdem an, nur HTTPS zu verwenden (HSTS).
 - Ein ungewöhnlicher Port hält Scanner nicht auf; verlassen Sie sich nicht darauf.

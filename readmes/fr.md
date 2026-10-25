@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## Démarrage rapide
+
+Il vous faut une machine Linux ou macOS avec Docker (sous Linux, l’installateur peut l’installer), au moins 2 cœurs de CPU et 4 Go de mémoire. Les images sont précompilées pour x86-64 et ARM64.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+Ouvrez ensuite `http://<serveur>:3690` et créez le compte administrateur.
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="L’éditeur ColTex : les fichiers, la source LaTeX, le PDF compilé et l’agent IA" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex est une alternative à Overleaf pour une équipe de recherche, un laborat
 - Import et export de zip Overleaf, fichiers liés depuis une URL ou un autre projet, étiquettes, archive et corbeille.
 - Pas d’inscription publique : les comptes viennent de liens d’invitation. Un administrateur système, et des administrateurs qui gèrent chacun l’équipe qu’ils ont invitée.
 - Surveillance, sauvegardes WebDAV (chiffrées en option), stockage local ou compatible S3, thèmes clairs et sombres, et une interface en 14 langues (anglais, chinois, japonais, coréen, espagnol, français, allemand, portugais, italien, russe, turc, vietnamien et indonésien).
+- Sécurité des comptes : validation en deux étapes avec une application d’authentification, un journal des connexions avec le lieu de chaque adresse (recherché sur le serveur) et une protection contre la devinette des mots de passe qui verrouille le compte pour les adresses inconnues, le tout sans service tiers.
 
 <a id="install"></a>
 ## Installation
-
-Il vous faut une machine Linux ou macOS avec Docker (sous Linux, l’installateur peut l’installer), au moins 2 cœurs de CPU et 4 Go de mémoire. Les images sont précompilées pour x86-64 et ARM64.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 Si le téléchargement est interrompu (`curl: (35) Recv failure: Connection reset by peer`, fréquent quand GitHub est difficile à joindre), relancez la commande.
 
@@ -110,7 +116,7 @@ Les deux contiennent tous les packages de TeX Live et compilent les mêmes docum
 | `--port 3690` | Un autre port |
 | `--version v0.0.1` | Une version précise (`main` pour la branche de développement) |
 | `--build` | Construit les images à partir des sources sur cette machine au lieu de les télécharger |
-| `--images REGISTRY` | D’où télécharger les images : `aliyun` (les mêmes images sur Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) ou un autre miroir de ghcr.io. Sans cette option, l’installateur prend Alibaba Cloud en Chine continentale et ghcr.io ailleurs (les `registry-mirrors` de Docker ne s’appliquent qu’à Docker Hub, pas à ghcr.io) |
+| `--images REGISTRY` | D’où télécharger les images : `aliyun` (les mêmes images sur Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) ou un autre miroir de ghcr.io. Sans cette option, l’installateur prend celui des deux qui répond le plus vite depuis cette machine (les `registry-mirrors` de Docker ne s’appliquent qu’à Docker Hub, pas à ghcr.io) |
 
 Sur un serveur joignable depuis Internet, ne vous connectez pas en simple `http://` : utilisez `--domain`, Tailscale ou un tunnel Cloudflare.
 
@@ -139,13 +145,6 @@ Tout se règle dans le navigateur, sous **Paramètres** dans le menu utilisateur
 4. **Stockage et sauvegardes** : sauvegardes quotidiennes ou hebdomadaires vers un dossier WebDAV (Nextcloud, un NAS…).
 
 La documentation d’aide est intégrée : **Documentation** dans le menu utilisateur. L’exploitation du serveur (variables d’environnement, S3, restauration d’une sauvegarde) est décrite dans [docs/operations.md](../docs/operations.md) (en anglais).
-
-<a id="feedback"></a>
-## Projet tout jeune : signalez les problèmes
-
-ColTex est jeune (0.0.x). Il est utilisé et testé tous les jours, mais tout n’a pas encore été trouvé. Si quelque chose ne fonctionne pas, s’affiche mal ou est difficile à utiliser, merci d’[ouvrir une issue](https://github.com/Lewen-Cai/coltex/issues) : chaque signalement aide.
-
-Un signalement utile indique la version (`coltex version`), ce que vous avez fait et ce qui s’est passé, et, si le serveur est en cause, les lignes pertinentes de `coltex logs`. Merci de ne pas y mettre de mots de passe, de clés API ni le contenu de documents privés.
 
 <a id="development"></a>
 ## Développement

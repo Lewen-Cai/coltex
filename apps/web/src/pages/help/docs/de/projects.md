@@ -5,7 +5,11 @@
 - **Arbeitsbereich**: alle Projekte, deren Eigentümer oder Mitglied Sie sind; suchen, zwischen Liste und Kacheln wechseln, nach Eigentümer filtern.
 - **Mit mir geteilt**: Projekte, zu denen andere Sie eingeladen haben.
 
-Das Menü eines Projekts (⋯) enthält: öffnen, Kopie erstellen, .zip herunterladen, PDF herunterladen, in Vorlage umwandeln, als Vorlage veröffentlichen (Eigentümer), archivieren und in den Papierkorb verschieben. Wählen Sie mehrere Projekte in der Liste aus, um sie gemeinsam zu bearbeiten.
+Das Menü eines Projekts (⋯) enthält: öffnen, umbenennen (Eigentümer und Bearbeiter), Kopie erstellen, .zip herunterladen, PDF herunterladen, in Vorlage umwandeln, als Vorlage veröffentlichen (Eigentümer), archivieren und in den Papierkorb verschieben. Wählen Sie mehrere Projekte in der Liste aus, um sie gemeinsam zu bearbeiten.
+
+## Umbenennen
+
+Eigentümer und Bearbeiter benennen ein Projekt mit **Umbenennen…** in seinem Menü um oder durch einen Klick auf seinen Namen oben im Editor: Enter speichert, Esc bricht ab. Alle sehen den neuen Namen sofort, auch in geöffneten Editoren.
 
 ## Tags
 

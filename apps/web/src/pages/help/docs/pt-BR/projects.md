@@ -5,7 +5,11 @@
 - **Área de trabalho**: todos os projetos de que você é proprietário ou membro; busque, alterne entre lista e cartões, filtre por proprietário.
 - **Compartilhados comigo**: projetos para os quais outras pessoas convidaram você.
 
-O menu de um projeto (⋯) tem: abrir, fazer uma cópia, baixar .zip, baixar PDF, converter para modelo, publicar como modelo (proprietários), arquivar e mover para a lixeira. Selecione vários projetos na lista para agir sobre eles de uma vez.
+O menu de um projeto (⋯) tem: abrir, renomear (proprietários e editores), fazer uma cópia, baixar .zip, baixar PDF, converter para modelo, publicar como modelo (proprietários), arquivar e mover para a lixeira. Selecione vários projetos na lista para agir sobre eles de uma vez.
+
+## Renomear
+
+Proprietários e editores renomeiam um projeto com **Renomear…** no menu dele, ou clicando no nome dele no topo do editor: Enter salva, Esc cancela. Todos veem o novo nome na hora, inclusive nos editores que estão abertos.
 
 ## Etiquetas
 

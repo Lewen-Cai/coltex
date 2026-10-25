@@ -99,7 +99,7 @@ These are environment variables of the server. With Docker, put them in the `.en
 | `COLTEX_PORT` | The port, 3690 by default |
 | `COLTEX_URL` | A public address offered in every link, e.g. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Other addresses sign-in accepts, comma-separated. Needed only when pages and the API are at different addresses |
-| `TRUST_PROXY` | With a reverse proxy in front (Caddy, Nginx): `uniquelocal` (proxy on a private network) or `true`. Unset, the server takes the proxy for the visitor, and everyone shares one sign-in rate limit |
+| `TRUST_PROXY` | With a reverse proxy in front (Caddy, Nginx): `uniquelocal` (proxy on a private network) or `true`. Unset, the server takes the proxy for the visitor: everyone shares one address, so one person's failed sign-ins count against everyone, and sign-in records show the proxy's address. The built-in Tailscale and Cloudflare Tunnel need nothing here |
 | `TS_HOSTNAME` | The built-in Tailscale's device name, `coltex` by default |
 
 **How requests arrive** at the bottom of **Settings → Network** shows these settings and the IP the server sees, and points out problems.
@@ -119,5 +119,6 @@ These are environment variables of the server. With Docker, put them in the `.en
 - For a small group, reaching ColTex only through Tailscale or a VPN is simplest: it isn't visible on the internet at all. With Cloudflare Tunnel it is public, protected by ColTex's sign-in.
 - On the internet, use HTTPS (Caddy, as in the cloud setup).
 - A firewall on the server (ufw, firewalld) doesn't close ports Docker publishes. With `--domain`, port 3690 only answers on the server itself; with Tailscale or a Cloudflare tunnel instead, close 3690 in your cloud provider's firewall.
-- There is no public sign-up, only invitations; passwords have strength rules; sign-in allows 3 attempts per 10 seconds per IP.
+- There is no public sign-up, only invitations; passwords have strength rules; each person can turn on two-step verification. Failed sign-ins slow down and then lock an account for unfamiliar addresses, and an address that keeps failing is blocked for a day (see [Administration](#/help/admin)).
+- ColTex's pages tell browsers not to show it inside other sites (against clickjacking) and to run only its own scripts; with `--domain`, Caddy also tells them to use HTTPS only (HSTS).
 - An unusual port doesn't stop scanners; don't count on it.

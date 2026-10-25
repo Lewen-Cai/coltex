@@ -10,9 +10,22 @@ Quản trị viên hệ thống thấy các trang Quản trị trong **Cài đ�
   - **Quản trị viên**: dẫn dắt một **nhóm**, chẳng hạn một người hướng dẫn và các sinh viên của họ. Những thành viên mà quản trị viên mời sẽ vào nhóm của quản trị viên đó, và quản trị viên chỉ quản lý những người này.
   - **Quản trị viên hệ thống**: chỉ có đúng một, là tài khoản được tạo khi thiết lập lần đầu. Tài khoản này vận hành toàn bộ phiên bản cài đặt (dịch vụ AI, sao lưu, mạng) và thấy tất cả mọi người. Không ai có thể được đặt làm quản trị viên hệ thống thứ hai, nên một tài khoản quản trị viên không thể chiếm quyền phiên bản cài đặt.
 - **Lời mời**: liên kết dùng một lần, cho một email hoặc (khi để trống email) cho bất kỳ ai có liên kết, có thời hạn. Các liên kết của một lời mời đang chờ vẫn nằm trong danh sách (**Liên kết**), mỗi địa chỉ mà ColTex có thể được truy cập một liên kết (LAN, Tailscale, Cloudflare). Quản trị viên hệ thống mời thành viên hoặc quản trị viên và chọn **Nhóm AI** cho tài khoản mới. Quản trị viên chỉ mời thành viên, vào nhóm của chính họ; những thành viên này nhận nhóm AI của quản trị viên. Quản trị viên chỉ thấy và thu hồi lời mời của chính mình.
-- **Quản lý người dùng**: quản trị viên hệ thống thấy mọi tài khoản, đặt người khác làm thành viên hoặc quản trị viên, chuyển thành viên giữa các nhóm (**Nhóm** trong menu của hàng), đặt lại mật khẩu, và tạm khóa hoặc xóa tài khoản. Quản trị viên thấy chính mình và nhóm của mình, và chỉ đặt lại mật khẩu, tạm khóa hoặc xóa thành viên trong nhóm mình. Xóa một tài khoản sẽ xóa các dự án mà tài khoản đó sở hữu.
+- **Quản lý người dùng**: quản trị viên hệ thống thấy mọi tài khoản, đặt người khác làm thành viên hoặc quản trị viên, chuyển thành viên giữa các nhóm (**Nhóm** trong menu của hàng), đặt lại mật khẩu, mở **Đăng nhập và thiết bị**, và tạm khóa hoặc xóa tài khoản. Danh sách đánh dấu các tài khoản **Đã khóa** và những tài khoản đang bật xác minh **2 bước**. Quản trị viên thấy chính mình và nhóm của mình, và chỉ đặt lại mật khẩu, tạm khóa hoặc xóa thành viên trong nhóm mình. Xóa một tài khoản sẽ xóa các dự án mà tài khoản đó sở hữu.
 - Để chuyển vai trò quản trị viên hệ thống cho người khác (hoặc lấy lại khi mất tài khoản đó), hãy chạy `coltex cli system-admin <email>` trên máy chủ; quản trị viên hệ thống trước đó sẽ trở thành quản trị viên.
 - Quên mật khẩu, kể cả mật khẩu của quản trị viên hệ thống? Hãy chạy `coltex cli reset-password <email>` trên máy chủ: lệnh sẽ yêu cầu nhập mật khẩu mới hai lần và đăng xuất tài khoản đó ở mọi nơi. Chủ tài khoản sẽ nhận được thông báo về việc này, và nhật ký của máy chủ (`coltex logs`) ghi lại sự việc.
+- Mất điện thoại dùng cho xác minh 2 bước và cả mã khôi phục? `coltex reset-2fa <email>` sẽ tắt xác minh 2 bước cho tài khoản đó (kèm thông báo cho chủ tài khoản và một dòng trong nhật ký của máy chủ).
+
+## Đăng nhập
+
+Chỉ quản trị viên hệ thống thấy **Đăng nhập**: mọi lần đăng nhập vào phiên bản cài đặt (kể cả các lần thử với email không có tài khoản), kèm kết quả, trình duyệt và hệ điều hành, và địa chỉ cùng vị trí của nó. Nhấp vào một người (hoặc dùng **Đăng nhập và thiết bị** trong Quản lý người dùng) để xem các lần đăng nhập của họ và các thiết bị họ đang đăng nhập; **Đăng xuất** kết thúc phiên trên một thiết bị, **Đăng xuất trên mọi thiết bị** kết thúc tất cả. Những người khác chỉ thấy của chính mình, trong **Cài đặt → Tài khoản**.
+
+ColTex tự bảo vệ việc đăng nhập, không cần dịch vụ bên ngoài. Một địa chỉ được coi là quen thuộc với một tài khoản khi tài khoản đó đã đăng nhập từ địa chỉ này trong 90 ngày qua.
+
+- Từ các địa chỉ lạ, số lần thất bại được tính cho tài khoản, bất kể địa chỉ nào: từ lần thử thứ ba trở đi, trình duyệt phải giải một câu đố nhỏ trước (proof of work, khoảng một giây, tự động); sau 5 lần thất bại, phải chờ 15 phút; sau 10 lần, tài khoản bị **khóa** đối với các địa chỉ lạ. Quản trị viên hệ thống nhận được thông báo và mở khóa ở đây hoặc trong Quản lý người dùng (**Mở khóa**).
+- Từ các địa chỉ quen thuộc, cứ mỗi 5 lần thất bại là phải chờ 15 phút, và không bao giờ bị khóa: chủ tài khoản vẫn đăng nhập được từ nơi họ thường làm việc trong khi tài khoản đang bị khóa.
+- Một địa chỉ trên internet thất bại 20 lần trong một giờ, với bất kỳ tài khoản nào, sẽ bị chặn một ngày; các địa chỉ bị chặn được liệt kê ở đầu trang **Đăng nhập** kèm **Bỏ chặn**. Địa chỉ trong mạng cục bộ hoặc tailnet không bao giờ bị chặn: nhiều người có thể dùng chung một địa chỉ.
+
+Chính bạn bị khóa? Hãy chạy `coltex unlock <email>` (hoặc `coltex unlock <address>` với một địa chỉ bị chặn) trên máy chủ.
 
 ## Dịch vụ AI
 
@@ -29,7 +42,7 @@ Quản trị viên hệ thống thấy các trang Quản trị trong **Cài đ�
 
 - Tệp dự án được lưu trên ổ đĩa cục bộ hoặc trong bộ lưu trữ tương thích S3, đặt khi máy chủ khởi động (`STORAGE` và `S3_*`). Lịch sử, kết quả biên dịch và bản sao làm việc của trình biên dịch nằm trong thư mục dữ liệu.
 - **Sao lưu WebDAV** được gửi tới một thư mục trên Nextcloud, ownCloud, NAS hoặc bất kỳ máy chủ WebDAV nào. Mỗi bản sao lưu là một tệp chứa cơ sở dữ liệu, tệp của mọi dự án và lịch sử của chúng. Hãy lên lịch sao lưu hằng ngày hoặc hằng tuần và chọn số bản cần giữ. Dùng mật khẩu ứng dụng nếu máy chủ hỗ trợ.
-> **Mã hóa**: bản sao lưu mã hóa (AES-256) còn chứa khóa bí mật của phiên bản cài đặt, nên các dịch vụ AI đã kết nối vẫn hoạt động sau khi khôi phục. **Hãy cất mật khẩu ở nơi khác: không có nó thì không thể mở bản sao lưu.**
+> **Mã hóa**: bản sao lưu mã hóa (AES-256) còn chứa khóa bí mật của phiên bản cài đặt, nên các dịch vụ AI đã kết nối và xác minh 2 bước vẫn hoạt động sau khi khôi phục. **Hãy cất mật khẩu ở nơi khác: không có nó thì không thể mở bản sao lưu.** Nếu khôi phục từ một bản sao lưu không mã hóa trên máy chủ mới (khóa bí mật mới), những người bật xác minh 2 bước sẽ không đăng nhập được cho đến khi bạn chạy `coltex reset-2fa <email>` cho họ.
 - Việc khôi phục được thực hiện trên máy chủ bằng lệnh `restore` khi máy chủ đã dừng; xem hướng dẫn vận hành.
 
 ## Giám sát

@@ -99,7 +99,7 @@ Nếu máy chủ đã chạy cloudflared cho một tunnel riêng của nó, hai 
 | `COLTEX_PORT` | Cổng, mặc định 3690 |
 | `COLTEX_URL` | Một địa chỉ công khai được đưa ra trong mọi liên kết, vd. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Các địa chỉ khác mà việc đăng nhập chấp nhận, phân tách bằng dấu phẩy. Chỉ cần khi các trang và API ở những địa chỉ khác nhau |
-| `TRUST_PROXY` | Khi có reverse proxy phía trước (Caddy, Nginx): `uniquelocal` (proxy trong mạng riêng) hoặc `true`. Nếu không đặt, máy chủ coi proxy là người truy cập, và mọi người dùng chung một giới hạn tần suất đăng nhập |
+| `TRUST_PROXY` | Khi có reverse proxy phía trước (Caddy, Nginx): `uniquelocal` (proxy trong mạng riêng) hoặc `true`. Nếu không đặt, máy chủ coi proxy là người truy cập: mọi người dùng chung một địa chỉ, nên các lần đăng nhập thất bại của một người bị tính cho tất cả, và bản ghi đăng nhập hiển thị địa chỉ của proxy. Tailscale và Cloudflare Tunnel tích hợp sẵn không cần đặt gì ở đây |
 | `TS_HOSTNAME` | Tên thiết bị của Tailscale tích hợp sẵn, mặc định `coltex` |
 
 **Cách yêu cầu đi tới** ở cuối **Cài đặt → Mạng** hiển thị các cài đặt này và IP mà máy chủ thấy, đồng thời chỉ ra các vấn đề.
@@ -119,5 +119,6 @@ Nếu máy chủ đã chạy cloudflared cho một tunnel riêng của nó, hai 
 - Với một nhóm nhỏ, chỉ truy cập ColTex qua Tailscale hoặc VPN là đơn giản nhất: nó hoàn toàn không hiện ra trên internet. Với Cloudflare Tunnel, nó là công khai, được bảo vệ bằng đăng nhập của ColTex.
 - Trên internet, hãy dùng HTTPS (Caddy, như ở cách triển khai trên máy chủ đám mây).
 - Tường lửa trên máy chủ (ufw, firewalld) không đóng được các cổng mà Docker công bố. Với `--domain`, cổng 3690 chỉ trả lời trên chính máy chủ; nếu dùng Tailscale hoặc Cloudflare tunnel thay thế, hãy đóng cổng 3690 trong tường lửa của nhà cung cấp đám mây.
-- Không có đăng ký công khai, chỉ có lời mời; mật khẩu có quy tắc về độ mạnh; đăng nhập cho phép 3 lần thử mỗi 10 giây trên mỗi IP.
+- Không có đăng ký công khai, chỉ có lời mời; mật khẩu có quy tắc về độ mạnh; mỗi người có thể bật xác minh 2 bước. Các lần đăng nhập thất bại sẽ bị làm chậm rồi khóa tài khoản đối với các địa chỉ lạ, và một địa chỉ liên tục thất bại sẽ bị chặn một ngày (xem [Quản trị](#/help/admin)).
+- Các trang của ColTex yêu cầu trình duyệt không hiển thị nó bên trong trang web khác (chống clickjacking) và chỉ chạy các script của chính nó; với `--domain`, Caddy còn yêu cầu trình duyệt chỉ dùng HTTPS (HSTS).
 - Một cổng lạ không ngăn được các công cụ quét; đừng trông cậy vào nó.

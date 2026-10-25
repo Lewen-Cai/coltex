@@ -5,7 +5,11 @@
 - **Workspace**: every project you own or are a member of; search, switch between list and cards, filter by owner.
 - **Shared with me**: projects other people invited you to.
 
-A project's menu (⋯) has: open, make a copy, download .zip, download PDF, convert to template, publish as template (owners), archive and move to trash. Select several projects in the list to act on them together.
+A project's menu (⋯) has: open, rename (owners and editors), make a copy, download .zip, download PDF, convert to template, publish as template (owners), archive and move to trash. Select several projects in the list to act on them together.
+
+## Renaming
+
+Owners and editors rename a project with **Rename…** in its menu, or by clicking its name at the top of the editor: Enter saves, Esc cancels. Everyone sees the new name straight away, also in editors that are open.
 
 ## Tags
 

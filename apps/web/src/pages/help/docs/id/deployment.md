@@ -99,7 +99,7 @@ Ini adalah variabel lingkungan server. Dengan Docker, letakkan di file `.env` di
 | `COLTEX_PORT` | Port, 3690 secara bawaan |
 | `COLTEX_URL` | Alamat publik yang ditawarkan di setiap tautan, mis. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Alamat lain yang diterima untuk masuk, dipisahkan koma. Hanya diperlukan ketika halaman dan API berada di alamat yang berbeda |
-| `TRUST_PROXY` | Dengan proksi balik di depan (Caddy, Nginx): `uniquelocal` (proksi di jaringan privat) atau `true`. Jika tidak diatur, server menganggap proksi sebagai pengunjung, dan semua orang berbagi satu batas laju masuk |
+| `TRUST_PROXY` | Dengan proksi balik di depan (Caddy, Nginx): `uniquelocal` (proksi di jaringan privat) atau `true`. Jika tidak diatur, server menganggap proksi sebagai pengunjung: semua orang berbagi satu alamat, sehingga kegagalan masuk satu orang dihitung untuk semua orang, dan catatan masuk menampilkan alamat proksi. Tailscale dan Cloudflare Tunnel bawaan tidak memerlukan apa pun di sini |
 | `TS_HOSTNAME` | Nama perangkat Tailscale bawaan, `coltex` secara bawaan |
 
 **Cara permintaan masuk** di bagian bawah **Pengaturan → Jaringan** menampilkan pengaturan ini dan IP yang dilihat server, serta menunjukkan masalah.
@@ -119,5 +119,6 @@ Ini adalah variabel lingkungan server. Dengan Docker, letakkan di file `.env` di
 - Untuk kelompok kecil, menjangkau ColTex hanya melalui Tailscale atau VPN adalah cara paling sederhana: ColTex sama sekali tidak terlihat di internet. Dengan Cloudflare Tunnel, ColTex bersifat publik, dilindungi oleh proses masuk ColTex.
 - Di internet, gunakan HTTPS (Caddy, seperti pada penyiapan server cloud).
 - Firewall di server (ufw, firewalld) tidak menutup port yang dipublikasikan Docker. Dengan `--domain`, port 3690 hanya menjawab di server itu sendiri; jika menggunakan Tailscale atau terowongan Cloudflare, tutup port 3690 di firewall penyedia cloud Anda.
-- Tidak ada pendaftaran publik, hanya undangan; kata sandi memiliki aturan kekuatan; proses masuk mengizinkan 3 percobaan per 10 detik per IP.
+- Tidak ada pendaftaran publik, hanya undangan; kata sandi memiliki aturan kekuatan; setiap orang dapat mengaktifkan verifikasi 2 langkah. Kegagalan masuk akan diperlambat lalu mengunci akun untuk alamat yang tidak dikenal, dan alamat yang terus gagal diblokir selama sehari (lihat [Administrasi](#/help/admin)).
+- Halaman ColTex memberi tahu peramban agar tidak menampilkannya di dalam situs lain (melawan clickjacking) dan hanya menjalankan skripnya sendiri; dengan `--domain`, Caddy juga memberi tahu peramban untuk hanya menggunakan HTTPS (HSTS).
 - Port yang tidak lazim tidak menghentikan pemindai; jangan mengandalkannya.

@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## Bắt đầu nhanh
+
+Bạn cần một máy Linux hoặc macOS có Docker (trên Linux, trình cài đặt có thể tự cài Docker), tối thiểu 2 nhân CPU và 4 GB bộ nhớ. Các image được dựng sẵn cho x86-64 và ARM64.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+Sau đó mở `http://<máy chủ>:3690` và tạo tài khoản quản trị viên.
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="Trình soạn thảo ColTex: tệp, mã nguồn LaTeX, PDF đã biên dịch và tác tử AI" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex là một lựa chọn thay thế Overleaf cho nhóm nghiên cứu, phòn
 - Nhập và xuất zip của Overleaf, tệp liên kết từ URL hoặc từ dự án khác, thẻ, lưu trữ và thùng rác.
 - Không có đăng ký công khai: tài khoản chỉ đến từ liên kết mời. Một quản trị viên hệ thống, và các quản trị viên, mỗi người quản lý nhóm do mình mời.
 - Giám sát, sao lưu WebDAV (có thể mã hóa), lưu trữ cục bộ hoặc tương thích S3, chủ đề sáng và tối, và giao diện bằng 14 ngôn ngữ (tiếng Anh, tiếng Trung, tiếng Nhật, tiếng Hàn, tiếng Tây Ban Nha, tiếng Pháp, tiếng Đức, tiếng Bồ Đào Nha, tiếng Ý, tiếng Nga, tiếng Thổ Nhĩ Kỳ, tiếng Việt và tiếng Indonesia).
+- Bảo mật tài khoản: xác minh 2 bước bằng ứng dụng xác thực, nhật ký đăng nhập kèm vị trí của từng địa chỉ (tra cứu trên máy chủ), và chống dò mật khẩu bằng cách khóa tài khoản với các địa chỉ lạ, tất cả không cần dịch vụ bên thứ ba.
 
 <a id="install"></a>
 ## Cài đặt
-
-Bạn cần một máy Linux hoặc macOS có Docker (trên Linux, trình cài đặt có thể tự cài Docker), tối thiểu 2 nhân CPU và 4 GB bộ nhớ. Các image được dựng sẵn cho x86-64 và ARM64.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 Nếu việc tải xuống bị ngắt (`curl: (35) Recv failure: Connection reset by peer`, thường gặp khi khó kết nối tới GitHub), hãy chạy lại lệnh.
 
@@ -110,7 +116,7 @@ Cả hai đều có mọi gói của TeX Live và biên dịch được cùng c�
 | `--port 3690` | Một cổng khác |
 | `--version v0.0.1` | Một bản phát hành cụ thể (`main` cho nhánh phát triển) |
 | `--build` | Dựng các image từ mã nguồn trên máy này thay vì tải về |
-| `--images REGISTRY` | Nơi tải các image: `aliyun` (cùng các image trên Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) hoặc một bản mirror khác của ghcr.io. Nếu không chỉ định, trình cài đặt dùng Alibaba Cloud ở Trung Quốc đại lục và ghcr.io ở nơi khác (`registry-mirrors` của Docker chỉ áp dụng cho Docker Hub, không áp dụng cho ghcr.io) |
+| `--images REGISTRY` | Nơi tải các image: `aliyun` (cùng các image trên Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) hoặc một bản mirror khác của ghcr.io. Nếu không chỉ định, trình cài đặt dùng nơi nào phản hồi nhanh hơn từ máy này (`registry-mirrors` của Docker chỉ áp dụng cho Docker Hub, không áp dụng cho ghcr.io) |
 
 Trên máy chủ truy cập được từ internet, đừng đăng nhập qua `http://` thuần: hãy dùng `--domain`, Tailscale hoặc Cloudflare tunnel.
 
@@ -139,13 +145,6 @@ Mọi thứ được thiết lập trong trình duyệt, ở **Cài đặt** tro
 4. **Lưu trữ & sao lưu**: sao lưu hằng ngày hoặc hằng tuần vào một thư mục WebDAV (Nextcloud, NAS…).
 
 Tài liệu trợ giúp có sẵn trong ứng dụng: **Tài liệu trợ giúp** trong menu người dùng. Vận hành máy chủ (biến môi trường, S3, khôi phục bản sao lưu) được mô tả trong [docs/operations.md](../docs/operations.md).
-
-<a id="feedback"></a>
-## Giai đoạn đầu: hãy mở issue
-
-ColTex còn non trẻ (0.0.x). Nó được dùng và kiểm thử hằng ngày, nhưng chưa phải mọi lỗi đều đã được phát hiện. Nếu có gì hỏng, trông sai hoặc khó dùng, hãy [mở một issue](https://github.com/Lewen-Cai/coltex/issues): mọi báo cáo đều có ích.
-
-Một báo cáo hữu ích gồm phiên bản (`coltex version`), bạn đã làm gì và điều gì đã xảy ra, và nếu liên quan đến máy chủ thì gồm các dòng liên quan trong `coltex logs`. Vui lòng bỏ mật khẩu, khóa API và nội dung tài liệu riêng tư ra khỏi báo cáo.
 
 <a id="development"></a>
 ## Phát triển

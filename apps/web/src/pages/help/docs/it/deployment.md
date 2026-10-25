@@ -99,7 +99,7 @@ Sono variabili d’ambiente del server. Con Docker, mettile nel file `.env` acca
 | `COLTEX_PORT` | La porta, 3690 per impostazione predefinita |
 | `COLTEX_URL` | Un indirizzo pubblico proposto in ogni link, ad es. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | Altri indirizzi accettati per l’accesso, separati da virgole. Serve solo quando pagine e API sono a indirizzi diversi |
-| `TRUST_PROXY` | Con un reverse proxy davanti (Caddy, Nginx): `uniquelocal` (proxy su una rete privata) o `true`. Se non è impostato, il server scambia il proxy per il visitatore, e tutti condividono un unico limite di frequenza per gli accessi |
+| `TRUST_PROXY` | Con un reverse proxy davanti (Caddy, Nginx): `uniquelocal` (proxy su una rete privata) o `true`. Se non è impostato, il server scambia il proxy per il visitatore: tutti condividono un unico indirizzo, quindi i tentativi di accesso falliti di una persona contano contro tutti, e i registri degli accessi mostrano l’indirizzo del proxy. Tailscale e Cloudflare Tunnel integrati non richiedono nulla qui |
 | `TS_HOSTNAME` | Il nome del dispositivo del Tailscale integrato, `coltex` per impostazione predefinita |
 
 **Come arrivano le richieste** in fondo a **Impostazioni → Rete** mostra queste impostazioni e l’IP visto dal server, e segnala i problemi.
@@ -119,5 +119,6 @@ Sono variabili d’ambiente del server. Con Docker, mettile nel file `.env` acca
 - Per un piccolo gruppo, raggiungere ColTex solo tramite Tailscale o una VPN è la soluzione più semplice: non è affatto visibile su internet. Con Cloudflare Tunnel è pubblico, protetto dall’accesso di ColTex.
 - Su internet, usa HTTPS (Caddy, come nella configurazione cloud).
 - Un firewall sul server (ufw, firewalld) non chiude le porte pubblicate da Docker. Con `--domain`, la porta 3690 risponde solo sul server stesso; se invece usi Tailscale o un tunnel Cloudflare, chiudi la 3690 nel firewall del tuo provider cloud.
-- Non c’è registrazione pubblica, solo inviti; le password hanno regole di robustezza; l’accesso consente 3 tentativi ogni 10 secondi per IP.
+- Non c’è registrazione pubblica, solo inviti; le password hanno regole di robustezza; ognuno può attivare la verifica in due passaggi. Gli accessi falliti rallentano e poi bloccano un account per gli indirizzi non abituali, e un indirizzo che continua a fallire viene bloccato per un giorno (vedi [Amministrazione](#/help/admin)).
+- Le pagine di ColTex dicono ai browser di non mostrarlo dentro altri siti (contro il clickjacking) e di eseguire solo i suoi script; con `--domain`, Caddy dice loro anche di usare solo HTTPS (HSTS).
 - Una porta insolita non ferma gli scanner; non farci affidamento.

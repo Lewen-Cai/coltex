@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## 빠른 시작
+
+Docker가 있는 Linux 또는 macOS 컴퓨터(Linux에서는 설치 프로그램이 Docker를 설치할 수 있음), CPU 2코어 이상, 메모리 4 GB 이상이 필요합니다. 이미지는 x86-64와 ARM64용으로 미리 빌드되어 있습니다.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+그런 다음 `http://<서버>:3690`을 열고 관리자 계정을 만듭니다.
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="ColTex 편집기: 파일, LaTeX 소스, 컴파일된 PDF, AI 에이전트" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex는 연구 그룹, 연구실 또는 개인을 위한 Overleaf 대안으로
 - Overleaf zip 가져오기와 내보내기, URL이나 다른 프로젝트에서 연결한 파일, 태그, 보관, 휴지통.
 - 공개 가입 없음: 계정은 초대 링크로만 만들어집니다. 시스템 관리자 한 명과, 각자 초대한 팀을 관리하는 관리자들.
 - 모니터링, WebDAV 백업(선택적 암호화), 로컬 또는 S3 호환 저장소, 라이트 및 다크 테마, 14개 언어의 인터페이스(영어, 중국어, 일본어, 한국어, 스페인어, 프랑스어, 독일어, 포르투갈어, 이탈리아어, 러시아어, 터키어, 베트남어, 인도네시아어).
+- 계정 보안: 인증 앱을 이용한 2단계 인증, 주소별 위치(서버에서 조회)가 담긴 로그인 기록, 낯선 주소에서 실패가 이어지면 계정을 잠그는 비밀번호 추측 방지. 모두 외부 서비스 없이 동작합니다.
 
 <a id="install"></a>
 ## 설치
-
-Docker가 있는 Linux 또는 macOS 컴퓨터(Linux에서는 설치 프로그램이 Docker를 설치할 수 있음), CPU 2코어 이상, 메모리 4 GB 이상이 필요합니다. 이미지는 x86-64와 ARM64용으로 미리 빌드되어 있습니다.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 다운로드가 중간에 끊기면(`curl: (35) Recv failure: Connection reset by peer`, GitHub에 접속하기 어려울 때 자주 생깁니다) 명령을 다시 실행하세요.
 
@@ -110,7 +116,7 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 | `--port 3690` | 다른 포트 사용 |
 | `--version v0.0.1` | 특정 릴리스(`main`은 개발 브랜치) |
 | `--build` | 이미지를 다운로드하지 않고 이 컴퓨터에서 소스로 빌드 |
-| `--images REGISTRY` | 이미지를 받을 곳: `aliyun`(알리바바 클라우드의 같은 이미지), `ghcr`(`ghcr.io/lewen-cai`) 또는 다른 ghcr.io 미러. 지정하지 않으면 중국 본토에서는 알리바바 클라우드, 그 밖에서는 ghcr.io를 씁니다(Docker의 `registry-mirrors`는 Docker Hub에만 적용되고 ghcr.io에는 적용되지 않습니다) |
+| `--images REGISTRY` | 이미지를 받을 곳: `aliyun`(알리바바 클라우드의 같은 이미지), `ghcr`(`ghcr.io/lewen-cai`) 또는 다른 ghcr.io 미러. 지정하지 않으면 이 컴퓨터에서 응답이 더 빠른 쪽을 씁니다(Docker의 `registry-mirrors`는 Docker Hub에만 적용되고 ghcr.io에는 적용되지 않습니다) |
 
 인터넷에서 접속할 수 있는 서버에서는 암호화되지 않은 `http://`로 로그인하지 마세요. `--domain`, Tailscale 또는 Cloudflare 터널을 사용하세요.
 
@@ -139,13 +145,6 @@ coltex uninstall       # remove ColTex from this machine: containers, data, imag
 4. **저장소 및 백업**: WebDAV 폴더(Nextcloud, NAS 등)로 매일 또는 매주 백업합니다.
 
 도움말 문서가 내장되어 있습니다. 사용자 메뉴의 **도움말 문서**를 여세요. 서버 운영(환경 변수, S3, 백업 복원)은 [docs/operations.md](../docs/operations.md)(영어)에 있습니다.
-
-<a id="feedback"></a>
-## 초기 단계: Issue를 열어 주세요
-
-ColTex는 아직 초기 버전(0.0.x)입니다. 매일 사용하고 테스트하고 있지만 아직 발견하지 못한 문제가 있을 수 있습니다. 무언가 고장 나거나, 이상해 보이거나, 쓰기 어렵다면 [Issue를 열어 주세요](https://github.com/Lewen-Cai/coltex/issues). 모든 보고가 도움이 됩니다.
-
-유용한 보고에는 버전(`coltex version`), 무엇을 했고 무슨 일이 일어났는지, 그리고 서버와 관련된 문제라면 `coltex logs`의 관련 줄이 들어 있습니다. 비밀번호, API 키, 비공개 문서 내용은 빼 주세요.
 
 <a id="development"></a>
 ## 개발

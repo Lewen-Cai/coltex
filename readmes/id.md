@@ -29,6 +29,17 @@
   <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+<a id="quick-start"></a>
+## Mulai cepat
+
+Anda memerlukan mesin Linux atau macOS dengan Docker (di Linux, penginstal dapat memasangnya), minimal 2 inti CPU dan memori 4 GB. Image sudah dibuat sebelumnya untuk x86-64 dan ARM64.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+```
+
+Lalu buka `http://<server>:3690` dan buat akun administrator.
+
 <p align="center">
   <img src="../docs/images/editor.png" alt="Editor ColTex: file, sumber LaTeX, PDF hasil kompilasi, dan agen AI" width="900">
 </p>
@@ -74,15 +85,10 @@ ColTex adalah alternatif Overleaf untuk kelompok riset, laboratorium, atau untuk
 - Impor dan ekspor zip Overleaf, file yang ditautkan dari URL atau proyek lain, tag, arsip, dan sampah.
 - Tanpa pendaftaran publik: akun berasal dari tautan undangan. Satu administrator sistem, dan admin yang masing-masing mengelola tim yang mereka undang.
 - Pemantauan, cadangan WebDAV (opsional terenkripsi), penyimpanan lokal atau yang kompatibel dengan S3, tema terang dan gelap, serta antarmuka dalam 14 bahasa (Inggris, Tionghoa, Jepang, Korea, Spanyol, Prancis, Jerman, Portugis, Italia, Rusia, Turki, Vietnam, dan Indonesia).
+- Keamanan akun: verifikasi 2 langkah dengan aplikasi autentikator, catatan masuk dengan lokasi setiap alamat (dicari di server), dan perlindungan dari penebakan kata sandi yang mengunci akun untuk alamat yang tidak dikenal, semuanya tanpa layanan pihak ketiga.
 
 <a id="install"></a>
 ## Instalasi
-
-Anda memerlukan mesin Linux atau macOS dengan Docker (di Linux, penginstal dapat memasangnya), minimal 2 inti CPU dan memori 4 GB. Image sudah dibuat sebelumnya untuk x86-64 dan ARM64.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-```
 
 Jika unduhan terputus (`curl: (35) Recv failure: Connection reset by peer`, sering terjadi saat GitHub sulit dijangkau), jalankan perintahnya lagi.
 
@@ -110,7 +116,7 @@ Keduanya berisi semua paket TeX Live dan mengompilasi dokumen yang sama, dan age
 | `--port 3690` | Port lain |
 | `--version v0.0.1` | Rilis tertentu (`main` untuk cabang pengembangan) |
 | `--build` | Bangun image dari kode sumber di mesin ini alih-alih mengunduhnya |
-| `--images REGISTRY` | Tempat mengunduh image: `aliyun` (image yang sama di Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`), atau mirror ghcr.io lainnya. Tanpa opsi ini, penginstal memakai Alibaba Cloud di Tiongkok daratan dan ghcr.io di tempat lain (`registry-mirrors` milik Docker hanya berlaku untuk Docker Hub, bukan untuk ghcr.io) |
+| `--images REGISTRY` | Tempat mengunduh image: `aliyun` (image yang sama di Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`), atau mirror ghcr.io lainnya. Tanpa opsi ini, penginstal memakai yang lebih cepat merespons dari sini di antara keduanya (`registry-mirrors` milik Docker hanya berlaku untuk Docker Hub, bukan untuk ghcr.io) |
 
 Di server yang dapat dijangkau dari internet, jangan masuk melalui `http://` biasa: gunakan `--domain`, Tailscale, atau terowongan Cloudflare.
 
@@ -139,13 +145,6 @@ Semuanya diatur di peramban, di bawah **Pengaturan** pada menu pengguna:
 4. **Penyimpanan & cadangan**: pencadangan harian atau mingguan ke folder WebDAV (Nextcloud, NAS…).
 
 Dokumentasi bantuan sudah tersedia di dalam aplikasi: **Dokumentasi bantuan** di menu pengguna. Operasional server (variabel lingkungan, S3, memulihkan cadangan) ada di [docs/operations.md](../docs/operations.md) (bahasa Inggris).
-
-<a id="feedback"></a>
-## Masih tahap awal: silakan buka issue
-
-ColTex masih muda (0.0.x). ColTex digunakan dan diuji setiap hari, tetapi belum semua masalah ditemukan. Jika ada yang rusak, tampak salah, atau sulit digunakan, silakan [buka issue](https://github.com/Lewen-Cai/coltex/issues): setiap laporan membantu.
-
-Laporan yang berguna mencantumkan versi (`coltex version`), apa yang Anda lakukan dan apa yang terjadi, serta jika melibatkan server, baris-baris yang relevan dari `coltex logs`. Jangan sertakan kata sandi, kunci API, dan isi dokumen pribadi.
 
 <a id="development"></a>
 ## Pengembangan

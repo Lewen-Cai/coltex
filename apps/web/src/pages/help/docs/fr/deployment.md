@@ -99,7 +99,7 @@ Ce sont des variables d’environnement du serveur. Avec Docker, placez-les dans
 | `COLTEX_PORT` | Le port, 3690 par défaut |
 | `COLTEX_URL` | Une adresse publique proposée dans chaque lien, p. ex. `https://tex.example.org` |
 | `TRUSTED_ORIGINS` | D’autres adresses acceptées pour la connexion, séparées par des virgules. Nécessaire uniquement quand les pages et l’API sont à des adresses différentes |
-| `TRUST_PROXY` | Avec un proxy inverse devant (Caddy, Nginx) : `uniquelocal` (proxy sur un réseau privé) ou `true`. S’il n’est pas défini, le serveur prend le proxy pour le visiteur, et tout le monde partage la même limite de tentatives de connexion |
+| `TRUST_PROXY` | Avec un proxy inverse devant (Caddy, Nginx) : `uniquelocal` (proxy sur un réseau privé) ou `true`. S’il n’est pas défini, le serveur prend le proxy pour le visiteur : tout le monde partage une même adresse, donc les échecs de connexion d’une personne comptent contre tout le monde, et les enregistrements de connexion affichent l’adresse du proxy. Le Tailscale et le Cloudflare Tunnel intégrés n’ont besoin de rien ici |
 | `TS_HOSTNAME` | Le nom d’appareil du Tailscale intégré, `coltex` par défaut |
 
 **Arrivée des requêtes**, en bas de **Paramètres → Réseau**, affiche ces réglages et l’IP que voit le serveur, et signale les problèmes.
@@ -119,5 +119,6 @@ Ce sont des variables d’environnement du serveur. Avec Docker, placez-les dans
 - Pour une petite équipe, n’accéder à ColTex que via Tailscale ou un VPN est le plus simple : il n’est pas du tout visible sur Internet. Avec Cloudflare Tunnel, il est public, protégé par la connexion de ColTex.
 - Sur Internet, utilisez HTTPS (Caddy, comme dans la configuration serveur cloud).
 - Un pare-feu sur le serveur (ufw, firewalld) ne ferme pas les ports que Docker publie. Avec `--domain`, le port 3690 ne répond que sur le serveur lui-même ; avec Tailscale ou un tunnel Cloudflare à la place, fermez le port 3690 dans le pare-feu de votre fournisseur cloud.
-- Il n’y a pas d’inscription publique, seulement des invitations ; les mots de passe ont des règles de robustesse ; la connexion autorise 3 tentatives par 10 secondes et par IP.
+- Il n’y a pas d’inscription publique, seulement des invitations ; les mots de passe ont des règles de robustesse ; chacun peut activer la validation en deux étapes. Les échecs de connexion ralentissent puis verrouillent un compte pour les adresses inhabituelles, et une adresse qui échoue sans cesse est bloquée pendant un jour (voir [Administration](#/help/admin)).
+- Les pages de ColTex indiquent aux navigateurs de ne pas l’afficher dans d’autres sites (contre le clickjacking) et de n’exécuter que ses propres scripts ; avec `--domain`, Caddy leur indique aussi de n’utiliser que HTTPS (HSTS).
 - Un port inhabituel n’arrête pas les scanners ; ne comptez pas dessus.

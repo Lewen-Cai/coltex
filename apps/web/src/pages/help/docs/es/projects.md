@@ -5,7 +5,11 @@
 - **Espacio de trabajo**: todos los proyectos de los que eres propietario o miembro; busca, cambia entre lista y tarjetas, filtra por propietario.
 - **Compartidos conmigo**: proyectos a los que otras personas te han invitado.
 
-El menú de un proyecto (⋯) incluye: abrir, hacer una copia, descargar .zip, descargar PDF, convertir a plantilla, publicar como plantilla (propietarios), archivar y mover a la papelera. Selecciona varios proyectos en la lista para actuar sobre todos a la vez.
+El menú de un proyecto (⋯) incluye: abrir, cambiar el nombre (propietarios y editores), hacer una copia, descargar .zip, descargar PDF, convertir a plantilla, publicar como plantilla (propietarios), archivar y mover a la papelera. Selecciona varios proyectos en la lista para actuar sobre todos a la vez.
+
+## Cambiar el nombre
+
+Los propietarios y los editores cambian el nombre de un proyecto con **Cambiar nombre…** en su menú, o haciendo clic en su nombre en la parte superior del editor: Enter guarda, Esc cancela. Todos ven el nuevo nombre al instante, también en los editores que estén abiertos.
 
 ## Etiquetas
 

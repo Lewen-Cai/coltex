@@ -5,7 +5,11 @@
 - **Ruang kerja**: setiap proyek yang Anda miliki atau yang Anda ikuti sebagai anggota; cari, beralih antara daftar dan kartu, saring berdasarkan pemilik.
 - **Dibagikan dengan saya**: proyek yang orang lain undang Anda ke dalamnya.
 
-Menu proyek (⋯) berisi: buka, buat salinan, unduh .zip, unduh PDF, konversi ke templat, terbitkan sebagai templat (pemilik), arsipkan, dan pindahkan ke sampah. Pilih beberapa proyek di daftar untuk menindaklanjutinya sekaligus.
+Menu proyek (⋯) berisi: buka, ganti nama (pemilik dan editor), buat salinan, unduh .zip, unduh PDF, konversi ke templat, terbitkan sebagai templat (pemilik), arsipkan, dan pindahkan ke sampah. Pilih beberapa proyek di daftar untuk menindaklanjutinya sekaligus.
+
+## Mengganti nama
+
+Pemilik dan editor mengganti nama proyek dengan **Ganti nama…** di menunya, atau dengan mengklik namanya di bagian atas editor: Enter menyimpan, Esc membatalkan. Semua orang langsung melihat nama baru, juga di editor yang sedang terbuka.
 
 ## Tag
 
