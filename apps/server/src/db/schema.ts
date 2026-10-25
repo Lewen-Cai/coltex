@@ -762,9 +762,43 @@ export const projectTemplates = pgTable(
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     publishedBy: text('published_by').references(() => user.id, { onDelete: 'set null' }),
+    /** The field it is listed under in the new-project dialog (TemplateField). */
+    field: text('field').notNull().default('general'),
+    /**
+     * Everyone on the server sees it (only the system administrator shares so;
+     * templates published before groups existed kept it). Otherwise the
+     * groups and people in template_groups and template_users, and its publisher.
+     */
+    everyone: boolean('everyone').notNull().default(true),
     ...timestamps,
   },
   t => [uniqueIndex('project_templates_project_idx').on(t.projectId)],
+)
+
+export const templateGroups = pgTable(
+  'template_groups',
+  {
+    templateId: text('template_id')
+      .notNull()
+      .references(() => projectTemplates.id, { onDelete: 'cascade' }),
+    groupId: text('group_id')
+      .notNull()
+      .references(() => userGroups.id, { onDelete: 'cascade' }),
+  },
+  t => [primaryKey({ columns: [t.templateId, t.groupId] })],
+)
+
+export const templateUsers = pgTable(
+  'template_users',
+  {
+    templateId: text('template_id')
+      .notNull()
+      .references(() => projectTemplates.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+  },
+  t => [primaryKey({ columns: [t.templateId, t.userId] })],
 )
 
 /**

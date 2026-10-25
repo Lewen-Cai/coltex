@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': '你會失去與此群組共用的專案，個別加入的專案除外。',
   'Create group': '建立群組',
   'Name of the group': '群組名稱',
+  'Add someone by name or email': '以姓名或電子郵件新增',
+  'Everyone on this server': '伺服器上的所有人',
+  'Field': '領域',
+  'Shared across {groups}': '與 {groups} 共用',
+  'Shared by {name}': '{name} 共用',
+  'Shared by the system administrator': '系統管理員共用',
+  'Shared with you': '與你共用',
+  'Shared with': '共用對象',
 }
 
 export default messages

@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': 'Bạn mất các dự án được chia sẻ với nhóm này, trừ những dự án bạn được thêm riêng.',
   'Create group': 'Tạo nhóm',
   'Name of the group': 'Tên nhóm',
+  'Add someone by name or email': 'Thêm ai đó theo tên hoặc email',
+  'Everyone on this server': 'Mọi người trên máy chủ này',
+  'Field': 'Lĩnh vực',
+  'Shared across {groups}': 'Chia sẻ trong {groups}',
+  'Shared by {name}': '{name} đã chia sẻ',
+  'Shared by the system administrator': 'Quản trị viên hệ thống đã chia sẻ',
+  'Shared with you': 'Được chia sẻ với bạn',
+  'Shared with': 'Chia sẻ với',
 }
 
 export default messages

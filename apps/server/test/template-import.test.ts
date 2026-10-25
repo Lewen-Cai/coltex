@@ -63,7 +63,9 @@ describe('importing a template from a zip', () => {
       { path: 'sn-article-template/.DS_Store', data: 'x' },
       { path: '__MACOSX/sn-article-template/._sn-article.tex', data: 'x' },
     ])
-    const res = await upload(bob, zip, `name=${encodeURIComponent('Springer Nature')}&description=${encodeURIComponent('sn-jnl, from the journal')}`)
+    const danId = (await t.app.inject({ url: '/api/auth/get-session', headers: { cookie: dan } })).json().user.id
+    const audience = encodeURIComponent(JSON.stringify({ userIds: [danId] }))
+    const res = await upload(bob, zip, `name=${encodeURIComponent('Springer Nature')}&description=${encodeURIComponent('sn-jnl, from the journal')}&field=medicine&audience=${audience}`)
     assert.equal(res.statusCode, 201, res.body)
     const { template, project, warnings } = res.json()
     assert.deepEqual(warnings, [])
@@ -75,6 +77,7 @@ describe('importing a template from a zip', () => {
     )
     assert.equal(template.projectId, project.id)
     assert.equal(template.canRemove, true)
+    assert.deepEqual([template.sharing, template.field], ['people', 'medicine'])
 
     const files = (await t.app.inject({ url: `/api/projects/${project.id}`, headers: { cookie: bob } }))
       .json()
@@ -82,7 +85,8 @@ describe('importing a template from a zip', () => {
       .sort()
     assert.deepEqual(files, ['bst/sn-mathphys-num.bst', 'sn-article.tex', 'sn-bibliography.bib', 'sn-jnl.cls'])
 
-    // Everyone may start from it, but only its owner is pointed at the project.
+    // Dan, whom it is for, sees it; the system administrator sees everything; only its owner is pointed at the project.
+    assert.ok((await t.app.inject({ url: '/api/templates', headers: { cookie: dan } })).json().some((x: { id: string }) => x.id === template.id))
     const forAdmin = (await t.app.inject({ url: '/api/templates', headers: { cookie: admin } })).json().find((x: { id: string }) => x.id === template.id)
     assert.equal(forAdmin.projectId, null)
     assert.equal(forAdmin.canRemove, true)
@@ -95,17 +99,22 @@ describe('importing a template from a zip', () => {
   test('only administrators may import', async () => {
     const zip = await makeZip([{ path: 'main.tex', data: '\\documentclass{article}\n\\begin{document}\nHi\n\\end{document}\n' }])
     const before = await projectCount(dan)
-    assert.equal((await upload(dan, zip, 'name=Mine')).statusCode, 403)
+    const everyone = `audience=${encodeURIComponent('{"everyone":true}')}`
+    assert.equal((await upload(dan, zip, `name=Mine&${everyone}`)).statusCode, 403)
     assert.equal(await projectCount(dan), before, 'nothing is made for a member')
-    assert.equal((await upload(admin, zip, 'name=From%20the%20system%20admin')).statusCode, 201)
+    const bobBefore = await projectCount(bob)
+    assert.equal((await upload(bob, zip, `name=Everyone&${everyone}`)).statusCode, 403, 'admins share with their groups and people')
+    assert.equal((await upload(bob, zip, 'name=Nobody')).statusCode, 400, 'someone to share it with')
+    assert.equal(await projectCount(bob), bobBefore, 'nothing is made when who it is for is wrong')
+    assert.equal((await upload(admin, zip, `name=From%20the%20system%20admin&${everyone}`)).statusCode, 201)
   })
 
   test('a zip without a .tex file is refused, and leaves no project behind', async () => {
-    const before = await projectCount(bob)
-    const res = await upload(bob, await makeZip([{ path: 'refs.bib', data: '' }, { path: 'figure.png', data: 'png' }]), 'name=Nothing')
+    const before = await projectCount(admin)
+    const res = await upload(admin, await makeZip([{ path: 'refs.bib', data: '' }, { path: 'figure.png', data: 'png' }]), `name=Nothing&audience=${encodeURIComponent('{"everyone":true}')}`)
     assert.equal(res.statusCode, 400)
     assert.match(res.json().error ?? res.json().message, /no \.tex file/)
-    assert.equal(await projectCount(bob), before)
+    assert.equal(await projectCount(admin), before)
   })
 
   test('uploads over the import limit, bad zips and missing names are refused', async () => {

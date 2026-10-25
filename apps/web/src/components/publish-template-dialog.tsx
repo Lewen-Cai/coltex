@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
-import type { ProjectTemplateState } from '@coltex/shared'
+import type { ProjectTemplateState, TemplateField } from '@coltex/shared'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -9,14 +9,16 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { AudienceEditor, audienceBody, FieldSelect, hasAudience, NO_AUDIENCE, type AudienceDraft } from './template-audience'
 
 const EVENT = 'coltex:publish-template'
 /** Fired after a template was published, changed or taken down, so open template lists reload. */
 export const TEMPLATES_CHANGED = 'coltex:templates-changed'
 
 /**
- * Publish a project as a template for everyone on this server (owners only).
- * New projects made from it copy the project's files as they are then.
+ * Publish a project as a template (its owner, an administrator): for groups
+ * and people, or everyone on the server (the system administrator). New
+ * projects made from it copy the project's files as they are then.
  */
 export const openPublishTemplate = (projectId: string, projectName: string) =>
   window.dispatchEvent(new CustomEvent(EVENT, { detail: { projectId, projectName } }))
@@ -28,6 +30,8 @@ export function PublishTemplateDialogHost() {
   const [loaded, setLoaded] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [field, setField] = useState<TemplateField>('general')
+  const [audience, setAudience] = useState<AudienceDraft>(NO_AUDIENCE)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -37,12 +41,16 @@ export function PublishTemplateDialogHost() {
       setLoaded(false)
       setName(detail.projectName)
       setDescription('')
+      setField('general')
+      setAudience(NO_AUDIENCE)
       api.getProjectTemplate(detail.projectId).then(
         state => {
           setCurrent(state)
           if (state) {
             setName(state.name)
             setDescription(state.description)
+            setField(state.field)
+            setAudience({ everyone: state.audience.everyone, groups: state.audience.groups, users: state.audience.users })
           }
           setLoaded(true)
         },
@@ -72,16 +80,16 @@ export function PublishTemplateDialogHost() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    if (!target || !name.trim()) return
+    if (!target || !name.trim() || !hasAudience(audience)) return
     void run(
-      () => api.publishTemplate(target.projectId, { name: name.trim(), description: description.trim() }),
+      () => api.publishTemplate(target.projectId, { name: name.trim(), description: description.trim(), field, audience: audienceBody(audience) }),
       current ? t('Template updated') : t('Published “{name}” as a template', { name: name.trim() }),
     )
   }
 
   return (
     <Dialog open={!!target} onOpenChange={open => !open && setTarget(undefined)}>
-      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md" aria-describedby={undefined}>
         <form onSubmit={submit}>
           <DialogHeader>
             <DialogTitle>{current ? t('Template') : t('Publish as template')}</DialogTitle>
@@ -104,6 +112,8 @@ export function PublishTemplateDialogHost() {
                   onChange={e => setDescription(e.target.value)}
                 />
               </Field>
+              <FieldSelect value={field} onChange={setField} />
+              <AudienceEditor value={audience} onChange={setAudience} />
             </FieldGroup>
           )}
           <DialogFooter>
@@ -121,7 +131,7 @@ export function PublishTemplateDialogHost() {
             <Button type="button" variant="outline" onClick={() => setTarget(undefined)}>
               {t('Cancel')}
             </Button>
-            <Button type="submit" disabled={busy || !loaded || !name.trim()}>
+            <Button type="submit" disabled={busy || !loaded || !name.trim() || !hasAudience(audience)}>
               {busy && <Spinner />} {current ? t('Save') : t('Publish')}
             </Button>
           </DialogFooter>

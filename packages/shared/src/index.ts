@@ -527,8 +527,17 @@ export const TemplateInfo = z.object({
   kind: z.enum(['builtin', 'shared']),
   name: z.string(),
   description: z.string(),
-  /** Built-in templates: the field they are for (the new-project dialog filters by it). */
+  /** The field it is for (the new-project dialog filters by it). */
   field: TemplateField.nullable(),
+  /**
+   * Who it is shared with, for its tag: everyone on the server, groups (their
+   * names in `groups`: the viewer's own, or all of them for its publisher), or
+   * only people picked one by one.
+   */
+  sharing: z.enum(['builtin', 'server', 'groups', 'people']),
+  groups: z.array(z.string()),
+  /** Shared by the system administrator. */
+  bySystemAdmin: z.boolean(),
   /** Shared templates: who published it (null once their account is gone). */
   publishedBy: z.string().nullable(),
   /** Shared templates: the publisher's project owner or an admin may take it down. */
@@ -538,9 +547,43 @@ export const TemplateInfo = z.object({
 })
 export type TemplateInfo = z.infer<typeof TemplateInfo>
 
+/**
+ * Who a shared template is for (user's decision 2026-10-25): everyone on the
+ * server (the system administrator only), groups, and people picked one by one.
+ */
+export const TemplateAudience = z.object({
+  everyone: z.boolean().default(false),
+  groupIds: z.array(z.string().min(1).max(32)).max(50).default([]),
+  userIds: z.array(z.string().min(1).max(64)).max(200).default([]),
+})
+export type TemplateAudience = z.infer<typeof TemplateAudience>
+
 export const TemplateBody = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().max(300).default(''),
+  field: TemplateField.default('general'),
+  audience: TemplateAudience.default({ everyone: false, groupIds: [], userIds: [] }),
+})
+export type TemplateBody = z.input<typeof TemplateBody>
+
+/** Importing sends the zip as the body, so the rest comes in the query (the audience as JSON). */
+export const TemplateImportQuery = z.object({
+  name: z.string().trim().min(1).max(100),
+  description: z.string().trim().max(300).default(''),
+  field: TemplateField.default('general'),
+  audience: z
+    .string()
+    .max(20_000)
+    .default('{}')
+    .transform((s, ctx) => {
+      try {
+        return JSON.parse(s) as unknown
+      } catch {
+        ctx.addIssue({ code: 'custom', message: 'audience must be JSON' })
+        return z.NEVER
+      }
+    })
+    .pipe(TemplateAudience),
 })
 
 /** A zip imported as a new shared template: the project made for it, and what was skipped. */
@@ -548,7 +591,19 @@ export const ImportedTemplate = z.object({ template: TemplateInfo, project: Proj
 export type ImportedTemplate = z.infer<typeof ImportedTemplate>
 
 /** A project's own entry in the shared templates, if it is published. */
-export const ProjectTemplateState = z.object({ id: z.string(), name: z.string(), description: z.string() }).nullable()
+export const ProjectTemplateState = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    field: TemplateField,
+    audience: z.object({
+      everyone: z.boolean(),
+      groups: z.array(z.object({ id: z.string(), name: z.string() })),
+      users: z.array(z.object({ id: z.string(), name: z.string(), email: z.string() })),
+    }),
+  })
+  .nullable()
 export type ProjectTemplateState = z.infer<typeof ProjectTemplateState>
 
 export const CreateProjectBody = z.object({

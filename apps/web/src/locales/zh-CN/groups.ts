@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': '你会失去共享给这个小组的项目，单独添加的项目除外。',
   'Create group': '创建小组',
   'Name of the group': '小组名称',
+  'Add someone by name or email': '按姓名或邮箱添加',
+  'Everyone on this server': '服务器上的所有人',
+  'Field': '领域',
+  'Shared across {groups}': '共享给 {groups}',
+  'Shared by {name}': '{name} 共享',
+  'Shared by the system administrator': '系统管理员共享',
+  'Shared with you': '共享给你',
+  'Shared with': '共享对象',
 }
 
 export default messages

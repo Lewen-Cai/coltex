@@ -4,22 +4,23 @@ import { Ellipsis, FileArchive, FolderOpen, Pencil, Trash2, TriangleAlert, Uploa
 import { toast } from 'sonner'
 import type { TemplateField, TemplateInfo } from '@coltex/shared'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
-import { authClient } from '@/lib/auth'
 import { formatBytes } from '@/lib/format'
-import { t, tk, translateServerMessage } from '@/lib/i18n'
+import { t, translateServerMessage } from '@/lib/i18n'
 import { navigate } from '@/lib/router'
+import { TEMPLATE_FIELDS } from '@/lib/template-fields'
 import { cn } from '@/lib/utils'
 import { confirmDialog } from '../confirm'
+import { AudienceEditor, audienceBody, FieldSelect, hasAudience, NO_AUDIENCE, useCanShareTemplates, type AudienceDraft } from '../template-audience'
 import { openPublishTemplate, TEMPLATES_CHANGED } from '../publish-template-dialog'
 
 const NEW_EVENT = 'coltex:new-project'
@@ -30,33 +31,29 @@ export const PROJECTS_CHANGED = 'coltex:projects-changed'
 export const openNewProject = () => window.dispatchEvent(new Event(NEW_EVENT))
 export const openImportProject = () => window.dispatchEvent(new Event(IMPORT_EVENT))
 
-/** The fields built-in templates are grouped by, in the order of the filter. */
-const FIELDS: { id: TemplateField; label: string }[] = [
-  { id: 'general', label: tk('General') },
-  { id: 'cs', label: tk('Computing & electrical engineering') },
-  { id: 'engineering', label: tk('Engineering') },
-  { id: 'physics', label: tk('Physics') },
-  { id: 'astronomy', label: tk('Astronomy') },
-  { id: 'chemistry', label: tk('Chemistry') },
-  { id: 'biology', label: tk('Life sciences') },
-  { id: 'medicine', label: tk('Medicine') },
-  { id: 'math', label: tk('Mathematics & statistics') },
-  { id: 'economics', label: tk('Economics') },
-  { id: 'social', label: tk('Social sciences & humanities') },
-  { id: 'earth', label: tk('Earth & environment') },
-]
+/** The tag on a template card: built in, or whom it is shared with. */
+function sharingTag(tpl: TemplateInfo): string {
+  switch (tpl.sharing) {
+    case 'builtin':
+      return t('Built-in')
+    case 'server':
+      return tpl.bySystemAdmin ? t('Shared by the system administrator') : t('Shared on this server')
+    case 'groups':
+      return t('Shared across {groups}', { groups: tpl.groups.join(', ') })
+    case 'people':
+      return tpl.publishedBy ? t('Shared by {name}', { name: tpl.publishedBy }) : t('Shared with you')
+  }
+}
 
 function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [name, setName] = useState('')
   const [templates, setTemplates] = useState<TemplateInfo[]>()
   const [template, setTemplate] = useState('article')
-  const [source, setSource] = useState<'builtin' | 'shared'>('builtin')
   const [field, setField] = useState<TemplateField | 'all'>('all')
   const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
   // Importing a template is for administrators (the server refuses everyone else).
-  const role = authClient.useSession().data?.user.role
-  const canImport = role === 'admin' || role === 'manager'
+  const { canShare: canImport } = useCanShareTemplates()
 
   const load = () =>
     api.listTemplates().then(setTemplates, err => {
@@ -68,7 +65,6 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
     if (open) {
       setName('')
       setTemplate('article')
-      setSource('builtin')
       setField('all')
       void load()
     }
@@ -101,7 +97,7 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
 
   const imported = async (tpl: TemplateInfo) => {
     await load()
-    setSource('shared')
+    setField('all')
     setTemplate(tpl.id)
   }
 
@@ -177,16 +173,20 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         {tpl.description && (
           <span className="text-xs text-muted-foreground">{tpl.kind === 'builtin' ? translateServerMessage(tpl.description) : tpl.description}</span>
         )}
-        {tpl.publishedBy && <span className="text-xs text-muted-foreground">{t('by {name}', { name: tpl.publishedBy })}</span>}
+        <span className="mt-1.5 flex flex-wrap gap-1">
+          <Badge variant={tpl.sharing === 'builtin' ? 'secondary' : 'outline'} className="max-w-full truncate font-normal">
+            {sharingTag(tpl)}
+          </Badge>
+        </span>
       </button>
       {actions(tpl)}
     </div>
   )
 
-  const builtins = templates?.filter(x => x.kind === 'builtin') ?? []
-  const shared = templates?.filter(x => x.kind === 'shared') ?? []
-  const fields = FIELDS.filter(f => builtins.some(x => x.field === f.id))
-  const shown = source === 'shared' ? shared : builtins.filter(x => field === 'all' || x.field === field)
+  // One list: what the server shares first, then the built-in ones; the field filter covers both.
+  const all = [...(templates?.filter(x => x.kind === 'shared') ?? []), ...(templates?.filter(x => x.kind === 'builtin') ?? [])]
+  const fields = TEMPLATE_FIELDS.filter(f => all.some(x => x.field === f.id))
+  const shown = all.filter(x => field === 'all' || x.field === field)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -203,24 +203,13 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
             <Field>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <FieldLabel>{t('Template')}</FieldLabel>
-                <div className="flex flex-wrap items-center gap-2">
-                  {source === 'shared' && canImport && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => setImporting(true)}>
-                      <Upload /> {t('Import template')}
-                    </Button>
-                  )}
-                  <Tabs value={source} onValueChange={v => setSource(v as 'builtin' | 'shared')}>
-                    <TabsList>
-                      <TabsTrigger value="builtin">{t('Built-in templates')}</TabsTrigger>
-                      <TabsTrigger value="shared">
-                        {t('Shared on this server')}
-                        {shared.length > 0 && <span className="text-muted-foreground tabular-nums">{shared.length}</span>}
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
+                {canImport && (
+                  <Button type="button" variant="outline" size="sm" onClick={() => setImporting(true)}>
+                    <Upload /> {t('Import template')}
+                  </Button>
+                )}
               </div>
-              {source === 'builtin' && fields.length > 1 && (
+              {fields.length > 1 && (
                 <ToggleGroup
                   type="single"
                   variant="outline"
@@ -240,8 +229,6 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
               <div className="grid h-[min(46vh,420px)] content-start gap-2 overflow-y-auto pr-1">
                 {!templates ? (
                   <Spinner className="m-6 justify-self-center" />
-                ) : shown.length === 0 ? (
-                  <p className="p-6 text-center text-sm text-muted-foreground">{t('No shared templates yet')}</p>
                 ) : (
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{shown.map(card)}</div>
                 )}
@@ -276,6 +263,8 @@ function ImportTemplateDialog({
   const [file, setFile] = useState<File>()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [field, setField] = useState<TemplateField>('general')
+  const [audience, setAudience] = useState<AudienceDraft>(NO_AUDIENCE)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -283,15 +272,17 @@ function ImportTemplateDialog({
       setFile(undefined)
       setName('')
       setDescription('')
+      setField('general')
+      setAudience(NO_AUDIENCE)
     }
   }, [open])
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!file || !name.trim()) return
+    if (!file || !name.trim() || !hasAudience(audience)) return
     setBusy(true)
     try {
-      const { template, warnings } = await api.importTemplate(file, { name: name.trim(), description: description.trim() })
+      const { template, warnings } = await api.importTemplate(file, { name: name.trim(), description: description.trim(), field, audience: audienceBody(audience) })
       onOpenChange(false)
       onImported(template)
       window.dispatchEvent(new Event(PROJECTS_CHANGED))
@@ -306,7 +297,7 @@ function ImportTemplateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg" aria-describedby={undefined}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>{t('Import template')}</DialogTitle>
         </DialogHeader>
@@ -334,13 +325,15 @@ function ImportTemplateDialog({
                   onChange={e => setDescription(e.target.value)}
                 />
               </Field>
+              <FieldSelect value={field} onChange={setField} />
+              <AudienceEditor value={audience} onChange={setAudience} />
             </FieldGroup>
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('Cancel')}
             </Button>
-            <Button type="submit" disabled={!file || !name.trim() || busy}>
+            <Button type="submit" disabled={!file || !name.trim() || !hasAudience(audience) || busy}>
               {busy && <Spinner />} {t('Import')}
             </Button>
           </DialogFooter>

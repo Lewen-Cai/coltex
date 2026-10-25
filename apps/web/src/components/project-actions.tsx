@@ -35,6 +35,7 @@ import { confirmDialog } from './confirm'
 import { openConvert } from './ConvertDialog'
 import { PROJECTS_CHANGED, openCopyProject, openRenameProject } from './shell/project-dialogs'
 import { openPublishTemplate } from './publish-template-dialog'
+import { useCanShareTemplates } from './template-audience'
 import { openWordExport } from './word-export-dialog'
 import { TagBadge, openTagDialog } from './tag-dialog'
 
@@ -226,6 +227,8 @@ let closeOpenMenu: (() => void) | undefined
 
 export function ProjectActions({ project }: { project: ProjectSummary }) {
   const owner = project.role === 'owner'
+  // Publishing as a template is for administrators.
+  const { canShare } = useCanShareTemplates()
   const [open, setOpen] = useState(false)
   const close = useCallback(() => setOpen(false), [])
   const change = (next: boolean) => {
@@ -268,7 +271,7 @@ export function ProjectActions({ project }: { project: ProjectSummary }) {
         <DropdownMenuItem onSelect={() => openConvert(project.id, project.name)}>
           <LayoutTemplate /> {t('Convert to template…')}
         </DropdownMenuItem>
-        {owner && (
+        {owner && canShare && (
           <DropdownMenuItem onSelect={() => openPublishTemplate(project.id, project.name)}>
             <Share2 /> {t('Publish as template…')}
           </DropdownMenuItem>

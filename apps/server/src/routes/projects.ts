@@ -24,7 +24,7 @@ export const projectRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects
 
   app.post('/projects', { schema: { body: CreateProjectBody, response: { 201: ProjectMeta } } }, async (req, reply) => {
     const user = requireUser(req)
-    const content = await templates.contents(req.body.template)
+    const content = await templates.contents(req.body.template, user)
     let project = await projects.create(user.id, req.body.name, req.body.engine ?? content.engine, content)
     if (content.spellCheckLanguage !== undefined) {
       project = await projects.update(project.id, { spellCheckLanguage: content.spellCheckLanguage as ProjectMeta['spellCheckLanguage'] })

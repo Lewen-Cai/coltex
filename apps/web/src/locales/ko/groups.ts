@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': '개별로 추가된 프로젝트를 제외하고 이 그룹과 공유된 프로젝트를 잃게 됩니다.',
   'Create group': '그룹 만들기',
   'Name of the group': '그룹 이름',
+  'Add someone by name or email': '이름 또는 이메일로 추가',
+  'Everyone on this server': '이 서버의 모든 사람',
+  'Field': '분야',
+  'Shared across {groups}': '{groups} 그룹에 공유',
+  'Shared by {name}': '{name} 님이 공유',
+  'Shared by the system administrator': '시스템 관리자가 공유',
+  'Shared with you': '나와 공유됨',
+  'Shared with': '공유 대상',
 }
 
 export default messages

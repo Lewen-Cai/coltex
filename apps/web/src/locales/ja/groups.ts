@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': '個別に追加されたものを除き、このグループと共有されたプロジェクトを失います。',
   'Create group': 'グループを作成',
   'Name of the group': 'グループ名',
+  'Add someone by name or email': '名前またはメールアドレスで追加',
+  'Everyone on this server': 'このサーバーの全員',
+  'Field': '分野',
+  'Shared across {groups}': '{groups} で共有',
+  'Shared by {name}': '{name} さんが共有',
+  'Shared by the system administrator': 'システム管理者が共有',
+  'Shared with you': 'あなたと共有',
+  'Shared with': '共有先',
 }
 
 export default messages

@@ -50,6 +50,9 @@ import type {
   ConvertOptions,
   ConvertTargetId,
   ShareRole,
+  TemplateAudience,
+  TemplateBody,
+  TemplateField,
   UserMatch,
   Group,
   ProjectGroupShare,
@@ -187,14 +190,14 @@ export const api = {
   // ---- Templates ----
   listTemplates: () => request<TemplateInfo[]>('/api/templates'),
   removeTemplate: (id: string) => request<void>(`/api/templates/${id}`, { method: 'DELETE' }),
-  importTemplate: (file: File, { name, description }: { name: string; description: string }) =>
-    request<ImportedTemplate>(`/api/templates/import?${new URLSearchParams({ name, description })}`, {
+  importTemplate: (file: File, { name, description, field, audience }: TemplateBody & { field: TemplateField; audience: TemplateAudience }) =>
+    request<ImportedTemplate>(`/api/templates/import?${new URLSearchParams({ name, description: description ?? '', field, audience: JSON.stringify(audience) })}`, {
       method: 'POST',
       headers: { 'content-type': 'application/zip' },
       body: file,
     }),
   getProjectTemplate: (id: string) => request<ProjectTemplateState>(`/api/projects/${id}/template`),
-  publishTemplate: (id: string, body: { name: string; description: string }) =>
+  publishTemplate: (id: string, body: TemplateBody) =>
     request<ProjectTemplateState>(`/api/projects/${id}/template`, json('PUT', body)),
   unpublishTemplate: (id: string) => request<void>(`/api/projects/${id}/template`, { method: 'DELETE' }),
 

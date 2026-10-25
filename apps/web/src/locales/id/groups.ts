@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': 'Anda kehilangan proyek yang dibagikan dengan grup ini, kecuali yang Anda ditambahkan sendiri.',
   'Create group': 'Buat grup',
   'Name of the group': 'Nama grup',
+  'Add someone by name or email': 'Tambahkan seseorang lewat nama atau email',
+  'Everyone on this server': 'Semua orang di server ini',
+  'Field': 'Bidang',
+  'Shared across {groups}': 'Dibagikan di {groups}',
+  'Shared by {name}': 'Dibagikan oleh {name}',
+  'Shared by the system administrator': 'Dibagikan oleh administrator sistem',
+  'Shared with you': 'Dibagikan dengan Anda',
+  'Shared with': 'Dibagikan dengan',
 }
 
 export default messages

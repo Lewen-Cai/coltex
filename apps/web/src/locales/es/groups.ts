@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': 'Pierdes los proyectos compartidos con este grupo, salvo aquellos a los que se te añadió por tu cuenta.',
   'Create group': 'Crear grupo',
   'Name of the group': 'Nombre del grupo',
+  'Add someone by name or email': 'Añade a alguien por nombre o correo',
+  'Everyone on this server': 'Todos en este servidor',
+  'Field': 'Campo',
+  'Shared across {groups}': 'Compartido en {groups}',
+  'Shared by {name}': 'Compartido por {name}',
+  'Shared by the system administrator': 'Compartido por el administrador del sistema',
+  'Shared with you': 'Compartido contigo',
+  'Shared with': 'Compartido con',
 }
 
 export default messages

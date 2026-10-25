@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ImportedTemplate, ProjectId, ProjectTemplateState, TemplateBody, TemplateInfo } from '@coltex/shared'
+import { ImportedTemplate, ProjectId, ProjectTemplateState, TemplateBody, TemplateImportQuery, TemplateInfo } from '@coltex/shared'
 import { requireUser } from '../auth/fastify.ts'
 import { config } from '../config.ts'
 import type { Deps } from '../deps.ts'
@@ -24,16 +24,19 @@ export const templateRoutes: FastifyPluginAsyncZod<Deps> = async (app, { project
     '/templates/import',
     {
       bodyLimit: config.maxImportBytes,
-      schema: { querystring: TemplateBody, response: { 201: ImportedTemplate } },
+      schema: { querystring: TemplateImportQuery, response: { 201: ImportedTemplate } },
     },
     async (req, reply) => {
-      // Administrators only (user's decision 2026-10-25): what everyone starts from is theirs to curate.
+      // Administrators only (user's decision 2026-10-25): admins for their groups and people they
+      // pick, the system administrator also for everyone (checked again when it is published).
       const user = requireUser(req)
       if (user.role !== 'admin' && user.role !== 'manager') throw new ForbiddenError('Only admins can import templates')
+      // Who it is for is checked before anything is made.
+      await templates.checkAudience(user, req.query.audience)
       const archive = await readImport(req.body)
       if (!archive.rootFile) throw new BadRequestError('The archive contains no .tex file')
       const project = await projectFromImport({ projects, history }, user.id, req.query.name, archive)
-      await templates.publish(project.id, user.id, req.query)
+      await templates.publish(project.id, user, req.query)
       const template = (await templates.list(user)).find(x => x.projectId === project.id)!
       return reply.code(201).send({ template, project, warnings: archive.warnings })
     },
@@ -49,7 +52,7 @@ export const templateRoutes: FastifyPluginAsyncZod<Deps> = async (app, { project
   app.put('/projects/:id/template', { schema: { params: IdParams, body: TemplateBody, response: { 200: ProjectTemplateState } } }, async req => {
     const user = requireUser(req)
     await projects.requireAccess(req.params.id, user.id, 'owner')
-    return templates.publish(req.params.id, user.id, req.body)
+    return templates.publish(req.params.id, user, req.body)
   })
 
   app.delete('/projects/:id/template', { schema: { params: IdParams } }, async (req, reply) => {

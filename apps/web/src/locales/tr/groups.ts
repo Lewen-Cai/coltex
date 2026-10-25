@@ -33,6 +33,14 @@ const messages: Record<string, string> = {
   'You lose the projects shared with this group, unless you were added to them on your own.': 'Tek tek eklendiğiniz projeler dışında bu grupla paylaşılan projeleri kaybedersiniz.',
   'Create group': 'Grup oluştur',
   'Name of the group': 'Grubun adı',
+  'Add someone by name or email': 'Ad veya e-posta ile ekle',
+  'Everyone on this server': 'Bu sunucudaki herkes',
+  'Field': 'Alan',
+  'Shared across {groups}': '{groups} ile paylaşıldı',
+  'Shared by {name}': '{name} paylaştı',
+  'Shared by the system administrator': 'Sistem yöneticisi paylaştı',
+  'Shared with you': 'Sizinle paylaşıldı',
+  'Shared with': 'Paylaşılan',
 }
 
 export default messages

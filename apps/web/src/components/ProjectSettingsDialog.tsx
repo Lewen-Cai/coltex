@@ -10,6 +10,7 @@ import { SHORTCUT_COMMANDS, bindingFromEvent, bindingsFor, commandWithKey, type 
 import { cn } from '../lib/utils.ts'
 import { spellLanguageName } from '../spelling/index.ts'
 import { openPublishTemplate } from './publish-template-dialog.tsx'
+import { useCanShareTemplates } from './template-audience.tsx'
 import { openWordExport } from './word-export-dialog.tsx'
 import { Button } from './ui/button.tsx'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from './ui/command.tsx'
@@ -351,6 +352,7 @@ type SectionId = (typeof SECTIONS)[number]['id']
  */
 export function ProjectSettingsDialog(props: Props) {
   const { project, canEdit } = props
+  const { canShare } = useCanShareTemplates()
   const [section, setSection] = useState<SectionId>('project')
   const act = (fn: () => void) => () => {
     props.onOpenChange(false)
@@ -454,7 +456,7 @@ export function ProjectSettingsDialog(props: Props) {
                 <button type="button" className={itemClass} onClick={act(props.onConvert)}>
                   <LayoutTemplate /> {t('Convert to a journal template')}
                 </button>
-                {props.isOwner && project && (
+                {props.isOwner && canShare && project && (
                   <button type="button" className={itemClass} onClick={act(() => openPublishTemplate(project.id, project.name))}>
                     <Share2 /> {t('Publish as template…')}
                   </button>
