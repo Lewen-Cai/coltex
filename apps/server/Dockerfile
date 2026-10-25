@@ -49,6 +49,14 @@ COPY packages/shared packages/shared
 COPY packages/review packages/review
 COPY packages/convert packages/convert
 COPY apps/server apps/server
+# ip2region's databases, for the place next to a sign-in's address. Same pinned commit and
+# checksums as apps/server/scripts/ip2region.ts (keep them in step). The folder first: one
+# made by ADD would get the files' mode, and nobody could open it.
+RUN mkdir -p /app/apps/server/vendor/ip2region
+ADD --chmod=644 --checksum=sha256:27ecba8c9a6d5e3b280aedbe7ee15c65372b179fbd0dad3845d8c608f2fcace1 \
+    https://raw.githubusercontent.com/lionsoul2014/ip2region/1bf6cabfb63c1a14af0971749c2120a3e5c77d72/data/ip2region_v4.xdb /app/apps/server/vendor/ip2region/
+ADD --chmod=644 --checksum=sha256:939f6b46bd2b8bec3cf7c5ceb8ba782266ae9b1f35b5ba7916700dec0b7506ed \
+    https://raw.githubusercontent.com/lionsoul2014/ip2region/1bf6cabfb63c1a14af0971749c2120a3e5c77d72/data/ip2region_v6.xdb /app/apps/server/vendor/ip2region/
 COPY --from=web /app/apps/web/dist /app/apps/web/dist
 # The built-in Tailscale (Settings → Network): tailscaled only, run by the server when turned on.
 COPY --from=tailscale/tailscale:v1.102.5 /usr/local/bin/tailscaled /usr/local/bin/tailscaled

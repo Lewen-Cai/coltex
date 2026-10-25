@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Ban, Check, KeyRound, MoreHorizontal, Search, ShieldCheck, Trash2, UserCheck, UserMinus, UserPlus, Users } from 'lucide-react'
+import { Ban, Check, History, KeyRound, MoreHorizontal, Search, ShieldCheck, Trash2, Unlock, UserCheck, UserMinus, UserPlus, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { passwordProblem, type InviteRole, type ManagedUser } from '@coltex/shared'
 import { PasswordStrength } from '@/components/auth/PasswordStrength'
@@ -33,6 +33,7 @@ import { timeAgo } from '@/lib/format'
 import { plural, t, tk } from '@/lib/i18n'
 import { ROLE_NAME } from '@/lib/roles'
 import { COLUMN } from '@/lib/table'
+import { navigate } from '@/lib/router'
 import { cn } from '@/lib/utils'
 
 type Filter = 'all' | 'manager' | 'suspended'
@@ -189,13 +190,25 @@ export function AdminUsersPage({ user: me }: { user: SessionUser }) {
                     </TableCell>
                     {system && <TableCell className={cn(COLUMN.gap, COLUMN.person, 'text-sm whitespace-nowrap text-muted-foreground @max-3xl:hidden')}>{team(u)}</TableCell>}
                     <TableCell className={cn(COLUMN.gap, '@max-md:hidden')}>
-                      {u.banned ? (
-                        <Badge variant="destructive">{t('Suspended')}</Badge>
-                      ) : (
-                        <Badge variant="outline" className="gap-1.5">
-                          <span className="size-1.5 rounded-full bg-emerald-500" /> {t('Active')}
-                        </Badge>
-                      )}
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        {u.banned ? (
+                          <Badge variant="destructive">{t('Suspended')}</Badge>
+                        ) : (
+                          <Badge variant="outline" className="gap-1.5">
+                            <span className="size-1.5 rounded-full bg-emerald-500" /> {t('Active')}
+                          </Badge>
+                        )}
+                        {u.locked && (
+                          <Badge variant="outline" className="border-amber-300 text-amber-700 dark:border-amber-500/40 dark:text-amber-300">
+                            {t('Locked')}
+                          </Badge>
+                        )}
+                        {u.twoFactor && (
+                          <Badge variant="outline" className="gap-1 text-muted-foreground">
+                            <ShieldCheck /> {t('Two-step')}
+                          </Badge>
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell className={cn(COLUMN.gap, 'text-sm whitespace-nowrap text-muted-foreground @max-2xl:hidden')}>{timeAgo(u.createdAt)}</TableCell>
                     <TableCell className="@max-xl:hidden" />
@@ -209,6 +222,16 @@ export function AdminUsersPage({ user: me }: { user: SessionUser }) {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-52">
                             <DropdownMenuLabel className="truncate text-xs text-muted-foreground">{u.email}</DropdownMenuLabel>
+                            {system && (
+                              <DropdownMenuItem onSelect={() => navigate(`/admin/sign-ins?user=${u.id}`)}>
+                                <History /> {t('Sign-ins and devices')}
+                              </DropdownMenuItem>
+                            )}
+                            {system && u.locked && (
+                              <DropdownMenuItem onSelect={() => void act(() => api.unlockUser(u.id), t('Unlocked {name}', { name: u.name }))}>
+                                <Unlock /> {t('Unlock')}
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onSelect={() => setResetting(u)}>
                               <KeyRound /> {t('Reset password')}
                             </DropdownMenuItem>

@@ -22,6 +22,8 @@ import { LinkedFileService } from '../src/projects/linked-files.ts'
 import { CompileCoalescer, buildProject } from '../src/routes/compile.ts'
 import { AccountService } from '../src/auth/accounts.ts'
 import { createAuth } from '../src/auth/auth.ts'
+import { IpPlaces } from '../src/auth/ip-place.ts'
+import { MemoryCounters, SignInGuard } from '../src/auth/sign-in-guard.ts'
 import { DocService } from '../src/collab/docs.ts'
 import { ConvertService } from '../src/convert/service.ts'
 import { CollabServer } from '../src/collab/server.ts'
@@ -103,6 +105,11 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     envPublicUrl: undefined,
     tailscale: new TailscaleClient({ socket: tailscaleSocket, target: 'http://server:3690' }),
   })
+  const notifications = new NotificationService(db)
+  const counters = new MemoryCounters()
+  // No ip2region databases here: addresses get their kind, public ones no place.
+  const places = new IpPlaces(path.join(dataDir, 'no-ip2region'))
+  const signIns = new SignInGuard({ db, counters, places, notifications, secret: 'test-secret-test-secret-test-secret' })
   const auth = createAuth({
     db,
     secret: 'test-secret-test-secret-test-secret',
@@ -155,7 +162,6 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   const box = new SecretBox('test-secret')
   const ai = new AiService(db, new DbCredentialStore(db, box))
   await ai.init()
-  const notifications = new NotificationService(db)
   // Not started: tests feed it samples themselves.
   const monitor = new MonitorHistory(db, () => queue.stats().then(s => s.containers))
   const skills = new SkillStore(db, options.builtinSkills ?? path.join(dataDir, 'no-builtin-skills'))
@@ -214,11 +220,13 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir, conversations: new ConversationStore(db), skills })
   const accounts = new AccountService(db, auth, box)
   const app = await buildApp(
-    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
     { logger: false, handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
   )
   return {
     app,
+    signIns,
+    counters,
     network,
     tailscaleSocket,
     collab,

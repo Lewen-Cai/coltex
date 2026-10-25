@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'Esiste già un account con questa email',
   'This link is invalid, expired, or has been used up': 'Questo link non è valido, è scaduto o è esaurito',
   'This link does not allow creating an account; sign in instead': 'Questo link non consente di creare un account; accedi invece',
+  'Code from your authenticator app': 'Codice dell’app di autenticazione',
+  'Recovery code': 'Codice di recupero',
+  'Don’t ask again on this device for 30 days': 'Non chiedere più su questo dispositivo per 30 giorni',
+  Verify: 'Verifica',
+  Back: 'Indietro',
+  'Use a recovery code': 'Usa un codice di recupero',
+  'Use the authenticator app': 'Usa l’app di autenticazione',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'Questo account è bloccato dopo troppi accessi non riusciti. Chiedi all’amministratore di sistema di sbloccarlo.',
+  'Too many failed sign-ins from this address. Try again later.': 'Troppi accessi non riusciti da questo indirizzo. Riprova più tardi.',
+  'Invalid code': 'Codice non valido',
+  'Invalid recovery code': 'Codice di recupero non valido',
+  'This sign-in has expired. Sign in again.': 'Questo accesso è scaduto. Accedi di nuovo.',
+  'Too many wrong codes. Try again in 15 minutes.': 'Troppi codici errati. Riprova tra 15 minuti.',
+  'The password is wrong': 'La password non è corretta',
+  'Too many failed sign-ins. Try again in {n} minute.': 'Troppi accessi non riusciti. Riprova tra {n} minuto.',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'Troppi accessi non riusciti. Riprova tra {n} minuti.',
 }
 
 export default messages

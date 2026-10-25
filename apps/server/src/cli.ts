@@ -35,6 +35,15 @@
  *       Set a new password for that account (typed in twice, or from
  *       COLTEX_NEW_PASSWORD) and sign it out everywhere. For a system
  *       administrator who forgot theirs. Runs next to the server, like tailscale.
+ *
+ *   node src/cli.ts reset-2fa <email>
+ *       Turn off two-step verification for that account (lost phone and
+ *       recovery codes, or a restore without the instance secret); they sign
+ *       in with their password and can turn it on again. Runs next to the server.
+ *
+ *   node src/cli.ts unlock <email | address>
+ *       Open an account locked after failed sign-ins (also the system
+ *       administrator's own), or an address blocked for a day. Runs next to the server.
  */
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -47,7 +56,11 @@ import { decryptArchive, isEncrypted, MANIFEST, readArchive, type BackupManifest
 import { runSqlFile } from './backup/postgres.ts'
 import { config } from './config.ts'
 import { createDb } from './db/client.ts'
-import { account, projects, session, user } from './db/schema.ts'
+import { account, projects, session, twoFactor, user } from './db/schema.ts'
+import { Redis } from 'ioredis'
+import net from 'node:net'
+import { IpPlaces } from './auth/ip-place.ts'
+import { RedisCounters, SignInGuard } from './auth/sign-in-guard.ts'
 import { NotFoundError } from './errors.ts'
 import { NotificationService } from './notifications/service.ts'
 import { SnapshotService } from './history/snapshots.ts'
@@ -458,6 +471,52 @@ async function resetPassword(email: string | undefined): Promise<void> {
   }
 }
 
+async function resetTwoFactor(email: string | undefined): Promise<void> {
+  if (!email) throw new Error('Usage: node src/cli.ts reset-2fa <email>')
+  const db = createDb(config.databaseUrl)
+  try {
+    const address = email.trim().toLowerCase()
+    const [target] = await db.select({ id: user.id, name: user.name, on: user.twoFactorEnabled }).from(user).where(eq(user.email, address))
+    if (!target) throw new NotFoundError(`No account with the email ${email}`)
+    if (!target.on) {
+      console.log(`Two-step verification is not on for ${target.name}`)
+      return
+    }
+    await db.transaction(async tx => {
+      await tx.delete(twoFactor).where(eq(twoFactor.userId, target.id))
+      await tx.update(user).set({ twoFactorEnabled: false }).where(eq(user.id, target.id))
+    })
+    await new NotificationService(db).twoFactorReset(target.id)
+    await serverLog(`Two-step verification turned off from the command line for ${address}`)
+    console.log(`Two-step verification is off for ${target.name}; they sign in with their password and can turn it on again.`)
+  } finally {
+    await db.$client.end()
+  }
+}
+
+async function unlock(what: string | undefined): Promise<void> {
+  if (!what) throw new Error('Usage: node src/cli.ts unlock <email | address>')
+  const db = createDb(config.databaseUrl)
+  const redis = new Redis(config.redisUrl, { maxRetriesPerRequest: 2 })
+  try {
+    const notifications = new NotificationService(db)
+    const guard = new SignInGuard({ db, counters: new RedisCounters(redis), places: new IpPlaces(config.ip2regionDir), notifications, secret: config.secret })
+    const target = what.trim()
+    if (net.isIP(target)) {
+      console.log((await guard.unblock(target)) ? `${target} can sign in again` : `${target} was not blocked`)
+      return
+    }
+    const [account] = await db.select({ id: user.id, name: user.name }).from(user).where(eq(user.email, target.toLowerCase()))
+    if (!account) throw new NotFoundError(`No account with the email ${what}`)
+    const was = await guard.unlock(account.id)
+    if (was) await serverLog(`Account unlocked from the command line: ${target.toLowerCase()}`)
+    console.log(was ? `${account.name}'s account is unlocked` : `${account.name}'s account was not locked (its failure count is cleared)`)
+  } finally {
+    redis.disconnect()
+    await db.$client.end()
+  }
+}
+
 const [command, ...args] = process.argv.slice(2)
 try {
   if (command === 'restore') await restore(args[0])
@@ -466,8 +525,10 @@ try {
   else if (command === 'cloudflare') await cloudflare(args[0], args[1])
   else if (command === 'system-admin') await systemAdmin(args[0])
   else if (command === 'reset-password') await resetPassword(args[0])
+  else if (command === 'reset-2fa') await resetTwoFactor(args[0])
+  else if (command === 'unlock') await unlock(args[0])
   else {
-    console.error('Commands: restore <backup file>, copy-storage, tailscale [status | up | down | off], cloudflare [status | quick | token [TOKEN] | off], system-admin <email>, reset-password <email>')
+    console.error('Commands: restore <backup file>, copy-storage, tailscale [status | up | down | off], cloudflare [status | quick | token [TOKEN] | off], system-admin <email>, reset-password <email>, reset-2fa <email>, unlock <email | address>')
     process.exitCode = 2
   }
 } catch (err) {

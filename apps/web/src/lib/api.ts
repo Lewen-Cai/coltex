@@ -7,6 +7,9 @@ import type {
   AiSkillSummary,
   InviteRole,
   ManagedUser,
+  AccountSession,
+  SignInBlocks,
+  SignInEventPage,
   AiAdminState,
   AiApplyBody,
   AiApplyResult,
@@ -146,6 +149,21 @@ export const api = {
   setUserPassword: (id: string, password: string) => request<void>(`/api/admin/users/${id}/password`, json('POST', { password })),
   suspendUser: (id: string, suspended: boolean) => request<void>(`/api/admin/users/${id}/suspended`, json('PUT', { suspended })),
   deleteUser: (id: string) => request<void>(`/api/admin/users/${id}`, { method: 'DELETE' }),
+  // ---- Sign-ins (one's own; everyone's, devices and unlocking for the system administrator) ----
+  mySignIns: (before?: string) => request<SignInEventPage>(`/api/me/sign-ins${before ? `?${new URLSearchParams({ before })}` : ''}`),
+  signIns: (q: { user?: string; failed?: boolean; before?: string }) => {
+    const params = new URLSearchParams()
+    if (q.user) params.set('user', q.user)
+    if (q.failed) params.set('failed', 'true')
+    if (q.before) params.set('before', q.before)
+    return request<SignInEventPage>(`/api/admin/sign-ins?${params}`)
+  },
+  signInBlocks: () => request<SignInBlocks>('/api/admin/sign-ins/blocks'),
+  unblockAddress: (ip: string) => request<void>('/api/admin/sign-ins/unblock', json('POST', { ip })),
+  unlockUser: (id: string) => request<void>(`/api/admin/users/${id}/unlock`, { method: 'POST' }),
+  userSessions: (id: string) => request<AccountSession[]>(`/api/admin/users/${id}/sessions`),
+  endSession: (id: string, sessionId: string) => request<void>(`/api/admin/users/${id}/sessions/${sessionId}`, { method: 'DELETE' }),
+  endAllSessions: (id: string) => request<void>(`/api/admin/users/${id}/sessions`, { method: 'DELETE' }),
   setUserRole: (id: string, role: InviteRole) => request<void>(`/api/admin/users/${id}/role`, json('PUT', { role })),
   setUserTeam: (id: string, managerId: string | null) => request<void>(`/api/admin/users/${id}/team`, json('PUT', { managerId })),
 

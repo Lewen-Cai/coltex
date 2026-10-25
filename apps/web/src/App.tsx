@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
 import { ConfirmHost } from '@/components/confirm'
 import { ConvertDialogHost } from '@/components/ConvertDialog'
 import { CopyProjectDialogHost, RenameProjectDialogHost } from '@/components/shell/project-dialogs'
@@ -32,6 +32,7 @@ const AdminOverviewPage = lazy(() => import('@/pages/admin/overview').then(m => 
 const AdminAiUsagePage = lazy(() => import('@/pages/admin/ai-usage').then(m => ({ default: m.AdminAiUsagePage })))
 const AdminNetworkPage = lazy(() => import('@/pages/admin/network').then(m => ({ default: m.AdminNetworkPage })))
 const AdminBackupsPage = lazy(() => import('@/pages/admin/backups').then(m => ({ default: m.AdminBackupsPage })))
+const AdminSignInsPage = lazy(() => import('@/pages/admin/sign-ins').then(m => ({ default: m.AdminSignInsPage })))
 const AdminUsersPage = lazy(() => import('@/pages/admin/users').then(m => ({ default: m.AdminUsersPage })))
 const AccountSettingsPage = lazy(() => import('@/pages/settings/account').then(m => ({ default: m.AccountSettingsPage })))
 const AppearanceSettingsPage = lazy(() => import('@/pages/settings/appearance').then(m => ({ default: m.AppearanceSettingsPage })))
@@ -87,6 +88,7 @@ function settingsPage(route: string, user: SessionUser): ReactNode {
     if (route === '/admin/ai/usage') return <AdminAiUsagePage />
     if (route === '/admin/backups') return <AdminBackupsPage />
     if (route === '/admin/network') return <AdminNetworkPage />
+    if (route === '/admin/sign-ins') return <AdminSignInsPage />
   }
   return <AccountSettingsPage user={user} />
 }
@@ -95,6 +97,7 @@ function Routes() {
   const route = useHashRoute()
   const session = authClient.useSession()
   const [needsSetup, setNeedsSetup] = useState<boolean>()
+  const sessionLoaded = useRef(false)
   useNotificationStream(session.data?.user.id)
   // Signed in: their account's theme; otherwise the default.
   useAccountTheme(session.isPending ? undefined : (session.data?.user.id ?? null))
@@ -126,7 +129,10 @@ function Routes() {
     void session.refetch()
   }
 
-  if (needsSetup === undefined || session.isPending) return null
+  // Only the first load waits: a refetch while signed out (each sign-in attempt makes one) must
+  // not unmount the sign-in form, which would lose its second step.
+  if (!session.isPending) sessionLoaded.current = true
+  if (needsSetup === undefined || !sessionLoaded.current) return null
 
   if (needsSetup) {
     return (
@@ -160,9 +166,11 @@ function Routes() {
       </Suspense>
     )
   }
+  // Console pages are matched without their query (`#/admin/sign-ins?user=…`); a page that takes one reads it itself.
+  const page = route.split('?')[0]!
   return (
-    <AppShell user={user} route={route}>
-      <Suspense fallback={<Loading />}>{consolePage(route, user)}</Suspense>
+    <AppShell user={user} route={page}>
+      <Suspense fallback={<Loading />}>{consolePage(page, user)}</Suspense>
     </AppShell>
   )
 }

@@ -5,3 +5,4 @@ data
 .git
 .env
 apps/web/vendor
+apps/server/vendor

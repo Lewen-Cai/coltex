@@ -1,8 +1,10 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { hash, verify } from '@node-rs/argon2'
 import { betterAuth } from 'better-auth'
 import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin } from 'better-auth/plugins/admin'
+import { twoFactor } from 'better-auth/plugins/two-factor'
 import { createAccessControl } from 'better-auth/plugins/access'
 import { adminAc, defaultStatements, userAc } from 'better-auth/plugins/admin/access'
 import { and, count, eq, ne } from 'drizzle-orm'
@@ -36,9 +38,18 @@ export type AuthOptions = {
   /** Addresses that change at runtime (the public address set in the app, the tailnet's). */
   extraOrigins?: () => Promise<string[]>
   userDeletion: UserDeletionHooks
+  /** Where better-auth's rate limits count (Valkey in the server: kept across restarts); in memory without. */
+  rateLimitStorage?: { consume(key: string, rule: { window: number; max: number }): Promise<{ allowed: boolean; retryAfter: number | null }> }
 }
 
-export function createAuth({ db, secret, baseURL, trustedOrigins, extraOrigins, userDeletion }: AuthOptions) {
+/**
+ * Set while better-auth handles a sign-in (auth/fastify.ts). For an email without an account it
+ * still hashes the password typed, so that answer takes as long as a wrong password; the password
+ * rules must not reject it then, or a weak password would tell that there is no such account.
+ */
+export const signingIn = new AsyncLocalStorage<true>()
+
+export function createAuth({ db, secret, baseURL, trustedOrigins, extraOrigins, userDeletion, rateLimitStorage }: AuthOptions) {
   // Projects owned by a user being deleted, captured before the cascade removes their rows.
   const pendingDeletion = new Map<string, string[]>()
   return betterAuth({
@@ -54,8 +65,9 @@ export function createAuth({ db, secret, baseURL, trustedOrigins, extraOrigins, 
     advanced: { ipAddress: { ipAddressHeaders: ['x-coltex-client-ip'] } },
     database: drizzleAdapter(db, {
       provider: 'pg',
-      schema: { user: schema.user, session: schema.session, account: schema.account, verification: schema.verification },
+      schema: { user: schema.user, session: schema.session, account: schema.account, verification: schema.verification, twoFactor: schema.twoFactor },
     }),
+    ...(rateLimitStorage ? { rateLimit: { customStorage: rateLimitStorage } } : {}),
     emailAndPassword: {
       enabled: true,
       // Accounts are created only through invites or the first-run setup.
@@ -64,7 +76,7 @@ export function createAuth({ db, secret, baseURL, trustedOrigins, extraOrigins, 
       password: {
         // Every new password passes here (setup, invitations, changes, admin resets).
         hash: password => {
-          const problem = passwordProblem(password)
+          const problem = signingIn.getStore() ? undefined : passwordProblem(password)
           if (problem) throw new APIError('BAD_REQUEST', { message: problem })
           return hash(password)
         },
@@ -98,7 +110,12 @@ export function createAuth({ db, secret, baseURL, trustedOrigins, extraOrigins, 
         },
       },
     },
-    plugins: [admin({ defaultRole: 'user', adminRoles: ['admin'], ac, roles: ROLES })],
+    plugins: [
+      admin({ defaultRole: 'user', adminRoles: ['admin'], ac, roles: ROLES }),
+      // Two-step verification, for whoever turns it on (Settings → Account): an authenticator
+      // app and 10 recovery codes; "trust this device" skips it there for 30 days.
+      twoFactor({ issuer: 'ColTex' }),
+    ],
     telemetry: { enabled: false },
   })
 }

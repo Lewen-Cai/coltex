@@ -16,6 +16,9 @@ import { LinkedFileService } from './projects/linked-files.ts'
 import { CompileCoalescer, buildProject } from './routes/compile.ts'
 import { AccountService } from './auth/accounts.ts'
 import { createAuth } from './auth/auth.ts'
+import { IpPlaces } from './auth/ip-place.ts'
+import { RedisCounters, SignInGuard } from './auth/sign-in-guard.ts'
+import { Redis } from 'ioredis'
 import { CompileQueue } from './compile-queue.ts'
 import { config } from './config.ts'
 import { DocService } from './collab/docs.ts'
@@ -61,6 +64,10 @@ const network = new NetworkService({
   cloudflare: new CloudflareTunnel({ binary: config.cloudflared, target: config.tailscaleTarget, metrics: config.cloudflaredMetrics }),
   box,
 })
+const notifications = new NotificationService(db)
+const places = new IpPlaces(config.ip2regionDir)
+const signIns = new SignInGuard({ db, counters: new RedisCounters(new Redis(config.redisUrl)), places, notifications, secret: config.secret })
+setInterval(() => void signIns.prune().catch(err => console.error('[sign-ins] prune failed:', err)), 60 * 60 * 1000).unref()
 const auth = createAuth({
   db,
   secret: config.secret,
@@ -68,6 +75,7 @@ const auth = createAuth({
   trustedOrigins: config.trustedOrigins,
   extraOrigins: () => network.extraOrigins(),
   userDeletion: projects,
+  rateLimitStorage: signIns.rateLimitStorage(),
 })
 const queue = new CompileQueue(config.redisUrl)
 queue.beforeCompile = id => store.syncForCompile(id)
@@ -82,7 +90,6 @@ const collab = new CollabServer({
 history.setCollab(collab)
 const ai = new AiService(db, new DbCredentialStore(db, box))
 await ai.init()
-const notifications = new NotificationService(db)
 const monitor = new MonitorHistory(db, () => queue.stats().then(s => s.containers))
 queue.onBuild = (ms, status) => void monitor.recordBuild(ms, status)
 monitor.start()
@@ -115,7 +122,7 @@ const linkedFiles = new LinkedFileService({
 const references = new ReferenceService({ db, box, store, collab, history, projects })
 const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
 const app = await buildApp(
-  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network },
+  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
   { handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
 )
 

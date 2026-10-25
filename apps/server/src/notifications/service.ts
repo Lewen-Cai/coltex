@@ -154,6 +154,17 @@ export class NotificationService {
     await this.create([{ userId, projectId: null, actorId: null, kind: 'password_reset', excerpt: '' }])
   }
 
+  /** Their two-step verification was turned off from the server's command line (`cli.ts reset-2fa`). */
+  async twoFactorReset(userId: string): Promise<void> {
+    await this.create([{ userId, projectId: null, actorId: null, kind: 'two_factor_reset', excerpt: '' }])
+  }
+
+  /** For the system administrator: this account was locked after failed sign-ins (the actor is the account). */
+  async accountLocked(lockedUserId: string): Promise<void> {
+    const admins = await this.db.select({ id: user.id }).from(user).where(eq(user.role, 'admin'))
+    await this.create(admins.map(a => ({ userId: a.id, projectId: null, actorId: lockedUserId, kind: 'account_locked' as const, excerpt: '' })))
+  }
+
   private emit(userId: string, event: NotificationEvent): void {
     for (const listener of this.listeners.get(userId) ?? []) listener(event)
   }

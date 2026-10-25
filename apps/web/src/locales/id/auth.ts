@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'Akun dengan email ini sudah ada',
   'This link is invalid, expired, or has been used up': 'Tautan ini tidak valid, kedaluwarsa, atau sudah habis digunakan',
   'This link does not allow creating an account; sign in instead': 'Tautan ini tidak dapat digunakan untuk membuat akun; silakan masuk',
+  'Code from your authenticator app': 'Kode dari aplikasi autentikator Anda',
+  'Recovery code': 'Kode pemulihan',
+  'Don’t ask again on this device for 30 days': 'Jangan tanya lagi di perangkat ini selama 30 hari',
+  Verify: 'Verifikasi',
+  Back: 'Kembali',
+  'Use a recovery code': 'Gunakan kode pemulihan',
+  'Use the authenticator app': 'Gunakan aplikasi autentikator',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'Akun ini dikunci setelah terlalu banyak gagal masuk. Minta administrator sistem untuk membukanya.',
+  'Too many failed sign-ins from this address. Try again later.': 'Terlalu banyak gagal masuk dari alamat ini. Coba lagi nanti.',
+  'Invalid code': 'Kode tidak valid',
+  'Invalid recovery code': 'Kode pemulihan tidak valid',
+  'This sign-in has expired. Sign in again.': 'Proses masuk ini sudah kedaluwarsa. Masuk lagi.',
+  'Too many wrong codes. Try again in 15 minutes.': 'Terlalu banyak kode salah. Coba lagi dalam 15 menit.',
+  'The password is wrong': 'Kata sandi salah',
+  'Too many failed sign-ins. Try again in {n} minute.': 'Terlalu banyak gagal masuk. Coba lagi dalam {n} menit.',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'Terlalu banyak gagal masuk. Coba lagi dalam {n} menit.',
 }
 
 export default messages

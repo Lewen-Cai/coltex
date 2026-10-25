@@ -8,6 +8,8 @@
 #   coltex cloudflare [status | quick | token [TOKEN] | off]
 #   coltex reset-password <email>     set a new password for an account
 #   coltex system-admin <email>       make another account the system administrator
+#   coltex reset-2fa <email>          turn off two-step verification for an account
+#   coltex unlock <email | address>   open an account or address locked after failed sign-ins
 #   coltex cli <command…>             any other `node src/cli.ts` command
 #   coltex reset                      delete all data and start again from the setup page
 #   coltex uninstall                  remove ColTex from this machine (containers, data, images,
@@ -90,6 +92,8 @@ msg_en() {
   Accounts
     coltex reset-password <email>     set a new password for an account
     coltex system-admin <email>       make another account the system administrator
+    coltex reset-2fa <email>          turn off two-step verification for an account
+    coltex unlock <email | address>   open an account or address locked after failed sign-ins
 
   Starting over
     coltex reset                      delete all data and start again from the setup page
@@ -147,6 +151,8 @@ msg_zh_CN() {
   账号
     coltex reset-password <邮箱>      给账号设置新密码
     coltex system-admin <邮箱>        把系统管理员转给另一个账号
+    coltex reset-2fa <邮箱>           关闭账号的两步验证
+    coltex unlock <邮箱 | 地址>       解锁因登录失败被锁定的账号或地址
 
   从头开始
     coltex reset                      删除所有数据，从初始设置页重新开始
@@ -204,6 +210,8 @@ msg_zh_TW() {
   帳號
     coltex reset-password <電子郵件>  為帳號設定新密碼
     coltex system-admin <電子郵件>    將系統管理員轉交給另一個帳號
+    coltex reset-2fa <電子郵件>       關閉帳號的兩步驟驗證
+    coltex unlock <電子郵件 | 位址>   解鎖因登入失敗被鎖定的帳號或位址
 
   從頭開始
     coltex reset                      刪除所有資料，從初始設定頁面重新開始
@@ -261,6 +269,8 @@ msg_ja() {
   アカウント
     coltex reset-password <メールアドレス>  アカウントに新しいパスワードを設定
     coltex system-admin <メールアドレス>    別のアカウントをシステム管理者にする
+    coltex reset-2fa <メールアドレス>       アカウントの 2 段階認証をオフにする
+    coltex unlock <メールアドレス | アドレス>  ログインの失敗でロックされたアカウントやアドレスを解除
 
   最初からやり直す
     coltex reset                            すべてのデータを削除し、セットアップページからやり直す
@@ -318,6 +328,8 @@ msg_ko() {
   계정
     coltex reset-password <이메일>    계정의 비밀번호를 새로 설정
     coltex system-admin <이메일>      다른 계정을 시스템 관리자로 지정
+    coltex reset-2fa <이메일>         계정의 2단계 인증 끄기
+    coltex unlock <이메일 | 주소>     로그인 실패로 잠긴 계정이나 주소의 잠금 해제
 
   처음부터 다시
     coltex reset                      모든 데이터를 삭제하고 초기 설정 페이지부터 다시 시작
@@ -375,6 +387,8 @@ msg_es() {
   Cuentas
     coltex reset-password <correo>    establece una nueva contraseña para una cuenta
     coltex system-admin <correo>      hace administrador del sistema a otra cuenta
+    coltex reset-2fa <correo>         desactiva la verificación en dos pasos de una cuenta
+    coltex unlock <correo | dirección>  desbloquea una cuenta o dirección bloqueada tras inicios de sesión fallidos
 
   Empezar de nuevo
     coltex reset                      borra todos los datos y vuelve a empezar desde la configuración inicial
@@ -432,6 +446,8 @@ msg_fr() {
   Comptes
     coltex reset-password <e-mail>    définit un nouveau mot de passe pour un compte
     coltex system-admin <e-mail>      fait d’un autre compte l’administrateur système
+    coltex reset-2fa <e-mail>         désactive la validation en deux étapes d’un compte
+    coltex unlock <e-mail | adresse>  déverrouille un compte ou une adresse bloqués après des échecs de connexion
 
   Repartir de zéro
     coltex reset                      supprime toutes les données et repart de la page de configuration
@@ -489,6 +505,8 @@ msg_de() {
   Konten
     coltex reset-password <E-Mail>    ein neues Passwort für ein Konto festlegen
     coltex system-admin <E-Mail>      ein anderes Konto zum Systemadmin machen
+    coltex reset-2fa <E-Mail>         die Bestätigung in zwei Schritten für ein Konto ausschalten
+    coltex unlock <E-Mail | Adresse>  ein nach Fehlanmeldungen gesperrtes Konto oder eine Adresse freigeben
 
   Neu anfangen
     coltex reset                      alle Daten löschen und auf der Einrichtungsseite neu beginnen
@@ -546,6 +564,8 @@ msg_pt_BR() {
   Contas
     coltex reset-password <e-mail>    define uma nova senha para uma conta
     coltex system-admin <e-mail>      torna outra conta o administrador do sistema
+    coltex reset-2fa <e-mail>         desativa a verificação em duas etapas de uma conta
+    coltex unlock <e-mail | endereço>  desbloqueia uma conta ou um endereço bloqueado após falhas de login
 
   Recomeçar do zero
     coltex reset                      exclui todos os dados e recomeça a partir da página de configuração inicial
@@ -603,6 +623,8 @@ msg_it() {
   Account
     coltex reset-password <email>     imposta una nuova password per un account
     coltex system-admin <email>       rende un altro account l’amministratore di sistema
+    coltex reset-2fa <email>          disattiva la verifica in due passaggi di un account
+    coltex unlock <email | indirizzo>  sblocca un account o un indirizzo bloccato dopo accessi non riusciti
 
   Ricominciare da capo
     coltex reset                      elimina tutti i dati e ricomincia dalla pagina di configurazione
@@ -660,6 +682,8 @@ msg_ru() {
   Учётные записи
     coltex reset-password <почта>     задать новый пароль для учётной записи
     coltex system-admin <почта>       сделать системным администратором другую учётную запись
+    coltex reset-2fa <почта>          отключить двухэтапную проверку учётной записи
+    coltex unlock <почта | адрес>     разблокировать учётную запись или адрес после неудачных входов
 
   Начать заново
     coltex reset                      удалить все данные и начать заново со страницы первоначальной настройки
@@ -717,6 +741,8 @@ msg_tr() {
   Hesaplar
     coltex reset-password <e-posta>     bir hesap için yeni parola belirle
     coltex system-admin <e-posta>       başka bir hesabı sistem yöneticisi yap
+    coltex reset-2fa <e-posta>          bir hesabın iki adımlı doğrulamasını kapat
+    coltex unlock <e-posta | adres>     başarısız oturum açmalardan sonra kilitlenen hesabı ya da adresi aç
 
   Baştan başlama
     coltex reset                        tüm verileri sil ve kurulum sayfasından yeniden başla
@@ -774,6 +800,8 @@ msg_vi() {
   Tài khoản
     coltex reset-password <email>     đặt mật khẩu mới cho một tài khoản
     coltex system-admin <email>       đặt một tài khoản khác làm quản trị viên hệ thống
+    coltex reset-2fa <email>          tắt xác minh 2 bước của một tài khoản
+    coltex unlock <email | địa chỉ>   mở khóa tài khoản hoặc địa chỉ bị khóa do đăng nhập thất bại
 
   Bắt đầu lại
     coltex reset                      xóa toàn bộ dữ liệu và bắt đầu lại từ trang thiết lập
@@ -831,6 +859,8 @@ msg_id() {
   Akun
     coltex reset-password <email>     atur kata sandi baru untuk sebuah akun
     coltex system-admin <email>       jadikan akun lain sebagai admin sistem
+    coltex reset-2fa <email>          matikan verifikasi 2 langkah sebuah akun
+    coltex unlock <email | alamat>    buka akun atau alamat yang dikunci setelah gagal masuk
 
   Mulai dari awal
     coltex reset                      hapus semua data dan mulai lagi dari halaman penyiapan
@@ -1208,7 +1238,7 @@ case "${1:-help}" in
     shift
     exec_server "$cmd" "$@"
     ;;
-  reset-password | system-admin)
+  reset-password | system-admin | reset-2fa | unlock)
     exec_server "$@"
     ;;
   cli)

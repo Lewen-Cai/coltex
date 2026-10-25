@@ -46,6 +46,8 @@ export const user = pgTable('user', {
   banned: boolean('banned').default(false),
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires', { withTimezone: true }),
+  // two-factor plugin
+  twoFactorEnabled: boolean('two_factor_enabled').default(false),
   ...timestamps,
 }, t => [
   // There is one system administrator: the index refuses a second, whatever path tries.
@@ -119,6 +121,23 @@ export const verification = pgTable(
     ...timestamps,
   },
   t => [index('verification_identifier_idx').on(t.identifier)],
+)
+
+/** two-factor plugin: the authenticator secret and recovery codes, both encrypted with the instance secret. */
+export const twoFactor = pgTable(
+  'two_factor',
+  {
+    id: text('id').primaryKey(),
+    secret: text('secret').notNull(),
+    backupCodes: text('backup_codes').notNull(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    verified: boolean('verified').default(true),
+    failedVerificationCount: integer('failed_verification_count').default(0),
+    lockedUntil: timestamp('locked_until', { withTimezone: true }),
+  },
+  t => [index('two_factor_user_id_idx').on(t.userId), index('two_factor_secret_idx').on(t.secret)],
 )
 
 // ---------------------------------------------------------------------------
@@ -474,7 +493,7 @@ export const notifications = pgTable(
     // Null for notifications about the account itself.
     projectId: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
     actorId: text('actor_id').references(() => user.id, { onDelete: 'set null' }),
-    kind: text('kind', { enum: ['mention', 'reply', 'added', 'owner', 'password_reset'] }).notNull(),
+    kind: text('kind', { enum: ['mention', 'reply', 'added', 'owner', 'password_reset', 'two_factor_reset', 'account_locked'] }).notNull(),
     source: text('source', { enum: ['chat', 'comment'] }),
     threadId: text('thread_id').references(() => commentThreads.id, { onDelete: 'cascade' }),
     commentMessageId: text('comment_message_id').references(() => commentMessages.id, { onDelete: 'cascade' }),
@@ -491,6 +510,43 @@ export const notifications = pgTable(
     index('notifications_chat_message_idx').on(t.chatMessageId),
   ],
 )
+
+/**
+ * Sign-in attempts and what came of them (`SignInOutcome`), kept 90 days: each person sees
+ * their own, the system administrator everyone's. A success also makes its address familiar
+ * for that account (see auth/sign-in-guard.ts). `email` is what was typed, so attempts at
+ * addresses without an account are kept too (with no user).
+ */
+export const signInEvents = pgTable(
+  'sign_in_events',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    outcome: text('outcome', { enum: ['success', 'failure', 'two_factor_failure', 'refused', 'locked', 'unlocked', 'ip_blocked'] }).notNull(),
+    method: text('method', { enum: ['password', 'totp', 'recovery_code'] }),
+    reason: text('reason', { enum: ['cooldown', 'locked', 'ip_blocked', 'challenge'] }),
+    ip: text('ip'),
+    userAgent: text('user_agent'),
+    createdAt: timestamps.createdAt,
+  },
+  t => [
+    index('sign_in_events_user_created_idx').on(t.userId, t.createdAt),
+    index('sign_in_events_created_idx').on(t.createdAt),
+  ],
+)
+
+/**
+ * Accounts locked after too many failed sign-ins from unfamiliar addresses: closed to those until
+ * the system administrator unlocks them (Manage users, or `cli.ts unlock`). Familiar addresses
+ * still sign in.
+ */
+export const signInLocks = pgTable('sign_in_locks', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  lockedAt: timestamps.createdAt,
+})
 
 /**
  * The admin overview's resource history: one row per minute, written by the

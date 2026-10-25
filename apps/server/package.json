@@ -5,12 +5,13 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
+    "dev": "node scripts/ip2region.ts && node --watch --env-file-if-exists=../../.env src/index.ts",
     "start": "node src/index.ts",
     "typecheck": "tsc -p .",
     "cli": "node --env-file-if-exists=../../.env src/cli.ts",
     "test": "node --env-file-if-exists=../../.env --test --test-concurrency=1 --test-timeout=30000 test/*.test.ts",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "ip2region": "node scripts/ip2region.ts"
   },
   "dependencies": {
     "@coltex/convert": "workspace:*",
@@ -22,6 +23,7 @@
     "@fastify/swagger": "^9.5.1",
     "@hocuspocus/server": "^4.7.1",
     "@node-rs/argon2": "^2.2.2",
+    "altcha-lib": "2.6.0",
     "aws4fetch": "1.0.20",
     "better-auth": "^1.7.0",
     "bullmq": "^5.81.5",

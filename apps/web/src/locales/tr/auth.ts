@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'Bu e-posta adresiyle bir hesap zaten var',
   'This link is invalid, expired, or has been used up': 'Bu bağlantı geçersiz, süresi dolmuş ya da kullanım hakkı bitmiş',
   'This link does not allow creating an account; sign in instead': 'Bu bağlantıyla hesap oluşturulamaz; bunun yerine oturum açın',
+  'Code from your authenticator app': 'Kimlik doğrulama uygulamanızdaki kod',
+  'Recovery code': 'Kurtarma kodu',
+  'Don’t ask again on this device for 30 days': 'Bu cihazda 30 gün boyunca tekrar sorma',
+  Verify: 'Doğrula',
+  Back: 'Geri',
+  'Use a recovery code': 'Kurtarma kodu kullan',
+  'Use the authenticator app': 'Kimlik doğrulama uygulamasını kullan',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'Bu hesap çok fazla başarısız oturum açma denemesinden sonra kilitlendi. Kilidi açması için sistem yöneticisine başvurun.',
+  'Too many failed sign-ins from this address. Try again later.': 'Bu adresten çok fazla başarısız oturum açma denemesi yapıldı. Daha sonra tekrar deneyin.',
+  'Invalid code': 'Geçersiz kod',
+  'Invalid recovery code': 'Geçersiz kurtarma kodu',
+  'This sign-in has expired. Sign in again.': 'Bu oturum açma işleminin süresi doldu. Tekrar oturum açın.',
+  'Too many wrong codes. Try again in 15 minutes.': 'Çok fazla yanlış kod girildi. 15 dakika sonra tekrar deneyin.',
+  'The password is wrong': 'Parola yanlış',
+  'Too many failed sign-ins. Try again in {n} minute.': 'Çok fazla başarısız oturum açma denemesi. {n} dakika sonra tekrar deneyin.',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'Çok fazla başarısız oturum açma denemesi. {n} dakika sonra tekrar deneyin.',
 }
 
 export default messages

@@ -303,6 +303,25 @@ Upstream commit: 4ab6e0fd99c6667163bc34173e3ed3a3fed75ebc
   apps/server/skills/skill-creator/LICENSE.txt
     <- skills/.system/skill-creator/LICENSE.txt (the Apache License 2.0)
 
+ip2region (https://github.com/lionsoul2014/ip2region), Apache-2.0 OR MIT,
+Copyright The Ip2Region Authors.
+Upstream commit: 1bf6cabfb63c1a14af0971749c2120a3e5c77d72
+
+  apps/server/src/auth/ip-place.ts (the xdb search)
+    <- binding/javascript/searcher.js, binding/javascript/util.js
+  The server image also carries its databases, unchanged:
+    data/ip2region_v4.xdb, data/ip2region_v6.xdb
+    (fetched by apps/server/scripts/ip2region.ts and the Dockerfile)
+  apps/web/src/lib/place-names/*.ts list the Chinese region, city and network
+  operator names that appear in data/ipv4_source.txt and data/ipv6_source.txt,
+  with their names in each interface language written for ColTex.
+
+The same files carry the names of other countries' first-level regions in each
+language from Wikidata (https://www.wikidata.org, CC0), found through GeoNames
+(https://www.geonames.org, CC BY 4.0: admin1CodesASCII.txt and the Wikidata and
+Wikipedia links in alternateNamesV2.txt, October 2026) by matching the region
+names in ip2region's data.
+
 Simple Icons (https://simpleicons.org), CC0-1.0; simple-icons 13.21.0.
 
   apps/web/src/components/service-icons.tsx

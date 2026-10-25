@@ -150,6 +150,8 @@ export const config = {
   pgDump: env('PG_DUMP') ?? 'pg_dump',
   psql: env('PSQL') ?? 'psql',
   compileTimeoutMs: int('COMPILE_TIMEOUT', 240) * 1000,
+  /** ip2region's databases (`scripts/ip2region.ts`; in the image from the Dockerfile). */
+  ip2regionDir: env('IP2REGION_DIR') ?? path.resolve(import.meta.dirname, '../vendor/ip2region'),
   /** Built web app to serve in production; unset in development (Vite serves it). */
   webDist: process.env.WEB_DIST ? path.resolve(repoRoot, process.env.WEB_DIST) : undefined,
   maxUploadBytes: int('MAX_UPLOAD_MB', 50) * 1024 * 1024,

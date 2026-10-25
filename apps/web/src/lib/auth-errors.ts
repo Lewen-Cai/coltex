@@ -1,5 +1,5 @@
 import { PASSWORD_PROBLEM } from '@coltex/shared'
-import { t } from './i18n.ts'
+import { plural, t } from './i18n.ts'
 
 /**
  * Errors on the pages people see before they are in (sign-in, first-run
@@ -17,6 +17,21 @@ export function authErrorText(message: string): string {
       return t('This account has been disabled')
     case 'Sign-in failed':
       return t('Sign-in failed')
+    case 'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.':
+      return t('This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.')
+    case 'Too many failed sign-ins from this address. Try again later.':
+      return t('Too many failed sign-ins from this address. Try again later.')
+    case 'Invalid code':
+      return t('Invalid code')
+    case 'Invalid backup code':
+      return t('Invalid recovery code')
+    case 'Too many attempts. Please request a new code.':
+    case 'Invalid two factor cookie':
+      return t('This sign-in has expired. Sign in again.')
+    case 'Too many failed verification attempts. Your account is temporarily locked. Please try again later.':
+      return t('Too many wrong codes. Try again in 15 minutes.')
+    case 'Invalid password':
+      return t('The password is wrong')
     case PASSWORD_PROBLEM:
       return t('Password must be at least 8 characters and include an uppercase letter, a lowercase letter and a number')
     case 'Password must be at most 128 characters':
@@ -44,4 +59,10 @@ export function authErrorText(message: string): string {
     default:
       return message
   }
+}
+
+/** The wait after failed sign-ins (the server says how long, in seconds). */
+export function signInWaitText(seconds: number | undefined): string {
+  const minutes = Math.max(1, Math.ceil((seconds ?? 900) / 60))
+  return plural(minutes, 'Too many failed sign-ins. Try again in {n} minute.', 'Too many failed sign-ins. Try again in {n} minutes.')
 }

@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': '이 이메일로 가입된 계정이 이미 있습니다',
   'This link is invalid, expired, or has been used up': '링크가 유효하지 않거나 만료되었거나 사용 횟수를 모두 소진했습니다',
   'This link does not allow creating an account; sign in instead': '이 링크로는 계정을 만들 수 없습니다. 로그인하세요',
+  'Code from your authenticator app': '인증 앱의 코드',
+  'Recovery code': '복구 코드',
+  'Don’t ask again on this device for 30 days': '이 기기에서 30일 동안 다시 묻지 않기',
+  Verify: '확인',
+  Back: '뒤로',
+  'Use a recovery code': '복구 코드 사용',
+  'Use the authenticator app': '인증 앱 사용',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': '로그인 실패가 너무 많아 이 계정이 잠겼습니다. 시스템 관리자에게 잠금 해제를 요청하세요.',
+  'Too many failed sign-ins from this address. Try again later.': '이 주소에서 로그인 실패가 너무 많습니다. 나중에 다시 시도하세요.',
+  'Invalid code': '코드가 올바르지 않습니다',
+  'Invalid recovery code': '복구 코드가 올바르지 않습니다',
+  'This sign-in has expired. Sign in again.': '이 로그인은 만료되었습니다. 다시 로그인하세요.',
+  'Too many wrong codes. Try again in 15 minutes.': '잘못된 코드가 너무 많습니다. 15분 후에 다시 시도하세요.',
+  'The password is wrong': '비밀번호가 올바르지 않습니다',
+  'Too many failed sign-ins. Try again in {n} minute.': '로그인 실패가 너무 많습니다. {n}분 후에 다시 시도하세요.',
+  'Too many failed sign-ins. Try again in {n} minutes.': '로그인 실패가 너무 많습니다. {n}분 후에 다시 시도하세요.',
 }
 
 export default messages

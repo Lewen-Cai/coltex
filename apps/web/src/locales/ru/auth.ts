@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'Учётная запись с этим адресом электронной почты уже существует',
   'This link is invalid, expired, or has been used up': 'Ссылка недействительна, просрочена или исчерпана',
   'This link does not allow creating an account; sign in instead': 'По этой ссылке нельзя создать учётную запись; войдите в систему',
+  'Code from your authenticator app': 'Код из приложения-аутентификатора',
+  'Recovery code': 'Код восстановления',
+  'Don’t ask again on this device for 30 days': 'Не спрашивать на этом устройстве 30 дней',
+  Verify: 'Подтвердить',
+  Back: 'Назад',
+  'Use a recovery code': 'Использовать код восстановления',
+  'Use the authenticator app': 'Использовать приложение-аутентификатор',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'Учётная запись заблокирована после слишком многих неудачных попыток входа. Попросите системного администратора разблокировать её.',
+  'Too many failed sign-ins from this address. Try again later.': 'Слишком много неудачных попыток входа с этого адреса. Повторите попытку позже.',
+  'Invalid code': 'Неверный код',
+  'Invalid recovery code': 'Неверный код восстановления',
+  'This sign-in has expired. Sign in again.': 'Время входа истекло. Войдите снова.',
+  'Too many wrong codes. Try again in 15 minutes.': 'Слишком много неверных кодов. Повторите попытку через 15 минут.',
+  'The password is wrong': 'Неверный пароль',
+  'Too many failed sign-ins. Try again in {n} minute.': 'Слишком много неудачных попыток входа. Повторите попытку позже (минут: {n}).',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'Слишком много неудачных попыток входа. Повторите попытку позже (минут: {n}).',
 }
 
 export default messages

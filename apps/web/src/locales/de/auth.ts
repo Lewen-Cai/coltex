@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'Für diese E-Mail-Adresse gibt es bereits ein Konto',
   'This link is invalid, expired, or has been used up': 'Dieser Link ist ungültig, abgelaufen oder aufgebraucht',
   'This link does not allow creating an account; sign in instead': 'Mit diesem Link kann kein Konto erstellt werden; melden Sie sich stattdessen an',
+  'Code from your authenticator app': 'Code aus Ihrer Authenticator-App',
+  'Recovery code': 'Wiederherstellungscode',
+  'Don’t ask again on this device for 30 days': 'Auf diesem Gerät 30 Tage lang nicht mehr fragen',
+  Verify: 'Bestätigen',
+  Back: 'Zurück',
+  'Use a recovery code': 'Wiederherstellungscode verwenden',
+  'Use the authenticator app': 'Authenticator-App verwenden',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'Dieses Konto ist nach zu vielen fehlgeschlagenen Anmeldungen gesperrt. Bitten Sie den Systemadministrator, es zu entsperren.',
+  'Too many failed sign-ins from this address. Try again later.': 'Zu viele fehlgeschlagene Anmeldungen von dieser Adresse. Versuchen Sie es später erneut.',
+  'Invalid code': 'Ungültiger Code',
+  'Invalid recovery code': 'Ungültiger Wiederherstellungscode',
+  'This sign-in has expired. Sign in again.': 'Diese Anmeldung ist abgelaufen. Melden Sie sich erneut an.',
+  'Too many wrong codes. Try again in 15 minutes.': 'Zu viele falsche Codes. Versuchen Sie es in 15 Minuten erneut.',
+  'The password is wrong': 'Das Passwort ist falsch',
+  'Too many failed sign-ins. Try again in {n} minute.': 'Zu viele fehlgeschlagene Anmeldungen. Versuchen Sie es in {n} Minute erneut.',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'Zu viele fehlgeschlagene Anmeldungen. Versuchen Sie es in {n} Minuten erneut.',
 }
 
 export default messages

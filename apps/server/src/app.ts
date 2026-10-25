@@ -18,6 +18,7 @@ import { HttpError } from './errors.ts'
 import { securityHeaders } from './security-headers.ts'
 import { accountRoutes } from './routes/accounts.ts'
 import { adminRoutes } from './routes/admin.ts'
+import { signInRoutes } from './routes/sign-ins.ts'
 import { networkRoutes } from './routes/network.ts'
 import { backupRoutes } from './routes/backup.ts'
 import { aiRoutes } from './routes/ai.ts'
@@ -79,7 +80,7 @@ export async function buildApp(
     wildcard: false,
   })
 
-  await registerAuth(app, deps.auth)
+  await registerAuth(app, deps.auth, deps.signIns)
 
   await app.register(
     async api => {
@@ -106,6 +107,7 @@ export async function buildApp(
       await api.register(chatRoutes, deps)
       await api.register(convertRoutes, deps)
       await api.register(adminRoutes, deps)
+      await api.register(signInRoutes, deps)
       await api.register(networkRoutes, deps)
       await api.register(backupRoutes, deps)
       await api.register(referenceRoutes, deps)

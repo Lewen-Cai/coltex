@@ -164,6 +164,10 @@ export const ManagedUser = z.object({
   createdAt: z.string(),
   /** The admin whose team they are in. */
   managerId: z.string().nullable(),
+  /** Closed to unfamiliar addresses after failed sign-ins, until the system administrator unlocks it. */
+  locked: z.boolean(),
+  /** Two-step verification is on. */
+  twoFactor: z.boolean(),
 })
 export type ManagedUser = z.infer<typeof ManagedUser>
 
@@ -171,6 +175,95 @@ export const SetPasswordBody = z.object({ password: z.string().min(1).max(256) }
 export const SuspendBody = z.object({ suspended: z.boolean() })
 export const SetRoleBody = z.object({ role: InviteRole })
 export const SetTeamBody = z.object({ managerId: z.string().min(1).nullable() })
+
+// ---- Sign-ins ----
+
+/**
+ * Where an address is: this machine, the local network, the tailnet, or a public address with
+ * its place from the server's offline database (ip2region), when it has one: the country's ISO
+ * code, and the region, city and network operator as the database writes them (in Chinese for
+ * places in China). The web app names and translates them (lib/ip-places.ts).
+ */
+export const IpPlace = z.object({
+  kind: z.enum(['loopback', 'lan', 'tailscale', 'public', 'unknown']),
+  country: z.string().optional(),
+  region: z.string().optional(),
+  city: z.string().optional(),
+  isp: z.string().optional(),
+})
+export type IpPlace = z.infer<typeof IpPlace>
+
+/**
+ * What happened: `success` (signed in, with `method`), `failure` (wrong password, or no such
+ * account), `two_factor_failure` (wrong code), `refused` (not even checked: `reason` says why),
+ * `locked` (too many failures from unfamiliar addresses), `unlocked` (by the system
+ * administrator) and `ip_blocked` (an address that failed too often, blocked for a day).
+ */
+export const SignInOutcome = z.enum(['success', 'failure', 'two_factor_failure', 'refused', 'locked', 'unlocked', 'ip_blocked'])
+export type SignInOutcome = z.infer<typeof SignInOutcome>
+export const SignInMethod = z.enum(['password', 'totp', 'recovery_code'])
+export type SignInMethod = z.infer<typeof SignInMethod>
+/** Why an attempt was refused: waiting after failures, a locked account, a blocked address, no proof of work. */
+export const SignInRefusal = z.enum(['cooldown', 'locked', 'ip_blocked', 'challenge'])
+export type SignInRefusal = z.infer<typeof SignInRefusal>
+
+export const SignInEvent = z.object({
+  id: z.string(),
+  at: z.string(),
+  outcome: SignInOutcome,
+  method: SignInMethod.nullable(),
+  reason: SignInRefusal.nullable(),
+  /** The account, when the email belongs to one (null also once it is deleted). */
+  user: z.object({ id: z.string(), name: z.string() }).nullable(),
+  /** The email typed in. */
+  email: z.string(),
+  ip: z.string().nullable(),
+  place: IpPlace,
+  /** The browser's user agent. */
+  device: z.string().nullable(),
+})
+export type SignInEvent = z.infer<typeof SignInEvent>
+
+/** Newest first; `before` (an event's `at`) pages back. */
+export const SignInEventPage = z.object({ events: z.array(SignInEvent), hasMore: z.boolean() })
+export type SignInEventPage = z.infer<typeof SignInEventPage>
+export const SignInEventQuery = z.object({
+  user: z.string().max(64).optional(),
+  failed: z.stringbool().optional(),
+  before: z.iso.datetime().optional(),
+})
+
+/** A device someone is signed in on (a session), as the system administrator sees it. */
+export const AccountSession = z.object({
+  id: z.string(),
+  createdAt: z.string(),
+  expiresAt: z.string(),
+  ip: z.string().nullable(),
+  place: IpPlace,
+  device: z.string().nullable(),
+  /** The session of whoever is looking. */
+  current: z.boolean(),
+})
+export type AccountSession = z.infer<typeof AccountSession>
+
+/** Accounts locked after failed sign-ins, and addresses blocked for a day. */
+export const UnblockBody = z.object({ ip: z.string().min(2).max(64) })
+
+export const SignInBlocks = z.object({
+  accounts: z.array(z.object({ id: z.string(), name: z.string(), email: z.string(), lockedAt: z.string() })),
+  addresses: z.array(z.object({ ip: z.string(), place: IpPlace, until: z.string() })),
+})
+export type SignInBlocks = z.infer<typeof SignInBlocks>
+
+/** A proof-of-work challenge for the sign-in form (ALTCHA), asked for after a few failures. */
+export const SignInChallenge = z.object({
+  algorithm: z.string(),
+  challenge: z.string(),
+  maxnumber: z.number(),
+  salt: z.string(),
+  signature: z.string(),
+})
+export type SignInChallenge = z.infer<typeof SignInChallenge>
 
 /**
  * Account password rules, the same in the browser (a checklist while typing)
@@ -446,8 +539,13 @@ export function mentionedIds(content: string): string[] {
  * - `added`: someone added you to a project (by email);
  * - `owner`: someone made you a project's owner.
  */
-/** `password_reset`: their password was set with `cli.ts reset-password` (no project, no actor). */
-export const NotificationKind = z.enum(['mention', 'reply', 'added', 'owner', 'password_reset'])
+/**
+ * About the account (no project): `password_reset` (their password was set with `cli.ts
+ * reset-password`), `two_factor_reset` (their two-step verification was turned off with `cli.ts
+ * reset-2fa`), and for the system administrator `account_locked` (the actor's account was locked
+ * after failed sign-ins).
+ */
+export const NotificationKind = z.enum(['mention', 'reply', 'added', 'owner', 'password_reset', 'two_factor_reset', 'account_locked'])
 export type NotificationKind = z.infer<typeof NotificationKind>
 
 export const Notification = z.object({
@@ -455,7 +553,7 @@ export const Notification = z.object({
   kind: NotificationKind,
   read: z.boolean(),
   createdAt: z.string(),
-  /** Null for notifications about the account itself (`password_reset`). */
+  /** Null for notifications about an account (`password_reset`, `two_factor_reset`, `account_locked`). */
   project: z.object({ id: z.string(), name: z.string() }).nullable(),
   /** Who caused it; `id` is null once their account is deleted. */
   actor: z.object({ id: z.string().nullable(), name: z.string() }),

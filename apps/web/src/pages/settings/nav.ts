@@ -22,6 +22,7 @@ export function personalItems(aiAvailable: boolean | undefined): SettingsItem[] 
 export const ADMIN: SettingsItem[] = [
   { title: tk('Overview'), href: '#/admin', route: '/admin' },
   { title: tk('Manage users'), href: '#/admin/users', route: '/admin/users' },
+  { title: tk('Sign-ins'), href: '#/admin/sign-ins', route: '/admin/sign-ins' },
   { title: tk('Invitations'), href: '#/admin/invites', route: '/admin/invites' },
   { title: tk('AI services'), href: '#/admin/ai', route: '/admin/ai' },
   { title: tk('AI usage & access'), href: '#/admin/ai/usage', route: '/admin/ai/usage' },

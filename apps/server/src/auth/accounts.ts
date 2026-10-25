@@ -5,7 +5,7 @@ import { alias } from 'drizzle-orm/pg-core'
 import { customAlphabet } from 'nanoid'
 import { passwordProblem, type InviteRole, type Invite, type InviteInfo, type ManagedUser, type UserMatch, type UserRole } from '@coltex/shared'
 import type { Db } from '../db/client.ts'
-import { aiUserGroups, invites, teamMembers, user } from '../db/schema.ts'
+import { aiUserGroups, invites, signInLocks, teamMembers, user } from '../db/schema.ts'
 import { BadRequestError, ConflictError, ForbiddenError, GoneError, NotFoundError } from '../errors.ts'
 import type { Auth } from './auth.ts'
 
@@ -153,10 +153,11 @@ export class AccountService {
   /** The users page: everyone for the system administrator; an admin and their team for an admin. */
   async listUsers(viewer: Viewer): Promise<ManagedUser[]> {
     const rows = await this.db
-      .select({ u: user, managerId: teamMembers.managerId, leaderRole: leader.role })
+      .select({ u: user, managerId: teamMembers.managerId, leaderRole: leader.role, lockedAt: signInLocks.lockedAt })
       .from(user)
       .leftJoin(teamMembers, eq(teamMembers.userId, user.id))
       .leftJoin(leader, eq(leader.id, teamMembers.managerId))
+      .leftJoin(signInLocks, eq(signInLocks.userId, user.id))
       .where(viewer.role === 'admin' ? undefined : or(eq(user.id, viewer.id), and(eq(teamMembers.managerId, viewer.id), eq(user.role, 'user'))))
       .orderBy(asc(user.createdAt))
     return rows.map(r => ({
@@ -167,6 +168,8 @@ export class AccountService {
       banned: !!r.u.banned,
       createdAt: r.u.createdAt.toISOString(),
       managerId: r.u.role === 'user' && r.leaderRole === 'manager' ? r.managerId : null,
+      locked: !!r.lockedAt,
+      twoFactor: !!r.u.twoFactorEnabled,
     }))
   }
 

@@ -5,6 +5,8 @@ import type { SkillStore } from './ai/skills.ts'
 import type { SkillWorkshops } from './ai/workshop.ts'
 import type { AccountService } from './auth/accounts.ts'
 import type { Auth } from './auth/auth.ts'
+import type { IpPlaces } from './auth/ip-place.ts'
+import type { SignInGuard } from './auth/sign-in-guard.ts'
 import type { BackupService } from './backup/service.ts'
 import type { CollabHooks } from './collab/server.ts'
 import type { CompileQueue } from './compile-queue.ts'
@@ -51,4 +53,8 @@ export type Deps = {
   builds: CompileCoalescer
   /** The public address and the Tailscale container. */
   network: NetworkService
+  /** Sign-in protection and the sign-in record. */
+  signIns: SignInGuard
+  /** Where addresses are (sign-ins, devices). */
+  places: IpPlaces
 }

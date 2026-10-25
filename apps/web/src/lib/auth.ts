@@ -1,5 +1,5 @@
 import { createAuthClient } from 'better-auth/react'
-import { adminClient } from 'better-auth/client/plugins'
+import { adminClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAccessControl } from 'better-auth/plugins/access'
 import { adminAc, defaultStatements, userAc } from 'better-auth/plugins/admin/access'
 
@@ -9,7 +9,7 @@ const roles = { admin: ac.newRole(adminAc.statements), user: ac.newRole(userAc.s
 
 export const authClient = createAuthClient({
   basePath: '/api/auth',
-  plugins: [adminClient({ ac, roles })],
+  plugins: [adminClient({ ac, roles }), twoFactorClient()],
 })
 
 export type SessionUser = NonNullable<ReturnType<typeof authClient.useSession>['data']>['user']

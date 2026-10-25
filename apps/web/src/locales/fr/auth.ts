@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'Un compte existe déjà avec cette adresse e-mail',
   'This link is invalid, expired, or has been used up': 'Ce lien est invalide, expiré ou épuisé',
   'This link does not allow creating an account; sign in instead': 'Ce lien ne permet pas de créer un compte ; connectez-vous plutôt',
+  'Code from your authenticator app': 'Code de votre application d’authentification',
+  'Recovery code': 'Code de récupération',
+  'Don’t ask again on this device for 30 days': 'Ne plus demander sur cet appareil pendant 30 jours',
+  Verify: 'Vérifier',
+  Back: 'Retour',
+  'Use a recovery code': 'Utiliser un code de récupération',
+  'Use the authenticator app': 'Utiliser l’application d’authentification',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'Ce compte est verrouillé après trop d’échecs de connexion. Demandez à l’administrateur système de le déverrouiller.',
+  'Too many failed sign-ins from this address. Try again later.': 'Trop d’échecs de connexion depuis cette adresse. Réessayez plus tard.',
+  'Invalid code': 'Code incorrect',
+  'Invalid recovery code': 'Code de récupération incorrect',
+  'This sign-in has expired. Sign in again.': 'Cette connexion a expiré. Reconnectez-vous.',
+  'Too many wrong codes. Try again in 15 minutes.': 'Trop de codes incorrects. Réessayez dans 15 minutes.',
+  'The password is wrong': 'Le mot de passe est incorrect',
+  'Too many failed sign-ins. Try again in {n} minute.': 'Trop d’échecs de connexion. Réessayez dans {n} minute.',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'Trop d’échecs de connexion. Réessayez dans {n} minutes.',
 }
 
 export default messages

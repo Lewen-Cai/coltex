@@ -294,12 +294,22 @@ Restore into a fresh install: an empty database and an empty data directory
 
 If the old server used `COLTEX_SECRET`, set the same value on the new one.
 
-## Passwords and starting over
+## Passwords, sign-ins and starting over
 
 - `coltex cli reset-password <email>` sets a new password for an account
   (typed twice without echo, or from `COLTEX_NEW_PASSWORD`), checked by the
   same rules as the web app, and ends all its sessions. It works with the
   server running.
+- `coltex reset-2fa <email>` turns two-step verification off for an account
+  (its authenticator secret and recovery codes are deleted); the owner gets
+  a notification and the server's log a line. Needed after restoring a
+  backup without the instance secret, which encrypts those secrets.
+- `coltex unlock <email>` opens an account locked after failed sign-ins
+  from unfamiliar addresses (the system administrator's too) and clears its
+  failure count; `coltex unlock <address>` lifts the one-day block of an
+  address. Both are also in the web app (Administration → Sign-ins). The
+  counters live in Valkey (`coltex:signin:*`), the locks and the sign-in
+  record (90 days) in Postgres, so backups carry them.
 - `coltex reset` puts the instance back to a fresh install: after you type
   `reset`, `docker compose down -v` (database, Valkey, build cache, Caddy's
   certificates), then empties `data/` (through a root container for what

@@ -10,6 +10,7 @@ dist/
 .DS_Store
 .playwright-mcp/
 apps/web/vendor/
+apps/server/vendor/
 
 # Kept on this machine only: the development journal, notes for the coding
 # assistant and its local state.

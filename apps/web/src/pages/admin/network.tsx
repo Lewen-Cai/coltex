@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { motion } from 'motion/react'
 import { CircleCheck, ChevronRight, Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
-import { encode } from 'uqr'
 import type { CloudflareBody, CloudflareState, NetworkInfo, TailscaleState } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
+import { QrCode } from '@/components/qr-code'
 import { choiceLabel } from '@/components/link-list'
 import { ProviderIcon } from '@/components/provider-icon'
 import { TailscaleLogo } from '@/components/tailscale-logo'
@@ -102,21 +102,6 @@ function AddressBox({ url, label, open = true }: { url: string; label?: string; 
         </Button>
       )}
     </div>
-  )
-}
-
-/** A QR code drawn from its modules, so a phone can open the sign-in link. */
-function QrCode({ text, className }: { text: string; className?: string }) {
-  const path = useMemo(() => {
-    const { data } = encode(text, { border: 2 })
-    const cells: string[] = []
-    data.forEach((row, y) => row.forEach((on, x) => on && cells.push(`M${x} ${y}h1v1h-1z`)))
-    return { d: cells.join(''), size: data.length }
-  }, [text])
-  return (
-    <svg viewBox={`0 0 ${path.size} ${path.size}`} className={cn('rounded-md bg-white text-black', className)} shapeRendering="crispEdges" role="img" aria-label={t('QR code')}>
-      <path d={path.d} fill="currentColor" />
-    </svg>
   )
 }
 

@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Check, KeyRound, Mail, ShieldCheck, User } from 'lucide-react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { Check, History, KeyRound, Mail, ShieldCheck, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { passwordProblem } from '@coltex/shared'
 import { PasswordInput } from '@/components/auth/PasswordInput'
@@ -13,6 +13,8 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { UserAvatar } from '@/components/user-avatar'
+import { SignInList } from '@/components/sign-in-list'
+import { TwoFactorCard } from './two-factor'
 import { api } from '@/lib/api'
 import { authClient, type SessionUser } from '@/lib/auth'
 import { defaultHue, hueColor, showOwnAvatarHue } from '@/lib/avatar-colors'
@@ -213,13 +215,25 @@ function PasswordCard() {
 }
 
 export function AccountSettingsPage({ user }: { user: SessionUser }) {
+  const loadSignIns = useCallback((before?: string) => api.mySignIns(before), [])
   return (
     <>
       {/* Side by side, one height: the shorter card keeps its button at the bottom. */}
       <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
-        <ProfileCard user={user} />
+        <div className="grid gap-6">
+          <ProfileCard user={user} />
+          <TwoFactorCard user={user} />
+        </div>
         <PasswordCard />
       </div>
+      <Card className="mt-6 gap-0 overflow-hidden pb-0">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <History className="size-4 text-muted-foreground" /> {t('Sign-in activity')}
+          </CardTitle>
+        </CardHeader>
+        <SignInList load={loadSignIns} />
+      </Card>
     </>
   )
 }

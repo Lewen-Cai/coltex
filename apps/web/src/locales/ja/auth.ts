@@ -18,6 +18,22 @@ const messages: Record<string, string> = {
   'An account with this email already exists': 'このメールアドレスのアカウントはすでに存在します',
   'This link is invalid, expired, or has been used up': 'このリンクは無効、期限切れ、または使用回数の上限に達しています',
   'This link does not allow creating an account; sign in instead': 'このリンクではアカウントを作成できません。ログインしてください',
+  'Code from your authenticator app': '認証アプリのコード',
+  'Recovery code': 'リカバリーコード',
+  'Don’t ask again on this device for 30 days': 'このデバイスでは 30 日間確認しない',
+  Verify: '確認',
+  Back: '戻る',
+  'Use a recovery code': 'リカバリーコードを使う',
+  'Use the authenticator app': '認証アプリを使う',
+  'This account is locked after too many failed sign-ins. Ask the system administrator to unlock it.': 'ログインの失敗が多すぎるため、このアカウントはロックされています。システム管理者にロックの解除を依頼してください。',
+  'Too many failed sign-ins from this address. Try again later.': 'このアドレスからのログインの失敗が多すぎます。しばらくしてからもう一度お試しください。',
+  'Invalid code': 'コードが正しくありません',
+  'Invalid recovery code': 'リカバリーコードが正しくありません',
+  'This sign-in has expired. Sign in again.': 'このログインは期限切れです。もう一度ログインしてください。',
+  'Too many wrong codes. Try again in 15 minutes.': '誤ったコードが多すぎます。15 分後にもう一度お試しください。',
+  'The password is wrong': 'パスワードが正しくありません',
+  'Too many failed sign-ins. Try again in {n} minute.': 'ログインの失敗が多すぎます。{n} 分後にもう一度お試しください。',
+  'Too many failed sign-ins. Try again in {n} minutes.': 'ログインの失敗が多すぎます。{n} 分後にもう一度お試しください。',
 }
 
 export default messages
