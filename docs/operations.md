@@ -133,7 +133,9 @@ for a fork) into `~/coltex` or pulls it when
 already there, writes `.env` once (port, a random `POSTGRES_PASSWORD`,
 `COLTEX_UID/GID`, `TS_HOSTNAME`; `COLTEX_IMAGE_TAG` on every run), pulls the
 images and starts (`coltex deploy`), waits for
-`/api/health`, links `coltex` into `~/.local/bin`, and optionally runs
+`/api/health`, links `coltex` into `~/.local/bin` (and, when that isn't on
+PATH, adds it in the shell's start-up files: `~/.zshrc`, or for bash the login
+file, `~/.bash_profile` or `~/.profile`, plus `~/.bashrc`), and optionally runs
 `--domain HOST`: writes `COLTEX_DOMAIN`, `COLTEX_URL=https://HOST`,
 `TRUST_PROXY=uniquelocal`, `COMPOSE_PROFILES=proxy` (so every `docker compose`
 and `coltex` command includes Caddy) and `COLTEX_BIND=127.0.0.1`; then it

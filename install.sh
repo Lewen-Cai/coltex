@@ -310,6 +310,42 @@ moved_home() {
     *github.com/[Ll]ewen-[Cc]ai/coltex | *github.com/[Ll]ewen-[Cc]ai/coltex.git) git remote set-url origin "https://github.com/coltexeditor/coltex.git" ;;
   esac
 }
+# ~/.local/bin on PATH in new shells: the line goes into each file a shell reads when it starts.
+# Bash reads ~/.bashrc only in shells that aren't a login, and an SSH session is one; a login
+# reads the first of ~/.bash_profile, ~/.bash_login and ~/.profile, and not every system's
+# ~/.profile reads ~/.bashrc. Files that already put ~/.local/bin on PATH are left as they are.
+path_files() {
+  case "${SHELL:-}" in
+    */zsh) echo "$HOME/.zshrc" ;;
+    */bash)
+      local login="$HOME/.profile"
+      if [ -f "$HOME/.bash_profile" ]; then login="$HOME/.bash_profile"
+      elif [ -f "$HOME/.bash_login" ]; then login="$HOME/.bash_login"; fi
+      echo "$login"
+      # Shells started from a login that has it inherit it (Ubuntu's ~/.profile has it).
+      has_path_line "$login" || echo "$HOME/.bashrc"
+      ;;
+    *) echo "$HOME/.profile" ;;
+  esac
+}
+has_path_line() { grep -qsE 'PATH=.*\.local/bin' "$1"; }
+# Whether one of them has it already (a line an earlier install gave).
+path_started() {
+  local f IFS=$'\n'
+  for f in $(path_files); do
+    if has_path_line "$f"; then return 0; fi
+  done
+  return 1
+}
+# Fails when no file has the line afterwards (none could be written).
+add_to_path() {
+  local f ok=1 IFS=$'\n'
+  for f in $(path_files); do
+    if has_path_line "$f"; then ok=0; continue; fi
+    printf '\n# Added by ColTex\ncase ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac\n' >>"$f" 2>/dev/null && ok=0
+  done
+  return $ok
+}
 # <<< shared
 
 # ---- Language -------------------------------------------------------------------------
@@ -374,6 +410,7 @@ msg_en() {
     cmd_update) M='update to the newest release' ;;
     cmd_help) M='all commands' ;;
     path_first) M='Run this once, and coltex works from anywhere:' ;;
+    path_now) M='New terminals find coltex; in this one, run this first:' ;;
     remote_access) M='Remote access (Tailscale, Cloudflare Tunnel): turn it on in ColTex under Settings → Network.' ;;
   esac
 }
@@ -425,6 +462,7 @@ msg_zh_CN() {
     cmd_update) M='更新到最新版本' ;;
     cmd_help) M='全部命令' ;;
     path_first) M='先运行一次这一行，之后在任何地方都能直接输入 coltex：' ;;
+    path_now) M='新打开的终端已经能直接用 coltex；当前这个终端请先运行：' ;;
     remote_access) M='远程访问（Tailscale、Cloudflare Tunnel）：在 ColTex 的“设置 → 网络”里开启。' ;;
   esac
 }
@@ -476,6 +514,7 @@ msg_zh_TW() {
     cmd_update) M='更新到最新版本' ;;
     cmd_help) M='全部指令' ;;
     path_first) M='先執行一次這一行，之後在任何地方都能直接輸入 coltex：' ;;
+    path_now) M='新開的終端機已經能直接用 coltex；目前這個終端機請先執行：' ;;
     remote_access) M='遠端存取（Tailscale、Cloudflare Tunnel）：在 ColTex 的「設定 → 網路」中開啟。' ;;
   esac
 }
@@ -527,6 +566,7 @@ msg_ja() {
     cmd_update) M='最新リリースに更新' ;;
     cmd_help) M='すべてのコマンド' ;;
     path_first) M='これを一度実行すると、どこからでも coltex だけで使えます：' ;;
+    path_now) M='新しいターミナルではそのまま coltex が使えます。このターミナルでは先にこれを実行してください：' ;;
     remote_access) M='リモートアクセス（Tailscale、Cloudflare Tunnel）：ColTex の「設定 → ネットワーク」でオンにします。' ;;
   esac
 }
@@ -578,6 +618,7 @@ msg_ko() {
     cmd_update) M='최신 릴리스로 업데이트' ;;
     cmd_help) M='모든 명령' ;;
     path_first) M='이 줄을 한 번 실행하면 어디서든 coltex만 입력해 쓸 수 있습니다:' ;;
+    path_now) M='새 터미널에서는 바로 coltex를 쓸 수 있습니다. 이 터미널에서는 먼저 다음을 실행하세요:' ;;
     remote_access) M='원격 접속(Tailscale, Cloudflare Tunnel): ColTex의 설정 → 네트워크에서 켭니다.' ;;
   esac
 }
@@ -629,6 +670,7 @@ msg_es() {
     cmd_update) M='actualizar a la última versión' ;;
     cmd_help) M='todos los comandos' ;;
     path_first) M='Ejecuta esto una vez y coltex funcionará desde cualquier carpeta:' ;;
+    path_now) M='Las terminales nuevas ya encuentran coltex; en esta, ejecuta primero:' ;;
     remote_access) M='Acceso remoto (Tailscale, Cloudflare Tunnel): actívalo en ColTex, en Configuración → Red.' ;;
   esac
 }
@@ -680,6 +722,7 @@ msg_fr() {
     cmd_update) M='mettre à jour vers la dernière version' ;;
     cmd_help) M='toutes les commandes' ;;
     path_first) M='Lancez ceci une fois, et coltex fonctionnera depuis n’importe où :' ;;
+    path_now) M='Les nouveaux terminaux trouvent coltex ; dans celui-ci, lancez d’abord :' ;;
     remote_access) M='Accès à distance (Tailscale, Cloudflare Tunnel) : à activer dans ColTex, sous Paramètres → Réseau.' ;;
   esac
 }
@@ -731,6 +774,7 @@ msg_de() {
     cmd_update) M='auf die neueste Version aktualisieren' ;;
     cmd_help) M='alle Befehle' ;;
     path_first) M='Führen Sie dies einmal aus, dann funktioniert coltex überall:' ;;
+    path_now) M='Neue Terminals finden coltex; in diesem führen Sie zuerst aus:' ;;
     remote_access) M='Fernzugriff (Tailscale, Cloudflare Tunnel): in ColTex unter Einstellungen → Netzwerk einschalten.' ;;
   esac
 }
@@ -782,6 +826,7 @@ msg_pt_BR() {
     cmd_update) M='atualizar para a versão mais recente' ;;
     cmd_help) M='todos os comandos' ;;
     path_first) M='Execute isto uma vez e o coltex funcionará de qualquer pasta:' ;;
+    path_now) M='Terminais novos já encontram o coltex; neste, execute primeiro:' ;;
     remote_access) M='Acesso remoto (Tailscale, Cloudflare Tunnel): ative no ColTex, em Configurações → Rede.' ;;
   esac
 }
@@ -833,6 +878,7 @@ msg_it() {
     cmd_update) M='aggiorna all’ultima versione' ;;
     cmd_help) M='tutti i comandi' ;;
     path_first) M='Esegui questo una volta e coltex funzionerà da qualsiasi cartella:' ;;
+    path_now) M='I nuovi terminali trovano già coltex; in questo, esegui prima:' ;;
     remote_access) M='Accesso remoto (Tailscale, Cloudflare Tunnel): attivalo in ColTex, in Impostazioni → Rete.' ;;
   esac
 }
@@ -884,6 +930,7 @@ msg_ru() {
     cmd_update) M='обновить до последней версии' ;;
     cmd_help) M='все команды' ;;
     path_first) M='Выполните это один раз, и coltex будет работать из любой папки:' ;;
+    path_now) M='В новых терминалах coltex уже доступен; в этом сначала выполните:' ;;
     remote_access) M='Удалённый доступ (Tailscale, Cloudflare Tunnel): включается в ColTex в разделе «Настройки → Сеть».' ;;
   esac
 }
@@ -935,6 +982,7 @@ msg_tr() {
     cmd_update) M='en yeni sürüme güncelle' ;;
     cmd_help) M='tüm komutlar' ;;
     path_first) M='Bunu bir kez çalıştırın, coltex her yerden çalışsın:' ;;
+    path_now) M='Yeni terminaller coltex komutunu bulur; bu terminalde önce şunu çalıştırın:' ;;
     remote_access) M='Uzaktan erişim (Tailscale, Cloudflare Tunnel): ColTex’te Ayarlar → Ağ bölümünden açın.' ;;
   esac
 }
@@ -986,6 +1034,7 @@ msg_vi() {
     cmd_update) M='cập nhật lên bản mới nhất' ;;
     cmd_help) M='mọi lệnh' ;;
     path_first) M='Chạy dòng này một lần, sau đó gõ coltex ở đâu cũng được:' ;;
+    path_now) M='Terminal mới đã dùng được coltex; trong terminal này, hãy chạy trước:' ;;
     remote_access) M='Truy cập từ xa (Tailscale, Cloudflare Tunnel): bật trong ColTex tại Cài đặt → Mạng.' ;;
   esac
 }
@@ -1037,6 +1086,7 @@ msg_id() {
     cmd_update) M='perbarui ke rilis terbaru' ;;
     cmd_help) M='semua perintah' ;;
     path_first) M='Jalankan ini sekali, lalu coltex bisa dipakai dari mana saja:' ;;
+    path_now) M='Terminal baru sudah mengenali coltex; di terminal ini, jalankan dulu:' ;;
     remote_access) M='Akses jarak jauh (Tailscale, Cloudflare Tunnel): aktifkan di ColTex lewat Pengaturan → Jaringan.' ;;
   esac
 }
@@ -1378,8 +1428,9 @@ PORT="$(get COLTEX_PORT)"
 PORT="${PORT:-3690}"
 
 # The `coltex` command, where the shell finds it: ~/.local/bin, or /usr/local/bin when that is
-# on PATH and ~/.local/bin isn't (root on many servers); otherwise its full path for now, and
-# the line that adds ~/.local/bin to PATH (then the closing screen says just coltex).
+# on PATH and ~/.local/bin isn't (root on many servers); otherwise ~/.local/bin goes onto PATH
+# in the shell's start-up files, and the closing screen gives the line for this shell (and
+# then says just coltex).
 chmod +x coltex
 on_path() { case ":$PATH:" in *":$1:"*) return 0 ;; *) return 1 ;; esac; }
 CMD="$DIR/coltex"
@@ -1392,11 +1443,17 @@ fi
 if [ "$CMD" != coltex ] && on_path /usr/local/bin && [ -w /usr/local/bin ]; then
   ln -sf "$DIR/coltex" /usr/local/bin/coltex && CMD=coltex
 fi
+PATH_TEXT=path_now
 if [ "$CMD" != coltex ] && [ "$linked" = 1 ]; then
-  # One line that also reloads the file: a pipe into bash can't change the shell it came from,
-  # and the file is otherwise read only by the next terminal.
-  case "${SHELL:-}" in */zsh) rc="~/.zshrc" load=source ;; */bash) rc="~/.bashrc" load=source ;; *) rc="~/.profile" load=. ;; esac
-  PATH_LINE="echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> $rc && $load $rc"
+  # New shells get it from their start-up files; this one needs the line once, since a pipe
+  # into bash can't change the shell it came from.
+  if add_to_path; then
+    PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+  else
+    case "${SHELL:-}" in */zsh) rc="~/.zshrc" load=source ;; */bash) rc="~/.bashrc" load=source ;; *) rc="~/.profile" load=. ;; esac
+    PATH_LINE="echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> $rc && $load $rc"
+    PATH_TEXT=path_first
+  fi
 fi
 
 # Shown with ~ for the home folder. NAME is what the closing screen calls the command.
@@ -1484,7 +1541,7 @@ if [ "$public" = 1 ]; then
   printf '\n  %s\n' "${AMBER}$(T public_warning)${RESET}"
 fi
 if [ -n "$PATH_LINE" ]; then
-  printf '\n  %s\n    %s\n' "$(T path_first)" "${BOLD}${PATH_LINE}${RESET}"
+  printf '\n  %s\n    %s\n' "$(T "$PATH_TEXT")" "${BOLD}${PATH_LINE}${RESET}"
 fi
 # The commands people need first, one a line with what it does; `coltex help` has the rest.
 printf '\n  %s\n' "${BOLD}$(T commands)${RESET}"

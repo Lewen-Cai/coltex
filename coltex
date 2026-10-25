@@ -1093,6 +1093,42 @@ moved_home() {
     *github.com/[Ll]ewen-[Cc]ai/coltex | *github.com/[Ll]ewen-[Cc]ai/coltex.git) git remote set-url origin "https://github.com/coltexeditor/coltex.git" ;;
   esac
 }
+# ~/.local/bin on PATH in new shells: the line goes into each file a shell reads when it starts.
+# Bash reads ~/.bashrc only in shells that aren't a login, and an SSH session is one; a login
+# reads the first of ~/.bash_profile, ~/.bash_login and ~/.profile, and not every system's
+# ~/.profile reads ~/.bashrc. Files that already put ~/.local/bin on PATH are left as they are.
+path_files() {
+  case "${SHELL:-}" in
+    */zsh) echo "$HOME/.zshrc" ;;
+    */bash)
+      local login="$HOME/.profile"
+      if [ -f "$HOME/.bash_profile" ]; then login="$HOME/.bash_profile"
+      elif [ -f "$HOME/.bash_login" ]; then login="$HOME/.bash_login"; fi
+      echo "$login"
+      # Shells started from a login that has it inherit it (Ubuntu's ~/.profile has it).
+      has_path_line "$login" || echo "$HOME/.bashrc"
+      ;;
+    *) echo "$HOME/.profile" ;;
+  esac
+}
+has_path_line() { grep -qsE 'PATH=.*\.local/bin' "$1"; }
+# Whether one of them has it already (a line an earlier install gave).
+path_started() {
+  local f IFS=$'\n'
+  for f in $(path_files); do
+    if has_path_line "$f"; then return 0; fi
+  done
+  return 1
+}
+# Fails when no file has the line afterwards (none could be written).
+add_to_path() {
+  local f ok=1 IFS=$'\n'
+  for f in $(path_files); do
+    if has_path_line "$f"; then ok=0; continue; fi
+    printf '\n# Added by ColTex\ncase ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac\n' >>"$f" 2>/dev/null && ok=0
+  done
+  return $ok
+}
 # <<< shared
 
 # The images ColTex's own containers run now.
@@ -1179,6 +1215,8 @@ net() {
 # After the update's checkout: the new image tag, then the images and the containers.
 finish_update() {
   moved_home
+  # Installs whose PATH line went only into ~/.bashrc, which SSH logins don't read.
+  if [ -L "$HOME/.local/bin/coltex" ] && [ ! -e /usr/local/bin/coltex ] && path_started; then add_to_path || true; fi
   T updating from="$1" to="$(current)"
   setting COLTEX_IMAGE_TAG "$2"
   deploy
