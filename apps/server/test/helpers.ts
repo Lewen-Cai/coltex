@@ -40,7 +40,8 @@ import { S3Client } from '../src/storage/s3-client.ts'
 import { startFakeS3 } from './fake-s3.ts'
 
 const BASE_URL = process.env.DATABASE_URL ?? 'postgres://coltex:coltex@localhost:5432/coltex'
-const TEST_DB = 'coltex_test'
+// TEST_DB lets two checkouts run the suite at the same time.
+const TEST_DB = process.env.TEST_DB ?? 'coltex_test'
 
 /** Recreate an empty test database next to the development one. */
 async function resetTestDatabase(): Promise<string> {
@@ -135,7 +136,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
       forgotten.push(projectId)
     },
     async stats() {
-      return { workers: 1, waiting: 0, active: 0, failed: 0, valkeyMs: 1, containers: [{ name: 'compiler-1', used: 1e9, limit: 4e9, cpu: 25, cpus: 2 }] }
+      return { workers: 1, slots: 2, waiting: 0, active: 0, failed: 0, valkeyMs: 1, containers: [{ name: 'compiler-1', used: 1e9, limit: 4e9, cpu: 25, cpus: 2 }] }
     },
     async texLookup(job: TexLookupJob): Promise<TexLookupResult> {
       return job.name === 'booktabs'

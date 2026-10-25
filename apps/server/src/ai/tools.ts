@@ -287,6 +287,7 @@ export function skillTools(ctx: SkillToolContext): AgentTool<any, undefined>[] {
 export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
   const { store, changeset } = ctx
   let lastTrialBuild: string | undefined
+  let lastTrial: { key: string; result: CompileResult } | undefined
 
   const tools = [
     tool({
@@ -409,18 +410,28 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
       name: 'compile',
       label: 'Compile',
       description:
-        'Compile the project with your draft changes applied (in a scratch copy; the project is not modified) and return status, errors and warnings. Use it to verify fixes.',
+        'Compile the project with your draft changes applied (in a scratch copy; the project is not modified) and return status, errors and warnings. Use it to verify a fix after you have drafted one; to see what is wrong now, read_log the latest build instead. Builds are slow and shared with everyone on this server.',
       parameters: Type.Object({}),
-      execute: async () => {
+      execute: async (_params, signal) => {
         const overlay = changeset.overlay()
-        const result = await ctx.queue.compile({
-          projectId: ctx.project.id,
-          rootFile: ctx.project.rootFile,
-          engine: await engineFor(ctx.store, ctx.project, overlay),
-          clean: false,
-          overlay,
-        })
+        if (!Object.keys(overlay).length && ctx.authorBuild() && !lastTrial) {
+          return "Your draft has no changes, so this would build the author's files again. Read their latest build with read_log."
+        }
+        // The same draft builds the same way: don't queue it again.
+        const key = JSON.stringify(overlay)
+        if (lastTrial?.key === key) return `Your draft hasn't changed since your last compile:\n${compileSummary(lastTrial.result)}`
+        const result = await ctx.queue.compile(
+          {
+            projectId: ctx.project.id,
+            rootFile: ctx.project.rootFile,
+            engine: await engineFor(ctx.store, ctx.project, overlay),
+            clean: false,
+            overlay,
+          },
+          signal,
+        )
         lastTrialBuild = result.buildId
+        lastTrial = { key, result }
         ctx.onTrial(result)
         return compileSummary(result)
       },

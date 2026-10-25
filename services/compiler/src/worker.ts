@@ -24,6 +24,7 @@ import { runLatexmk } from './latexmk.ts'
 import { synctex } from './synctex.ts'
 import { texLookup } from './texlive.ts'
 import { reportResources } from './resources.ts'
+import { Slots } from './slots.ts'
 
 /** Serialise builds of the same project; different projects run in parallel. */
 const projectLocks = new Map<string, Promise<unknown>>()
@@ -163,14 +164,17 @@ async function build(job: CompileJob, workDir: string, outDir: string, started: 
 
 const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null })
 
+const slots = new Slots(config.concurrency)
+
 const worker = new Worker<CompileJob, CompileResult>(
   COMPILE_QUEUE,
   async job => {
     const data = CompileJob.parse(job.data)
-    return withProjectLock(data.projectId, () => compile(data))
+    return slots.track(() => withProjectLock(data.projectId, () => compile(data)))
   },
-  { connection, concurrency: config.concurrency },
+  { connection, concurrency: await slots.initial() },
 )
+const stopSlots = slots.follow(worker)
 
 // SyncTeX lookups are quick and interactive, so they get their own queue and
 // never wait behind long compiles.
@@ -201,9 +205,9 @@ const cleanupWorker = new Worker<CleanupJob>(
   { connection, concurrency: 2 },
 )
 
-const stopReporting = reportResources(connection)
+const stopReporting = reportResources(connection, () => worker.concurrency)
 
-worker.on('ready', () => console.log(`[compiler] ready, concurrency=${config.concurrency}`))
+worker.on('ready', () => console.log(`[compiler] ready, ${slots.describe()}`))
 for (const w of [worker, synctexWorker, texliveWorker, cleanupWorker]) {
   w.on('failed', (job, err) => console.error(`[compiler] ${w.name} job ${job?.id} failed:`, err))
 }
@@ -211,6 +215,7 @@ for (const w of [worker, synctexWorker, texliveWorker, cleanupWorker]) {
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, async () => {
     stopReporting()
+    stopSlots()
     await Promise.all([worker.close(), synctexWorker.close(), texliveWorker.close(), cleanupWorker.close()])
     await connection.quit()
     process.exit(0)

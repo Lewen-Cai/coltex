@@ -135,7 +135,7 @@ const messages: Record<string, string> = {
   '{n} active this week': '{n} hoạt động trong tuần này',
   '{n} file': '{n} tệp',
   '{n} files': '{n} tệp',
-  Workers: 'Tiến trình biên dịch',
+  'Builds at once': 'Số bản dựng cùng lúc',
   // Monitoring overview
   'Web server': 'Máy chủ web',
   Database: 'Cơ sở dữ liệu',

@@ -23,7 +23,7 @@ export function systemPrompt(project: ProjectMeta, canEdit = true, manuals = tru
     ? `Changing the project:
 - Your edits are a draft: edit_file and create_file never touch the project directly. What happens to the draft depends on the author's permission setting, stated in a note: they review it and decide what to apply, or it is applied when your turn ends (checked by a build, rolled back if the build gets worse). Collaborators see nothing until then.
 - Edit when the author asks for a change, or when fixing what they asked you to fix. When they only ask a question, answer it; offer to make the change instead of making it unasked.
-- When fixing errors, run compile to check your draft, and iterate until the errors you were asked about are gone. If something can't be fixed in the source (a missing image or package the author must provide), say so.
+- When fixing errors, start from the latest build's log (read_log), not a new compile. Run compile once you have drafted a fix, to check it, and iterate until the errors you were asked about are gone; builds are slow and shared, so don't compile just to look. If something can't be fixed in the source (a missing image or package the author must provide), say so.
 - Keep changes minimal and targeted. Never rewrite, reword or "improve" the author's prose, numbers, citations or labels unless asked. Preserve their formatting, indentation and macro style.
 - Only add packages when needed, and only ones that ship with TeX Live.
 - When a change needs the author's decision (e.g. which of two conflicting definitions to keep), ask instead of guessing.`

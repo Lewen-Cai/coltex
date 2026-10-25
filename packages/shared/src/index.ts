@@ -477,15 +477,22 @@ export type ProjectTree = z.infer<typeof ProjectTree>
  * Starting point for a new project: a built-in template (`apps/server/templates/<id>`)
  * or a project someone published as a template on this server.
  */
+export const TemplateField = z.enum(['general', 'medicine', 'cs', 'physics', 'math', 'social'])
+export type TemplateField = z.infer<typeof TemplateField>
+
 export const TemplateInfo = z.object({
   id: z.string(),
   kind: z.enum(['builtin', 'shared']),
   name: z.string(),
   description: z.string(),
+  /** Built-in templates: the field they are for (the new-project dialog filters by it). */
+  field: TemplateField.nullable(),
   /** Shared templates: who published it (null once their account is gone). */
   publishedBy: z.string().nullable(),
   /** Shared templates: the publisher's project owner or an admin may take it down. */
   canRemove: z.boolean(),
+  /** Shared templates whose project the viewer owns: the project, to change the template. */
+  projectId: z.string().nullable(),
 })
 export type TemplateInfo = z.infer<typeof TemplateInfo>
 
@@ -493,6 +500,10 @@ export const TemplateBody = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().max(300).default(''),
 })
+
+/** A zip imported as a new shared template: the project made for it, and what was skipped. */
+export const ImportedTemplate = z.object({ template: TemplateInfo, project: ProjectMeta, warnings: z.array(z.string()) })
+export type ImportedTemplate = z.infer<typeof ImportedTemplate>
 
 /** A project's own entry in the shared templates, if it is published. */
 export const ProjectTemplateState = z.object({ id: z.string(), name: z.string(), description: z.string() }).nullable()
@@ -846,6 +857,50 @@ export const TexLookupResult = z.object({
   text: z.string(),
 })
 export type TexLookupResult = z.infer<typeof TexLookupResult>
+
+// ---------------------------------------------------------------------------
+// Word export: pandoc turns the LaTeX sources into a .docx inside the
+// compiler container (it runs on untrusted sources too)
+// ---------------------------------------------------------------------------
+
+export const WORD_QUEUE = 'word'
+
+/** Citation styles that come with ColTex (CSL files in the compiler image). */
+export const WORD_CITATION_STYLES = ['apa', 'vancouver', 'american-medical-association', 'ieee', 'nature', 'chicago-author-date'] as const
+export const WordCitationStyle = z.enum(WORD_CITATION_STYLES)
+export type WordCitationStyle = z.infer<typeof WordCitationStyle>
+
+/** What people choose when exporting (POST /projects/:id/export/word). */
+export const WordExportRequest = z.object({
+  /** A .docx in the project whose styles the document takes (a journal's Word template). */
+  reference: z.string().max(1024).optional(),
+  /** A built-in citation style, or a .csl file in the project; without either, one that suits the document's bibliography style. */
+  citationStyle: WordCitationStyle.optional(),
+  csl: z.string().max(1024).optional(),
+})
+export type WordExportRequest = z.infer<typeof WordExportRequest>
+
+export const WordJob = z.object({
+  projectId: ProjectId,
+  exportId: z.string().regex(/^[a-z0-9]+-[a-z0-9]+$/),
+  /** The file pandoc reads, relative to the project (usually the overlay's wrapper). */
+  entry: z.string(),
+  /** Text files written into the scratch copy first (the wrapper with the front matter). */
+  overlay: z.record(z.string(), z.string()),
+  reference: z.string().optional(),
+  /** Either a built-in style's id or a project path ending in .csl. */
+  csl: z.string().optional(),
+})
+export type WordJob = z.infer<typeof WordJob>
+
+export const WordResult = z.object({
+  exportId: z.string(),
+  /** Where the worker wrote the file, relative to the outputs directory. */
+  file: z.string(),
+  /** pandoc's warnings (things it skipped). */
+  warnings: z.array(z.string()),
+})
+export type WordResult = z.infer<typeof WordResult>
 
 // ---------------------------------------------------------------------------
 // Instance-wide AI configuration (admin)
@@ -1444,7 +1499,7 @@ export const AdminStats = z.object({
   users: z.object({ total: z.number(), admins: z.number(), suspended: z.number(), newLast30d: z.number() }),
   projects: z.object({ total: z.number(), activeLast7d: z.number(), storageBytes: z.number(), files: z.number() }),
   services: z.array(ServiceHealth),
-  compiler: z.object({ workers: z.number(), waiting: z.number(), active: z.number(), failed: z.number() }),
+  compiler: z.object({ workers: z.number(), slots: z.number(), waiting: z.number(), active: z.number(), failed: z.number() }),
   /** Builds finished in the last 24 hours. */
   compiles: z.object({ total: z.number(), failed: z.number(), avgMs: z.number().nullable() }),
   /** The machine as this server sees it: inside Docker, the Docker host (Docker Desktop's VM on macOS/Windows). */

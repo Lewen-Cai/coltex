@@ -240,6 +240,37 @@ describe('AI agent', () => {
     assert.equal(rows.length, 4, 'usage recorded per model response')
   })
 
+  test("compile doesn't queue a build that would repeat one", async () => {
+    // The draft from the test before is unchanged since its trial build.
+    const jobs = t.compileJobs.length
+    faux.setResponses([
+      fauxAssistantMessage(fauxToolCall('compile', {}), { stopReason: 'toolUse' }),
+      fauxAssistantMessage(fauxText('Still clean.')),
+    ])
+    await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'check again' })
+    await idle()
+    assert.equal(t.compileJobs.length, jobs, 'the same draft is not built twice')
+    const step = (await state()).items.findLast(i => i.kind === 'tool')
+    assert.ok(step?.kind === 'tool' && step.result?.includes("hasn't changed"), JSON.stringify(step))
+
+    // No draft, and the author's build is attached: read its log instead.
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    faux.setResponses([
+      fauxAssistantMessage(fauxToolCall('compile', {}), { stopReason: 'toolUse' }),
+      fauxAssistantMessage(fauxText('Reading the log.')),
+    ])
+    await api('POST', `/projects/${projectId}/ai/session/messages`, admin, {
+      text: 'why does it fail?',
+      compile: { buildId: 'b-0', status: 'failure', diagnostics: [] },
+    })
+    await idle()
+    assert.equal(t.compileJobs.length, jobs, "the author's files are not built again")
+
+    // The next tests apply the scripted fix.
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    await askForFix()
+  })
+
   test('applying writes the merged change, snapshots first, and can be undone', async () => {
     const proposed = (await state()).changes.files[0]!.proposed
     // A collaborator edits elsewhere in the file after the assistant read it.

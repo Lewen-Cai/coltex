@@ -61,7 +61,7 @@ export const adminRoutes: FastifyPluginAsyncZod<Deps> = async (app, { db, store,
       countWhere(db, projects, and(gte(projects.updatedAt, new Date(now - 7 * day)))),
       storageTotals(),
       pingDatabase(),
-      queue.stats().catch(() => ({ workers: 0, waiting: 0, active: 0, failed: 0, valkeyMs: null, containers: [] })),
+      queue.stats().catch(() => ({ workers: 0, slots: 0, waiting: 0, active: 0, failed: 0, valkeyMs: null, containers: [] })),
       monitor.builds(new Date(now - day)),
       diskSpace(config.dataDir),
       hostMemory(),
@@ -74,7 +74,7 @@ export const adminRoutes: FastifyPluginAsyncZod<Deps> = async (app, { db, store,
       { id: 'database', status: dbMs === null ? 'down' : 'ok', latencyMs: dbMs },
       { id: 'valkey', status: compiler.valkeyMs === null ? 'down' : 'ok', latencyMs: compiler.valkeyMs },
       // Builds wait in the queue while no worker is up; a backlog with workers up is slow, not down.
-      { id: 'compiler', status: compiler.workers === 0 ? 'down' : compiler.waiting > compiler.workers * 4 ? 'degraded' : 'ok', latencyMs: null },
+      { id: 'compiler', status: compiler.workers === 0 ? 'down' : compiler.waiting > Math.max(compiler.workers, compiler.slots) * 4 ? 'degraded' : 'ok', latencyMs: null },
     ]
     const mem = process.memoryUsage()
 
@@ -82,7 +82,7 @@ export const adminRoutes: FastifyPluginAsyncZod<Deps> = async (app, { db, store,
       users: { total, admins, suspended, newLast30d: newUsers },
       projects: { total: projectTotal, activeLast7d: active, storageBytes: totals.bytes, files: totals.files },
       services,
-      compiler: { workers: compiler.workers, waiting: compiler.waiting, active: compiler.active, failed: compiler.failed },
+      compiler: { workers: compiler.workers, slots: compiler.slots, waiting: compiler.waiting, active: compiler.active, failed: compiler.failed },
       compiles: builds,
       host: {
         cpus: os.availableParallelism(),

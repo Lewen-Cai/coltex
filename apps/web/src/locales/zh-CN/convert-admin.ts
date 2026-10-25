@@ -135,7 +135,7 @@ const messages: Record<string, string> = {
   '{n} active this week': '本周活跃 {n} 个',
   '{n} file': '{n} 个文件',
   '{n} files': '{n} 个文件',
-  Workers: '工作进程',
+  'Builds at once': '同时编译数',
   // Monitoring overview
   'Web server': 'Web 服务',
   Database: '数据库',

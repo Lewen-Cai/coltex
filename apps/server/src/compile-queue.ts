@@ -28,6 +28,8 @@ export type CompilerContainer = { name: string; used: number; limit: number | nu
 
 export type QueueStats = {
   workers: number
+  /** Builds the workers run at once now (each reports its own). */
+  slots: number
   waiting: number
   active: number
   failed: number
@@ -48,6 +50,8 @@ export class CompileQueue {
   private readonly texliveQueue: Queue<TexLookupJob, TexLookupResult>
   private readonly texliveEvents: QueueEvents
   private readonly cleanupQueue: Queue<CleanupJob>
+  /** Each project's latest build, which the next one waits for (see compile()). */
+  private readonly projectTail = new Map<string, Promise<unknown>>()
   /** Told about every finished build (the admin overview records them). */
   onBuild: ((ms: number, status: string) => void) | undefined
   /** Runs before each build, so the compiler reads current files (the S3 driver's local copy). */
@@ -74,7 +78,27 @@ export class CompileQueue {
     await this.cleanupQueue.add('cleanup', { projectId }, { removeOnComplete: true, removeOnFail: 100, attempts: 3, backoff: { type: 'exponential', delay: 5000 } })
   }
 
-  async compile(input: Omit<CompileJobInput, 'buildId'>): Promise<CompileResult> {
+  /**
+   * Build a project. One job per project is in the queue at a time: the
+   * compiler builds a project's jobs one after another, and a job waiting for
+   * that would hold a slot other projects could use (trial builds of the AI
+   * agent next to the author's own).
+   */
+  compile(input: Omit<CompileJobInput, 'buildId'>, signal?: AbortSignal): Promise<CompileResult> {
+    const before = this.projectTail.get(input.projectId) ?? Promise.resolve()
+    const result = before.catch(() => {}).then(() => this.runCompile(input, signal))
+    this.projectTail.set(input.projectId, result)
+    const settled = () => {
+      if (this.projectTail.get(input.projectId) === result) this.projectTail.delete(input.projectId)
+    }
+    result.then(settled, settled)
+    if (!signal) return result
+    // Stopped while an earlier build of the project runs: answer now; runCompile skips it.
+    return Promise.race([result, new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }))])
+  }
+
+  private async runCompile(input: Omit<CompileJobInput, 'buildId'>, signal?: AbortSignal): Promise<CompileResult> {
+    signal?.throwIfAborted()
     if ((await this.compileQueue.getWorkersCount()) === 0) {
       throw new ServiceUnavailableError('No compiler worker is running')
     }
@@ -84,14 +108,24 @@ export class CompileQueue {
     await this.compileEvents.waitUntilReady()
     const job = await this.compileQueue.add('compile', CompileJob.parse({ ...input, buildId }), { removeOnComplete: 200, removeOnFail: 200 })
     const started = Date.now()
+    let onAbort: (() => void) | undefined
     try {
       // Allow some slack on top of the compiler's own timeout for queueing/sync.
-      const result = CompileResult.parse(await job.waitUntilFinished(this.compileEvents, config.compileTimeoutMs + 60_000))
+      const finished = job.waitUntilFinished(this.compileEvents, config.compileTimeoutMs + 60_000)
+      const aborted = new Promise<never>((_, reject) => {
+        onAbort = () => reject(signal!.reason)
+        signal?.addEventListener('abort', onAbort, { once: true })
+      })
+      const result = CompileResult.parse(await Promise.race([finished, aborted]))
       this.sample(started, result.status)
       return result
     } catch (err) {
+      // Nobody waits for it any more: a job that hasn't started yet shouldn't take a slot later.
+      await job.remove().catch(() => {})
       this.sample(started, 'error')
       throw err
+    } finally {
+      if (onAbort) signal?.removeEventListener('abort', onAbort)
     }
   }
 
@@ -141,21 +175,24 @@ export class CompileQueue {
       this.connection.ping().then(() => Date.now() - pinged),
       new Promise<null>(r => setTimeout(() => r(null), 2000).unref()),
     ]).catch(() => null)
-    if (valkeyMs === null) return { workers: 0, waiting: 0, active: 0, failed: 0, valkeyMs, containers: [] }
+    if (valkeyMs === null) return { workers: 0, slots: 0, waiting: 0, active: 0, failed: 0, valkeyMs, containers: [] }
     const [workers, counts, reports] = await Promise.all([
       this.compileQueue.getWorkersCount(),
       this.compileQueue.getJobCounts('waiting', 'active', 'failed'),
       this.connection.hgetall(COMPILER_RESOURCES_KEY),
     ])
+    let slots = 0
     const containers = Object.entries(reports).flatMap(([name, json]) => {
       try {
-        const r = JSON.parse(json) as { used: number; limit: number | null; cpu?: number | null; cpus?: number; at: number }
-        return Date.now() - r.at < 15_000 ? [{ name, used: r.used, limit: r.limit, cpu: r.cpu ?? null, cpus: r.cpus ?? null }] : []
+        const r = JSON.parse(json) as { used: number; limit: number | null; cpu?: number | null; cpus?: number; at: number; slots?: number }
+        if (Date.now() - r.at >= 15_000) return []
+        slots += r.slots ?? 0
+        return [{ name, used: r.used, limit: r.limit, cpu: r.cpu ?? null, cpus: r.cpus ?? null }]
       } catch {
         return []
       }
     })
-    return { workers, waiting: counts.waiting ?? 0, active: counts.active ?? 0, failed: counts.failed ?? 0, valkeyMs, containers }
+    return { workers, slots, waiting: counts.waiting ?? 0, active: counts.active ?? 0, failed: counts.failed ?? 0, valkeyMs, containers }
   }
 
   async close(): Promise<void> {

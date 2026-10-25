@@ -16,6 +16,7 @@ export const config = {
   /** Per-project compile directories, kept between builds to reuse aux files */
   workDir: path.resolve(process.env.WORK_DIR ?? '/work'),
   timeoutMs: int('COMPILE_TIMEOUT', 240) * 1000,
-  concurrency: int('COMPILE_CONCURRENCY', 2),
+  /** Builds at once; unset, it follows the container's CPUs and free memory (see slots.ts). */
+  concurrency: int('COMPILE_CONCURRENCY', 0) || null,
   keepBuilds: int('KEEP_BUILDS', 3),
 }

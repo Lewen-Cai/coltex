@@ -135,7 +135,7 @@ const messages: Record<string, string> = {
   '{n} active this week': 'Bu hafta etkin: {n}',
   '{n} file': '{n} dosya',
   '{n} files': '{n} dosya',
-  Workers: 'Çalışanlar',
+  'Builds at once': 'Aynı anda derleme',
   // Monitoring overview
   'Web server': 'Web sunucusu',
   Database: 'Veritabanı',

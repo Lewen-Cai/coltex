@@ -25,7 +25,7 @@ async function inactiveFile(file: string, field: string): Promise<number> {
 }
 
 /** The container's memory as `docker stats` counts it, from cgroup v2 (or v1). */
-async function containerMemory(): Promise<{ used: number; limit: number | null } | undefined> {
+export async function containerMemory(): Promise<{ used: number; limit: number | null } | undefined> {
   const current = await readNumber('/sys/fs/cgroup/memory.current')
   if (current !== undefined) {
     const max = await fs.readFile('/sys/fs/cgroup/memory.max', 'utf8').then(s => s.trim(), () => 'max')
@@ -48,7 +48,7 @@ async function containerCpuUsec(): Promise<number | undefined> {
 }
 
 /** How many CPUs the container may use: its quota (`--cpus`), else the machine's cores. */
-async function containerCpus(): Promise<number> {
+export async function containerCpus(): Promise<number> {
   const max = await fs.readFile('/sys/fs/cgroup/cpu.max', 'utf8').then(s => s.trim().split(/\s+/), () => undefined)
   if (max && max[0] !== 'max') return Number(max[0]) / Number(max[1] ?? 100_000)
   const quota = await readNumber('/sys/fs/cgroup/cpu/cpu.cfs_quota_us')
@@ -63,7 +63,7 @@ async function containerCpus(): Promise<number> {
  * the container's CPUs used since the previous report. Entries carry a
  * timestamp so stopped workers drop out.
  */
-export function reportResources(connection: Redis): () => void {
+export function reportResources(connection: Redis, slots: () => number): () => void {
   const field = os.hostname()
   let last: { usec: number; at: number } | undefined
   const report = async () => {
@@ -77,7 +77,7 @@ export function reportResources(connection: Redis): () => void {
     if (usec !== undefined) last = { usec, at }
     // The full edition has the package manuals the assistant can read (texlive_doc).
     const manuals = process.env.COLTEX_EDITION === 'full'
-    await connection.hset(COMPILER_RESOURCES_KEY, field, JSON.stringify({ ...memory, cpu, cpus, at, manuals }))
+    await connection.hset(COMPILER_RESOURCES_KEY, field, JSON.stringify({ ...memory, cpu, cpus, at, manuals, slots: slots() }))
   }
   void report().catch(() => {})
   const timer = setInterval(() => void report().catch(() => {}), REPORT_MS)

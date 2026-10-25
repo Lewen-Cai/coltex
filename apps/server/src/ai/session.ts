@@ -39,7 +39,7 @@ import type { Tier } from './routing.ts'
 
 /** Per-message limits, so a confused model cannot loop forever. */
 const MAX_TOOL_CALLS = 60
-const MAX_COMPILES = 12
+const MAX_COMPILES = 5
 const IDLE_TTL_MS = 6 * 60 * 60_000
 
 export type AiDeps = {

@@ -135,7 +135,7 @@ const messages: Record<string, string> = {
   '{n} active this week': '{n} ativos nesta semana',
   '{n} file': '{n} arquivo',
   '{n} files': '{n} arquivos',
-  Workers: 'Workers',
+  'Builds at once': 'Compilações simultâneas',
   // Monitoring overview
   'Web server': 'Servidor web',
   Database: 'Banco de dados',

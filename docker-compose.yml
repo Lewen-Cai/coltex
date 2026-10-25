@@ -52,7 +52,8 @@ services:
     environment:
       REDIS_URL: redis://valkey:6379
       COMPILE_TIMEOUT: ${COMPILE_TIMEOUT:-240}
-      COMPILE_CONCURRENCY: ${COMPILE_CONCURRENCY:-2}
+      # Builds at once; unset, it follows the compiler's CPUs and free memory.
+      COMPILE_CONCURRENCY: ${COMPILE_CONCURRENCY:-}
     volumes:
       - ./data/projects:/data/projects:ro
       - ./data/outputs:/data/outputs

@@ -538,7 +538,7 @@ export function AdminOverviewPage() {
             <CardContent className="grid grid-cols-2 gap-2 text-center">
               {(
                 [
-                  ['workers', t('Workers')],
+                  ['slots', t('Builds at once')],
                   ['active', t('Compiling')],
                   ['waiting', t('Waiting')],
                   ['failed', t('Failed jobs kept')],
