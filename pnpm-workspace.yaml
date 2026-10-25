@@ -14,14 +14,16 @@ allowBuilds:
 # closeBrackets `buildInsert`). Keep one patched copy for the whole workspace.
 overrides:
   '@codemirror/autocomplete': 6.18.4
-  # Patched releases of transitive dependencies (pnpm audit); drop each once
+  # Patched releases of transitive dependencies (pnpm audit, and for esbuild
+  # the image scan: older releases are built with an old Go); drop each once
   # the package that pulls it in requires the fixed version itself.
   'undici@>=7 <7.30.1': ^7.30.1
   'fast-uri@>=4 <4.2.3': ^4.2.3
   'fast-uri@>=3 <3.1.9': ^3.1.9
   'body-parser@>=2 <2.4.0': ^2.4.0
   'micromark-extension-math>katex': ~0.19.0
-  '@esbuild-kit/core-utils>esbuild': ^0.25.12
+  '@esbuild-kit/core-utils>esbuild': ^0.28.2
+  'drizzle-kit>esbuild': ^0.28.2
 
 patchedDependencies:
   '@codemirror/autocomplete@6.18.4': patches/@codemirror__autocomplete@6.18.4.patch

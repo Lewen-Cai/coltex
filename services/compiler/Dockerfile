@@ -34,6 +34,9 @@ RUN apt-get update \
       $([ "$EDITION" = full ] && echo fonts-noto-cjk-extra) \
  && rm -rf /var/lib/apt/lists/* \
  && fc-cache -f
+# tlcockpit is a graphical front end to tlmgr, which can't open in a container; its jar
+# bundles old Java libraries (Jackson, Logback) with known vulnerabilities.
+RUN rm -rf /usr/local/texlive/*/texmf-dist/scripts/tlcockpit /usr/local/texlive/*/bin/*/tlcockpit
 COPY --from=deps /usr/local/bin/node /usr/local/bin/node
 COPY --from=deps /app /app
 

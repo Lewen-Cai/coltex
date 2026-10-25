@@ -44,7 +44,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && echo "deb [signed-by=/usr/share/keyrings/pgdg.asc] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update && apt-get install -y --no-install-recommends postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
-RUN pnpm install --frozen-lockfile --prod --filter @coltex/server...
+# The package managers are only needed for the install: the server runs with node alone, and
+# so does `coltex cli`. They bundle packages of their own that vulnerability scans report.
+RUN pnpm install --frozen-lockfile --prod --filter @coltex/server... \
+    && rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+    && cd /usr/local/bin && rm -f npm npx pnpm pnpx pn pnx corepack yarn yarnpkg
 COPY packages/shared packages/shared
 COPY packages/review packages/review
 COPY packages/convert packages/convert
@@ -59,9 +63,9 @@ ADD --chmod=644 --checksum=sha256:939f6b46bd2b8bec3cf7c5ceb8ba782266ae9b1f35b5ba
     https://raw.githubusercontent.com/lionsoul2014/ip2region/1bf6cabfb63c1a14af0971749c2120a3e5c77d72/data/ip2region_v6.xdb /app/apps/server/vendor/ip2region/
 COPY --from=web /app/apps/web/dist /app/apps/web/dist
 # The built-in Tailscale (Settings → Network): tailscaled only, run by the server when turned on.
-COPY --from=tailscale/tailscale:v1.102.5 /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=tailscale/tailscale:v1.104.2 /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 # The built-in Cloudflare Tunnel (a tunnel only; ColTex's accounts sign people in).
-COPY --from=cloudflare/cloudflared:2026.9.3 /usr/local/bin/cloudflared /usr/local/bin/cloudflared
+COPY --from=cloudflare/cloudflared:2026.10.3 /usr/local/bin/cloudflared /usr/local/bin/cloudflared
 RUN mkdir -p /data && chown node:node /data
 USER node
 WORKDIR /app/apps/server

@@ -11,6 +11,7 @@ ColTex moves to the coltexeditor organization on GitHub, and the `coltex` comman
 - The repository is now github.com/coltexeditor/coltex and the images are at ghcr.io/coltexeditor. Old links keep working, and `coltex update` moves an install's image address and Git remote to the new ones by itself.
 - The short install command is `curl -fsSL https://coltexeditor.github.io/install.sh | bash`.
 - The vulnerability scan lists its findings by image and package, with the fixed version, and keeps the full report with the run.
+- Fewer known vulnerabilities in the images: Tailscale 1.104.2 and cloudflared 2026.10.3, built with a current Go; the server image no longer carries npm, pnpm, yarn or an old esbuild, which it never ran; the compiler image leaves out tlcockpit, TeX Live's graphical package manager, which can't open in a container.
 
 ### Fixed
 
