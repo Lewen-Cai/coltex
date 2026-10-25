@@ -43,6 +43,12 @@ COPY --from=deps /app /app
 
 # The base image already ships an unprivileged `texlive` user (uid 1000).
 RUN mkdir -p /work /data && chown texlive:texlive /work /data
+# biber is a PAR-packed program that unpacks itself (160 MB) before it runs. Unpacked here once,
+# read-only, as a user without a name (PAR's "SYSTEM" folder, like the projects' users), and
+# shared by every build through a link in its own folder (src/sandbox.ts).
+RUN mkdir -m 777 /opt/biber-par \
+ && setpriv --reuid=12345678 --regid=12345678 --clear-groups env PAR_GLOBAL_TMPDIR=/opt/biber-par biber --version \
+ && chown -R root:root /opt/biber-par && chmod -R a-w,a+rX /opt/biber-par
 
 # ---- The image in layers of about a gigabyte ----
 # TeX Live arrives as a single layer of 2.4 GB (standard) or 7 GB (full).
@@ -89,7 +95,5 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=C.UTF-8 LC_ALL=C.UTF-8 TEXLIVE_INSTALL_NO_CONTEXT_CACHE=1 NOPERLDOC=1
 USER texlive
 WORKDIR /app/services/compiler
-# biber is a PAR-packed binary that unpacks itself before running; /tmp is
-# mounted noexec in compose, so let it unpack into the work volume instead.
-ENV DATA_DIR=/data WORK_DIR=/work NODE_ENV=production PAR_GLOBAL_TMPDIR=/work COLTEX_EDITION=${EDITION}
+ENV DATA_DIR=/data WORK_DIR=/work NODE_ENV=production COLTEX_EDITION=${EDITION}
 CMD ["node", "src/worker.ts"]

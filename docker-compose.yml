@@ -18,7 +18,11 @@ services:
   valkey:
     image: ${COLTEX_HUB_MIRROR:-docker.io/valkey}/valkey:9-alpine
     restart: unless-stopped
-    command: ["valkey-server", "--appendonly", "yes"]
+    # A password (VALKEY_PASSWORD, written by install.sh and `coltex update`) keeps builds,
+    # which run untrusted code next to it on the backend network, out of the queues.
+    command: ["sh", "-c", 'exec valkey-server --appendonly yes $${VALKEY_PASSWORD:+--requirepass "$$VALKEY_PASSWORD"}']
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-}
     volumes:
       - valkey:/data
     networks: [default, backend]
@@ -48,9 +52,16 @@ services:
         # full (about 20 GB): with the manuals and sources the assistant can read.
         EDITION: ${COLTEX_EDITION:-standard}
     restart: unless-stopped
-    user: "${COLTEX_UID:-1000}:${COLTEX_GID:-1000}"
+    # Root in the container, with only the capabilities below, so that every build runs as a
+    # user of its project's own with none at all (services/compiler/src/sandbox.ts): builds
+    # are untrusted code (TeX reads any file, a project's latexmkrc is Perl).
+    user: "0:0"
     environment:
       REDIS_URL: redis://valkey:6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-}
+      # The server's user, who owns ./data and is given the outputs.
+      COLTEX_UID: ${COLTEX_UID:-1000}
+      COLTEX_GID: ${COLTEX_GID:-1000}
       COMPILE_TIMEOUT: ${COMPILE_TIMEOUT:-240}
       # Builds at once; unset, it follows the compiler's CPUs and free memory.
       COMPILE_CONCURRENCY: ${COMPILE_CONCURRENCY:-}
@@ -64,6 +75,10 @@ services:
     tmpfs:
       - /tmp
     cap_drop: [ALL]
+    # Switching to a project's user, giving its files to it, and stopping what it leaves running.
+    cap_add: [SETUID, SETGID, CHOWN, DAC_OVERRIDE, FOWNER, KILL]
+    # Reaps what builds leave behind once the worker has killed it (node as PID 1 doesn't).
+    init: true
     security_opt: ["no-new-privileges:true"]
     pids_limit: 512
     mem_limit: ${COMPILER_MEMORY:-4g}
@@ -78,6 +93,7 @@ services:
     user: "${COLTEX_UID:-1000}:${COLTEX_GID:-1000}"
     environment:
       REDIS_URL: redis://valkey:6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-}
       DATABASE_URL: postgres://coltex:${POSTGRES_PASSWORD:-coltex}@postgres:5432/coltex
       # The address links use. Unset: whatever an administrator sets in Settings → Network,
       # else the address each browser is using.

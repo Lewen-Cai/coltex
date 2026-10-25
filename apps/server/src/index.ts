@@ -148,4 +148,11 @@ await app.listen({ port: config.port, host: config.host })
 await network.apply().catch(err => app.log.error(err, 'tailscale'))
 process.on('SIGUSR2', () => void network.apply().catch(err => app.log.error(err, 'tailscale')))
 await fs.mkdir(config.cacheDir, { recursive: true })
+// Builds run as users of their projects' own in the compiler: the sources are closed to them
+// (the compiler's worker copies them), the outputs only passable (each project's is shared
+// with its own group). Owned by this server's user, so it may set them.
+for (const [dir, mode] of [[config.projectsDir, 0o700], [config.outputsDir, 0o711]] as const) {
+  await fs.mkdir(dir, { recursive: true })
+  await fs.chmod(dir, mode).catch(err => app.log.warn(err, `could not restrict ${dir}`))
+}
 await fs.writeFile(path.join(config.cacheDir, 'server.pid'), String(process.pid))

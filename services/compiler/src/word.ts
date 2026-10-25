@@ -1,10 +1,10 @@
-import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { WORD_CITATION_STYLES, type WordJob, type WordResult } from '@coltex/shared'
 import { syncProject } from './sync.ts'
 import { writeOverlay } from './overlay.ts'
+import { childEnv, killUser, ownTree, ownWorkDir, projectUser, runProcess, serverUser, type RunResult, type User } from './sandbox.ts'
 
 const PANDOC_DIR = fileURLToPath(new URL('../pandoc/', import.meta.url))
 /** Exports wait here until the server has sent them on (it deletes them). */
@@ -44,7 +44,11 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
     await fs.rm(scratch, { recursive: true, force: true })
     await syncProject(srcDir, scratch)
     await writeOverlay(scratch, job.overlay)
+    const user = projectUser(job.projectId)
+    await ownWorkDir(scratch, user)
     const entry = inside(scratch, job.entry)
+    // pandoc runs as the project and can't write the outputs; the worker moves the file there.
+    const written = path.join(scratch, '.coltex-word.docx')
     const args = [
       // pandoc's own advice for untrusted input: a memory ceiling.
       '+RTS', '-M1024m', '-RTS',
@@ -56,7 +60,7 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
       '--citeproc',
       `--lua-filter=${path.join(PANDOC_DIR, 'word.lua')}`,
       `--resource-path=.${path.delimiter}${scratch}`,
-      `--output=${path.join(outDir, file)}`,
+      `--output=${written}`,
     ]
     if (job.reference) args.push(`--reference-doc=${inside(scratch, job.reference)}`)
     if (job.csl) {
@@ -64,10 +68,13 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
       args.push(`--csl=${builtin ? path.join(PANDOC_DIR, 'csl', `${job.csl}.csl`) : inside(scratch, job.csl)}`)
     }
     await fs.mkdir(outDir, { recursive: true })
+    await ownTree(outDir, serverUser, { dir: 0o700, file: 0o600 })
     await removeOld(outDir)
-    const run = await runPandoc(path.dirname(entry), args)
+    const run = await runPandoc(path.dirname(entry), args, user)
     if (run.timedOut) throw new Error(`The export took longer than ${TIMEOUT_MS / 1000}s and was stopped`)
     if (run.exitCode !== 0) throw new Error(run.output.trim().split('\n').slice(-5).join('\n') || `pandoc exited with ${run.exitCode}`)
+    await fs.copyFile(written, path.join(outDir, file))
+    await ownTree(path.join(outDir, file), serverUser, { dir: 0o700, file: 0o600 })
     const warnings = run.output
       .split('\n')
       .filter(l => l.startsWith('[WARNING]'))
@@ -75,34 +82,11 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
       .slice(0, 50)
     return { exportId: job.exportId, file: `${EXPORTS}/${file}`, warnings }
   } finally {
+    await killUser(projectUser(job.projectId))
     await fs.rm(scratch, { recursive: true, force: true })
   }
 }
 
-function runPandoc(cwd: string, args: string[]): Promise<{ exitCode: number | null; timedOut: boolean; output: string }> {
-  return new Promise(resolve => {
-    const child = spawn('pandoc', args, { cwd, detached: true, env: { ...process.env, HOME: cwd }, stdio: ['ignore', 'pipe', 'pipe'] })
-    let output = ''
-    const append = (chunk: Buffer) => {
-      output = (output + chunk.toString()).slice(-20_000)
-    }
-    child.stdout.on('data', append)
-    child.stderr.on('data', append)
-    let timedOut = false
-    const timer = setTimeout(() => {
-      timedOut = true
-      // The filter starts pdftoppm and Ghostscript: the whole group goes.
-      try {
-        process.kill(-child.pid!, 'SIGKILL')
-      } catch {}
-    }, TIMEOUT_MS)
-    child.on('close', exitCode => {
-      clearTimeout(timer)
-      resolve({ exitCode, timedOut, output })
-    })
-    child.on('error', err => {
-      clearTimeout(timer)
-      resolve({ exitCode: null, timedOut: false, output: String(err) })
-    })
-  })
+function runPandoc(cwd: string, args: string[], user: User): Promise<RunResult> {
+  return runProcess('pandoc', args, { cwd, env: childEnv({ HOME: cwd }), user, timeoutMs: TIMEOUT_MS })
 }

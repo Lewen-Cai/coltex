@@ -310,6 +310,11 @@ moved_home() {
     *github.com/[Ll]ewen-[Cc]ai/coltex | *github.com/[Ll]ewen-[Cc]ai/coltex.git) git remote set-url origin "https://github.com/coltexeditor/coltex.git" ;;
   esac
 }
+# Valkey's password (docker-compose.yml): builds run untrusted code on the network Valkey is on.
+# Installs from before it had none get one; compose restarts Valkey with it.
+valkey_password() {
+  [ -n "$(get VALKEY_PASSWORD)" ] || setting VALKEY_PASSWORD "$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+}
 # ~/.local/bin on PATH in new shells: the line goes into each file a shell reads when it starts.
 # Bash reads ~/.bashrc only in shells that aren't a login, and an SSH session is one; a login
 # reads the first of ~/.bash_profile, ~/.bash_login and ~/.profile, and not every system's
@@ -1383,7 +1388,7 @@ COLTEX_PORT=${PORT:-3690}
 COLTEX_EDITION=${EDITION:-standard}
 # The database password, only used between the containers.
 POSTGRES_PASSWORD=$(secret)
-# The containers run as this user (and own ./data); never root, since the compiler runs untrusted TeX.
+# The containers run as this user (and own ./data); builds run as users of their projects' own.
 COLTEX_UID=$OWNER_UID
 COLTEX_GID=$OWNER_GID
 # The device name on a tailnet (Settings → Network → Tailscale).
@@ -1392,6 +1397,7 @@ EOF
   fi
   [ -n "$PORT" ] && setting COLTEX_PORT "$PORT"
   [ -n "$EDITION" ] && setting COLTEX_EDITION "$EDITION"
+  valkey_password
   # The language of `coltex` and of the setup page (until someone picks one there).
   setting COLTEX_LANG "$LANGUAGE"
   # The images of the version just checked out (ghcr.io; see docker-compose.yml).

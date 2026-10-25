@@ -222,8 +222,32 @@ and returns paths relative to the project. Coordinates are big points from
 the page's top-left; a box spans `v - height … v`.
 
 The compiler container has no internet access (`backend` network is
-`internal`), a read-only root filesystem, no capabilities, and memory/pid
-limits. Shell escape stays at TeX Live's default restricted mode.
+`internal`), a read-only root filesystem, memory/pid limits, and
+`no-new-privileges`. Shell escape stays at TeX Live's default restricted mode.
+
+A build is untrusted code all the same: TeX reads any file it can (TeX Live
+made `openin_any` a no-op), LuaTeX has Lua's `io` and `lfs`, and latexmk runs
+a project's `latexmkrc`, which is Perl. So builds are kept apart by Unix
+users (`services/compiler/src/sandbox.ts`). The worker runs as root in the
+container with six capabilities (`SETUID`, `SETGID`, `CHOWN`, `DAC_OVERRIDE`,
+`FOWNER`, `KILL`) and starts every program of a build (latexmk, pandoc,
+synctex) as a user of the project's own, with no capabilities, a process
+limit and an environment without the worker's settings:
+
+- `data/projects` is the server's and `0700`: the worker copies a project's
+  sources into its compile directory, which is the project's and `0700`
+  (`/work` is `0711`, not listable);
+- `data/outputs` is `0711`; each project's outputs belong to the server's
+  user and are readable by the project's group only (SyncTeX runs as the
+  project);
+- what a build leaves running is killed when it ends, and its run ends when
+  latexmk exits, whatever still holds its output open;
+- Valkey, which shares the `backend` network, has a password
+  (`VALKEY_PASSWORD`) that builds never see.
+
+biber unpacks itself before it runs: the image holds one read-only unpacked
+copy that every project's build links to. TeX Live lookups for the AI agent
+run as a user of their own.
 
 ## AI harness principles
 

@@ -108,6 +108,13 @@ const version =
 // maps it to one of its languages (old installs say zh).
 const installLanguage = process.env.COLTEX_LANG?.trim() || null
 
+/** REDIS_URL with VALKEY_PASSWORD added, when it is set and the address has none. */
+function valkeyUrl(): string {
+  const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6379')
+  if (process.env.VALKEY_PASSWORD && !url.password) url.password = encodeURIComponent(process.env.VALKEY_PASSWORD)
+  return url.toString()
+}
+
 export const config = {
   version,
   installLanguage,
@@ -132,7 +139,7 @@ export const config = {
   cloudflared: env('CLOUDFLARED_BIN') ?? 'cloudflared',
   cloudflaredMetrics: env('CLOUDFLARED_METRICS') ?? '127.0.0.1:20241',
   databaseUrl: process.env.DATABASE_URL ?? 'postgres://coltex:coltex@localhost:5432/coltex',
-  redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
+  redisUrl: valkeyUrl(),
   secret: loadSecret(),
   dataDir,
   projectsDir: path.join(dataDir, 'projects'),

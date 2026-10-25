@@ -1,13 +1,15 @@
 import { execFile } from 'node:child_process'
 import path from 'node:path'
 import type { CodePosition, PdfPosition, SynctexJob, SynctexResult } from '@coltex/shared'
+import { childEnv, projectUser, runAs, type User } from './sandbox.ts'
 
 const TIMEOUT_MS = 10_000
 
-function run(args: string[], cwd: string): Promise<string> {
+/** As the project's user: the files it reads were written by the build. */
+function run(args: string[], cwd: string, user: User): Promise<string> {
   return new Promise(resolve => {
     // Failures (missing build, unknown file) simply yield no result.
-    execFile('synctex', args, { cwd, timeout: TIMEOUT_MS }, (_err, stdout) => resolve(stdout ?? ''))
+    execFile('synctex', args, { cwd, timeout: TIMEOUT_MS, env: childEnv({ HOME: cwd }), ...runAs(user) }, (_err, stdout) => resolve(stdout ?? ''))
   })
 }
 
@@ -54,9 +56,9 @@ export async function synctex(job: SynctexJob, dirs: { workDir: string; outputsD
   const workDir = path.join(dirs.workDir, job.projectId)
   const pdf = path.join(dirs.outputsDir, job.projectId, job.buildId, 'output.pdf')
   if (job.kind === 'code') {
-    const out = await run(['view', '-i', `${job.line}:${job.column}:${job.file}`, '-o', pdf], workDir)
+    const out = await run(['view', '-i', `${job.line}:${job.column}:${job.file}`, '-o', pdf], workDir, projectUser(job.projectId))
     return { pdf: parseView(out) }
   }
-  const out = await run(['edit', '-o', `${job.page}:${job.h}:${job.v}:${pdf}`], workDir)
+  const out = await run(['edit', '-o', `${job.page}:${job.h}:${job.v}:${pdf}`], workDir, projectUser(job.projectId))
   return { code: parseEdit(out, workDir) }
 }

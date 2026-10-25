@@ -4,6 +4,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import type { TexLookupJob, TexLookupResult } from '@coltex/shared'
+import { childEnv, lookupUser, ownTree, runAs } from './sandbox.ts'
 
 const run = promisify(execFile)
 const MAX_CHARS = 12_000
@@ -13,15 +14,18 @@ const CONTEXT = 2
 
 type Options = { workDir: string }
 
-/** texdoc and kpsewhich want a writable TEXMFVAR; the image's home is read-only. */
-const env = (o: Options) => ({ ...process.env, TEXMFVAR: path.join(o.workDir, '.texmf-var') })
+/**
+ * texdoc and kpsewhich want a writable TEXMFVAR; the image's home is read-only.
+ * They run as a user of their own (they only read TeX Live), never as the worker.
+ */
+const env = (o: Options) => ({ env: childEnv({ HOME: '/tmp', TEXMFVAR: path.join(o.workDir, '.texmf-var') }), ...runAs(lookupUser) })
 
 async function kpsewhich(name: string, o: Options): Promise<string | undefined> {
   // A bare package name usually means its .sty (or a class).
   const candidates = path.extname(name) ? [name] : [`${name}.sty`, `${name}.cls`, name]
   for (const c of candidates) {
     try {
-      const { stdout } = await run('kpsewhich', [c], { env: env(o), timeout: 10_000 })
+      const { stdout } = await run('kpsewhich', [c], { ...env(o), timeout: 10_000 })
       const found = stdout.trim()
       if (found) return found
     } catch {
@@ -34,7 +38,7 @@ async function kpsewhich(name: string, o: Options): Promise<string | undefined> 
 /** The best documentation file texdoc knows for a package, if docs are installed. */
 async function texdoc(name: string, o: Options): Promise<string | undefined> {
   try {
-    const { stdout } = await run('texdoc', ['-l', '-M', name], { env: env(o), timeout: 15_000 })
+    const { stdout } = await run('texdoc', ['-l', '-M', name], { ...env(o), timeout: 15_000 })
     // Machine-readable lines: argument, score, file, language, description (tab-separated), best first.
     const files = stdout
       .split('\n')
@@ -55,7 +59,8 @@ async function docText(file: string, o: Options): Promise<string> {
     return await fs.readFile(cached, 'utf8')
   } catch {}
   await fs.mkdir(cacheDir, { recursive: true })
-  await run('pdftotext', ['-enc', 'UTF-8', '-nopgbrk', file, cached], { timeout: 60_000 })
+  await ownTree(cacheDir, lookupUser)
+  await run('pdftotext', ['-enc', 'UTF-8', '-nopgbrk', file, cached], { ...env(o), timeout: 60_000 })
   return fs.readFile(cached, 'utf8')
 }
 

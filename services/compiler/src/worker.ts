@@ -28,6 +28,7 @@ import { synctex } from './synctex.ts'
 import { texLookup } from './texlive.ts'
 import { reportResources } from './resources.ts'
 import { writeOverlay } from './overlay.ts'
+import { killUser, ownWorkDir, parTmp, prepare, projectUser, shareOutputs, type User } from './sandbox.ts'
 import { toWord } from './word.ts'
 import { Slots } from './slots.ts'
 
@@ -104,13 +105,16 @@ async function compile(job: CompileJob): Promise<CompileResult> {
       if (job.clean) await fs.rm(workDir, { recursive: true, force: true })
       await syncProject(srcDir, workDir)
     }
-    return await build(job, workDir, outDir, started)
+    const user = projectUser(job.projectId)
+    await ownWorkDir(workDir, user)
+    return await build(job, workDir, outDir, started, user)
   } finally {
+    await killUser(projectUser(job.projectId))
     if (job.overlay) await fs.rm(workDir, { recursive: true, force: true })
   }
 }
 
-async function build(job: CompileJob, workDir: string, outDir: string, started: number): Promise<CompileResult> {
+async function build(job: CompileJob, workDir: string, outDir: string, started: number, user: User): Promise<CompileResult> {
   // Switching engine, draft mode or error handling must rebuild even if no source changed.
   const options = JSON.stringify({ engine: job.engine, draft: job.draft, stopOnFirstError: job.stopOnFirstError })
   const optionsFile = path.join(workDir, OPTIONS_FILE)
@@ -120,6 +124,8 @@ async function build(job: CompileJob, workDir: string, outDir: string, started: 
     draft: job.draft,
     stopOnFirstError: job.stopOnFirstError,
     force,
+    user,
+    parTmp: await parTmp(workDir, user),
   })
   await fs.writeFile(optionsFile, options)
 
@@ -137,6 +143,7 @@ async function build(job: CompileJob, workDir: string, outDir: string, started: 
     } catch {}
   }
   await pruneBuilds(path.dirname(outDir), config.keepBuilds)
+  await shareOutputs(path.dirname(outDir), user)
 
   const diagnostics: Diagnostic[] = []
   const log = await readIfExists(path.join(workDir, OUTPUT.log))
@@ -159,6 +166,8 @@ async function build(job: CompileJob, workDir: string, outDir: string, started: 
         : undefined,
   }
 }
+
+await prepare(config)
 
 const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null })
 

@@ -7,8 +7,15 @@ function int(name: string, fallback: number): number {
 
 const dataDir = path.resolve(process.env.DATA_DIR ?? '/data')
 
+/** REDIS_URL with VALKEY_PASSWORD added, when it is set and the address has none. */
+function valkeyUrl(): string {
+  const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6379')
+  if (process.env.VALKEY_PASSWORD && !url.password) url.password = encodeURIComponent(process.env.VALKEY_PASSWORD)
+  return url.toString()
+}
+
 export const config = {
-  redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
+  redisUrl: valkeyUrl(),
   /** Read-only project sources, laid out as <projectsDir>/<projectId>/... */
   projectsDir: path.join(dataDir, 'projects'),
   /** Build artifacts, laid out as <outputsDir>/<projectId>/<buildId>/... */
