@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">Cài đặt</a> · <a href="#configure">Cấu hình</a> · <a href="../CHANGELOG.md">Nhật ký thay đổi</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">Cài đặt</a> · <a href="#configure">Cấu hình</a> · <a href="../CHANGELOG.md">Nhật ký thay đổi</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="Phiên bản mới nhất"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="Phiên bản mới nhất"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 Bạn cần một máy Linux hoặc macOS có Docker (trên Linux, trình cài đặt có thể tự cài Docker), tối thiểu 2 nhân CPU và 4 GB bộ nhớ. Các image được dựng sẵn cho x86-64 và ARM64.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Sau đó mở `http://<máy chủ>:3690` và tạo tài khoản quản trị viên.
@@ -116,7 +116,7 @@ Cả hai đều có mọi gói của TeX Live và biên dịch được cùng c�
 | `--port 3690` | Một cổng khác |
 | `--version v0.0.1` | Một bản phát hành cụ thể (`main` cho nhánh phát triển) |
 | `--build` | Dựng các image từ mã nguồn trên máy này thay vì tải về |
-| `--images REGISTRY` | Nơi tải các image: `aliyun` (cùng các image trên Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) hoặc một bản mirror khác của ghcr.io. Nếu không chỉ định, trình cài đặt dùng nơi nào phản hồi nhanh hơn từ máy này (`registry-mirrors` của Docker chỉ áp dụng cho Docker Hub, không áp dụng cho ghcr.io) |
+| `--images REGISTRY` | Nơi tải các image: `aliyun` (cùng các image trên Alibaba Cloud), `ghcr` (`ghcr.io/coltexeditor`) hoặc một bản mirror khác của ghcr.io. Nếu không chỉ định, trình cài đặt dùng nơi nào phản hồi nhanh hơn từ máy này (`registry-mirrors` của Docker chỉ áp dụng cho Docker Hub, không áp dụng cho ghcr.io) |
 
 Trên máy chủ truy cập được từ internet, đừng đăng nhập qua `http://` thuần: hãy dùng `--domain`, Tailscale hoặc Cloudflare tunnel.
 

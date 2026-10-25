@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">Installation</a> · <a href="#configure">Configuration</a> · <a href="../CHANGELOG.md">Journal des modifications</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">Installation</a> · <a href="#configure">Configuration</a> · <a href="../CHANGELOG.md">Journal des modifications</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="Dernière version"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="Dernière version"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 Il vous faut une machine Linux ou macOS avec Docker (sous Linux, l’installateur peut l’installer), au moins 2 cœurs de CPU et 4 Go de mémoire. Les images sont précompilées pour x86-64 et ARM64.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Ouvrez ensuite `http://<serveur>:3690` et créez le compte administrateur.
@@ -116,7 +116,7 @@ Les deux contiennent tous les packages de TeX Live et compilent les mêmes docum
 | `--port 3690` | Un autre port |
 | `--version v0.0.1` | Une version précise (`main` pour la branche de développement) |
 | `--build` | Construit les images à partir des sources sur cette machine au lieu de les télécharger |
-| `--images REGISTRY` | D’où télécharger les images : `aliyun` (les mêmes images sur Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) ou un autre miroir de ghcr.io. Sans cette option, l’installateur prend celui des deux qui répond le plus vite depuis cette machine (les `registry-mirrors` de Docker ne s’appliquent qu’à Docker Hub, pas à ghcr.io) |
+| `--images REGISTRY` | D’où télécharger les images : `aliyun` (les mêmes images sur Alibaba Cloud), `ghcr` (`ghcr.io/coltexeditor`) ou un autre miroir de ghcr.io. Sans cette option, l’installateur prend celui des deux qui répond le plus vite depuis cette machine (les `registry-mirrors` de Docker ne s’appliquent qu’à Docker Hub, pas à ghcr.io) |
 
 Sur un serveur joignable depuis Internet, ne vous connectez pas en simple `http://` : utilisez `--domain`, Tailscale ou un tunnel Cloudflare.
 

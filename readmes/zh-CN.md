@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">安装</a> · <a href="#configure">配置</a> · <a href="../CHANGELOG.md">更新日志</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">安装</a> · <a href="#configure">配置</a> · <a href="../CHANGELOG.md">更新日志</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="最新版本"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="最新版本"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 需要一台装有 Docker 的 Linux 或 macOS 电脑（Linux 上安装脚本可以帮你装 Docker），至少 2 核 CPU、4 GB 内存。镜像已为 x86-64 和 ARM64 预先构建好。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 然后打开 `http://<服务器>:3690`，创建管理员账号。
@@ -116,7 +116,7 @@ ColTex 可以替代 Overleaf，适合课题组、实验室或个人使用，装�
 | `--port 3690` | 换一个端口 |
 | `--version v0.0.1` | 指定版本（`main` 表示开发分支） |
 | `--build` | 在本机从源码构建镜像，而不是下载预构建的镜像 |
-| `--images REGISTRY` | 从哪里下载镜像：`aliyun`（阿里云上的相同镜像）、`ghcr`（`ghcr.io/lewen-cai`）或其他 ghcr.io 镜像站的地址。不指定时，安装脚本测一下两边哪个响应更快就用哪个。已安装的实例重新运行安装命令加上它即可切换，设置和数据都会保留（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
+| `--images REGISTRY` | 从哪里下载镜像：`aliyun`（阿里云上的相同镜像）、`ghcr`（`ghcr.io/coltexeditor`）或其他 ghcr.io 镜像站的地址。不指定时，安装脚本测一下两边哪个响应更快就用哪个。已安装的实例重新运行安装命令加上它即可切换，设置和数据都会保留（Docker 的 `registry-mirrors` 只对 Docker Hub 有效，对 ghcr.io 无效） |
 
 如果服务器能从公网访问，不要通过明文 `http://` 登录：请用 `--domain`、Tailscale 或 Cloudflare 隧道。
 

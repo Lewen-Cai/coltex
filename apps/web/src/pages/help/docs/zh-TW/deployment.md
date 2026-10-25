@@ -7,7 +7,7 @@
 在裝有 Docker 的 Linux 或 macOS 上，只需要一個指令：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 如果下載中斷（`curl: (35) Recv failure: Connection reset by peer`，連線 GitHub 不穩定時常見），再執行一次指令即可。
@@ -24,9 +24,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 遠端存取（Tailscale、Cloudflare Tunnel）在安裝後到 **設定 → 網路** 開啟（見下文）。以腳本安裝時，也可以用選項在安裝時一併開啟：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 之後用 `coltex` 管理：

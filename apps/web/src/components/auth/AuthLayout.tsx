@@ -194,7 +194,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
       </main>
 
       <footer className="relative p-4 text-center text-sm text-white/70 lg:pb-8 [@media(max-height:820px)]:lg:pb-4">
-        <a href="https://github.com/Lewen-Cai/coltex" target="_blank" rel="noreferrer" className="underline-offset-4 transition-colors hover:text-white hover:underline">
+        <a href="https://github.com/coltexeditor/coltex" target="_blank" rel="noreferrer" className="underline-offset-4 transition-colors hover:text-white hover:underline">
           {t('Open source under AGPL-3.0')}
         </a>
       </footer>

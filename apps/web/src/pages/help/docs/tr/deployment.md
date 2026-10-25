@@ -7,7 +7,7 @@
 Docker yüklü Linux veya macOS’ta tek bir komut:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 İndirme yarıda kesilirse (`curl: (35) Recv failure: Connection reset by peer`, GitHub’a erişmek zor olduğunda sık görülür) komutu yeniden çalıştırın.
@@ -24,9 +24,9 @@ Komut dili ve TeX Live sürümünü (edition) sorar (ok tuşlarıyla; `--edition
 Uzaktan erişim (Tailscale, Cloudflare Tunnel) kurulumdan sonra **Ayarlar → Ağ** bölümünden açılır (aşağıya bakın). Betikle yapılan kurulumlarda seçeneklerle kurulum sırasında da ayarlanabilir:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 Ardından `coltex` ile yönetin:

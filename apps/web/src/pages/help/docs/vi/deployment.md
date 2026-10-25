@@ -7,7 +7,7 @@ Khi chạy thực tế, ColTex dùng một cổng duy nhất (mặc định 3690
 Trên Linux hoặc macOS có Docker, chỉ cần một lệnh:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Nếu việc tải xuống bị ngắt (`curl: (35) Recv failure: Connection reset by peer`, thường gặp khi khó kết nối tới GitHub), hãy chạy lại lệnh.
@@ -24,9 +24,9 @@ Cả hai đều có TeX Live đầy đủ và biên dịch như nhau, và tác t
 Truy cập từ xa (Tailscale, Cloudflare Tunnel) được bật sau khi cài, trong **Cài đặt → Mạng** (xem bên dưới). Khi cài bằng script, có thể dùng tùy chọn để thiết lập ngay trong lúc cài:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 Sau đó quản lý bằng `coltex`:

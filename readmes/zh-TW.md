@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">安裝</a> · <a href="#configure">設定</a> · <a href="../CHANGELOG.md">更新紀錄</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">安裝</a> · <a href="#configure">設定</a> · <a href="../CHANGELOG.md">更新紀錄</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="最新版本"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="最新版本"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 你需要一台裝有 Docker 的 Linux 或 macOS 電腦（在 Linux 上，安裝程式可以代為安裝 Docker），至少 2 個 CPU 核心和 4 GB 記憶體。映像檔已針對 x86-64 和 ARM64 預先建置。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 然後開啟 `http://<伺服器>:3690`，建立管理員帳號。
@@ -116,7 +116,7 @@ ColTex 是 Overleaf 的替代方案，適合研究團隊、實驗室或個人使
 | `--port 3690` | 使用其他連接埠 |
 | `--version v0.0.1` | 指定版本（`main` 代表開發分支） |
 | `--build` | 在本機從原始碼建置映像檔，而不是下載 |
-| `--images REGISTRY` | 從哪裡下載映像檔：`aliyun`（阿里雲上的相同映像檔）、`ghcr`（`ghcr.io/lewen-cai`）或其他 ghcr.io 鏡像站。未指定時，安裝腳本會測試兩邊哪個回應較快就用哪個（Docker 的 `registry-mirrors` 只適用於 Docker Hub，不適用於 ghcr.io） |
+| `--images REGISTRY` | 從哪裡下載映像檔：`aliyun`（阿里雲上的相同映像檔）、`ghcr`（`ghcr.io/coltexeditor`）或其他 ghcr.io 鏡像站。未指定時，安裝腳本會測試兩邊哪個回應較快就用哪個（Docker 的 `registry-mirrors` 只適用於 Docker Hub，不適用於 ghcr.io） |
 
 如果伺服器可以從網際網路連線，請不要透過未加密的 `http://` 登入：請使用 `--domain`、Tailscale 或 Cloudflare 通道。
 

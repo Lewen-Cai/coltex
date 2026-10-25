@@ -64,7 +64,7 @@ msg_en() {
     not_answering) M='ColTex is not answering on port {port}' ;;
     no_release) M='No release found' ;;
     latest) M='ColTex {version} is the latest release' ;;
-    updating) M='Updating ColTex {from} → {to}; see the release notes: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Updating ColTex {from} → {to}; see the release notes: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live edition: {edition} (standard: every package without their manuals, about 12 GB on disk; full: with the manuals and sources, about 23 GB)' ;;
     edition_already) M='Already the {edition} edition' ;;
     edition_switching) M='Switching to the {edition} edition (downloads TeX Live)…' ;;
@@ -123,7 +123,7 @@ msg_zh_CN() {
     not_answering) M='ColTex 没有在端口 {port} 上响应' ;;
     no_release) M='没有找到发布版本' ;;
     latest) M='ColTex {version} 已经是最新版本' ;;
-    updating) M='正在把 ColTex 从 {from} 更新到 {to}；更新说明：https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='正在把 ColTex 从 {from} 更新到 {to}；更新说明：https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live 版本：{edition}（standard：全部宏包，不含手册，占用约 12 GB；full：含手册和源码，约 23 GB）' ;;
     edition_already) M='已经是 {edition} 版本' ;;
     edition_switching) M='正在切换到 {edition} 版本（会下载 TeX Live）…' ;;
@@ -182,7 +182,7 @@ msg_zh_TW() {
     not_answering) M='ColTex 沒有在連接埠 {port} 上回應' ;;
     no_release) M='找不到發佈版本' ;;
     latest) M='ColTex {version} 已經是最新版本' ;;
-    updating) M='正在將 ColTex 從 {from} 更新到 {to}；版本資訊：https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='正在將 ColTex 從 {from} 更新到 {to}；版本資訊：https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live 版本：{edition}（standard：全部套件，不含手冊，磁碟占用約 12 GB；full：含手冊和原始碼，約 23 GB）' ;;
     edition_already) M='已經是 {edition} 版本' ;;
     edition_switching) M='正在切換到 {edition} 版本（會下載 TeX Live）…' ;;
@@ -241,7 +241,7 @@ msg_ja() {
     not_answering) M='ColTex がポート {port} で応答していません' ;;
     no_release) M='リリースが見つかりません' ;;
     latest) M='ColTex {version} は最新のリリースです' ;;
-    updating) M='ColTex を {from} から {to} に更新中。リリースノート：https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='ColTex を {from} から {to} に更新中。リリースノート：https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live エディション：{edition}（standard：すべてのパッケージ、マニュアルなし、約 12 GB。full：マニュアルとソース付き、約 23 GB）' ;;
     edition_already) M='すでに {edition} エディションです' ;;
     edition_switching) M='{edition} エディションに切り替え中（TeX Live をダウンロードします）…' ;;
@@ -300,7 +300,7 @@ msg_ko() {
     not_answering) M='ColTex가 포트 {port}에서 응답하지 않습니다' ;;
     no_release) M='릴리스를 찾을 수 없습니다' ;;
     latest) M='ColTex {version}이(가) 최신 릴리스입니다' ;;
-    updating) M='ColTex {from} → {to} 업데이트 중. 릴리스 노트: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='ColTex {from} → {to} 업데이트 중. 릴리스 노트: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live 에디션: {edition} (standard: 모든 패키지, 매뉴얼 제외, 약 12 GB / full: 매뉴얼·소스 포함, 약 23 GB)' ;;
     edition_already) M='이미 {edition} 에디션입니다' ;;
     edition_switching) M='{edition} 에디션으로 전환하는 중(TeX Live를 다운로드합니다)…' ;;
@@ -359,7 +359,7 @@ msg_es() {
     not_answering) M='ColTex no responde en el puerto {port}' ;;
     no_release) M='No se encontró ninguna versión' ;;
     latest) M='ColTex {version} es la última versión' ;;
-    updating) M='Actualizando ColTex {from} → {to}; consulta las notas de la versión: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Actualizando ColTex {from} → {to}; consulta las notas de la versión: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edición de TeX Live: {edition} (standard: todos los paquetes sin manuales, unos 12 GB en disco; full: con manuales y fuentes, unos 23 GB)' ;;
     edition_already) M='Ya es la edición {edition}' ;;
     edition_switching) M='Cambiando a la edición {edition} (descarga TeX Live)…' ;;
@@ -418,7 +418,7 @@ msg_fr() {
     not_answering) M='ColTex ne répond pas sur le port {port}' ;;
     no_release) M='Aucune version publiée trouvée' ;;
     latest) M='ColTex {version} est la dernière version publiée' ;;
-    updating) M='Mise à jour de ColTex {from} → {to} ; notes de version : https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Mise à jour de ColTex {from} → {to} ; notes de version : https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Édition de TeX Live : {edition} (standard : tous les packages sans manuels, environ 12 GB ; full : avec manuels et sources, environ 23 GB)' ;;
     edition_already) M='Déjà en édition {edition}' ;;
     edition_switching) M='Passage à l’édition {edition} (télécharge TeX Live)…' ;;
@@ -477,7 +477,7 @@ msg_de() {
     not_answering) M='ColTex antwortet nicht auf Port {port}' ;;
     no_release) M='Keine Version gefunden' ;;
     latest) M='ColTex {version} ist die neueste Version' ;;
-    updating) M='ColTex wird aktualisiert: {from} → {to}; Versionshinweise: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='ColTex wird aktualisiert: {from} → {to}; Versionshinweise: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX-Live-Edition: {edition} (standard: alle Pakete ohne Handbücher, etwa 12 GB; full: mit Handbüchern und Quellen, etwa 23 GB)' ;;
     edition_already) M='Bereits die Edition {edition}' ;;
     edition_switching) M='Wechsel zur Edition {edition} (lädt TeX Live herunter)…' ;;
@@ -536,7 +536,7 @@ msg_pt_BR() {
     not_answering) M='O ColTex não está respondendo na porta {port}' ;;
     no_release) M='Nenhuma versão encontrada' ;;
     latest) M='O ColTex {version} é a versão mais recente' ;;
-    updating) M='Atualizando o ColTex {from} → {to}; veja as notas da versão: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Atualizando o ColTex {from} → {to}; veja as notas da versão: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edição do TeX Live: {edition} (standard: todos os pacotes sem manuais, cerca de 12 GB em disco; full: com manuais e fontes, cerca de 23 GB)' ;;
     edition_already) M='Já está na edição {edition}' ;;
     edition_switching) M='Mudando para a edição {edition} (baixa o TeX Live)…' ;;
@@ -595,7 +595,7 @@ msg_it() {
     not_answering) M='ColTex non risponde sulla porta {port}' ;;
     no_release) M='Nessuna release trovata' ;;
     latest) M='ColTex {version} è l’ultima release' ;;
-    updating) M='Aggiornamento di ColTex {from} → {to}; vedi le note di rilascio: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Aggiornamento di ColTex {from} → {to}; vedi le note di rilascio: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edizione di TeX Live: {edition} (standard: tutti i pacchetti senza manuali, circa 12 GB; full: con manuali e sorgenti, circa 23 GB)' ;;
     edition_already) M='È già l’edizione {edition}' ;;
     edition_switching) M='Passaggio all’edizione {edition} (scarica TeX Live)…' ;;
@@ -654,7 +654,7 @@ msg_ru() {
     not_answering) M='ColTex не отвечает на порту {port}' ;;
     no_release) M='Выпуск не найден' ;;
     latest) M='ColTex {version} — последний выпуск' ;;
-    updating) M='Обновление ColTex {from} → {to}; примечания к выпуску: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Обновление ColTex {from} → {to}; примечания к выпуску: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Редакция TeX Live: {edition} (standard: все пакеты без руководств, около 12 GB; full: с руководствами и исходниками, около 23 GB)' ;;
     edition_already) M='Уже установлена редакция {edition}' ;;
     edition_switching) M='Переключение на редакцию {edition} (загружается TeX Live)…' ;;
@@ -713,7 +713,7 @@ msg_tr() {
     not_answering) M='ColTex {port} numaralı bağlantı noktasında yanıt vermiyor' ;;
     no_release) M='Sürüm bulunamadı' ;;
     latest) M='ColTex {version} en son sürüm' ;;
-    updating) M='ColTex güncelleniyor: {from} → {to}; sürüm notları: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='ColTex güncelleniyor: {from} → {to}; sürüm notları: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live sürümü: {edition} (standard: kılavuzlar olmadan tüm paketler, yaklaşık 12 GB; full: kılavuzlar ve kaynaklarla, yaklaşık 23 GB)' ;;
     edition_already) M='Zaten bu sürüm kullanılıyor: {edition}' ;;
     edition_switching) M='Şu sürüme geçiliyor: {edition} (TeX Live indirilir)…' ;;
@@ -772,7 +772,7 @@ msg_vi() {
     not_answering) M='ColTex không phản hồi trên cổng {port}' ;;
     no_release) M='Không tìm thấy bản phát hành nào' ;;
     latest) M='ColTex {version} là bản phát hành mới nhất' ;;
-    updating) M='Đang cập nhật ColTex {from} → {to}; xem ghi chú phát hành: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Đang cập nhật ColTex {from} → {to}; xem ghi chú phát hành: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Phiên bản TeX Live: {edition} (standard: mọi gói, không kèm tài liệu, khoảng 12 GB; full: kèm tài liệu và mã nguồn, khoảng 23 GB)' ;;
     edition_already) M='Đang dùng phiên bản {edition} rồi' ;;
     edition_switching) M='Đang chuyển sang phiên bản {edition} (tải TeX Live)…' ;;
@@ -831,7 +831,7 @@ msg_id() {
     not_answering) M='ColTex tidak merespons di port {port}' ;;
     no_release) M='Tidak ada rilis' ;;
     latest) M='ColTex {version} adalah rilis terbaru' ;;
-    updating) M='Memperbarui ColTex {from} → {to}; lihat catatan rilis: https://github.com/Lewen-Cai/coltex/releases' ;;
+    updating) M='Memperbarui ColTex {from} → {to}; lihat catatan rilis: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edisi TeX Live: {edition} (standard: semua paket tanpa manual, sekitar 12 GB; full: dengan manual dan sumber, sekitar 23 GB)' ;;
     edition_already) M='Sudah menggunakan edisi {edition}' ;;
     edition_switching) M='Beralih ke edisi {edition} (mengunduh TeX Live)…' ;;
@@ -900,7 +900,7 @@ fi
 cursor_hide() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25l" || true; }
 cursor_show() { [ "$TTY" = 1 ] && printf '%s' "${ESC}[?25h" || true; }
 # Where the images are (the same as in install.sh), for the line saying where they come from.
-GHCR_IMAGES="ghcr.io/lewen-cai"
+GHCR_IMAGES="ghcr.io/coltexeditor"
 ALIYUN_IMAGES="crpi-jf7w2fwdvslokqcw.cn-guangzhou.personal.cr.aliyuncs.com/coltex"
 # What the downloads print, shown only when one fails.
 LOG="$(mktemp "${TMPDIR:-/tmp}/coltex-pull.XXXXXX")"
@@ -1081,6 +1081,18 @@ pull_images() {
     sleep 3
   done
 }
+# The repository and its images moved to the coltexeditor organization on GitHub. An install that
+# saved the old addresses gets the new ones: the image registry in .env, and git's origin (GitHub
+# redirects the old one, but only while nobody reuses the name).
+OLD_GHCR_IMAGES="ghcr.io/lewen-cai"
+moved_home() {
+  local url
+  [ "$(get COLTEX_IMAGES)" != "$OLD_GHCR_IMAGES" ] || setting COLTEX_IMAGES "$GHCR_IMAGES"
+  url="$(git remote get-url origin 2>/dev/null || true)"
+  case "$url" in
+    *github.com/[Ll]ewen-[Cc]ai/coltex | *github.com/[Ll]ewen-[Cc]ai/coltex.git) git remote set-url origin "https://github.com/coltexeditor/coltex.git" ;;
+  esac
+}
 # <<< shared
 
 # The images ColTex's own containers run now.
@@ -1166,6 +1178,7 @@ net() {
 
 # After the update's checkout: the new image tag, then the images and the containers.
 finish_update() {
+  moved_home
   T updating from="$1" to="$(current)"
   setting COLTEX_IMAGE_TAG "$2"
   deploy

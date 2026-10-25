@@ -149,8 +149,8 @@ pushes them to ghcr.io on every push to `main` and every `v*` tag:
 
 | Image | Tags |
 | --- | --- |
-| `ghcr.io/lewen-cai/coltex-server` | `v0.0.2`, `latest`, `main` |
-| `ghcr.io/lewen-cai/coltex-compiler` | the same, with `-standard` or `-full` |
+| `ghcr.io/coltexeditor/coltex-server` | `v0.0.2`, `latest`, `main` |
+| `ghcr.io/coltexeditor/coltex-compiler` | the same, with `-standard` or `-full` |
 
 `docker-compose.yml` names them from `.env`: `COLTEX_IMAGES` (the registry
 and owner, for a fork), `COLTEX_IMAGE_TAG` (written by `install.sh` and

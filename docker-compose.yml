@@ -39,7 +39,7 @@ services:
       retries: 10
 
   compiler:
-    image: ${COLTEX_IMAGES:-ghcr.io/lewen-cai}/coltex-compiler:${COLTEX_IMAGE_TAG:-latest}-${COLTEX_EDITION:-standard}
+    image: ${COLTEX_IMAGES:-ghcr.io/coltexeditor}/coltex-compiler:${COLTEX_IMAGE_TAG:-latest}-${COLTEX_EDITION:-standard}
     build:
       context: .
       dockerfile: services/compiler/Dockerfile
@@ -69,7 +69,7 @@ services:
     depends_on: [valkey]
 
   server:
-    image: ${COLTEX_IMAGES:-ghcr.io/lewen-cai}/coltex-server:${COLTEX_IMAGE_TAG:-latest}
+    image: ${COLTEX_IMAGES:-ghcr.io/coltexeditor}/coltex-server:${COLTEX_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/server/Dockerfile

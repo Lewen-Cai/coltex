@@ -7,7 +7,7 @@
 Docker の入った Linux または macOS で、次のコマンドを 1 つ実行します。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 ダウンロードが途中で切れた場合（`curl: (35) Recv failure: Connection reset by peer`。GitHub につながりにくい環境でよく起こります）は、同じコマンドをもう一度実行してください。
@@ -24,9 +24,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 リモートアクセス（Tailscale、Cloudflare Tunnel）は、インストール後に **設定 → ネットワーク** でオンにします（下記参照）。スクリプトでインストールする場合は、オプションでインストール時にオンにすることもできます。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 その後は `coltex` で管理します。

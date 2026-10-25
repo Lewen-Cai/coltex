@@ -7,7 +7,7 @@ ColTex 正式部署只用一个端口（默认 3690）：网页、接口、实�
 在 Linux 或 macOS 上（需要 Docker），一行命令安装：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 如果下载中途断开（`curl: (35) Recv failure: Connection reset by peer`，访问 GitHub 不稳定时常见），重新运行这条命令即可。
@@ -24,9 +24,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 远程访问（Tailscale、Cloudflare Tunnel）在安装后到 **设置 → 网络** 里开启（见下文）。用脚本安装时，也可以用参数在安装时顺带开启：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 之后用 `coltex` 命令管理：

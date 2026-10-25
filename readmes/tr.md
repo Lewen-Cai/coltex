@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">Kurulum</a> · <a href="#configure">Yapılandırma</a> · <a href="../CHANGELOG.md">Değişiklik günlüğü</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">Kurulum</a> · <a href="#configure">Yapılandırma</a> · <a href="../CHANGELOG.md">Değişiklik günlüğü</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="Son sürüm"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="Son sürüm"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 Docker yüklü bir Linux veya macOS makinesine (Linux’ta kurulum aracı Docker’ı kurabilir), en az 2 CPU çekirdeğine ve 4 GB belleğe ihtiyacınız var. İmajlar x86-64 ve ARM64 için hazır derlenmiştir.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Ardından `http://<sunucu>:3690` adresini açın ve yönetici hesabını oluşturun.
@@ -116,7 +116,7 @@ Kurulum aracı dili ve TeX Live sürümünü (edition) sorar (ok tuşlarıyla), 
 | `--port 3690` | Başka bir bağlantı noktası |
 | `--version v0.0.1` | Belirli bir sürüm (geliştirme dalı için `main`) |
 | `--build` | İmajları indirmek yerine bu makinede kaynaklardan derler |
-| `--images REGISTRY` | İmajların nereden indirileceği: `aliyun` (Alibaba Cloud’daki aynı imajlar), `ghcr` (`ghcr.io/lewen-cai`) ya da başka bir ghcr.io aynası. Verilmezse kurulum programı ikisinden buradan daha hızlı yanıt vereni kullanır (Docker’ın `registry-mirrors` ayarı ghcr.io için değil, yalnızca Docker Hub için geçerlidir) |
+| `--images REGISTRY` | İmajların nereden indirileceği: `aliyun` (Alibaba Cloud’daki aynı imajlar), `ghcr` (`ghcr.io/coltexeditor`) ya da başka bir ghcr.io aynası. Verilmezse kurulum programı ikisinden buradan daha hızlı yanıt vereni kullanır (Docker’ın `registry-mirrors` ayarı ghcr.io için değil, yalnızca Docker Hub için geçerlidir) |
 
 İnternetten erişilebilen bir sunucuda düz `http://` üzerinden oturum açmayın: `--domain`, Tailscale veya bir Cloudflare tüneli kullanın.
 

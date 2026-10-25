@@ -7,7 +7,7 @@ Em produção, o ColTex usa uma única porta (3690 por padrão): as páginas, a 
 No Linux ou no macOS com Docker, um único comando:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Se o download for interrompido (`curl: (35) Recv failure: Connection reset by peer`, comum quando o GitHub está difícil de acessar), execute o comando de novo.
@@ -24,9 +24,9 @@ As duas têm o TeX Live completo e compilam da mesma forma, e o agente de IA fun
 O acesso remoto (Tailscale, Cloudflare Tunnel) é ativado depois da instalação, em **Configurações → Rede** (veja abaixo). Em instalações automatizadas, opções também podem configurá-lo já na instalação:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 Depois, gerencie-o com `coltex`:

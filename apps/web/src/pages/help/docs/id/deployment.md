@@ -7,7 +7,7 @@ Dalam produksi, ColTex menggunakan satu port (3690 secara bawaan): halaman, API,
 Di Linux atau macOS dengan Docker, cukup satu perintah:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Jika unduhan terputus (`curl: (35) Recv failure: Connection reset by peer`, sering terjadi saat GitHub sulit dijangkau), jalankan perintahnya lagi.
@@ -24,9 +24,9 @@ Keduanya berisi TeX Live lengkap dan mengompilasi dengan sama, dan agen AI beker
 Akses jarak jauh (Tailscale, Cloudflare Tunnel) diaktifkan setelah instalasi, di **Pengaturan → Jaringan** (lihat di bawah). Untuk instalasi lewat skrip, opsi juga dapat menyiapkannya saat instalasi:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 Lalu kelola dengan `coltex`:

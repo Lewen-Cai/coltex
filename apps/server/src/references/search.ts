@@ -121,7 +121,7 @@ export class LiteratureSearch {
   constructor(opts: { fetch?: SearchFetch; version?: string } = {}) {
     this.fetch = opts.fetch ?? ((url, init) => globalThis.fetch(url, init))
     // Crossref asks API users to say who they are.
-    this.userAgent = `ColTex/${opts.version ?? 'dev'} (https://github.com/Lewen-Cai/coltex)`
+    this.userAgent = `ColTex/${opts.version ?? 'dev'} (https://github.com/coltexeditor/coltex)`
   }
 
   search(query: string): Promise<LiteratureSearchResult> {

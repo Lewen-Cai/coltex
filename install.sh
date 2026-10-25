@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Install ColTex on this machine (Linux or macOS) with Docker:
 #
-#   curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
+#   curl -fsSL https://coltexeditor.github.io/install.sh | bash
+#   curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+#
+# (The same file is at https://raw.githubusercontent.com/coltexeditor/coltex/main/install.sh.)
 #
 # Without options, it asks for the language and the TeX Live edition (arrow keys); remote
 # access is turned on later in Settings → Network. Options answer the questions, or replace
@@ -13,7 +15,7 @@
 #   --port PORT             the port (default 3690)
 #   --edition EDITION       standard (default: every package without their manuals, about
 #                           12 GB on disk) or full (with the manuals and sources, about 23 GB)
-#   --repo URL              the Git repository (default: github.com/Lewen-Cai/coltex)
+#   --repo URL              the Git repository (default: github.com/coltexeditor/coltex)
 #   --version VERSION       a release such as v0.0.1 (default: the latest), or main for the
 #                           development branch
 #   --domain HOST           serve it at https://HOST with the bundled Caddy (certificates from
@@ -22,7 +24,7 @@
 #   --cloudflare-quick      afterwards, open a temporary trycloudflare.com address
 #   --cloudflare-token TOK  afterwards, connect a Cloudflare tunnel made in the dashboard
 #   --images REGISTRY       where to download the images from: aliyun (the same images on
-#                           Alibaba Cloud), ghcr (ghcr.io/lewen-cai) or another mirror of
+#                           Alibaba Cloud), ghcr (ghcr.io/coltexeditor) or another mirror of
 #                           ghcr.io. Without it, whichever of the two answers faster from
 #                           here (kept for updates: COLTEX_IMAGES in .env)
 #   --build                 build the images from the sources here instead of downloading
@@ -34,10 +36,10 @@
 set -euo pipefail
 
 # The repository the one-line command points at (COLTEX_REPO overrides it).
-DEFAULT_REPO="${COLTEX_REPO:-https://github.com/Lewen-Cai/coltex.git}"
+DEFAULT_REPO="${COLTEX_REPO:-https://github.com/coltexeditor/coltex.git}"
 # Where the images are: ghcr.io, and the same ones copied to Alibaba Cloud Container Registry
 # for mainland China (the mirror job in .github/workflows/images.yml).
-GHCR_IMAGES="ghcr.io/lewen-cai"
+GHCR_IMAGES="ghcr.io/coltexeditor"
 ALIYUN_IMAGES="crpi-jf7w2fwdvslokqcw.cn-guangzhou.personal.cr.aliyuncs.com/coltex"
 
 DIR="${COLTEX_DIR:-$HOME/coltex}"
@@ -70,7 +72,7 @@ while [ $# -gt 0 ]; do
     --images) IMAGES="${2%/}"; shift 2 ;;
     --build) BUILD=1; shift ;;
     --no-start) START=0; shift ;;
-    -h | --help) sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,35p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -295,6 +297,18 @@ pull_images() {
     note "$(T pull_retry n="$try" max="$PULL_TRIES")"
     sleep 3
   done
+}
+# The repository and its images moved to the coltexeditor organization on GitHub. An install that
+# saved the old addresses gets the new ones: the image registry in .env, and git's origin (GitHub
+# redirects the old one, but only while nobody reuses the name).
+OLD_GHCR_IMAGES="ghcr.io/lewen-cai"
+moved_home() {
+  local url
+  [ "$(get COLTEX_IMAGES)" != "$OLD_GHCR_IMAGES" ] || setting COLTEX_IMAGES "$GHCR_IMAGES"
+  url="$(git remote get-url origin 2>/dev/null || true)"
+  case "$url" in
+    *github.com/[Ll]ewen-[Cc]ai/coltex | *github.com/[Ll]ewen-[Cc]ai/coltex.git) git remote set-url origin "https://github.com/coltexeditor/coltex.git" ;;
+  esac
 }
 # <<< shared
 
@@ -1289,6 +1303,7 @@ get() { grep -E "^$1=" .env 2>/dev/null | tail -1 | cut -d= -f2- || true; }
 setting() {
   if grep -q "^$1=" .env; then sed -i.bak "s|^$1=.*|$1=$2|" .env && rm -f .env.bak; else echo "$1=$2" >>.env; fi
 }
+[ ! -f .env ] || moved_home
 # Where the images come from when neither --images nor an earlier install said: whichever of
 # ghcr.io and Alibaba Cloud answers faster from here (Alibaba Cloud in mainland China, where
 # ghcr.io is slow or cut off). Only the two registries are asked, without the shell's proxy,

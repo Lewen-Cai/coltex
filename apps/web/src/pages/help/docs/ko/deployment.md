@@ -7,7 +7,7 @@
 Docker가 있는 Linux나 macOS에서 명령 하나로 설치합니다.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 다운로드가 중간에 끊기면(`curl: (35) Recv failure: Connection reset by peer`, GitHub에 접속하기 어려울 때 자주 생깁니다) 명령을 다시 실행하세요.
@@ -24,9 +24,9 @@ curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | 
 원격 접속(Tailscale, Cloudflare Tunnel)은 설치 후 **설정 → 네트워크**에서 켭니다(아래 참고). 스크립트로 설치할 때는 옵션으로 설치하면서 함께 켤 수도 있습니다.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --tailscale
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --cloudflare-token <token>
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --tailscale
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --cloudflare-token <token>
+curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.example.org   # a cloud server with its own domain: HTTPS
 ```
 
 그다음 `coltex`로 관리합니다.

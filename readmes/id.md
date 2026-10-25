@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd><b>Bahasa Indonesia</b></kbd></a>
 </p>
 <p align="center">
-  <a href="#install">Instalasi</a> · <a href="#configure">Konfigurasi</a> · <a href="../CHANGELOG.md">Catatan perubahan</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">Instalasi</a> · <a href="#configure">Konfigurasi</a> · <a href="../CHANGELOG.md">Catatan perubahan</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="Rilis terbaru"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="Rilis terbaru"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 Anda memerlukan mesin Linux atau macOS dengan Docker (di Linux, penginstal dapat memasangnya), minimal 2 inti CPU dan memori 4 GB. Image sudah dibuat sebelumnya untuk x86-64 dan ARM64.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Lalu buka `http://<server>:3690` dan buat akun administrator.
@@ -116,7 +116,7 @@ Keduanya berisi semua paket TeX Live dan mengompilasi dokumen yang sama, dan age
 | `--port 3690` | Port lain |
 | `--version v0.0.1` | Rilis tertentu (`main` untuk cabang pengembangan) |
 | `--build` | Bangun image dari kode sumber di mesin ini alih-alih mengunduhnya |
-| `--images REGISTRY` | Tempat mengunduh image: `aliyun` (image yang sama di Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`), atau mirror ghcr.io lainnya. Tanpa opsi ini, penginstal memakai yang lebih cepat merespons dari sini di antara keduanya (`registry-mirrors` milik Docker hanya berlaku untuk Docker Hub, bukan untuk ghcr.io) |
+| `--images REGISTRY` | Tempat mengunduh image: `aliyun` (image yang sama di Alibaba Cloud), `ghcr` (`ghcr.io/coltexeditor`), atau mirror ghcr.io lainnya. Tanpa opsi ini, penginstal memakai yang lebih cepat merespons dari sini di antara keduanya (`registry-mirrors` milik Docker hanya berlaku untuk Docker Hub, bukan untuk ghcr.io) |
 
 Di server yang dapat dijangkau dari internet, jangan masuk melalui `http://` biasa: gunakan `--domain`, Tailscale, atau terowongan Cloudflare.
 

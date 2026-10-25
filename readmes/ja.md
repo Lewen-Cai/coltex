@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">インストール</a> · <a href="#configure">設定</a> · <a href="../CHANGELOG.md">変更履歴</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">インストール</a> · <a href="#configure">設定</a> · <a href="../CHANGELOG.md">変更履歴</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="最新リリース"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="最新リリース"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 Docker の入った Linux または macOS のマシン（Linux ではインストーラーが Docker をセットアップできます）と、2 コア以上の CPU、4 GB 以上のメモリが必要です。イメージは x86-64 と ARM64 向けにビルド済みです。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 その後 `http://<サーバー>:3690` を開き、管理者アカウントを作成します。
@@ -116,7 +116,7 @@ ColTex は、研究グループや研究室、あるいは個人のための Ove
 | `--port 3690` | 別のポート |
 | `--version v0.0.1` | 特定のリリース（開発ブランチは `main`） |
 | `--build` | イメージをダウンロードせず、このマシンでソースからビルドします |
-| `--images REGISTRY` | イメージのダウンロード元：`aliyun`（Alibaba Cloud 上の同じイメージ）、`ghcr`（`ghcr.io/lewen-cai`）、または ghcr.io の別のミラー。指定しない場合、このマシンから応答の速いほうを使います（Docker の `registry-mirrors` は Docker Hub にのみ適用され、ghcr.io には適用されません） |
+| `--images REGISTRY` | イメージのダウンロード元：`aliyun`（Alibaba Cloud 上の同じイメージ）、`ghcr`（`ghcr.io/coltexeditor`）、または ghcr.io の別のミラー。指定しない場合、このマシンから応答の速いほうを使います（Docker の `registry-mirrors` は Docker Hub にのみ適用され、ghcr.io には適用されません） |
 
 インターネットからアクセスできるサーバーでは、暗号化されていない `http://` でログインしないでください。`--domain`、Tailscale、または Cloudflare トンネルを使ってください。
 

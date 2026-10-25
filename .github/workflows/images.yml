@@ -117,6 +117,9 @@ jobs:
   merge:
     needs: build
     runs-on: ubuntu-24.04
+    env:
+      # A Lewen-Cai token with write:packages: the images are also tagged at their old address.
+      LEGACY_TOKEN: ${{ secrets.LEGACY_GHCR_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -173,6 +176,17 @@ jobs:
 
       - name: Inspect
         run: docker buildx imagetools inspect "${IMAGE}:${{ steps.meta.outputs.version }}"
+
+      # The images were at ghcr.io/lewen-cai before the repository moved to the coltexeditor
+      # organization. Installs that haven't updated since still pull from there, and their coltex
+      # only learns the new address from a newer one; until few are left, every tag is also put
+      # there (the same manifests, copied within ghcr.io).
+      - name: Also at the old address
+        if: env.LEGACY_TOKEN != ''
+        run: |
+          echo "$LEGACY_TOKEN" | docker login ghcr.io -u lewen-cai --password-stdin
+          mapfile -t tags < <(jq -r '.tags[] | sub("^ghcr.io/[^/]+/"; "ghcr.io/lewen-cai/") | "-t", .' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          docker buildx imagetools create "${tags[@]}" "${IMAGE}:${{ steps.meta.outputs.version }}"
 
   mirror:
     # The same images on Alibaba Cloud (mirror.yml), once they are on ghcr.io.

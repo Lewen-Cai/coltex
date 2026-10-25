@@ -21,12 +21,12 @@
   <a href="./id.md"><kbd>Bahasa Indonesia</kbd></a>
 </p>
 <p align="center">
-  <a href="#install">Установка</a> · <a href="#configure">Настройка</a> · <a href="../CHANGELOG.md">История изменений</a> · <a href="https://github.com/Lewen-Cai/coltex/issues">Issues</a>
+  <a href="#install">Установка</a> · <a href="#configure">Настройка</a> · <a href="../CHANGELOG.md">История изменений</a> · <a href="https://github.com/coltexeditor/coltex/issues">Issues</a>
 </p>
 <p align="center">
-  <a href="https://github.com/Lewen-Cai/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/Lewen-Cai/coltex?style=flat-square&amp;color=2563eb" alt="Последний выпуск"></a>
+  <a href="https://github.com/coltexeditor/coltex/releases/latest"><img src="https://img.shields.io/github/v/release/coltexeditor/coltex?style=flat-square&amp;color=2563eb" alt="Последний выпуск"></a>
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2563eb?style=flat-square" alt="AGPL-3.0"></a>
-  <a href="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml"><img src="https://github.com/Lewen-Cai/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml"><img src="https://github.com/coltexeditor/coltex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <a id="quick-start"></a>
@@ -35,7 +35,7 @@
 Нужна машина с Linux или macOS и Docker (в Linux установщик может его поставить), не менее 2 ядер ЦП и 4 ГБ памяти. Образы собраны заранее для x86-64 и ARM64.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Lewen-Cai/coltex/main/install.sh | bash
+curl -fsSL https://coltexeditor.github.io/install.sh | bash
 ```
 
 Затем откройте `http://<сервер>:3690` и создайте учётную запись администратора.
@@ -116,7 +116,7 @@ ColTex — альтернатива Overleaf для научной группы,
 | `--port 3690` | Другой порт |
 | `--version v0.0.1` | Конкретный выпуск (`main` — ветка разработки) |
 | `--build` | Собрать образы из исходного кода на этой машине вместо скачивания |
-| `--images REGISTRY` | Откуда скачивать образы: `aliyun` (те же образы в Alibaba Cloud), `ghcr` (`ghcr.io/lewen-cai`) или другое зеркало ghcr.io. Без этого параметра установщик берёт тот из двух, что отвечает отсюда быстрее (`registry-mirrors` в Docker действует только для Docker Hub, а не для ghcr.io) |
+| `--images REGISTRY` | Откуда скачивать образы: `aliyun` (те же образы в Alibaba Cloud), `ghcr` (`ghcr.io/coltexeditor`) или другое зеркало ghcr.io. Без этого параметра установщик берёт тот из двух, что отвечает отсюда быстрее (`registry-mirrors` в Docker действует только для Docker Hub, а не для ghcr.io) |
 
 На сервере, доступном из интернета, не входите по открытому `http://`: используйте `--domain`, Tailscale или туннель Cloudflare.
 
