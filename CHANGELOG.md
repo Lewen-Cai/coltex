@@ -2,6 +2,20 @@
 
 All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTex is at 0.0.x, any release may change things.
 
+## v0.0.6
+
+ColTex moves to the coltexeditor organization on GitHub, and the `coltex` command works in new SSH sessions.
+
+### Improved
+
+- The repository is now github.com/coltexeditor/coltex and the images are at ghcr.io/coltexeditor. Old links keep working, and `coltex update` moves an install's image address and Git remote to the new ones by itself.
+- The short install command is `curl -fsSL https://coltexeditor.github.io/install.sh | bash`.
+- The vulnerability scan lists its findings by image and package, with the fixed version, and keeps the full report with the run.
+
+### Fixed
+
+- After installing, `coltex` wasn't found in new SSH sessions on systems whose login doesn't read `~/.bashrc`. The installer now adds `~/.local/bin` to the files a login reads too, and `coltex update` adds it to installs that had it only in `~/.bashrc`.
+
 ## v0.0.5
 
 Two-step verification, a record of sign-ins and protection against password guessing, renaming projects, security headers, and `coltex update` with the installer's download bar.
