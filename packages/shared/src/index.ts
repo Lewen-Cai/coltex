@@ -993,6 +993,8 @@ export const WordJob = z.object({
   reference: z.string().optional(),
   /** Either a built-in style's id or a project path ending in .csl. */
   csl: z.string().optional(),
+  /** Off for documents whose sections have no numbers (pandoc would number every one). */
+  numberSections: z.boolean().default(true),
 })
 export type WordJob = z.infer<typeof WordJob>
 

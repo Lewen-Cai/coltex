@@ -2,6 +2,7 @@ import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import type { ConvertAnalysis, ConvertReport } from '@coltex/shared'
+import { numbersSections } from '../src/convert/word.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -98,6 +99,8 @@ describe('journal template conversion', () => {
     assert.match(wrapper, /^\\documentclass\{article\}/)
     assert.match(wrapper, /\\author\{Dan Brown.* \\and Eve Chen/)
     assert.match(wrapper, /\\begin\{abstract\}/)
+    assert.ok(wrapper.indexOf('COLTEX-ABSTRACT-HERE') > wrapper.indexOf('\\maketitle'), 'the abstract is placed after the affiliations')
+    assert.equal(job.numberSections, true)
     assert.match(wrapper, /\\bibliography\{refs\}/)
     assert.equal(job.csl, 'ieee', 'IEEEtran references come out numbered')
 
@@ -113,5 +116,13 @@ describe('journal template conversion', () => {
     assert.equal(t.wordJobs.at(-1)!.csl, 'vancouver')
     const missing = await call(viewer, 'POST', `/projects/${projectId}/export/word`, { reference: 'journal.docx' })
     assert.equal(missing.statusCode, 400, 'a Word template must be a file of the project')
+  })
+
+  test('Word export numbers sections only when the document does', () => {
+    assert.equal(numbersSections([], '\\section{Introduction}'), true)
+    assert.equal(numbersSections(['unnumsec', 'webpdf'], '\\section{Introduction}'), false, "OUP's unnumsec")
+    assert.equal(numbersSections([], '\\setcounter{secnumdepth}{0}\n\\section{Introduction}'), false)
+    assert.equal(numbersSections([], '\\section*{Introduction}\n\\section*{Methods}'), false)
+    assert.equal(numbersSections([], '\\section*{Acknowledgements}\n\\section[Intro]{Introduction}'), true)
   })
 })

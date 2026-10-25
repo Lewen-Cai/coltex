@@ -56,7 +56,7 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
       '--from=latex',
       '--to=docx+native_numbering',
       '--standalone',
-      '--number-sections',
+      ...(job.numberSections ? ['--number-sections'] : []),
       '--citeproc',
       `--lua-filter=${path.join(PANDOC_DIR, 'word.lua')}`,
       `--resource-path=.${path.delimiter}${scratch}`,

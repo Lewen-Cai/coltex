@@ -13,6 +13,8 @@ const MAX_TEXT = 4 * 1024 * 1024
 const KEEP_MS = 10 * 60_000
 /** The wrapper pandoc reads, next to the main document so relative paths resolve the same. */
 const WRAPPER = '.coltex-word.tex'
+/** Where the abstract goes; pandoc/word.lua moves it there from Word's title block. */
+const ABSTRACT_MARK = 'COLTEX-ABSTRACT-HERE'
 
 export type WordExportReady = { id: string; warnings: string[] }
 
@@ -67,6 +69,7 @@ export class WordExport {
       overlay: paper ? { [dir + WRAPPER]: wordWrapper(paper) } : {},
       reference,
       csl: csl ?? request.citationStyle ?? (paper ? citationStyleFor(paper) : undefined),
+      numberSections: paper ? numbersSections(paper.classOptions, `${paper.preamble}\n${paper.body}`) : numbersSections([], main),
     })
     this.forgetOld()
     this.ready.set(result.exportId, { projectId: project.id, userId, file: path.join(this.outputsDir, result.file), name: project.name, at: Date.now() })
@@ -125,7 +128,7 @@ export function wordWrapper(paper: Paper): string {
   if (corresponding.length) {
     front.push(`\\noindent\\textsuperscript{*}Corresponding author: ${corresponding.map(a => `${a.name} (\\href{mailto:${a.email}}{${a.email}})`).join('; ')}`)
   }
-  if (paper.keywords.length) front.push(`\\noindent\\textbf{Keywords:} ${paper.keywords.join(', ')}`)
+  const keywords = paper.keywords.length ? `\\noindent\\textbf{Keywords:} ${paper.keywords.join(', ')}` : ''
 
   const bib = paper.bibliography
   const files = bib.kind === 'bibtex' || bib.kind === 'biblatex' ? bib.files : []
@@ -142,14 +145,18 @@ export function wordWrapper(paper: Paper): string {
   const referencesAtEnd = place(BIB_MARK, references)
   return [
     '\\documentclass{article}',
+    // Table rules of journal classes (OUP, Springer Nature) that pandoc doesn't know.
+    '\\providecommand{\\botrule}{\\bottomrule}',
     paper.preamble.trim(),
     ...(bib.kind === 'biblatex' ? files.map(f => `\\addbibresource{${f}}`) : []),
     paper.title ? `\\title{${paper.title}}` : '',
     paper.authors.length ? `\\author{${paper.authors.map(author).join(' \\and ')}}` : '',
     '\\begin{document}',
     '\\maketitle',
-    paper.abstract.trim() ? `\\begin{abstract}\n${paper.abstract.trim()}\n\\end{abstract}` : '',
+    // As on a journal's title page: affiliations under the authors, then the abstract and keywords.
     ...front,
+    paper.abstract.trim() ? `\\begin{abstract}\n${paper.abstract.trim()}\n\\end{abstract}\n\n${ABSTRACT_MARK}` : '',
+    keywords,
     body,
     ackAtEnd,
     referencesAtEnd,
@@ -158,6 +165,13 @@ export function wordWrapper(paper: Paper): string {
   ]
     .filter(Boolean)
     .join('\n\n')
+}
+
+/** Whether the document numbers its sections: not with OUP's unnumsec, secnumdepth 0 or only \section*. */
+export function numbersSections(classOptions: string[], text: string): boolean {
+  if (classOptions.includes('unnumsec')) return false
+  if (/\\setcounter\s*\{secnumdepth\}\s*\{\s*(-\d+|0)\s*\}/.test(text)) return false
+  return !/\\section\*/.test(text) || /\\section\s*(\[[^\]]*\])?\s*\{/.test(text)
 }
 
 /** A built-in citation style like the one the document asks for (its .bst or biblatex style). */

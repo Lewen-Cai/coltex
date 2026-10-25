@@ -93,7 +93,29 @@ local function ref_link(link)
   return link
 end
 
+-- Word's title block puts the abstract right under the authors; the export's wrapper marks
+-- where it goes instead (after the affiliations, as on a journal's title page).
+local ABSTRACT_MARK = 'COLTEX-ABSTRACT-HERE'
+
+local function place_abstract(doc)
+  local at
+  for i, block in ipairs(doc.blocks) do
+    if block.t == 'Para' and pandoc.utils.stringify(block) == ABSTRACT_MARK then at = i break end
+  end
+  if not at then return nil end
+  local abstract = doc.meta.abstract
+  doc.blocks:remove(at)
+  if not abstract then return doc end
+  doc.meta.abstract = nil
+  local kind = pandoc.utils.type(abstract)
+  local blocks = kind == 'Blocks' and abstract or { pandoc.Para(kind == 'Inlines' and abstract or pandoc.utils.stringify(abstract)) }
+  doc.blocks:insert(at, pandoc.Div(pandoc.Blocks(blocks), { ['custom-style'] = 'Abstract' }))
+  doc.blocks:insert(at, pandoc.Div({ pandoc.Para({ pandoc.Str('Abstract') }) }, { ['custom-style'] = 'Abstract Title' }))
+  return doc
+end
+
 return {
   { Image = Image, Math = number_math },
   { Link = ref_link },
+  { Pandoc = place_abstract },
 }
