@@ -99,3 +99,13 @@ jobs:
             if [ "$count" = 0 ]; then echo "No known vulnerabilities with a fix."; else echo '```'; cat report.txt; echo '```'; fi
           } >> "$GITHUB_STEP_SUMMARY"
           if [ "$count" != 0 ]; then echo "::warning title=${{ matrix.name }}::${count} vulnerabilities with a fix in ${image}"; fi
+          # The same in the log (the summary can't be read through the API): per target, then per
+          # package and the version that fixes it.
+          jq -r '.Results[]? | select(.Vulnerabilities) | "\(.Vulnerabilities | length)\t\(.Target) (\(.Type))"' report.json | sort -rn
+          jq -r '.Results[]?.Vulnerabilities[]? | "\(.PkgName) \(.InstalledVersion) -> \(.FixedVersion)"' report.json | sort | uniq -c | sort -rn
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: trivy-${{ matrix.name }}${{ matrix.suffix }}
+          path: report.json
+          retention-days: 30
