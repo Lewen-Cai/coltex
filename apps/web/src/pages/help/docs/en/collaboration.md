@@ -8,11 +8,19 @@ Click **Share** at the top right of the editor:
 - People without an account first need an invitation link from an admin or the system admin; see [Administration](#/help/admin).
 - Change roles, transfer ownership or remove people in the member list. Only the owner manages members.
 
+### Sharing with a group
+
+The owner can share a project with a group they are in: in **Share**, type part of the group's name, pick it (groups are listed before people), choose a role and click **+**.
+
+- Everyone who has joined the group gets that role. People who join the group later get it too; people who leave lose it.
+- The group is listed with its number of members and its role, which is changed there; its ⋯ menu has **Stop sharing**.
+- Its members show in the member list as "through" the group. Their role comes from the group; to give one of them another role, add them by hand, which takes them out of the group's hands.
+
 ### Roles
 
 | Role | Can |
 | --- | --- |
-| Owner | Everything, including members, deleting the project and publishing it as a template |
+| Owner | Everything, including members and deleting the project; administrators can also publish it as a template |
 | Editor | Edit and manage files, accept or reject suggestions |
 | Reviewer | Change text only as tracked suggestions; comment |
 | Viewer | Read, compile, download, comment |
@@ -45,4 +53,4 @@ In the Review panel, turn track changes on for everyone or for some people. Edit
 
 ## Notifications
 
-Mentions in chat or comments, replies to your comments and being added to a project show up in **Notifications**, with an unread count in the sidebar. They are in ColTex only; no email.
+Mentions in chat or comments, replies to your comments, being added to a project and invitations to groups show up in **Notifications**, with an unread count in the sidebar. They are in ColTex only; no email.

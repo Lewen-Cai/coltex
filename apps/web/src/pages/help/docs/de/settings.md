@@ -5,8 +5,19 @@ Klicken Sie unten links auf Ihren Avatar und wählen Sie **Einstellungen**.
 - **Konto**: Ihr Anzeigename (sichtbar für Mitwirkende, in Kommentaren und im Verlauf), die Farbe Ihres Avatars (auch Ihr Cursor im Editor; **Automatisch** ist die von ColTex gewählte) und Ihr Passwort. Beim Ändern des Passworts können Sie Ihre anderen Geräte abmelden. Passwörter brauchen mindestens 8 Zeichen mit einem Großbuchstaben, einem Kleinbuchstaben und einer Ziffer; Sonderzeichen sind optional. Die beim Tippen angezeigte Bewertung (schwach, mittel, gut, stark) steigt mit Länge und Sonderzeichen. Für die Registrierung und das Zurücksetzen durch Admins gelten dieselben Regeln. Ihre Anmelde-E-Mail kann nur ein Administrator ändern. Die Bestätigung in zwei Schritten und Ihre Anmeldeaktivität finden Sie ebenfalls auf dieser Seite (siehe unten).
 - **Darstellung**: das Design (Hell und Dunkel in Blau, Wald und Moos in Grün, Lavendel und Pflaume in Violett; standardmäßig Hell) und die Sprache der Oberfläche (14 Sprachen, darunter English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français und Deutsch; anfangs die Sprache Ihres Browsers). Dunkle Designs gelten auch für den Editor; PDF-Seiten bleiben weiß. Das Design wird mit Ihrem Konto gespeichert und folgt Ihnen daher in andere Browser (die Anmeldeseite verwendet immer Hell); die Sprache wird in diesem Browser gespeichert.
 - **Synchronisierung**: Ihr Zotero-Konto verbinden (siehe [Literatur](#/help/references)) sowie Git-Tokens erstellen und widerrufen (siehe [Dateien](#/help/files)): jedes für Git, MCP oder beides, mit Lese- und Schreibzugriff oder schreibgeschützt, für alle Ihre Projekte oder einige, mit Ablaufdatum. Verwenden Sie ein Token pro Computer, damit Sie es einzeln widerrufen können.
+- **Gruppen**: die Gruppen, in denen Sie sind, offene Einladungen und neue Gruppen; siehe unten.
 - **KI-Agent**: Ihre KI-Nutzung der letzten 7, 30 oder 90 Tage (Anfragen, Tokens, Kosten, pro Tag und pro Modell) und was von Ihrem Limit übrig ist (wenn Sie den KI-Agenten nutzen können), was KI-Agenten für Sie ändern dürfen (**Berechtigungen**) und die Anbindung Ihrer eigenen KI-Agenten über **MCP** mit ihren Tokens; siehe [KI-Agent](#/help/ai).
 - **KI-Skills** (wenn Sie den KI-Agenten nutzen können): Ihre eigenen Skills, die integrierten und ein Chat mit dem KI-Agenten zum Schreiben von Skills; siehe [KI-Agent](#/help/ai).
+
+## Gruppen
+
+**Einstellungen → Gruppen** listet die Gruppen, in denen Sie sind. Ein Projekt lässt sich mit einer ganzen Gruppe teilen (siehe [Zusammenarbeit](#/help/collaboration)), und Administratoren teilen Vorlagen mit Gruppen (siehe [Vorlagen](#/help/templates)).
+
+- Jeder kann eine Gruppe erstellen: **Gruppe erstellen** und einen Namen geben. Sie sind dann ihr Eigentümer.
+- Eigentümer laden mit **Jemanden per Name oder E-Mail einladen** jeden ein, der auf diesem Server ein Konto hat. Die Person bekommt eine Benachrichtigung und tritt unter **Einladungen** auf dieser Seite mit **Beitreten** bei oder lehnt mit **Ablehnen** ab. Bis dahin steht sie als **Eingeladen** in der Liste, und der Eigentümer kann **Einladung zurückziehen**.
+- Im ⋯-Menü eines Mitglieds können Eigentümer es **Zum Eigentümer machen** (oder **Zum Mitglied machen**) und **Entfernen**. Das ⋯-Menü der Gruppe hat **Umbenennen** und **Gruppe löschen** für Eigentümer sowie **Gruppe verlassen**.
+- Eine Gruppe hat immer einen Eigentümer: Der letzte macht vor dem Verlassen jemand anderen zum Eigentümer oder löscht die Gruppe.
+- Wer eine Gruppe verlässt, entfernt wird oder deren Gruppe gelöscht wird, verliert die mit ihr geteilten Projekte, außer denen, zu denen er einzeln hinzugefügt wurde.
 
 ## Bestätigung in zwei Schritten
 

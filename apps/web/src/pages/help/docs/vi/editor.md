@@ -51,7 +51,7 @@ Cắt, sao chép, dán, chọn tất cả, xóa, đến vị trí trong PDF và 
 - **Giao diện**: cỡ chữ, phông chữ (đơn cách hoặc không chân), chiều cao dòng, **Màu mã** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark và nhiều hơn nữa, chỉ ở chế độ mã), đường dẫn điều hướng;
 - **Soạn thảo**: tổ hợp phím (mặc định, Vim hoặc Emacs) và các công tắc cho kiểm tra mã, xem trước công thức, tự động đóng ngoặc và tự động hoàn thành;
 - **Phím tắt**: xem bên dưới;
-- **Thao tác**: đếm từ, sao chép, chuyển đổi mẫu, xuất bản thành mẫu.
+- **Thao tác**: đếm từ, sao chép, xuất sang Word, chuyển đổi mẫu, xuất bản thành mẫu.
 
 Giao diện, soạn thảo và phím tắt là của riêng bạn, được lưu trong trình duyệt này, cho mọi dự án.
 

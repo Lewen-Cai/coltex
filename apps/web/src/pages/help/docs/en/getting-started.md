@@ -6,19 +6,24 @@ ColTex is a collaborative LaTeX editor running on your own server. It works much
 
 Click **New project** at the top left, give it a name and pick a template:
 
-| Template | Class |
+| Field | Templates |
 | --- | --- |
-| Blank article | The standard `article`, the simplest start |
-| arXiv preprint | `article`, one column, authors with affiliations (authblk), natbib references |
-| IEEE conference / IEEE journal | `IEEEtran` in conference / journal mode |
-| ACM conference / ACM journal | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, for LNCS and other Springer proceedings |
-| Elsevier journal | `elsarticle`, one-column preprint |
-| APS (REVTeX 4.2) | `revtex4-2`, for Physical Review and AIP journals |
+| General | Blank article, arXiv preprint, Elsevier journal, Elsevier journal (author–year), Elsevier journal (two columns), Elsevier CAS journal (two columns), Nature, Review article, Short communication |
+| Computing & electrical engineering | IEEE conference, IEEE journal, IEEE Computer Society conference, IEEE Computer Society journal, IEEE Communications Society journal, ACM conference, ACM journal, ACM submission (anonymous), ACM SIGPLAN conference, ACM Transactions on Graphics, Springer LNCS, PMLR proceedings |
+| Engineering | ASME conference, ASCE journal, AIAA conference paper, SPIE proceedings |
+| Physics | APS (REVTeX 4.2), Physical Review Letters, AIP journal, Journal of the Physical Society of Japan, JACoW conference paper |
+| Astronomy | AAS journals (AASTeX), Monthly Notices of the RAS |
+| Chemistry | ACS journal article, ACS letter |
+| Life sciences | Life sciences research article, Bioinformatics application note |
+| Medicine | Clinical trial report, Clinical trial protocol, Observational study, Diagnostic accuracy study, Systematic review and meta-analysis, Case report, Medical research letter, Elsevier CAS journal, Oxford University Press journal |
+| Mathematics & statistics | AMS article, AMS proceedings, Annals of Mathematics, Statistics methods article |
+| Economics | Economics paper (AEA style), Econometrics paper |
+| Social sciences & humanities | APA 7 manuscript, APA 7 journal layout, APA 7 student paper, Humanities article (Chicago notes), Literature essay (MLA), Law article (OSCOLA) |
+| Earth & environment | Geoscience article (AGU style), Ecology field study, Canadian Science Publishing journal |
 
-Apart from the blank article, each comes with an abstract, keywords, an equation, a figure, a table and a `references.bib`, and builds as it is. The classes are the official ones that ship with TeX Live. Conferences that publish new style files every year (NeurIPS, ICML) aren't in TeX Live: upload that year's files to a project and publish it as a template.
+Apart from the blank article, each comes with an abstract, example sections and a `references.bib`, and builds as it is. The classes are the official ones that ship with TeX Live. Many well-known journal and conference templates aren't built in; [Templates](#/help/templates) says why and how to add them.
 
-Projects that people published as templates (a group's thesis format, say) are listed under "Shared on this server".
+The buttons above the templates show those of one field. Templates shared with you (a group's thesis format, say) are in the same list, tagged with who shared them; see [Templates](#/help/templates).
 
 New projects compile with **Automatic**: the engine is picked at each build from the document; see [Compiling and the PDF](#/help/compiling).
 

@@ -8,11 +8,19 @@ Düzenleyicinin sağ üstündeki **Paylaş** düğmesine tıklayın:
 - Hesabı olmayan kişilerin önce bir yöneticiden veya sistem yöneticisinden davet bağlantısı alması gerekir; bkz. [Yönetim](#/help/admin).
 - Üye listesinde rolleri değiştirebilir, sahipliği devredebilir veya kişileri çıkarabilirsiniz. Üyeleri yalnızca sahip yönetir.
 
+### Bir grupla paylaşmak
+
+Sahip, projeyi üyesi olduğu bir grupla paylaşabilir: **Paylaş** içinde grubun adının bir kısmını yazın, grubu seçin (gruplar kişilerden önce listelenir), bir rol seçin ve **+** düğmesine tıklayın.
+
+- Gruba katılmış herkes bu rolü alır. Sonradan katılanlar da alır; ayrılanlar kaybeder.
+- Grup, üye sayısı ve rolüyle listelenir; rol orada değiştirilir. ⋯ menüsünde **Paylaşımı durdur** vardır.
+- Üyeleri, üye listesinde grup "üzerinden" görünür. Rollerini grup belirler; birine farklı bir rol vermek için onu tek tek ekleyin, böylece grubun değişiklikleri onu artık etkilemez.
+
 ### Roller
 
 | Rol | Yapabilecekleri |
 | --- | --- |
-| Sahip | Her şey; üyeler, projeyi silme ve şablon olarak yayımlama dahil |
+| Sahip | Her şey; üyeler ve projeyi silmek dahil. Yöneticiler projeyi şablon olarak da yayımlayabilir |
 | Düzenleyici | Dosyaları düzenleme ve yönetme, önerileri kabul etme veya reddetme |
 | İnceleyici | Metni yalnızca izlenen öneriler olarak değiştirme; yorum yapma |
 | Görüntüleyici | Okuma, derleme, indirme, yorum yapma |
@@ -45,4 +53,4 @@ Sol çubuktaki **Sohbet**, projenin sohbetidir:
 
 ## Bildirimler
 
-Sohbette veya yorumlarda sizden bahsedilmesi, yorumlarınıza gelen yanıtlar ve bir projeye eklenmeniz **Bildirimler** sayfasında görünür; okunmamışların sayısı kenar çubuğunda gösterilir. Bildirimler yalnızca ColTex içindedir; e-posta gönderilmez.
+Sohbet veya yorumlardaki anmalar, yorumlarınıza gelen yanıtlar, bir projeye eklenmeniz ve grup davetleri **Bildirimler** bölümünde görünür; okunmamış sayısı kenar çubuğundadır. Yalnızca ColTex içindedir; e-posta yoktur.

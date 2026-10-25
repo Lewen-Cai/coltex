@@ -8,11 +8,19 @@ Cliquez sur **Partager** en haut à droite de l’éditeur :
 - Les personnes sans compte ont d’abord besoin d’un lien d’invitation d’un administrateur ou de l’administrateur système ; voir [Administration](#/help/admin).
 - Changez les rôles, transférez la propriété ou retirez des personnes dans la liste des membres. Seul le propriétaire gère les membres.
 
+### Partager avec un groupe
+
+Le propriétaire peut partager un projet avec un groupe dont il fait partie : dans **Partager**, tapez une partie du nom du groupe, choisissez-le (les groupes sont listés avant les personnes), choisissez un rôle et cliquez sur **+**.
+
+- Tous ceux qui ont rejoint le groupe reçoivent ce rôle. Ceux qui le rejoignent plus tard aussi ; ceux qui le quittent le perdent.
+- Le groupe apparaît avec son nombre de membres et son rôle, qui se change là ; son menu ⋯ propose **Arrêter le partage**.
+- Ses membres figurent dans la liste « via » le groupe. Leur rôle vient du groupe ; pour donner un autre rôle à l’un d’eux, ajoutez-le individuellement, et les changements du groupe ne le concernent plus.
+
 ### Rôles
 
 | Rôle | Peut |
 | --- | --- |
-| Propriétaire | Tout, y compris gérer les membres, supprimer le projet et le publier comme modèle |
+| Propriétaire | Tout, y compris les membres et la suppression du projet ; les administrateurs peuvent aussi le publier comme modèle |
 | Éditeur | Modifier et gérer les fichiers, accepter ou refuser les suggestions |
 | Relecteur | Modifier le texte uniquement par des suggestions suivies ; commenter |
 | Lecteur | Lire, compiler, télécharger, commenter |
@@ -45,4 +53,4 @@ Dans le panneau Relecture, activez le suivi des modifications pour tout le monde
 
 ## Notifications
 
-Les mentions dans la discussion ou les commentaires, les réponses à vos commentaires et l’ajout à un projet apparaissent dans **Notifications**, avec le nombre de non lues dans la barre latérale. Elles restent dans ColTex ; aucun e-mail.
+Les mentions dans le chat ou les commentaires, les réponses à vos commentaires, votre ajout à un projet et les invitations à des groupes apparaissent dans **Notifications**, avec le nombre de non-lues dans la barre latérale. Elles restent dans ColTex ; pas d’e-mail.

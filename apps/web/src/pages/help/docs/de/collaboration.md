@@ -8,11 +8,19 @@ Klicken Sie oben rechts im Editor auf **Teilen**:
 - Personen ohne Konto brauchen zuerst einen Einladungslink von einem Admin oder dem Systemadmin; siehe [Verwaltung](#/help/admin).
 - In der Mitgliederliste ändern Sie Rollen, übertragen das Eigentum oder entfernen Personen. Nur der Eigentümer verwaltet die Mitglieder.
 
+### Mit einer Gruppe teilen
+
+Der Eigentümer kann ein Projekt mit einer Gruppe teilen, in der er ist: In **Teilen** einen Teil des Gruppennamens eingeben, die Gruppe wählen (Gruppen stehen vor Personen), eine Rolle wählen und auf **+** klicken.
+
+- Alle, die der Gruppe beigetreten sind, bekommen diese Rolle. Wer später beitritt, bekommt sie auch; wer austritt, verliert sie.
+- Die Gruppe steht mit ihrer Mitgliederzahl und ihrer Rolle in der Liste, die Rolle wird dort geändert; ihr ⋯-Menü hat **Nicht mehr teilen**.
+- Ihre Mitglieder stehen in der Mitgliederliste mit „über“ der Gruppe. Ihre Rolle kommt von der Gruppe; um einem von ihnen eine andere Rolle zu geben, fügen Sie ihn einzeln hinzu, dann betreffen ihn Änderungen der Gruppe nicht mehr.
+
 ### Rollen
 
 | Rolle | Darf |
 | --- | --- |
-| Eigentümer | Alles, einschließlich Mitgliederverwaltung, Löschen des Projekts und Veröffentlichen als Vorlage |
+| Eigentümer | Alles, auch Mitglieder verwalten und das Projekt löschen; Administratoren können es auch als Vorlage veröffentlichen |
 | Bearbeiter | Dateien bearbeiten und verwalten, Vorschläge annehmen oder ablehnen |
 | Prüfer | Text nur als nachverfolgte Vorschläge ändern; kommentieren |
 | Betrachter | Lesen, kompilieren, herunterladen, kommentieren |
@@ -45,4 +53,4 @@ Schalten Sie im Bereich Prüfen das Nachverfolgen von Änderungen für alle oder
 
 ## Benachrichtigungen
 
-Erwähnungen im Chat oder in Kommentaren, Antworten auf Ihre Kommentare und das Hinzufügen zu einem Projekt erscheinen unter **Benachrichtigungen**, mit der Zahl der ungelesenen in der Seitenleiste. Sie gibt es nur in ColTex; keine E-Mails.
+Erwähnungen im Chat oder in Kommentaren, Antworten auf Ihre Kommentare, das Hinzufügen zu einem Projekt und Einladungen in Gruppen erscheinen unter **Benachrichtigungen**, mit der Zahl der ungelesenen in der Seitenleiste. Sie bleiben in ColTex; keine E-Mails.

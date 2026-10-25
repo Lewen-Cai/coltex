@@ -6,19 +6,24 @@ ColTex adalah editor LaTeX kolaboratif yang berjalan di server Anda sendiri. Car
 
 Klik **Proyek baru** di kiri atas, beri nama, lalu pilih templat:
 
-| Templat | Kelas |
+| Bidang | Templat |
 | --- | --- |
-| Artikel kosong | `article` standar, awal yang paling sederhana |
-| Pracetak arXiv | `article`, satu kolom, penulis dengan afiliasi (authblk), referensi natbib |
-| Konferensi IEEE / Jurnal IEEE | `IEEEtran` dalam mode konferensi / jurnal |
-| Konferensi ACM / Jurnal ACM | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, untuk LNCS dan prosiding Springer lainnya |
-| Jurnal Elsevier | `elsarticle`, pracetak satu kolom |
-| APS (REVTeX 4.2) | `revtex4-2`, untuk jurnal Physical Review dan AIP |
+| Umum | Artikel kosong, Pracetak arXiv, Jurnal Elsevier, Jurnal Elsevier (penulis–tahun), Jurnal Elsevier (dua kolom), Jurnal Elsevier CAS (dua kolom), Nature, Artikel ulasan, Komunikasi singkat |
+| Komputer dan teknik elektro | Konferensi IEEE, Jurnal IEEE, Konferensi IEEE Computer Society, Jurnal IEEE Computer Society, Jurnal IEEE Communications Society, Konferensi ACM, Jurnal ACM, Kiriman ACM (anonim), Konferensi ACM SIGPLAN, ACM Transactions on Graphics, Springer LNCS, Prosiding PMLR |
+| Teknik | Konferensi ASME, Jurnal ASCE, Makalah konferensi AIAA, Prosiding SPIE |
+| Fisika | APS (REVTeX 4.2), Physical Review Letters, Jurnal AIP, Journal of the Physical Society of Japan, Makalah konferensi JACoW |
+| Astronomi | Jurnal AAS (AASTeX), Monthly Notices of the RAS |
+| Kimia | Artikel jurnal ACS, Letter ACS |
+| Ilmu hayati | Artikel penelitian ilmu hayati, Catatan aplikasi bioinformatika |
+| Kedokteran | Laporan uji klinis, Protokol uji klinis, Studi observasional, Studi akurasi diagnostik, Tinjauan sistematis dan meta-analisis, Laporan kasus, Surat penelitian medis, Jurnal Elsevier CAS, Jurnal Oxford University Press |
+| Matematika dan statistika | Artikel AMS, Prosiding AMS, Annals of Mathematics, Artikel metode statistik |
+| Ekonomi | Makalah ekonomi (gaya AEA), Makalah ekonometrika |
+| Ilmu sosial dan humaniora | Naskah APA 7, Tata letak jurnal APA 7, Makalah mahasiswa APA 7, Artikel humaniora (catatan Chicago), Esai sastra (MLA), Artikel hukum (OSCOLA) |
+| Bumi dan lingkungan | Artikel geosains (gaya AGU), Studi lapangan ekologi, Jurnal Canadian Science Publishing |
 
-Selain artikel kosong, setiap templat dilengkapi abstrak, kata kunci, persamaan, gambar, tabel, dan `references.bib`, dan dapat langsung dikompilasi apa adanya. Kelas-kelasnya adalah kelas resmi yang disertakan dalam TeX Live. Konferensi yang menerbitkan file gaya baru setiap tahun (NeurIPS, ICML) tidak ada di TeX Live: unggah file tahun itu ke sebuah proyek dan terbitkan sebagai templat.
+Kecuali artikel kosong, setiap templat berisi abstrak, contoh bagian, dan `references.bib`, dan langsung bisa dikompilasi. Kelasnya adalah kelas resmi yang disertakan TeX Live. Banyak templat jurnal dan konferensi terkenal tidak disertakan; [Templat](#/help/templates) menjelaskan alasannya dan cara menambahkannya.
 
-Proyek yang diterbitkan orang sebagai templat (misalnya format tesis sebuah kelompok) tercantum di bawah "Dibagikan di server ini".
+Tombol di atas templat menampilkan templat satu bidang. Templat yang dibagikan dengan Anda (misalnya format tesis sebuah grup) ada di daftar yang sama, dengan label siapa yang membagikannya; lihat [Templat](#/help/templates).
 
 Proyek baru dikompilasi dengan **Otomatis**: mesin dipilih pada setiap kompilasi berdasarkan dokumennya; lihat [Kompilasi dan PDF](#/help/compiling).
 

@@ -51,7 +51,7 @@ Recortar, copiar, colar, selecionar tudo, excluir, ir para o PDF e adicionar um 
 - **Aparência**: tamanho da fonte, fonte (monoespaçada ou sem serifa), altura da linha, **Cores do código** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark e outras, só no modo código), trilha de navegação;
 - **Edição**: atalhos de teclas (padrão, Vim ou Emacs) e chaves para a verificação de código, a pré-visualização de equações, o fechamento automático de parênteses e o preenchimento automático;
 - **Atalhos de teclado**: veja abaixo;
-- **Ações**: contagem de palavras, cópia, conversão de modelo, publicação como modelo.
+- **Ações**: contagem de palavras, cópia, exportação para o Word, conversão de modelo, publicação como modelo.
 
 Aparência, edição e atalhos são seus, guardados neste navegador, para todos os projetos.
 

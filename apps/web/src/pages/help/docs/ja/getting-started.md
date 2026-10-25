@@ -6,19 +6,24 @@ ColTex は、自分たちのサーバーで動く共同編集型の LaTeX エデ
 
 左上の **新規プロジェクト** をクリックし、名前を付けてテンプレートを選びます。
 
-| テンプレート | クラス |
+| 分野 | テンプレート |
 | --- | --- |
-| 空の論文 | 標準の `article`。最もシンプルな出発点 |
-| arXiv プレプリント | `article`、1 段組、所属付きの著者（authblk）、natbib による参考文献 |
-| IEEE 会議 / IEEE ジャーナル | `IEEEtran` の会議モード / ジャーナルモード |
-| ACM 会議 / ACM ジャーナル | `acmart` の sigconf / acmsmall |
-| Springer LNCS | `llncs`。LNCS およびその他の Springer 論文集向け |
-| Elsevier ジャーナル | `elsarticle`、1 段組のプレプリント |
-| APS (REVTeX 4.2) | `revtex4-2`。Physical Review および AIP のジャーナル向け |
+| 一般 | 空の論文、arXiv プレプリント、Elsevier ジャーナル、Elsevier ジャーナル（著者–年）、Elsevier ジャーナル（2 段組）、Elsevier CAS ジャーナル（2 段組）、Nature、レビュー論文、短報 |
+| コンピュータ・電気電子工学 | IEEE 会議、IEEE ジャーナル、IEEE Computer Society 会議、IEEE Computer Society ジャーナル、IEEE Communications Society ジャーナル、ACM 会議、ACM ジャーナル、ACM 投稿（匿名）、ACM SIGPLAN 会議、ACM Transactions on Graphics、Springer LNCS、PMLR 会議録 |
+| 工学 | ASME 会議、ASCE ジャーナル、AIAA 会議論文、SPIE プロシーディングス |
+| 物理学 | APS (REVTeX 4.2)、Physical Review Letters、AIP ジャーナル、日本物理学会誌（JPSJ）、JACoW 会議論文 |
+| 天文学 | AAS ジャーナル（AASTeX）、Monthly Notices of the RAS |
+| 化学 | ACS ジャーナル論文、ACS レター |
+| 生命科学 | 生命科学の研究論文、バイオインフォマティクスのアプリケーションノート |
+| 医学 | 臨床試験報告、臨床試験プロトコル、観察研究、診断精度研究、システマティックレビューとメタアナリシス、症例報告、医学研究レター、Elsevier CAS ジャーナル、オックスフォード大学出版局のジャーナル |
+| 数学・統計学 | AMS 論文、AMS プロシーディングス、Annals of Mathematics、統計手法の論文 |
+| 経済学 | 経済学論文（AEA 形式）、計量経済学論文 |
+| 社会科学・人文学 | APA 7 原稿、APA 7 ジャーナルレイアウト、APA 7 学生レポート、人文学の論文（シカゴ注）、文学エッセイ（MLA）、法学論文（OSCOLA） |
+| 地球・環境 | 地球科学の論文（AGU 形式）、生態学の野外調査、Canadian Science Publishing のジャーナル |
 
-空の論文以外は、要旨、キーワード、数式、図、表、`references.bib` が入っており、そのままビルドできます。クラスはすべて TeX Live に含まれる公式のものです。毎年新しいスタイルファイルを公開する会議（NeurIPS、ICML）は TeX Live に含まれていません。その年のファイルをプロジェクトにアップロードし、テンプレートとして公開してください。
+白紙の article 以外は、要旨、例となるセクション、`references.bib` が付いていて、そのままビルドできます。クラスはどれも TeX Live に含まれる公式のものです。よく知られたジャーナルや会議のテンプレートには組み込まれていないものも多く、その理由と追加方法は [テンプレート](#/help/templates) にあります。
 
-ユーザーがテンプレートとして公開したプロジェクト（研究室の学位論文の書式など）は、「このサーバーで共有」の下に表示されます。
+テンプレートの上のボタンで一つの分野のテンプレートだけを表示します。あなたと共有されたテンプレート（研究室の論文書式など）も同じ一覧にあり、誰が共有したかがタグで分かります。[テンプレート](#/help/templates) を参照してください。
 
 新規プロジェクトは **自動** でコンパイルされます。エンジンはビルドのたびに文書から選ばれます。[コンパイルと PDF](#/help/compiling) を参照してください。
 

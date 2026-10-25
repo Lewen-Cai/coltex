@@ -6,19 +6,24 @@ ColTex 是執行在你自己伺服器上的協作式 LaTeX 編輯器。用起來
 
 按一下左上角的 **新增專案**，輸入名稱並選擇範本：
 
-| 範本 | 文件類別 |
+| 領域 | 範本 |
 | --- | --- |
-| 空白文章 | 標準 `article`，最簡單的起點 |
-| arXiv 預印本 | `article`，單欄，作者與所屬機構（authblk），natbib 參考文獻 |
-| IEEE 會議 / IEEE 期刊 | `IEEEtran` 的會議 / 期刊模式 |
-| ACM 會議 / ACM 期刊 | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`，適用於 LNCS 及其他 Springer 會議論文集 |
-| Elsevier 期刊 | `elsarticle`，單欄預印本 |
-| APS (REVTeX 4.2) | `revtex4-2`，適用於 Physical Review 和 AIP 期刊 |
+| 通用 | 空白文章、arXiv 預印本、Elsevier 期刊、Elsevier 期刊（作者–年份）、Elsevier 期刊（雙欄）、Elsevier CAS 期刊（雙欄）、Nature、綜述文章、短篇通訊 |
+| 電腦與電子工程 | IEEE 會議、IEEE 期刊、IEEE 電腦學會會議、IEEE 電腦學會期刊、IEEE 通訊學會期刊、ACM 會議、ACM 期刊、ACM 投稿（匿名）、ACM SIGPLAN 會議、ACM Transactions on Graphics、Springer LNCS、PMLR 會議論文集 |
+| 工程 | ASME 會議、ASCE 期刊、AIAA 會議論文、SPIE 會議論文集 |
+| 物理 | APS (REVTeX 4.2)、Physical Review Letters、AIP 期刊、日本物理學會誌（JPSJ）、JACoW 會議論文 |
+| 天文 | AAS 期刊（AASTeX）、Monthly Notices of the RAS |
+| 化學 | ACS 期刊論文、ACS 快報 |
+| 生命科學 | 生命科學研究論文、生物資訊應用說明 |
+| 醫學 | 臨床試驗報告、臨床試驗計畫書、觀察性研究、診斷準確性研究、系統性回顧與統合分析、病例報告、醫學研究快報、Elsevier CAS 期刊、牛津大學出版社期刊 |
+| 數學與統計 | AMS 論文、AMS 會議論文集、Annals of Mathematics、統計方法論文 |
+| 經濟 | 經濟學論文（AEA 格式）、計量經濟學論文 |
+| 社會科學與人文 | APA 7 稿件、APA 7 期刊版式、APA 7 學生報告、人文學科論文（芝加哥註釋）、文學論文（MLA）、法學論文（OSCOLA） |
+| 地球與環境 | 地球科學論文（AGU 格式）、生態學野外研究、加拿大科學出版社期刊 |
 
-除了空白文章，每個範本都附有摘要、關鍵字、一個公式、一張圖、一個表格和一份 `references.bib`，不做任何修改就能編譯。這些文件類別都是 TeX Live 內附的官方版本。每年都會發佈新樣式檔的會議（NeurIPS、ICML）不在 TeX Live 中：請把當年的檔案上傳到一個專案，再將它發佈為範本。
+除空白文章外，每個範本都附有摘要、範例章節和 `references.bib`，可以直接編譯。這些文件類別都是 TeX Live 內建的官方版本。不少知名期刊和會議的範本沒有內建，原因和新增方法見 [範本](#/help/templates)。
 
-其他人發佈為範本的專案（例如實驗室的學位論文格式）會列在「本站共用的範本」之下。
+範本上方的按鈕只顯示某個領域的範本。與你共用的範本（例如研究群的論文格式）也在同一個清單裡，標籤寫明是誰共用的；見 [範本](#/help/templates)。
 
 新專案的編譯器是 **自動**：每次編譯時依文件內容選擇引擎；請見 [編譯與 PDF](#/help/compiling)。
 

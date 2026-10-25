@@ -51,7 +51,7 @@ Couper, copier, coller, tout sélectionner, supprimer, aller au PDF et ajouter u
 - **Apparence** : taille de police, police (chasse fixe ou sans empattement), interligne, **Couleurs du code** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark et d’autres, en mode code uniquement), fil d’Ariane ;
 - **Édition** : raccourcis (par défaut, Vim ou Emacs) et interrupteurs pour la vérification du code, l’aperçu des équations, la fermeture automatique des parenthèses et la saisie semi-automatique ;
 - **Raccourcis clavier** : voir ci-dessous ;
-- **Actions** : nombre de mots, copie, conversion de modèle, publication comme modèle.
+- **Actions** : nombre de mots, copie, export vers Word, conversion de modèle, publication comme modèle.
 
 L’apparence, l’édition et les raccourcis vous sont propres, conservés dans ce navigateur, pour tous les projets.
 

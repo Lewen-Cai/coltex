@@ -4,17 +4,32 @@ All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTe
 
 ## v0.0.6
 
-ColTex moves to the coltexeditor organization on GitHub, and the `coltex` command works in new SSH sessions.
+Export to Word, 60 templates across twelve fields, groups, templates shared with groups, a better conversion between journal templates, a compiler that keeps up when several people build at once and keeps each project's builds apart. ColTex also moves to the coltexeditor organization on GitHub.
+
+### New
+
+- **Export to Word**: a project's menu and the project settings have Export to Word…, which turns the paper into a .docx with pandoc. The title page comes from the document (title, authors, affiliations, corresponding author, abstract, keywords) for the journal classes the converter reads; maths become Word equations; figures, tables and equations are numbered; PDF and EPS figures become pictures. Citation styles: like the document, APA, Vancouver, AMA, IEEE, Nature, Chicago, or a .csl file in the project; a journal's Word template (.docx) in the project can give the styles.
+- 60 built-in templates across twelve fields (general; computing and electrical engineering; engineering; physics; astronomy; chemistry; life sciences; medicine; mathematics and statistics; economics; social sciences and humanities; earth and environment), with separate templates where one class serves several kinds of venue (Elsevier, IEEE, ACM, REVTeX, APA 7, ACS). For medicine: clinical study (CONSORT), trial protocol (SPIRIT), observational study (STROBE), diagnostic accuracy (STARD), systematic review (PRISMA 2020), case report (CARE) and research letter, besides the Elsevier, OUP and Nature articles. Templates whose files may not be redistributed (NeurIPS, ICML, ICLR, ACL, CVPR, Springer Nature and others) are not built in: the help lists them, to download from the journal or conference and import.
+- **Groups** (Settings → Groups): anyone makes a group and invites people on the server, who join by accepting. A project can be shared with a group: everyone in it gets the role, people who join later too, and people who leave lose it.
+- Templates are shared by administrators: with their groups and people they pick, and by the system administrator with everyone. Templates can be imported from a journal's zip and get a field. The new-project dialog shows them all in one list, filtered by field, each tagged Built-in, shared by the system administrator, shared across its groups, or shared by someone.
+- Conversion between templates: every built-in template converts to every target and builds (60 templates by 16 targets checked). It reads Springer Nature (sn-jnl), Oxford University Press, Elsevier CAS, BMC and the new templates' classes: authors with their names and degrees, affiliations, `\abstract{}` and structured abstracts, keywords, back matter; commands of packages the target drops (line spacing, line numbers and others) keep working. New targets: Elsevier CAS (one and two columns), OUP, AMS, APA 7, AASTeX, MNRAS and ACS. The target list is plainer.
 
 ### Improved
 
+- The compiler runs as many builds at once as its CPUs and memory allow (two before), and fewer while memory is low. The administration overview shows how many.
+- A project's builds wait their turn on the server, so one busy project no longer holds the compiler while other people's builds wait.
+- The AI agent compiles less: not to look at what's wrong (it reads the latest build's log), not the same draft twice, and at most five times a message. Builds it no longer needs after Stop are taken out of the queue.
+- The word count counts `\abstract{...}` as the abstract.
 - The repository is now github.com/coltexeditor/coltex and the images are at ghcr.io/coltexeditor. Old links keep working, and `coltex update` moves an install's image address and Git remote to the new ones by itself.
 - The short install command is `curl -fsSL https://coltexeditor.github.io/install.sh | bash`.
 - The vulnerability scan lists its findings by image and package, with the fixed version, and keeps the full report with the run.
 - Fewer known vulnerabilities in the images: Tailscale 1.104.2 and cloudflared 2026.10.3, built with a current Go; the server image no longer carries npm, pnpm, yarn or an old esbuild, which it never ran; the compiler image leaves out tlcockpit, TeX Live's graphical package manager, which can't open in a container.
+- Builds of different projects are kept apart: each runs as a user of its project's own and can't read other projects' files, which TeX (and a project's latexmkrc) could do before. Valkey, which builds could reach, has a password; `coltex update` adds one to existing installs.
 
 ### Fixed
 
+- A process a build left running could keep the compiler waiting for that build forever.
+- A build that failed with an error (for example a file deleted while it started) stopped the whole compiler, and every build running or waiting with it hung until it timed out.
 - After installing, `coltex` wasn't found in new SSH sessions on systems whose login doesn't read `~/.bashrc`. The installer now adds `~/.local/bin` to the files a login reads too, and `coltex update` adds it to installs that had it only in `~/.bashrc`.
 
 ## v0.0.5

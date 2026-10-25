@@ -51,7 +51,7 @@ Taglia, copia, incolla, seleziona tutto, elimina, vai al PDF e aggiungi un comme
 - **Aspetto**: dimensione del carattere, carattere (monospaziato o senza grazie), interlinea, **Colori del codice** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark e altri, solo in modalità codice), percorso di navigazione;
 - **Modifica**: associazioni tasti (predefinite, Vim o Emacs) e interruttori per il controllo del codice, l’anteprima delle equazioni, la chiusura automatica delle parentesi e il completamento automatico;
 - **Scorciatoie da tastiera**: vedi sotto;
-- **Azioni**: conteggio parole, copia, conversione di modello, pubblicazione come modello.
+- **Azioni**: conteggio parole, copia, esportazione in Word, conversione di modello, pubblicazione come modello.
 
 Aspetto, modifica e scorciatoie sono tuoi, salvati in questo browser, per ogni progetto.
 

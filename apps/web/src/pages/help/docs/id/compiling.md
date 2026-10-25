@@ -64,3 +64,13 @@ Pengalih tampilan (empat tombol kecil di kanan bilah PDF) menampilkan **Hanya ed
 - Bilah PDF mengunduh PDF saat ini.
 - Tombol unduh di bagian atas pohon file mengunduh file sumber proyek sebagai .zip.
 - Di daftar proyek, menu proyek (⋯) berisi **Unduh PDF**, yang mengompilasinya terlebih dahulu, dan **Unduh .zip** untuk semua file sumbernya.
+
+## Mengekspor ke Word
+
+Beberapa jurnal hanya menerima file Word. **Ekspor ke Word…** di menu proyek (⋯) pada daftar proyek, atau di **Tindakan** pada pengaturan proyek, mengubah proyek menjadi .docx.
+
+- Halaman judul diambil dari dokumen: judul, penulis, afiliasi, penulis korespondensi, abstrak, dan kata kunci, untuk kelas yang dibaca oleh konversi templat (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
+- Rumus menjadi persamaan Word. Gambar dan tabel diberi nomor oleh Word, gambar PDF dan EPS diubah menjadi gambar biasa, dan persamaan bernomor tetap mempertahankan nomornya sehingga `\eqref` tetap merujuk ke sana.
+- **Gaya sitasi**: **Sama seperti dokumen** mengikuti gaya bibliografi dokumen. Anda juga dapat memilih APA, Vancouver, AMA, IEEE, Nature, atau Chicago, atau file `.csl` yang diunggah ke proyek.
+- **Templat Word**: unggah templat Word (`.docx`) dari jurnal ke proyek dan pilih di sini; dokumen akan memakai gayanya. Kolom ini muncul jika proyek memiliki file `.docx`.
+- Periksa hasilnya sebelum mengirim: makro buatan sendiri dan tabel yang rumit mungkin perlu diperbaiki di Word. Gambar TikZ tidak dikonversi: kompilasi menjadi gambar terlebih dahulu dan sertakan gambar itu sebagai gantinya.

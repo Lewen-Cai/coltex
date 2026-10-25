@@ -8,11 +8,19 @@ Nhấp **Chia sẻ** ở góc trên bên phải của trình soạn thảo:
 - Người chưa có tài khoản trước hết cần một liên kết mời từ quản trị viên hoặc quản trị viên hệ thống; xem [Quản trị](#/help/admin).
 - Thay đổi vai trò, chuyển quyền sở hữu hoặc xóa người khỏi dự án trong danh sách thành viên. Chỉ chủ sở hữu mới quản lý thành viên.
 
+### Chia sẻ với một nhóm
+
+Chủ sở hữu có thể chia sẻ dự án với một nhóm mà họ tham gia: trong **Chia sẻ**, gõ một phần tên nhóm, chọn nhóm (nhóm được liệt kê trước người), chọn vai trò và nhấn **+**.
+
+- Mọi người đã tham gia nhóm đều nhận vai trò đó. Người tham gia sau cũng nhận; người rời đi thì mất.
+- Nhóm hiện cùng số thành viên và vai trò, vai trò được đổi ngay tại đó; menu ⋯ của nhóm có **Ngừng chia sẻ**.
+- Thành viên của nhóm hiện trong danh sách là "qua" nhóm. Vai trò của họ do nhóm quyết định; để cho một người vai trò khác, hãy thêm riêng người đó, khi đó thay đổi của nhóm không còn ảnh hưởng đến họ.
+
 ### Vai trò
 
 | Vai trò | Có thể |
 | --- | --- |
-| Chủ sở hữu | Mọi thứ, kể cả quản lý thành viên, xóa dự án và xuất bản dự án thành mẫu |
+| Chủ sở hữu | Mọi thứ, kể cả thành viên và xóa dự án; quản trị viên còn có thể xuất bản nó thành mẫu |
 | Người chỉnh sửa | Chỉnh sửa và quản lý tệp, chấp nhận hoặc từ chối đề xuất |
 | Người duyệt | Chỉ thay đổi văn bản dưới dạng đề xuất được theo dõi; bình luận |
 | Người xem | Đọc, biên dịch, tải xuống, bình luận |
@@ -45,4 +53,4 @@ Trong bảng Duyệt, bật theo dõi thay đổi cho mọi người hoặc cho 
 
 ## Thông báo
 
-Những lần được nhắc đến trong trò chuyện hoặc bình luận, câu trả lời cho bình luận của bạn và việc được thêm vào một dự án sẽ hiện trong **Thông báo**, với số chưa đọc ở thanh bên. Thông báo chỉ có trong ColTex; không gửi email.
+Lời nhắc trong chat hoặc bình luận, trả lời bình luận của bạn, việc được thêm vào dự án và lời mời vào nhóm hiện trong **Thông báo**, với số chưa đọc ở thanh bên. Chúng chỉ ở trong ColTex; không có email.

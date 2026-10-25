@@ -51,7 +51,7 @@ Cortar, copiar, pegar, seleccionar todo, eliminar, ir al PDF y añadir un coment
 - **Apariencia**: tamaño de fuente, fuente (monoespaciada o sans serif), interlineado, **Colores del código** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark y más, solo en modo código), ruta de navegación;
 - **Edición**: combinaciones de teclas (predeterminadas, Vim o Emacs) e interruptores para la revisión de código, la vista previa de ecuaciones, el cierre automático de paréntesis y el autocompletado;
 - **Atajos de teclado**: consulta más abajo;
-- **Acciones**: recuento de palabras, copia, conversión de plantilla, publicación como plantilla.
+- **Acciones**: recuento de palabras, copia, exportación a Word, conversión de plantilla, publicación como plantilla.
 
 La apariencia, la edición y los atajos son tuyos, se guardan en este navegador y valen para todos los proyectos.
 

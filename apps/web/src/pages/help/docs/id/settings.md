@@ -5,8 +5,19 @@ Klik avatar Anda di kiri bawah dan pilih **Pengaturan**.
 - **Akun**: nama tampilan Anda (ditampilkan kepada kolaborator, di komentar, dan di riwayat), warna avatar Anda (juga warna kursor Anda di editor; **Otomatis** adalah warna yang dipilih ColTex), dan kata sandi Anda. Mengubah kata sandi dapat mengeluarkan Anda dari perangkat lain. Kata sandi memerlukan 8 karakter atau lebih dengan huruf besar, huruf kecil, dan angka; simbol bersifat opsional. Penilaian yang ditampilkan saat mengetik (lemah, cukup, baik, kuat) naik seiring panjang dan simbol. Pendaftaran dan pengaturan ulang oleh admin mengikuti aturan yang sama. Email masuk Anda hanya dapat diubah oleh administrator. Verifikasi 2 langkah dan aktivitas masuk Anda juga ada di halaman ini (lihat di bawah).
 - **Tampilan**: tema (Terang dan Gelap bernuansa biru, Hutan dan Lumut bernuansa hijau, Lavender dan Plum bernuansa ungu; bawaannya Terang), dan bahasa antarmuka (14 bahasa, di antaranya English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français, dan Deutsch; awalnya mengikuti bahasa peramban Anda). Tema gelap juga berlaku untuk editor; halaman PDF tetap putih. Tema disimpan bersama akun Anda, sehingga ikut ke peramban lain (halaman masuk selalu menggunakan Terang); bahasa disimpan di peramban ini.
 - **Layanan sinkronisasi**: hubungkan akun Zotero Anda (lihat [Referensi](#/help/references)), serta buat dan cabut token git (lihat [File](#/help/files)): masing-masing untuk Git, MCP, atau keduanya, baca dan tulis atau hanya baca, untuk semua proyek Anda atau sebagian, dengan masa berlaku. Gunakan satu token per komputer, agar Anda dapat mencabutnya secara terpisah.
+- **Grup**: grup yang Anda ikuti, undangan yang menunggu jawaban, dan grup baru; lihat di bawah.
 - **Agen AI**: penggunaan AI Anda selama 7, 30, atau 90 hari terakhir (permintaan, token, biaya, per hari dan per model) dan sisa batas Anda (jika Anda memiliki agen AI), apa yang boleh diubah agen AI untuk Anda (**Izin**), dan menghubungkan agen AI Anda sendiri melalui **MCP**, beserta tokennya; lihat [Agen AI](#/help/ai).
 - **Skill AI** (jika Anda memiliki agen AI): skill Anda sendiri, skill bawaan, dan obrolan dengan agen AI untuk menulis skill; lihat [Agen AI](#/help/ai).
+
+## Grup
+
+**Pengaturan → Grup** mencantumkan grup yang Anda ikuti. Proyek bisa dibagikan dengan seluruh grup (lihat [Kolaborasi](#/help/collaboration)), dan administrator membagikan templat dengan grup (lihat [Templat](#/help/templates)).
+
+- Siapa pun bisa membuat grup: **Buat grup** lalu beri nama. Anda menjadi pemiliknya.
+- Pemilik mengundang siapa saja yang punya akun di server ini lewat **Undang seseorang lewat nama atau email**. Orang itu menerima notifikasi dan bergabung dengan **Gabung** di bagian **Undangan** pada halaman ini, atau menolak dengan **Tolak**. Sampai saat itu ia tercantum sebagai **Diundang**, dan pemilik bisa **Tarik undangan**.
+- Di menu ⋯ seorang anggota, pemilik bisa **Jadikan pemilik** (atau **Jadikan anggota**) dan **Hapus**. Menu ⋯ grup berisi **Ganti nama** dan **Hapus grup** untuk pemilik, serta **Keluar dari grup**.
+- Grup selalu punya pemilik: pemilik terakhir menjadikan orang lain pemilik sebelum keluar, atau menghapus grup.
+- Keluar dari grup, dikeluarkan, atau grup dihapus membuat Anda kehilangan proyek yang dibagikan dengan grup itu, kecuali proyek yang Anda ditambahkan sendiri.
 
 ## Verifikasi 2 langkah
 

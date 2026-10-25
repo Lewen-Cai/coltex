@@ -8,11 +8,19 @@ Fai clic su **Condividi** in alto a destra nell’editor:
 - Chi non ha un account ha prima bisogno di un link di invito da un amministratore o dall’amministratore di sistema; vedi [Amministrazione](#/help/admin).
 - Nell’elenco dei membri puoi cambiare ruoli, trasferire la proprietà o rimuovere persone. Solo il proprietario gestisce i membri.
 
+### Condividere con un gruppo
+
+Il proprietario può condividere un progetto con un gruppo di cui fa parte: in **Condividi** digita parte del nome del gruppo, sceglilo (i gruppi compaiono prima delle persone), scegli un ruolo e fai clic su **+**.
+
+- Tutti quelli che si sono uniti al gruppo ricevono quel ruolo. Chi si unisce dopo lo riceve anch’esso; chi esce lo perde.
+- Il gruppo compare con il numero di membri e il ruolo, che si cambia lì; il suo menu ⋯ ha **Smetti di condividere**.
+- I suoi membri compaiono nell’elenco «tramite» il gruppo. Il ruolo viene dal gruppo; per dare a uno di loro un altro ruolo, aggiungilo singolarmente, e le modifiche del gruppo non lo riguardano più.
+
 ### Ruoli
 
 | Ruolo | Può |
 | --- | --- |
-| Proprietario | Tutto, compresi i membri, l’eliminazione del progetto e la pubblicazione come modello |
+| Proprietario | Tutto, compresi i membri e l’eliminazione del progetto; gli amministratori possono anche pubblicarlo come modello |
 | Editor | Modificare e gestire i file, accettare o rifiutare i suggerimenti |
 | Revisore | Modificare il testo solo come suggerimenti registrati; commentare |
 | Visualizzatore | Leggere, compilare, scaricare, commentare |
@@ -45,4 +53,4 @@ Nel pannello Revisione, attiva il rilevamento delle modifiche per tutti o per al
 
 ## Notifiche
 
-Le menzioni in chat o nei commenti, le risposte ai tuoi commenti e l’aggiunta a un progetto compaiono in **Notifiche**, con il numero di non lette nella barra laterale. Sono solo in ColTex; nessuna email.
+Le menzioni in chat o nei commenti, le risposte ai tuoi commenti, l’aggiunta a un progetto e gli inviti ai gruppi compaiono in **Notifiche**, con il numero di non lette nella barra laterale. Restano in ColTex; niente email.

@@ -8,11 +8,19 @@ Haz clic en **Compartir** arriba a la derecha del editor:
 - Las personas sin cuenta necesitan primero un enlace de invitación de un administrador o del administrador del sistema; consulta [Administración](#/help/admin).
 - Cambia roles, transfiere la propiedad o quita personas en la lista de miembros. Solo el propietario gestiona los miembros.
 
+### Compartir con un grupo
+
+El propietario puede compartir un proyecto con un grupo del que forma parte: en **Compartir**, escribe parte del nombre del grupo, elígelo (los grupos aparecen antes que las personas), elige un rol y pulsa **+**.
+
+- Todos los que se han unido al grupo reciben ese rol. Quienes se unan después también; quienes salgan lo pierden.
+- El grupo aparece con su número de miembros y su rol, que se cambia ahí; su menú ⋯ tiene **Dejar de compartir**.
+- Sus miembros aparecen en la lista «a través de» el grupo. Su rol lo da el grupo; para darle otro rol a uno de ellos, añádelo a mano, y los cambios del grupo dejan de afectarle.
+
 ### Roles
 
 | Rol | Puede |
 | --- | --- |
-| Propietario | Todo, incluidos los miembros, eliminar el proyecto y publicarlo como plantilla |
+| Propietario | Todo, incluidos los miembros y eliminar el proyecto; los administradores también pueden publicarlo como plantilla |
 | Editor | Editar y gestionar archivos, aceptar o rechazar sugerencias |
 | Revisor | Cambiar el texto solo mediante sugerencias registradas; comentar |
 | Lector | Leer, compilar, descargar, comentar |
@@ -45,4 +53,4 @@ En el panel Revisión, activa el control de cambios para todos o para algunas pe
 
 ## Notificaciones
 
-Las menciones en el chat o en comentarios, las respuestas a tus comentarios y que te añadan a un proyecto aparecen en **Notificaciones**, con un contador de no leídas en la barra lateral. Solo están en ColTex; no se envían correos electrónicos.
+Las menciones en el chat o en comentarios, las respuestas a tus comentarios, que te añadan a un proyecto y las invitaciones a grupos aparecen en **Notificaciones**, con el número de no leídas en la barra lateral. Solo están en ColTex; no hay correo.

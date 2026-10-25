@@ -2,25 +2,52 @@
 
 ## New projects from templates
 
-New projects can start from a built-in template or one shared on this server; see [Getting started](#/help/getting-started).
+**New project** shows one list: the built-in templates and the templates shared with you. A tag on each says where it comes from:
+
+- **Built-in**: comes with ColTex.
+- **Shared by the system administrator**: for everyone on this server.
+- **Shared across** a group's name: shared with a group you are in.
+- **Shared by** a name: shared with you in person.
+
+The buttons above the list (**All**, then the fields) show the templates of one field. You see only the templates shared with you. See also [Getting started](#/help/getting-started).
 
 ## Publishing a project as a template
 
-A project's owner can publish it as a template for everyone on this server, for a group's thesis format, say:
+Administrators can publish a project they own as a template, a group's thesis format, say:
 
 1. In the project's menu (⋯) in the project list, or in the project settings, choose **Publish as template…**.
-2. Give it a name and a description, and click **Publish**.
+2. Give it a name, a description and a **Field** (where it is listed), choose who gets it under **Shared with**, and click **Publish**.
+
+Who it can be for:
+
+- An admin: the groups they are in, and people they pick by name or email.
+- The system administrator: also **Everyone on this server**.
+- Members can't publish templates; ask an administrator.
 
 Good to know:
 
 - New projects from it get the project's files as they are **at that moment**, its compiler and its spell-check language; not its members, history or comments.
 - The template follows the project: change the project, and later new projects get the changes.
-- Open **Publish as template…** again to rename it or **Unpublish** it. Administrators can also remove shared templates in the new-project dialog.
+- Open **Publish as template…** again to change its name, field or who it is for, or to **Unpublish** it. The system administrator can also remove any template in the new-project dialog.
 - It goes away when the project is deleted.
+
+## Importing a journal's template
+
+Many journals and conferences publish LaTeX templates that aren't built into ColTex: their licences don't allow passing them on, or they aren't part of TeX Live. Among them are NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Download the official template from the conference's or the publisher's website, then import it as a template:
+
+1. Click **New project**, then **Import template** (administrators only).
+2. Choose the zip, give it a name, a description and a **Field**, choose who gets it under **Shared with**, and click **Import**.
+
+Good to know:
+
+- Who it can be for follows the rules for publishing (above): admins share with their groups and with people they pick, the system administrator also with everyone.
+- The zip becomes a project of yours, published as a template. Its main document is found as when importing a project; build files and system clutter are left out.
+- The template's ⋯ menu has **Open project** (to change its files), **Edit template…** (to rename it, change who it is for, or unpublish it) and **Remove template**.
 
 ## Converting to a journal template
 
-**Convert to template…** in a project's menu (in the project settings: "Convert to a journal template") rewrites a paper for another journal or conference: IEEE Transactions, IEEE Conference, ACM Conference, ACM Journal, Elsevier, Springer LNCS, APS (REVTeX) or a plain article.
+**Convert to template…** in a project's menu (in the project settings: "Convert to a journal template") rewrites a paper for another journal or conference: IEEE Transactions, IEEE Conference, ACM Conference, ACM Journal, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS or a plain article. Every built-in template can be converted to each of these.
 
 - The title, authors, affiliations, abstract, packages and bibliography are rebuilt in a **new project**, which is then compiled. The original stays as it is.
+- Papers written in Springer Nature's `sn-jnl` template are read too, as are BMC, OUP and Elsevier CAS ones: authors with first names and surnames, affiliations, `\abstract{}` and structured abstracts, keywords and the back matter.
 - A report lists what was changed and what to check. The AI can take care of what remains.

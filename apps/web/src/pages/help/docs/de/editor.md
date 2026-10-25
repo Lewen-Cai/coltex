@@ -51,7 +51,7 @@ Ausschneiden, kopieren, einfügen, alles auswählen, löschen, zum PDF und Komme
 - **Darstellung**: Schriftgröße, Schriftart (Monospace oder serifenlos), Zeilenhöhe, **Codefarben** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark und weitere, nur im Code-Modus), Brotkrümelnavigation;
 - **Bearbeiten**: Tastenbelegung (Standard, Vim oder Emacs) und Schalter für Codeprüfung, Formelvorschau, automatisches Schließen von Klammern und Autovervollständigung;
 - **Tastenkürzel**: siehe unten;
-- **Aktionen**: Wortzählung, Kopie, Vorlagenumwandlung, Veröffentlichen als Vorlage.
+- **Aktionen**: Wortzählung, Kopie, Word-Export, Vorlagenumwandlung, Veröffentlichen als Vorlage.
 
 Darstellung, Bearbeiten und Tastenkürzel gehören Ihnen, werden in diesem Browser gespeichert und gelten für jedes Projekt.
 

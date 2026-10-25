@@ -8,11 +8,19 @@ Klik **Bagikan** di kanan atas editor:
 - Orang yang belum memiliki akun terlebih dahulu memerlukan tautan undangan dari admin atau admin sistem; lihat [Administrasi](#/help/admin).
 - Ubah peran, alihkan kepemilikan, atau keluarkan orang di daftar anggota. Hanya pemilik yang mengelola anggota.
 
+### Berbagi dengan grup
+
+Pemilik bisa membagikan proyek dengan grup yang ia ikuti: di **Bagikan**, ketik sebagian nama grup, pilih grupnya (grup tercantum sebelum orang), pilih peran, lalu klik **+**.
+
+- Semua yang sudah bergabung ke grup mendapat peran itu. Yang bergabung kemudian juga mendapatkannya; yang keluar kehilangannya.
+- Grup tercantum dengan jumlah anggota dan perannya, yang diubah di sana; menu ⋯-nya berisi **Berhenti berbagi**.
+- Anggotanya tampil di daftar anggota "melalui" grup itu. Peran mereka ditentukan grup; untuk memberi salah satu dari mereka peran lain, tambahkan ia sendiri, dan perubahan grup tidak lagi memengaruhinya.
+
 ### Peran
 
 | Peran | Dapat |
 | --- | --- |
-| Pemilik | Semuanya, termasuk mengelola anggota, menghapus proyek, dan menerbitkannya sebagai templat |
+| Pemilik | Semuanya, termasuk anggota dan menghapus proyek; administrator juga bisa menerbitkannya sebagai templat |
 | Editor | Mengedit dan mengelola file, menerima atau menolak saran |
 | Peninjau | Mengubah teks hanya sebagai saran terlacak; berkomentar |
 | Pelihat | Membaca, mengompilasi, mengunduh, berkomentar |
@@ -45,4 +53,4 @@ Di panel Tinjauan, aktifkan lacak perubahan untuk semua orang atau untuk beberap
 
 ## Notifikasi
 
-Sebutan di obrolan atau komentar, balasan atas komentar Anda, dan saat Anda ditambahkan ke proyek muncul di **Notifikasi**, dengan jumlah yang belum dibaca di bilah sisi. Notifikasi hanya ada di ColTex; tidak ada email.
+Sebutan di obrolan atau komentar, balasan atas komentar Anda, ditambahkan ke proyek, dan undangan ke grup muncul di **Notifikasi**, dengan jumlah yang belum dibaca di bilah samping. Semuanya hanya di ColTex; tanpa email.

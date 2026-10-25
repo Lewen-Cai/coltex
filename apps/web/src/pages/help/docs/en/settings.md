@@ -5,8 +5,19 @@ Click your avatar at the bottom left and choose **Settings**.
 - **Account**: your display name (shown to collaborators, in comments and in the history), the colour of your avatar (also your cursor in the editor; **Automatic** is the one ColTex picked), and your password. Changing the password can sign out your other devices. Passwords need 8 or more characters with an uppercase letter, a lowercase letter and a number; symbols are optional. The rating shown while typing (weak, fair, good, strong) rises with length and symbols. Sign-up and admin resets follow the same rules. Your sign-in email can only be changed by an administrator. Two-step verification and your sign-in activity are on this page too (below).
 - **Appearance**: the theme (Light and Dark in blue, Forest and Moss in green, Lavender and Plum in violet; Light by default), and the interface language (14 languages, among them English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français and Deutsch; it starts in your browser’s language). Dark themes apply to the editor too; PDF pages stay white. The theme is kept with your account, so it follows you to other browsers (the sign-in page always uses Light); the language is kept in this browser.
 - **Sync services**: connect your Zotero account (see [References](#/help/references)), and create and revoke git tokens (see [Files](#/help/files)): each one for Git, MCP or both, read and write or read only, for all your projects or some, with an expiry. Use one token per computer, so you can revoke it on its own.
+- **Groups**: the groups you are in, invitations to answer, and new groups; see below.
 - **AI agent**: your AI usage over the last 7, 30 or 90 days (requests, tokens, cost, per day and per model) and what is left of your limit (when you have the AI agent), what AI agents may change for you (**Permissions**), and connecting your own AI agents over **MCP**, with their tokens; see [AI agent](#/help/ai).
 - **AI skills** (when you have the AI agent): your own skills, the built-in ones, and a chat with the AI agent for writing skills; see [AI agent](#/help/ai).
+
+## Groups
+
+**Settings → Groups** lists the groups you are in. A project can be shared with a whole group (see [Collaboration](#/help/collaboration)), and administrators share templates with groups (see [Templates](#/help/templates)).
+
+- Anyone can make a group: **Create group** and give it a name. You are its owner.
+- Owners invite anyone with an account on this server through **Invite someone by name or email**. The person gets a notification and joins with **Join** under **Invitations** on this page, or turns it down with **Decline**. Until then they are listed as **Invited**, and the owner can **Withdraw invitation**.
+- In a member's ⋯ menu, owners **Make owner** (or **Make member**) and **Remove** them. The group's ⋯ menu has **Rename** and **Delete group** for owners, and **Leave group**.
+- A group always has an owner: the last owner makes someone else owner before leaving, or deletes the group.
+- Leaving a group, being removed from it, or its deletion takes away the projects shared with it, except those you were added to on your own.
 
 ## Two-step verification
 

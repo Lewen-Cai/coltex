@@ -51,7 +51,7 @@ Cut, copy, paste, select all, delete, go to PDF, and add a comment. On `\ref{…
 - **Appearance**: font size, font (monospace or sans-serif), line height, **Code colours** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark and more, code mode only), breadcrumbs;
 - **Editing**: keybindings (default, Vim or Emacs) and switches for the code check, equation preview, auto-close brackets and autocomplete;
 - **Keyboard shortcuts**: see below;
-- **Actions**: word count, copy, template conversion, publishing as a template.
+- **Actions**: word count, copy, export to Word, template conversion, publishing as a template.
 
 Appearance, editing and shortcuts are yours, kept in this browser, for every project.
 

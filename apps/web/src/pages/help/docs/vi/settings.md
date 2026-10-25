@@ -5,8 +5,19 @@ Nhấp vào ảnh đại diện của bạn ở góc dưới bên trái và ch�
 - **Tài khoản**: tên hiển thị của bạn (hiện cho cộng tác viên, trong bình luận và trong lịch sử), màu ảnh đại diện của bạn (cũng là màu con trỏ của bạn trong trình soạn thảo; **Tự động** là màu do ColTex chọn), và mật khẩu của bạn. Khi đổi mật khẩu, bạn có thể đăng xuất trên các thiết bị khác. Mật khẩu cần từ 8 ký tự trở lên, có một chữ hoa, một chữ thường và một chữ số; ký hiệu là không bắt buộc. Mức đánh giá hiện ra khi bạn gõ (yếu, trung bình, khá, mạnh) tăng theo độ dài và ký hiệu. Đăng ký và việc quản trị viên đặt lại mật khẩu cũng theo cùng quy tắc. Chỉ quản trị viên mới đổi được email đăng nhập của bạn. Xác minh 2 bước và hoạt động đăng nhập của bạn cũng nằm trên trang này (xem bên dưới).
 - **Giao diện**: chủ đề (Sáng và Tối tông xanh dương, Rừng và Rêu tông xanh lá, Oải hương và Mận tông tím; mặc định là Sáng), và ngôn ngữ giao diện (14 ngôn ngữ, trong đó có English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français và Deutsch; ban đầu theo ngôn ngữ của trình duyệt). Chủ đề tối cũng áp dụng cho trình soạn thảo; các trang PDF vẫn giữ màu trắng. Chủ đề được lưu theo tài khoản của bạn, nên sẽ theo bạn sang các trình duyệt khác (trang đăng nhập luôn dùng Sáng); ngôn ngữ được lưu trong trình duyệt này.
 - **Dịch vụ đồng bộ**: kết nối tài khoản Zotero của bạn (xem [Tài liệu tham khảo](#/help/references)), và tạo cũng như thu hồi token git (xem [Tệp](#/help/files)): mỗi token dùng cho Git, MCP hoặc cả hai, đọc và ghi hoặc chỉ đọc, cho tất cả hoặc một số dự án của bạn, có thời hạn. Hãy dùng một token cho mỗi máy tính, để có thể thu hồi riêng từng token.
+- **Nhóm**: các nhóm bạn tham gia, lời mời đang chờ trả lời và tạo nhóm mới; xem bên dưới.
 - **Tác tử AI**: mức dùng AI của bạn trong 7, 30 hoặc 90 ngày qua (yêu cầu, token, chi phí, theo ngày và theo mô hình) và phần còn lại trong giới hạn của bạn (khi bạn có tác tử AI), những gì tác tử AI được phép thay đổi thay bạn (**Quyền**), và kết nối các tác tử AI của riêng bạn qua **MCP**, kèm token của chúng; xem [Tác tử AI](#/help/ai).
 - **Skill AI** (khi bạn có tác tử AI): skill của riêng bạn, các skill tích hợp sẵn, và cuộc trò chuyện với tác tử AI để viết skill; xem [Tác tử AI](#/help/ai).
+
+## Nhóm
+
+**Cài đặt → Nhóm** liệt kê các nhóm bạn tham gia. Có thể chia sẻ một dự án với cả nhóm (xem [Cộng tác](#/help/collaboration)), và quản trị viên chia sẻ mẫu với các nhóm (xem [Mẫu](#/help/templates)).
+
+- Ai cũng có thể tạo nhóm: **Tạo nhóm** rồi đặt tên. Bạn là chủ sở hữu.
+- Chủ sở hữu mời bất kỳ ai có tài khoản trên máy chủ này qua **Mời ai đó theo tên hoặc email**. Người đó nhận thông báo và tham gia bằng **Tham gia** trong mục **Lời mời** ở trang này, hoặc từ chối bằng **Từ chối**. Trước đó họ hiện là **Đã mời**, và chủ sở hữu có thể **Rút lại lời mời**.
+- Trong menu ⋯ của một thành viên, chủ sở hữu có thể **Đặt làm chủ sở hữu** (hoặc **Đặt làm thành viên**) và **Xóa**. Menu ⋯ của nhóm có **Đổi tên** và **Xóa nhóm** cho chủ sở hữu, cùng **Rời nhóm**.
+- Nhóm luôn có chủ sở hữu: chủ sở hữu cuối cùng phải đặt người khác làm chủ sở hữu trước khi rời đi, hoặc xóa nhóm.
+- Rời nhóm, bị xóa khỏi nhóm hoặc nhóm bị xóa khiến bạn mất các dự án được chia sẻ với nhóm, trừ những dự án bạn được thêm riêng.
 
 ## Xác minh 2 bước
 

@@ -6,19 +6,24 @@ ColTex là trình soạn thảo LaTeX cộng tác chạy trên máy chủ của 
 
 Nhấp **Dự án mới** ở góc trên bên trái, đặt tên và chọn một mẫu:
 
-| Mẫu | Lớp |
+| Lĩnh vực | Mẫu |
 | --- | --- |
-| Bài báo trống | Lớp `article` tiêu chuẩn, cách bắt đầu đơn giản nhất |
-| Bản tiền ấn phẩm arXiv | `article`, một cột, tác giả kèm đơn vị công tác (authblk), tài liệu tham khảo natbib |
-| Hội nghị IEEE / Tạp chí IEEE | `IEEEtran` ở chế độ hội nghị / tạp chí |
-| Hội nghị ACM / Tạp chí ACM | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, cho LNCS và các kỷ yếu khác của Springer |
-| Tạp chí Elsevier | `elsarticle`, bản tiền ấn phẩm một cột |
-| APS (REVTeX 4.2) | `revtex4-2`, cho các tạp chí Physical Review và AIP |
+| Chung | Bài báo trống, Bản tiền ấn phẩm arXiv, Tạp chí Elsevier, Tạp chí Elsevier (tác giả–năm), Tạp chí Elsevier (hai cột), Tạp chí Elsevier CAS (hai cột), Nature, Bài tổng quan, Thông báo ngắn |
+| Máy tính và kỹ thuật điện | Hội nghị IEEE, Tạp chí IEEE, Hội nghị IEEE Computer Society, Tạp chí IEEE Computer Society, Tạp chí IEEE Communications Society, Hội nghị ACM, Tạp chí ACM, Bài nộp ACM (ẩn danh), Hội nghị ACM SIGPLAN, ACM Transactions on Graphics, Springer LNCS, Kỷ yếu PMLR |
+| Kỹ thuật | Hội nghị ASME, Tạp chí ASCE, Bài hội nghị AIAA, Kỷ yếu SPIE |
+| Vật lý | APS (REVTeX 4.2), Physical Review Letters, Tạp chí AIP, Journal of the Physical Society of Japan, Bài hội nghị JACoW |
+| Thiên văn học | Tạp chí AAS (AASTeX), Monthly Notices of the RAS |
+| Hóa học | Bài tạp chí ACS, Letter ACS |
+| Khoa học sự sống | Bài nghiên cứu khoa học sự sống, Ghi chú ứng dụng tin sinh học |
+| Y học | Báo cáo thử nghiệm lâm sàng, Đề cương thử nghiệm lâm sàng, Nghiên cứu quan sát, Nghiên cứu độ chính xác chẩn đoán, Tổng quan hệ thống và phân tích gộp, Báo cáo ca bệnh, Thư nghiên cứu y học, Tạp chí Elsevier CAS, Tạp chí của Oxford University Press |
+| Toán và thống kê | Bài báo AMS, Kỷ yếu AMS, Annals of Mathematics, Bài phương pháp thống kê |
+| Kinh tế | Bài kinh tế học (kiểu AEA), Bài kinh tế lượng |
+| Khoa học xã hội và nhân văn | Bản thảo APA 7, Bố cục tạp chí APA 7, Bài sinh viên APA 7, Bài nhân văn (chú thích Chicago), Tiểu luận văn học (MLA), Bài luật học (OSCOLA) |
+| Trái Đất và môi trường | Bài khoa học Trái Đất (kiểu AGU), Nghiên cứu thực địa sinh thái, Tạp chí Canadian Science Publishing |
 
-Trừ bài báo trống, mỗi mẫu đều có sẵn tóm tắt, từ khóa, một công thức, một hình, một bảng và một tệp `references.bib`, và biên dịch được ngay. Các lớp đều là lớp chính thức đi kèm TeX Live. Những hội nghị phát hành tệp style mới mỗi năm (NeurIPS, ICML) không có trong TeX Live: hãy tải tệp của năm đó lên một dự án rồi xuất bản dự án đó thành mẫu.
+Ngoài bài viết trống, mỗi mẫu đều có tóm tắt, các mục ví dụ và một tệp `references.bib`, và biên dịch được ngay. Các lớp đều là lớp chính thức có trong TeX Live. Nhiều mẫu nổi tiếng của tạp chí và hội nghị không được tích hợp sẵn; [Mẫu](#/help/templates) giải thích lý do và cách thêm chúng.
 
-Các dự án mà mọi người đã xuất bản thành mẫu (chẳng hạn định dạng luận văn của một nhóm) được liệt kê trong mục “Được chia sẻ trên máy chủ này”.
+Các nút phía trên các mẫu hiện mẫu của một lĩnh vực. Mẫu được chia sẻ với bạn (ví dụ định dạng luận văn của một nhóm) nằm trong cùng danh sách, có nhãn cho biết ai đã chia sẻ; xem [Mẫu](#/help/templates).
 
 Dự án mới biên dịch với **Tự động**: trình biên dịch được chọn ở mỗi lần biên dịch dựa trên tài liệu; xem [Biên dịch và PDF](#/help/compiling).
 

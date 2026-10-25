@@ -51,7 +51,7 @@ Sol çubuğun altındaki **Ayarlar**, ayarlarını soldaki kategorilerde toplar:
 - **Görünüm**: yazı tipi boyutu, yazı tipi (eş aralıklı veya tırnaksız), satır yüksekliği, **Kod renkleri** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark ve daha fazlası; yalnızca kod kipinde), içerik haritası;
 - **Düzenleme**: tuş atamaları (varsayılan, Vim veya Emacs) ve kod denetimi, denklem önizlemesi, parantezleri otomatik kapatma ve otomatik tamamlama için anahtarlar;
 - **Klavye kısayolları**: aşağıya bakın;
-- **İşlemler**: sözcük sayısı, kopyalama, şablon dönüştürme, şablon olarak yayımlama.
+- **İşlemler**: sözcük sayısı, kopyalama, Word'e aktarma, şablon dönüştürme, şablon olarak yayımlama.
 
 Görünüm, düzenleme ve kısayollar size aittir; bu tarayıcıda, her proje için saklanır.
 

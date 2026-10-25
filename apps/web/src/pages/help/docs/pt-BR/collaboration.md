@@ -8,11 +8,19 @@ Clique em **Compartilhar** no canto superior direito do editor:
 - Quem não tem conta precisa primeiro de um link de convite de um administrador ou do administrador do sistema; veja [Administração](#/help/admin).
 - Altere funções, transfira a propriedade ou remova pessoas na lista de membros. Só o proprietário gerencia os membros.
 
+### Compartilhar com um grupo
+
+O proprietário pode compartilhar um projeto com um grupo de que participa: em **Compartilhar**, digite parte do nome do grupo, escolha-o (os grupos aparecem antes das pessoas), escolha uma função e clique em **+**.
+
+- Todos que entraram no grupo recebem essa função. Quem entrar depois também recebe; quem sair perde.
+- O grupo aparece com o número de membros e a função, que é alterada ali; o menu ⋯ dele tem **Parar de compartilhar**.
+- Os membros aparecem na lista "por meio de" o grupo. A função vem do grupo; para dar outra função a um deles, adicione-o individualmente, e as mudanças do grupo deixam de afetá-lo.
+
 ### Funções
 
 | Função | Pode |
 | --- | --- |
-| Proprietário | Tudo, inclusive gerenciar membros, excluir o projeto e publicá-lo como modelo |
+| Proprietário | Tudo, incluindo os membros e excluir o projeto; administradores também podem publicá-lo como modelo |
 | Editor | Editar e gerenciar arquivos, aceitar ou rejeitar sugestões |
 | Revisor | Alterar o texto só por meio de sugestões controladas; comentar |
 | Leitor | Ler, compilar, baixar, comentar |
@@ -45,4 +53,4 @@ No painel Revisão, ative o controle de alterações para todos ou para algumas 
 
 ## Notificações
 
-Menções no chat ou em comentários, respostas aos seus comentários e ser adicionado a um projeto aparecem em **Notificações**, com a contagem de não lidas na barra lateral. Elas ficam só no ColTex; nada é enviado por e-mail.
+Menções no chat ou em comentários, respostas aos seus comentários, ser adicionado a um projeto e convites para grupos aparecem em **Notificações**, com o número de não lidas na barra lateral. Ficam só no ColTex; nada de e-mail.

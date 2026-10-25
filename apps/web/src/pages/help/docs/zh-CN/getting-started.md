@@ -6,19 +6,24 @@ ColTex 是部署在你们自己服务器上的协作 LaTeX 编辑器，用法和
 
 点左上角的 **新建项目**，填写名称，再选一个模板：
 
-| 模板 | 文档类 |
+| 领域 | 模板 |
 | --- | --- |
-| 空白文章 | 标准 `article`，最简单的起点 |
-| arXiv 预印本 | `article`，单栏，作者和单位（authblk），natbib 参考文献 |
-| IEEE 会议 / IEEE 期刊 | `IEEEtran` 的 conference / journal 模式 |
-| ACM 会议 / ACM 期刊 | `acmart` 的 sigconf / acmsmall |
-| Springer LNCS | `llncs`，LNCS 及其他 Springer 会议论文集 |
-| Elsevier 期刊 | `elsarticle`，单栏预印本格式 |
-| APS (REVTeX 4.2) | `revtex4-2`，Physical Review 和 AIP 期刊 |
+| 通用 | 空白文章、arXiv 预印本、Elsevier 期刊、Elsevier 期刊（作者–年份）、Elsevier 期刊（双栏）、Elsevier CAS 期刊（双栏）、Nature、综述文章、短篇通讯 |
+| 计算机与电子工程 | IEEE 会议、IEEE 期刊、IEEE 计算机学会会议、IEEE 计算机学会期刊、IEEE 通信学会期刊、ACM 会议、ACM 期刊、ACM 投稿（匿名）、ACM SIGPLAN 会议、ACM Transactions on Graphics、Springer LNCS、PMLR 会议论文集 |
+| 工程 | ASME 会议、ASCE 期刊、AIAA 会议论文、SPIE 会议论文集 |
+| 物理 | APS (REVTeX 4.2)、Physical Review Letters、AIP 期刊、日本物理学会志（JPSJ）、JACoW 会议论文 |
+| 天文 | AAS 期刊（AASTeX）、Monthly Notices of the RAS |
+| 化学 | ACS 期刊论文、ACS 快报 |
+| 生命科学 | 生命科学研究论文、生物信息学应用说明 |
+| 医学 | 临床试验报告、临床试验方案、观察性研究、诊断准确性研究、系统综述与 Meta 分析、病例报告、医学研究快报、Elsevier CAS 期刊、牛津大学出版社期刊 |
+| 数学与统计 | AMS 论文、AMS 会议论文集、Annals of Mathematics、统计方法论文 |
+| 经济 | 经济学论文（AEA 格式）、计量经济学论文 |
+| 社会科学与人文 | APA 7 稿件、APA 7 期刊版式、APA 7 学生论文、人文学科论文（芝加哥注释）、文学论文（MLA）、法学论文（OSCOLA） |
+| 地球与环境 | 地球科学论文（AGU 格式）、生态学野外研究、加拿大科学出版社期刊 |
 
-除空白文章外，每个模板都带有摘要、关键词、公式、图、表和 `references.bib` 的示例，可以直接编译。这些文档类都是 TeX Live 自带的官方版本。NeurIPS、ICML 这类每年更新样式文件的会议不在 TeX Live 里：可以上传当年的样式文件建一个项目，再发布成模板。
+除空白文章外，每个模板都带有摘要、示例章节和 `references.bib`，可以直接编译。这些文档类都是 TeX Live 自带的官方版本。不少知名期刊和会议的模板没有内置，原因和添加方法见 [模板](#/help/templates)。
 
-如果有人把自己的项目发布成了模板（比如课题组统一的论文格式），会出现在“本站共享的模板”下面。
+模板上方的按钮只显示某个领域的模板。共享给你的模板（比如课题组的论文格式）也在同一个列表里，标签写明是谁共享的；见 [模板](#/help/templates)。
 
 新项目的编译器是 **自动**：每次编译时根据文档内容选择，见 [编译与 PDF](#/help/compiling)。
 

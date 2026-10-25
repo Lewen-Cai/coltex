@@ -6,19 +6,24 @@ O ColTex é um editor de LaTeX colaborativo que roda no seu próprio servidor. E
 
 Clique em **Novo projeto** no canto superior esquerdo, dê um nome e escolha um modelo:
 
-| Modelo | Classe |
+| Área | Modelos |
 | --- | --- |
-| Artigo em branco | A `article` padrão, o começo mais simples |
-| Preprint arXiv | `article`, uma coluna, autores com afiliações (authblk), referências natbib |
-| Conferência IEEE / Periódico IEEE | `IEEEtran` no modo conferência / periódico |
-| Conferência ACM / Periódico ACM | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, para LNCS e outros anais da Springer |
-| Periódico Elsevier | `elsarticle`, preprint em uma coluna |
-| APS (REVTeX 4.2) | `revtex4-2`, para periódicos Physical Review e AIP |
+| Geral | Artigo em branco, Preprint arXiv, Periódico Elsevier, Periódico da Elsevier (autor–ano), Periódico da Elsevier (duas colunas), Periódico CAS da Elsevier (duas colunas), Nature, Artigo de revisão, Comunicação breve |
+| Computação e engenharia elétrica | Conferência IEEE, Periódico IEEE, Conferência da IEEE Computer Society, Periódico da IEEE Computer Society, Periódico da IEEE Communications Society, Conferência ACM, Periódico ACM, Submissão à ACM (anônima), Conferência ACM SIGPLAN, ACM Transactions on Graphics, Springer LNCS, Anais PMLR |
+| Engenharia | Conferência da ASME, Periódico da ASCE, Artigo de conferência da AIAA, Anais da SPIE |
+| Física | APS (REVTeX 4.2), Physical Review Letters, Periódico da AIP, Journal of the Physical Society of Japan, Artigo de conferência JACoW |
+| Astronomia | Periódicos da AAS (AASTeX), Monthly Notices of the RAS |
+| Química | Artigo de periódico da ACS, Letter da ACS |
+| Ciências da vida | Artigo de pesquisa em ciências da vida, Nota de aplicação em bioinformática |
+| Medicina | Relato de ensaio clínico, Protocolo de ensaio clínico, Estudo observacional, Estudo de acurácia diagnóstica, Revisão sistemática e metanálise, Relato de caso, Carta de pesquisa médica, Periódico Elsevier CAS, Periódico da Oxford University Press |
+| Matemática e estatística | Artigo AMS, Anais da AMS, Annals of Mathematics, Artigo de métodos estatísticos |
+| Economia | Artigo de economia (estilo AEA), Artigo de econometria |
+| Ciências sociais e humanidades | Manuscrito APA 7, Layout de periódico APA 7, Trabalho acadêmico APA 7, Artigo de humanidades (notas Chicago), Ensaio literário (MLA), Artigo jurídico (OSCOLA) |
+| Terra e meio ambiente | Artigo de geociências (estilo AGU), Estudo de campo em ecologia, Periódico da Canadian Science Publishing |
 
-Exceto o artigo em branco, cada um vem com resumo, palavras-chave, uma equação, uma figura, uma tabela e um `references.bib`, e compila do jeito que está. As classes são as oficiais distribuídas com o TeX Live. Conferências que publicam novos arquivos de estilo todo ano (NeurIPS, ICML) não estão no TeX Live: envie os arquivos do ano para um projeto e publique-o como modelo.
+Com exceção do artigo em branco, todos vêm com resumo, seções de exemplo e um `references.bib`, e compilam como estão. As classes são as oficiais que acompanham o TeX Live. Muitos modelos conhecidos de periódicos e conferências não vêm embutidos; [Modelos](#/help/templates) explica por quê e como adicioná-los.
 
-Os projetos que as pessoas publicaram como modelos (o formato de tese de um grupo, por exemplo) aparecem em "Compartilhados neste servidor".
+Os botões acima dos modelos mostram os de uma área. Os modelos compartilhados com você (o formato de tese de um grupo, por exemplo) estão na mesma lista, com uma etiqueta dizendo quem os compartilhou; veja [Modelos](#/help/templates).
 
 Novos projetos compilam no modo **Automático**: o motor é escolhido a cada compilação a partir do documento; veja [Compilação e PDF](#/help/compiling).
 

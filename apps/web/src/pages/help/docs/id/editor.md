@@ -51,7 +51,7 @@ Potong, salin, tempel, pilih semua, hapus, ke PDF, dan tambah komentar. Pada `\r
 - **Tampilan**: ukuran font, font (monospace atau sans-serif), tinggi baris, **Warna kode** (GitHub, Solarized, Monokai, Dracula, Nord, One Dark, dan lainnya, hanya mode kode), breadcrumb;
 - **Penyuntingan**: pemetaan tombol (bawaan, Vim, atau Emacs) dan sakelar untuk pemeriksaan kode, pratinjau persamaan, tutup kurung otomatis, dan pelengkapan otomatis;
 - **Pintasan keyboard**: lihat di bawah;
-- **Tindakan**: jumlah kata, salin, konversi templat, terbitkan sebagai templat.
+- **Tindakan**: jumlah kata, salin, ekspor ke Word, konversi templat, terbitkan sebagai templat.
 
 Tampilan, penyuntingan, dan pintasan adalah milik Anda, disimpan di peramban ini, untuk setiap proyek.
 

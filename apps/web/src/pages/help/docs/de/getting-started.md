@@ -6,19 +6,24 @@ ColTex ist ein kollaborativer LaTeX-Editor, der auf Ihrem eigenen Server läuft.
 
 Klicken Sie oben links auf **Neues Projekt**, geben Sie einen Namen ein und wählen Sie eine Vorlage:
 
-| Vorlage | Klasse |
+| Fachgebiet | Vorlagen |
 | --- | --- |
-| Leerer Artikel | Die Standardklasse `article`, der einfachste Einstieg |
-| arXiv-Preprint | `article`, einspaltig, Autoren mit Affiliationen (authblk), Literaturverweise mit natbib |
-| IEEE-Konferenz / IEEE-Zeitschrift | `IEEEtran` im Konferenz- bzw. Journal-Modus |
-| ACM-Konferenz / ACM-Zeitschrift | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, für LNCS und andere Springer-Tagungsbände |
-| Elsevier-Zeitschrift | `elsarticle`, einspaltiges Preprint |
-| APS (REVTeX 4.2) | `revtex4-2`, für Physical Review und AIP-Zeitschriften |
+| Allgemein | Leerer Artikel, arXiv-Preprint, Elsevier-Zeitschrift, Elsevier-Zeitschrift (Autor–Jahr), Elsevier-Zeitschrift (zweispaltig), Elsevier-CAS-Zeitschrift (zweispaltig), Nature, Übersichtsartikel, Kurzmitteilung |
+| Informatik und Elektrotechnik | IEEE-Konferenz, IEEE-Zeitschrift, Konferenz der IEEE Computer Society, Zeitschrift der IEEE Computer Society, Zeitschrift der IEEE Communications Society, ACM-Konferenz, ACM-Zeitschrift, ACM-Einreichung (anonym), ACM-SIGPLAN-Konferenz, ACM Transactions on Graphics, Springer LNCS, PMLR-Tagungsband |
+| Ingenieurwesen | ASME-Konferenz, ASCE-Zeitschrift, AIAA-Konferenzbeitrag, SPIE-Tagungsband |
+| Physik | APS (REVTeX 4.2), Physical Review Letters, AIP-Zeitschrift, Journal of the Physical Society of Japan, JACoW-Konferenzbeitrag |
+| Astronomie | AAS-Zeitschriften (AASTeX), Monthly Notices of the RAS |
+| Chemie | ACS-Zeitschriftenartikel, ACS-Letter |
+| Lebenswissenschaften | Forschungsartikel Lebenswissenschaften, Bioinformatik-Application-Note |
+| Medizin | Bericht einer klinischen Studie, Studienprotokoll einer klinischen Studie, Beobachtungsstudie, Studie zur diagnostischen Genauigkeit, Systematische Übersichtsarbeit und Metaanalyse, Fallbericht, Medizinischer Research Letter, Elsevier-CAS-Zeitschrift, Zeitschrift von Oxford University Press |
+| Mathematik und Statistik | AMS-Artikel, AMS-Tagungsband, Annals of Mathematics, Artikel zu statistischen Methoden |
+| Wirtschaft | Wirtschaftswissenschaftlicher Artikel (AEA-Stil), Ökonometrischer Artikel |
+| Sozial- und Geisteswissenschaften | APA-7-Manuskript, APA-7-Zeitschriftenlayout, APA-7-Studienarbeit, Geisteswissenschaftlicher Artikel (Chicago-Fußnoten), Literaturwissenschaftlicher Essay (MLA), Juristischer Artikel (OSCOLA) |
+| Erde und Umwelt | Geowissenschaftlicher Artikel (AGU-Stil), Ökologische Feldstudie, Zeitschrift von Canadian Science Publishing |
 
-Bis auf den leeren Artikel enthält jede Vorlage ein Abstract, Schlüsselwörter, eine Formel, eine Abbildung, eine Tabelle und eine `references.bib` und lässt sich so, wie sie ist, kompilieren. Die Klassen sind die offiziellen, die mit TeX Live ausgeliefert werden. Konferenzen, die jedes Jahr neue Stildateien veröffentlichen (NeurIPS, ICML), sind nicht in TeX Live enthalten: Laden Sie die Dateien des jeweiligen Jahres in ein Projekt hoch und veröffentlichen Sie es als Vorlage.
+Bis auf den leeren Artikel enthält jede eine Zusammenfassung, Beispielabschnitte und eine `references.bib` und lässt sich so übersetzen. Die Klassen sind die offiziellen, die TeX Live mitbringt. Viele bekannte Vorlagen von Zeitschriften und Konferenzen sind nicht eingebaut; warum, und wie Sie sie hinzufügen, steht unter [Vorlagen](#/help/templates).
 
-Projekte, die andere als Vorlage veröffentlicht haben (etwa das Dissertationsformat einer Arbeitsgruppe), stehen unter „Auf diesem Server geteilt“.
+Die Schaltflächen über den Vorlagen zeigen die eines Fachgebiets. Mit Ihnen geteilte Vorlagen (das Dissertationsformat einer Arbeitsgruppe etwa) stehen in derselben Liste, mit einem Etikett, wer sie geteilt hat; siehe [Vorlagen](#/help/templates).
 
 Neue Projekte kompilieren mit **Automatisch**: Die Engine wird bei jedem Build anhand des Dokuments gewählt; siehe [Kompilieren und PDF](#/help/compiling).
 

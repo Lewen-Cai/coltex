@@ -1,7 +1,7 @@
 /** Settings → Groups, and sharing projects with groups. */
 const messages: Record<string, string> = {
   '{email} · through {group}': '{email} · über {group}',
-  '{name} invited you to the group {group}': '{name} hat dich in die Gruppe {group} eingeladen',
+  '{name} invited you to the group {group}': '{name} hat Sie in die Gruppe {group} eingeladen',
   'a deleted group': 'eine gelöschte Gruppe',
   'Decline': 'Ablehnen',
   'Delete {group}?': '{group} löschen?',
@@ -28,9 +28,9 @@ const messages: Record<string, string> = {
   'Stop sharing': 'Nicht mehr teilen',
   'They lose the projects shared with this group, unless they were added to them on their own.': 'Die Person verliert die mit dieser Gruppe geteilten Projekte, außer denen, zu denen sie einzeln hinzugefügt wurde.',
   'Withdraw invitation': 'Einladung zurückziehen',
-  'You joined {group}': 'Du bist {group} beigetreten',
-  'You left {group}': 'Du hast {group} verlassen',
-  'You lose the projects shared with this group, unless you were added to them on your own.': 'Du verlierst die mit dieser Gruppe geteilten Projekte, außer denen, zu denen du einzeln hinzugefügt wurdest.',
+  'You joined {group}': 'Sie sind {group} beigetreten',
+  'You left {group}': 'Sie haben {group} verlassen',
+  'You lose the projects shared with this group, unless you were added to them on your own.': 'Sie verlieren die mit dieser Gruppe geteilten Projekte, außer denen, zu denen Sie einzeln hinzugefügt wurden.',
   'Create group': 'Gruppe erstellen',
   'Name of the group': 'Name der Gruppe',
   'Add someone by name or email': 'Jemanden per Name oder E-Mail hinzufügen',
@@ -39,7 +39,7 @@ const messages: Record<string, string> = {
   'Shared across {groups}': 'Geteilt in {groups}',
   'Shared by {name}': 'Geteilt von {name}',
   'Shared by the system administrator': 'Vom Systemadministrator geteilt',
-  'Shared with you': 'Mit dir geteilt',
+  'Shared with you': 'Mit Ihnen geteilt',
   'Shared with': 'Geteilt mit',
 }
 

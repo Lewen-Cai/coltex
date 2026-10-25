@@ -5,8 +5,19 @@ Haz clic en tu avatar abajo a la izquierda y elige **Configuración**.
 - **Cuenta**: tu nombre visible (lo ven los colaboradores, en los comentarios y en el historial), el color de tu avatar (también es tu cursor en el editor; **Automático** es el que eligió ColTex) y tu contraseña. Al cambiar la contraseña puedes cerrar la sesión en tus otros dispositivos. Las contraseñas necesitan 8 caracteres o más, con una mayúscula, una minúscula y un número; los símbolos son opcionales. La valoración que se muestra mientras escribes (débil, aceptable, buena, fuerte) sube con la longitud y los símbolos. El registro y los restablecimientos hechos por un administrador siguen las mismas reglas. El correo electrónico con el que inicias sesión solo lo puede cambiar un administrador. La verificación en dos pasos y tu actividad de inicio de sesión también están en esta página (ver más abajo).
 - **Apariencia**: el tema (Claro y Oscuro en azul, Bosque y Musgo en verde, Lavanda y Ciruela en violeta; Claro por defecto) y el idioma de la interfaz (14 idiomas, entre ellos English, 简体中文, 繁體中文, 日本語, 한국어, Español, Français y Deutsch; empieza en el idioma de tu navegador). Los temas oscuros también se aplican al editor; las páginas del PDF siguen siendo blancas. El tema se guarda con tu cuenta, así que te sigue a otros navegadores (la página de inicio de sesión siempre usa Claro); el idioma se guarda en este navegador.
 - **Servicios de sincronización**: conecta tu cuenta de Zotero (consulta [Referencias](#/help/references)) y crea y revoca tokens de git (consulta [Archivos](#/help/files)): cada uno para Git, MCP o ambos, de lectura y escritura o de solo lectura, para todos tus proyectos o algunos, con una fecha de caducidad. Usa un token por equipo, para poder revocarlo por separado.
+- **Grupos**: los grupos en los que estás, las invitaciones por responder y los grupos nuevos; ver más abajo.
 - **Agente de IA**: tu uso de la IA en los últimos 7, 30 o 90 días (solicitudes, tokens, coste, por día y por modelo) y lo que te queda de tu límite (si tienes el agente de IA), lo que los agentes de IA pueden cambiar por ti (**Permisos**), y la conexión de tus propios agentes de IA mediante **MCP**, con sus tokens; consulta [Agente de IA](#/help/ai).
 - **Skills de IA** (si tienes el agente de IA): tus propias skills, las integradas y un chat con el agente de IA para escribir skills; consulta [Agente de IA](#/help/ai).
+
+## Grupos
+
+**Configuración → Grupos** muestra los grupos en los que estás. Un proyecto puede compartirse con un grupo entero (ver [Colaboración](#/help/collaboration)), y los administradores comparten plantillas con grupos (ver [Plantillas](#/help/templates)).
+
+- Cualquiera puede crear un grupo: **Crear grupo** y darle un nombre. Quedas como propietario.
+- Los propietarios invitan a cualquiera con cuenta en este servidor con **Invita a alguien por nombre o correo**. La persona recibe una notificación y se une con **Unirse** en **Invitaciones** de esta página, o la rechaza con **Rechazar**. Mientras tanto aparece como **Invitado**, y el propietario puede **Retirar invitación**.
+- En el menú ⋯ de un miembro, los propietarios pueden **Hacer propietario** (o **Hacer miembro**) y **Quitar**. El menú ⋯ del grupo tiene **Cambiar nombre** y **Eliminar grupo** para los propietarios, y **Salir del grupo**.
+- Un grupo siempre tiene propietario: el último hace propietario a otra persona antes de salir, o elimina el grupo.
+- Al salir de un grupo, ser quitado o eliminarse el grupo, pierdes los proyectos compartidos con él, salvo aquellos a los que se te añadió por tu cuenta.
 
 ## Verificación en dos pasos
 

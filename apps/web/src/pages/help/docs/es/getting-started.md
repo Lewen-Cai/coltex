@@ -6,19 +6,24 @@ ColTex es un editor colaborativo de LaTeX que se ejecuta en tu propio servidor. 
 
 Haz clic en **Nuevo proyecto** arriba a la izquierda, ponle un nombre y elige una plantilla:
 
-| Plantilla | Clase |
+| Campo | Plantillas |
 | --- | --- |
-| Artículo en blanco | La clase estándar `article`, el comienzo más sencillo |
-| Preprint de arXiv | `article`, una columna, autores con afiliaciones (authblk), referencias con natbib |
-| Congreso IEEE / Revista IEEE | `IEEEtran` en modo congreso / revista |
-| Congreso ACM / Revista ACM | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, para LNCS y otras actas de Springer |
-| Revista de Elsevier | `elsarticle`, preprint a una columna |
-| APS (REVTeX 4.2) | `revtex4-2`, para revistas de Physical Review y AIP |
+| General | Artículo en blanco, Preprint de arXiv, Revista de Elsevier, Revista de Elsevier (autor–año), Revista de Elsevier (dos columnas), Revista CAS de Elsevier (dos columnas), Nature, Artículo de revisión, Comunicación breve |
+| Informática e ingeniería eléctrica | Congreso IEEE, Revista IEEE, Congreso de la IEEE Computer Society, Revista de la IEEE Computer Society, Revista de la IEEE Communications Society, Congreso ACM, Revista ACM, Envío a ACM (anónimo), Congreso ACM SIGPLAN, ACM Transactions on Graphics, Springer LNCS, Actas de PMLR |
+| Ingeniería | Congreso de la ASME, Revista de la ASCE, Artículo de congreso de la AIAA, Actas de SPIE |
+| Física | APS (REVTeX 4.2), Physical Review Letters, Revista de AIP, Journal of the Physical Society of Japan, Artículo de congreso JACoW |
+| Astronomía | Revistas de la AAS (AASTeX), Monthly Notices of the RAS |
+| Química | Artículo de revista de la ACS, Letter de la ACS |
+| Ciencias de la vida | Artículo de investigación en ciencias de la vida, Nota de aplicación en bioinformática |
+| Medicina | Informe de ensayo clínico, Protocolo de ensayo clínico, Estudio observacional, Estudio de precisión diagnóstica, Revisión sistemática y metaanálisis, Caso clínico, Carta de investigación médica, Revista Elsevier CAS, Revista de Oxford University Press |
+| Matemáticas y estadística | Artículo AMS, Actas de la AMS, Annals of Mathematics, Artículo de métodos estadísticos |
+| Economía | Artículo de economía (estilo AEA), Artículo de econometría |
+| Ciencias sociales y humanidades | Manuscrito APA 7, Diseño de revista APA 7, Trabajo de estudiante APA 7, Artículo de humanidades (notas Chicago), Ensayo literario (MLA), Artículo jurídico (OSCOLA) |
+| Tierra y medio ambiente | Artículo de geociencias (estilo AGU), Estudio de campo en ecología, Revista de Canadian Science Publishing |
 
-Salvo el artículo en blanco, todas incluyen un resumen, palabras clave, una ecuación, una figura, una tabla y un `references.bib`, y compilan tal como están. Las clases son las oficiales que vienen con TeX Live. Los congresos que publican archivos de estilo nuevos cada año (NeurIPS, ICML) no están en TeX Live: sube los archivos de ese año a un proyecto y publícalo como plantilla.
+Salvo el artículo en blanco, todas traen un resumen, secciones de ejemplo y un `references.bib`, y compilan tal cual. Las clases son las oficiales que incluye TeX Live. Muchas plantillas conocidas de revistas y congresos no vienen incluidas; en [Plantillas](#/help/templates) se explica por qué y cómo añadirlas.
 
-Los proyectos que otras personas han publicado como plantillas (por ejemplo, el formato de tesis de un grupo) aparecen en «Compartidas en este servidor».
+Los botones sobre las plantillas muestran las de un campo. Las plantillas compartidas contigo (el formato de tesis de un grupo, por ejemplo) están en la misma lista, con una etiqueta que dice quién las compartió; ver [Plantillas](#/help/templates).
 
 Los nuevos proyectos compilan con **Automático**: el motor se elige en cada compilación a partir del documento; consulta [Compilación y PDF](#/help/compiling).
 

@@ -6,19 +6,24 @@ ColTex는 내 서버에서 실행되는 협업 LaTeX 편집기입니다. Overlea
 
 왼쪽 위의 **새 프로젝트**를 클릭하고, 이름을 입력한 뒤 템플릿을 고릅니다.
 
-| 템플릿 | 클래스 |
+| 분야 | 템플릿 |
 | --- | --- |
-| 빈 article | 표준 `article`, 가장 간단한 시작 |
-| arXiv 프리프린트 | `article`, 1단, 소속이 포함된 저자(authblk), natbib 참고문헌 |
-| IEEE 학회 / IEEE 저널 | 학회 / 저널 모드의 `IEEEtran` |
-| ACM 학회 / ACM 저널 | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, LNCS 및 기타 Springer 논문집용 |
-| Elsevier 저널 | `elsarticle`, 1단 프리프린트 |
-| APS (REVTeX 4.2) | `revtex4-2`, Physical Review 및 AIP 저널용 |
+| 일반 | 빈 article, arXiv 프리프린트, Elsevier 저널, Elsevier 저널(저자–연도), Elsevier 저널(2단), Elsevier CAS 저널(2단), Nature, 리뷰 논문, 단신 |
+| 컴퓨터·전기전자공학 | IEEE 학회, IEEE 저널, IEEE Computer Society 학회, IEEE Computer Society 저널, IEEE Communications Society 저널, ACM 학회, ACM 저널, ACM 투고(익명), ACM SIGPLAN 학회, ACM Transactions on Graphics, Springer LNCS, PMLR 학술대회 논문집 |
+| 공학 | ASME 학회, ASCE 저널, AIAA 학회 논문, SPIE 논문집 |
+| 물리학 | APS (REVTeX 4.2), Physical Review Letters, AIP 저널, 일본물리학회지(JPSJ), JACoW 학회 논문 |
+| 천문학 | AAS 저널(AASTeX), Monthly Notices of the RAS |
+| 화학 | ACS 저널 논문, ACS 레터 |
+| 생명과학 | 생명과학 연구 논문, 생물정보학 애플리케이션 노트 |
+| 의학 | 임상시험 보고서, 임상시험 프로토콜, 관찰 연구, 진단 정확도 연구, 체계적 문헌고찰 및 메타분석, 증례 보고, 의학 연구 레터, Elsevier CAS 저널, 옥스퍼드 대학 출판부 저널 |
+| 수학·통계학 | AMS 논문, AMS 논문집, Annals of Mathematics, 통계 방법론 논문 |
+| 경제학 | 경제학 논문(AEA 스타일), 계량경제학 논문 |
+| 사회과학·인문학 | APA 7 원고, APA 7 저널 레이아웃, APA 7 학생 보고서, 인문학 논문(시카고 주석), 문학 에세이(MLA), 법학 논문(OSCOLA) |
+| 지구·환경 | 지구과학 논문(AGU 스타일), 생태학 현장 연구, Canadian Science Publishing 저널 |
 
-빈 article을 제외한 각 템플릿에는 초록, 키워드, 수식, 그림, 표, `references.bib`가 들어 있으며 그대로 빌드됩니다. 클래스는 TeX Live에 포함된 공식 클래스입니다. 해마다 새 스타일 파일을 내는 학회(NeurIPS, ICML)는 TeX Live에 없습니다. 그해의 파일을 프로젝트에 업로드하고 템플릿으로 게시하세요.
+빈 article을 제외하면 모두 초록, 예시 섹션, `references.bib`가 들어 있고 그대로 빌드됩니다. 클래스는 모두 TeX Live에 포함된 공식 클래스입니다. 잘 알려진 저널과 학회 템플릿 중 상당수는 내장되어 있지 않습니다. 그 이유와 추가하는 방법은 [템플릿](#/help/templates)을 보세요.
 
-사람들이 템플릿으로 게시한 프로젝트(예: 연구실의 학위 논문 양식)는 "이 서버에서 공유됨"에 나옵니다.
+템플릿 위의 버튼으로 한 분야의 템플릿만 봅니다. 나와 공유된 템플릿(연구실의 논문 양식 등)도 같은 목록에 있고, 태그에 누가 공유했는지 나옵니다. [템플릿](#/help/templates)을 참고하세요.
 
 새 프로젝트는 **자동**으로 컴파일됩니다. 빌드할 때마다 문서를 보고 엔진을 고릅니다. [컴파일과 PDF](#/help/compiling)를 참고하세요.
 

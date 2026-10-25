@@ -64,3 +64,13 @@ Bộ chuyển chế độ xem (bốn nút nhỏ ở bên phải thanh PDF) hiể
 - Thanh PDF tải xuống PDF hiện tại.
 - Nút tải xuống ở đầu cây thư mục tải các tệp mã nguồn của dự án dưới dạng .zip.
 - Trong danh sách dự án, menu của một dự án (⋯) có **Tải xuống PDF**, sẽ biên dịch dự án trước, và **Tải xuống .zip** cho toàn bộ tệp mã nguồn.
+
+## Xuất sang Word
+
+Một số tạp chí chỉ nhận tệp Word. **Xuất sang Word…** trong menu của dự án (⋯) ở danh sách dự án, hoặc trong **Thao tác** của cài đặt dự án, chuyển dự án thành tệp .docx.
+
+- Trang tiêu đề lấy từ chính tài liệu: tiêu đề, tác giả, đơn vị công tác, tác giả liên hệ, tóm tắt và từ khóa, với các lớp mà tính năng chuyển mẫu đọc được (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
+- Công thức toán trở thành phương trình Word. Word đánh số hình và bảng, hình PDF và EPS được chuyển thành ảnh, còn phương trình có số vẫn giữ số của mình nên `\eqref` vẫn trỏ đúng.
+- **Kiểu trích dẫn**: **Giống tài liệu** theo kiểu tài liệu tham khảo mà tài liệu đang dùng. Bạn cũng có thể chọn APA, Vancouver, AMA, IEEE, Nature hoặc Chicago, hay một tệp `.csl` đã tải lên dự án.
+- **Mẫu Word**: tải mẫu Word (`.docx`) của tạp chí lên dự án rồi chọn ở đây; tài liệu sẽ dùng các kiểu định dạng của mẫu đó. Mục này chỉ hiện khi dự án có tệp `.docx`.
+- Hãy kiểm tra kết quả trước khi gửi: macro tự định nghĩa và bảng phức tạp có thể cần chỉnh lại trong Word. Hình vẽ TikZ không được chuyển đổi: hãy biên dịch chúng thành ảnh rồi chèn ảnh đó vào.

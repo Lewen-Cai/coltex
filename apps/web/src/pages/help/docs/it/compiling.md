@@ -64,3 +64,13 @@ Il selettore di vista (quattro piccoli pulsanti a destra della barra del PDF) mo
 - La barra del PDF scarica il PDF attuale.
 - Il pulsante di download in cima all’albero dei file scarica i file sorgente del progetto come .zip.
 - Nell’elenco dei progetti, il menu di un progetto (⋯) ha **Scarica PDF**, che prima lo compila, e **Scarica .zip** per tutti i suoi file sorgente.
+
+## Esportare in Word
+
+Alcune riviste accettano solo file Word. **Esporta in Word…** nel menu di un progetto (⋯) nell’elenco dei progetti, oppure in **Azioni** nelle impostazioni del progetto, trasforma il progetto in un .docx.
+
+- La pagina del titolo viene dal documento: titolo, autori, affiliazioni, autore corrispondente, abstract e parole chiave, per le classi che la conversione di modello sa leggere (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
+- Le formule diventano equazioni di Word. Word numera figure e tabelle, le figure PDF ed EPS diventano immagini e le equazioni numerate mantengono il loro numero, quindi `\eqref` continua a puntare a esse.
+- **Stile delle citazioni**: **Come nel documento** segue lo stile bibliografico del documento. Puoi anche scegliere APA, Vancouver, AMA, IEEE, Nature o Chicago, oppure un file `.csl` caricato nel progetto.
+- **Modello Word**: carica nel progetto il modello Word (`.docx`) di una rivista e sceglilo qui; il documento ne prende gli stili. Il campo compare quando il progetto contiene un file `.docx`.
+- Controlla il risultato prima di inviarlo: le tue macro e le tabelle complesse potrebbero richiedere ritocchi in Word. I disegni TikZ non vengono convertiti: compilali come immagini e includi quelle.

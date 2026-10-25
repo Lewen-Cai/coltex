@@ -6,19 +6,24 @@ ColTex è un editor LaTeX collaborativo che gira sul tuo server. Funziona in mod
 
 Fai clic su **Nuovo progetto** in alto a sinistra, dagli un nome e scegli un modello:
 
-| Modello | Classe |
+| Ambito | Modelli |
 | --- | --- |
-| Articolo vuoto | La classe standard `article`, il punto di partenza più semplice |
-| Preprint arXiv | `article`, una colonna, autori con affiliazioni (authblk), bibliografia natbib |
-| Conferenza IEEE / Rivista IEEE | `IEEEtran` in modalità conferenza / rivista |
-| Conferenza ACM / Rivista ACM | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, per LNCS e altri atti Springer |
-| Rivista Elsevier | `elsarticle`, preprint a una colonna |
-| APS (REVTeX 4.2) | `revtex4-2`, per le riviste Physical Review e AIP |
+| Generale | Articolo vuoto, Preprint arXiv, Rivista Elsevier, Rivista Elsevier (autore–anno), Rivista Elsevier (due colonne), Rivista Elsevier CAS (due colonne), Nature, Articolo di rassegna, Comunicazione breve |
+| Informatica e ingegneria elettrica | Conferenza IEEE, Rivista IEEE, Conferenza della IEEE Computer Society, Rivista della IEEE Computer Society, Rivista della IEEE Communications Society, Conferenza ACM, Rivista ACM, Sottomissione ACM (anonima), Conferenza ACM SIGPLAN, ACM Transactions on Graphics, Springer LNCS, Atti PMLR |
+| Ingegneria | Conferenza ASME, Rivista ASCE, Articolo di conferenza AIAA, Atti SPIE |
+| Fisica | APS (REVTeX 4.2), Physical Review Letters, Rivista AIP, Journal of the Physical Society of Japan, Articolo di conferenza JACoW |
+| Astronomia | Riviste AAS (AASTeX), Monthly Notices of the RAS |
+| Chimica | Articolo di rivista ACS, Letter ACS |
+| Scienze della vita | Articolo di ricerca in scienze della vita, Nota applicativa di bioinformatica |
+| Medicina | Report di studio clinico, Protocollo di studio clinico, Studio osservazionale, Studio di accuratezza diagnostica, Revisione sistematica e meta-analisi, Caso clinico, Lettera di ricerca medica, Rivista Elsevier CAS, Rivista di Oxford University Press |
+| Matematica e statistica | Articolo AMS, Atti AMS, Annals of Mathematics, Articolo di metodi statistici |
+| Economia | Articolo di economia (stile AEA), Articolo di econometria |
+| Scienze sociali e umanistiche | Manoscritto APA 7, Impaginazione da rivista APA 7, Elaborato studentesco APA 7, Articolo umanistico (note Chicago), Saggio letterario (MLA), Articolo giuridico (OSCOLA) |
+| Terra e ambiente | Articolo di geoscienze (stile AGU), Studio ecologico sul campo, Rivista di Canadian Science Publishing |
 
-A parte l’articolo vuoto, ognuno include un abstract, parole chiave, un’equazione, una figura, una tabella e un `references.bib`, e si compila così com’è. Le classi sono quelle ufficiali distribuite con TeX Live. Le conferenze che pubblicano nuovi file di stile ogni anno (NeurIPS, ICML) non sono in TeX Live: carica i file dell’anno in un progetto e pubblicalo come modello.
+Tranne l’articolo vuoto, ognuno include un abstract, sezioni di esempio e un `references.bib`, e si compila così com’è. Le classi sono quelle ufficiali incluse in TeX Live. Molti modelli noti di riviste e conferenze non sono integrati; [Modelli](#/help/templates) spiega perché e come aggiungerli.
 
-I progetti che altre persone hanno pubblicato come modelli (per esempio il formato di tesi di un gruppo) sono elencati in “Condivisi su questo server”.
+I pulsanti sopra i modelli mostrano quelli di un ambito. I modelli condivisi con te (il formato di tesi di un gruppo, per esempio) sono nello stesso elenco, con un’etichetta che dice chi li ha condivisi; vedi [Modelli](#/help/templates).
 
 I nuovi progetti si compilano con **Automatico**: il motore viene scelto a ogni compilazione in base al documento; vedi [Compilazione e PDF](#/help/compiling).
 

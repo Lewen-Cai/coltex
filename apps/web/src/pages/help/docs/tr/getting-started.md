@@ -6,19 +6,24 @@ ColTex, kendi sunucunuzda çalışan, birlikte çalışmaya yönelik bir LaTeX d
 
 Sol üstteki **Yeni proje** düğmesine tıklayın, bir ad verin ve bir şablon seçin:
 
-| Şablon | Sınıf |
+| Alan | Şablonlar |
 | --- | --- |
-| Boş makale | Standart `article`, en basit başlangıç |
-| arXiv ön baskısı | `article`, tek sütun, kurumlarıyla yazarlar (authblk), natbib kaynakçası |
-| IEEE konferansı / IEEE dergisi | Konferans / dergi kipinde `IEEEtran` |
-| ACM konferansı / ACM dergisi | `acmart` sigconf / acmsmall |
-| Springer LNCS | `llncs`, LNCS ve diğer Springer bildiri kitapları için |
-| Elsevier dergisi | `elsarticle`, tek sütunlu ön baskı |
-| APS (REVTeX 4.2) | `revtex4-2`, Physical Review ve AIP dergileri için |
+| Genel | Boş makale, arXiv ön baskısı, Elsevier dergisi, Elsevier dergisi (yazar–yıl), Elsevier dergisi (iki sütun), Elsevier CAS dergisi (iki sütun), Nature, Derleme makalesi, Kısa bildiri |
+| Bilgisayar ve elektrik mühendisliği | IEEE konferansı, IEEE dergisi, IEEE Computer Society konferansı, IEEE Computer Society dergisi, IEEE Communications Society dergisi, ACM konferansı, ACM dergisi, ACM gönderimi (anonim), ACM SIGPLAN konferansı, ACM Transactions on Graphics, Springer LNCS, PMLR bildiri kitabı |
+| Mühendislik | ASME konferansı, ASCE dergisi, AIAA konferans bildirisi, SPIE bildiri kitabı |
+| Fizik | APS (REVTeX 4.2), Physical Review Letters, AIP dergisi, Journal of the Physical Society of Japan, JACoW konferans bildirisi |
+| Astronomi | AAS dergileri (AASTeX), Monthly Notices of the RAS |
+| Kimya | ACS dergi makalesi, ACS letter |
+| Yaşam bilimleri | Yaşam bilimleri araştırma makalesi, Biyoinformatik uygulama notu |
+| Tıp | Klinik çalışma raporu, Klinik çalışma protokolü, Gözlemsel çalışma, Tanısal doğruluk çalışması, Sistematik derleme ve meta-analiz, Olgu sunumu, Tıbbi araştırma mektubu, Elsevier CAS dergisi, Oxford University Press dergisi |
+| Matematik ve istatistik | AMS makalesi, AMS bildiri kitabı, Annals of Mathematics, İstatistiksel yöntem makalesi |
+| İktisat | İktisat makalesi (AEA biçimi), Ekonometri makalesi |
+| Sosyal ve beşeri bilimler | APA 7 makale taslağı, APA 7 dergi düzeni, APA 7 öğrenci ödevi, Beşeri bilimler makalesi (Chicago dipnotları), Edebiyat denemesi (MLA), Hukuk makalesi (OSCOLA) |
+| Yer ve çevre | Yer bilimleri makalesi (AGU biçimi), Ekolojik arazi çalışması, Canadian Science Publishing dergisi |
 
-Boş makale dışında her biri bir özet, anahtar sözcükler, bir denklem, bir şekil, bir tablo ve bir `references.bib` ile gelir ve olduğu gibi derlenir. Sınıflar, TeX Live ile gelen resmî sınıflardır. Her yıl yeni stil dosyaları yayımlayan konferanslar (NeurIPS, ICML) TeX Live’da yoktur: o yılın dosyalarını bir projeye yükleyin ve projeyi şablon olarak yayımlayın.
+Boş makale dışında her birinde bir özet, örnek bölümler ve bir `references.bib` vardır ve olduğu gibi derlenir. Sınıflar TeX Live ile gelen resmî sınıflardır. Bilinen pek çok dergi ve konferans şablonu yerleşik değildir; nedenini ve nasıl ekleneceğini [Şablonlar](#/help/templates) anlatır.
 
-Kişilerin şablon olarak yayımladığı projeler (örneğin bir grubun tez biçimi) "Bu sunucuda paylaşılanlar" altında listelenir.
+Şablonların üstündeki düğmeler tek bir alanın şablonlarını gösterir. Sizinle paylaşılan şablonlar (örneğin bir grubun tez biçimi) aynı listededir ve kimin paylaştığını söyleyen bir etiket taşır; [Şablonlar](#/help/templates) bölümüne bakın.
 
 Yeni projeler **Otomatik** ile derlenir: motor her derlemede belgeye göre seçilir; bkz. [Derleme ve PDF](#/help/compiling).
 
