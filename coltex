@@ -67,6 +67,7 @@ msg_en() {
     updating) M='Updating ColTex {from} → {to}; see the release notes: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live edition: {edition} (standard: every package without their manuals, about 12 GB on disk; full: with the manuals and sources, about 23 GB)' ;;
     edition_already) M='Already the {edition} edition' ;;
+    images_fallback) M='Alibaba Cloud doesn’t have the images of this version yet.' ;;
     edition_switching) M='Switching to the {edition} edition (downloads TeX Live)…' ;;
     done) M='Done.' ;;
     edition_usage) M='Usage: coltex edition [standard | full]' ;;
@@ -126,6 +127,7 @@ msg_zh_CN() {
     updating) M='正在把 ColTex 从 {from} 更新到 {to}；更新说明：https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live 版本：{edition}（standard：全部宏包，不含手册，占用约 12 GB；full：含手册和源码，约 23 GB）' ;;
     edition_already) M='已经是 {edition} 版本' ;;
+    images_fallback) M='阿里云上还没有这个版本的镜像。' ;;
     edition_switching) M='正在切换到 {edition} 版本（会下载 TeX Live）…' ;;
     done) M='完成。' ;;
     edition_usage) M='用法：coltex edition [standard | full]' ;;
@@ -185,6 +187,7 @@ msg_zh_TW() {
     updating) M='正在將 ColTex 從 {from} 更新到 {to}；版本資訊：https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live 版本：{edition}（standard：全部套件，不含手冊，磁碟占用約 12 GB；full：含手冊和原始碼，約 23 GB）' ;;
     edition_already) M='已經是 {edition} 版本' ;;
+    images_fallback) M='阿里雲上還沒有這個版本的映像檔。' ;;
     edition_switching) M='正在切換到 {edition} 版本（會下載 TeX Live）…' ;;
     done) M='完成。' ;;
     edition_usage) M='用法：coltex edition [standard | full]' ;;
@@ -244,6 +247,7 @@ msg_ja() {
     updating) M='ColTex を {from} から {to} に更新中。リリースノート：https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live エディション：{edition}（standard：すべてのパッケージ、マニュアルなし、約 12 GB。full：マニュアルとソース付き、約 23 GB）' ;;
     edition_already) M='すでに {edition} エディションです' ;;
+    images_fallback) M='Alibaba Cloud にはまだこのバージョンのイメージがありません。' ;;
     edition_switching) M='{edition} エディションに切り替え中（TeX Live をダウンロードします）…' ;;
     done) M='完了しました。' ;;
     edition_usage) M='使い方：coltex edition [standard | full]' ;;
@@ -303,6 +307,7 @@ msg_ko() {
     updating) M='ColTex {from} → {to} 업데이트 중. 릴리스 노트: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live 에디션: {edition} (standard: 모든 패키지, 매뉴얼 제외, 약 12 GB / full: 매뉴얼·소스 포함, 약 23 GB)' ;;
     edition_already) M='이미 {edition} 에디션입니다' ;;
+    images_fallback) M='Alibaba Cloud에 아직 이 버전의 이미지가 없습니다.' ;;
     edition_switching) M='{edition} 에디션으로 전환하는 중(TeX Live를 다운로드합니다)…' ;;
     done) M='완료.' ;;
     edition_usage) M='사용법: coltex edition [standard | full]' ;;
@@ -362,6 +367,7 @@ msg_es() {
     updating) M='Actualizando ColTex {from} → {to}; consulta las notas de la versión: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edición de TeX Live: {edition} (standard: todos los paquetes sin manuales, unos 12 GB en disco; full: con manuales y fuentes, unos 23 GB)' ;;
     edition_already) M='Ya es la edición {edition}' ;;
+    images_fallback) M='Alibaba Cloud aún no tiene las imágenes de esta versión.' ;;
     edition_switching) M='Cambiando a la edición {edition} (descarga TeX Live)…' ;;
     done) M='Listo.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
@@ -421,6 +427,7 @@ msg_fr() {
     updating) M='Mise à jour de ColTex {from} → {to} ; notes de version : https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Édition de TeX Live : {edition} (standard : tous les packages sans manuels, environ 12 GB ; full : avec manuels et sources, environ 23 GB)' ;;
     edition_already) M='Déjà en édition {edition}' ;;
+    images_fallback) M='Alibaba Cloud n’a pas encore les images de cette version.' ;;
     edition_switching) M='Passage à l’édition {edition} (télécharge TeX Live)…' ;;
     done) M='Terminé.' ;;
     edition_usage) M='Utilisation : coltex edition [standard | full]' ;;
@@ -480,6 +487,7 @@ msg_de() {
     updating) M='ColTex wird aktualisiert: {from} → {to}; Versionshinweise: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX-Live-Edition: {edition} (standard: alle Pakete ohne Handbücher, etwa 12 GB; full: mit Handbüchern und Quellen, etwa 23 GB)' ;;
     edition_already) M='Bereits die Edition {edition}' ;;
+    images_fallback) M='Alibaba Cloud hat die Images dieser Version noch nicht.' ;;
     edition_switching) M='Wechsel zur Edition {edition} (lädt TeX Live herunter)…' ;;
     done) M='Fertig.' ;;
     edition_usage) M='Verwendung: coltex edition [standard | full]' ;;
@@ -539,6 +547,7 @@ msg_pt_BR() {
     updating) M='Atualizando o ColTex {from} → {to}; veja as notas da versão: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edição do TeX Live: {edition} (standard: todos os pacotes sem manuais, cerca de 12 GB em disco; full: com manuais e fontes, cerca de 23 GB)' ;;
     edition_already) M='Já está na edição {edition}' ;;
+    images_fallback) M='A Alibaba Cloud ainda não tem as imagens desta versão.' ;;
     edition_switching) M='Mudando para a edição {edition} (baixa o TeX Live)…' ;;
     done) M='Concluído.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
@@ -598,6 +607,7 @@ msg_it() {
     updating) M='Aggiornamento di ColTex {from} → {to}; vedi le note di rilascio: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edizione di TeX Live: {edition} (standard: tutti i pacchetti senza manuali, circa 12 GB; full: con manuali e sorgenti, circa 23 GB)' ;;
     edition_already) M='È già l’edizione {edition}' ;;
+    images_fallback) M='Alibaba Cloud non ha ancora le immagini di questa versione.' ;;
     edition_switching) M='Passaggio all’edizione {edition} (scarica TeX Live)…' ;;
     done) M='Fatto.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
@@ -657,6 +667,7 @@ msg_ru() {
     updating) M='Обновление ColTex {from} → {to}; примечания к выпуску: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Редакция TeX Live: {edition} (standard: все пакеты без руководств, около 12 GB; full: с руководствами и исходниками, около 23 GB)' ;;
     edition_already) M='Уже установлена редакция {edition}' ;;
+    images_fallback) M='В Alibaba Cloud пока нет образов этой версии.' ;;
     edition_switching) M='Переключение на редакцию {edition} (загружается TeX Live)…' ;;
     done) M='Готово.' ;;
     edition_usage) M='Использование: coltex edition [standard | full]' ;;
@@ -716,6 +727,7 @@ msg_tr() {
     updating) M='ColTex güncelleniyor: {from} → {to}; sürüm notları: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='TeX Live sürümü: {edition} (standard: kılavuzlar olmadan tüm paketler, yaklaşık 12 GB; full: kılavuzlar ve kaynaklarla, yaklaşık 23 GB)' ;;
     edition_already) M='Zaten bu sürüm kullanılıyor: {edition}' ;;
+    images_fallback) M='Alibaba Cloud’da bu sürümün imajları henüz yok.' ;;
     edition_switching) M='Şu sürüme geçiliyor: {edition} (TeX Live indirilir)…' ;;
     done) M='Bitti.' ;;
     edition_usage) M='Kullanım: coltex edition [standard | full]' ;;
@@ -775,6 +787,7 @@ msg_vi() {
     updating) M='Đang cập nhật ColTex {from} → {to}; xem ghi chú phát hành: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Phiên bản TeX Live: {edition} (standard: mọi gói, không kèm tài liệu, khoảng 12 GB; full: kèm tài liệu và mã nguồn, khoảng 23 GB)' ;;
     edition_already) M='Đang dùng phiên bản {edition} rồi' ;;
+    images_fallback) M='Alibaba Cloud chưa có image của phiên bản này.' ;;
     edition_switching) M='Đang chuyển sang phiên bản {edition} (tải TeX Live)…' ;;
     done) M='Xong.' ;;
     edition_usage) M='Cách dùng: coltex edition [standard | full]' ;;
@@ -834,6 +847,7 @@ msg_id() {
     updating) M='Memperbarui ColTex {from} → {to}; lihat catatan rilis: https://github.com/coltexeditor/coltex/releases' ;;
     edition_show) M='Edisi TeX Live: {edition} (standard: semua paket tanpa manual, sekitar 12 GB; full: dengan manual dan sumber, sekitar 23 GB)' ;;
     edition_already) M='Sudah menggunakan edisi {edition}' ;;
+    images_fallback) M='Alibaba Cloud belum punya image versi ini.' ;;
     edition_switching) M='Beralih ke edisi {edition} (mengunduh TeX Live)…' ;;
     done) M='Selesai.' ;;
     edition_usage) M='Penggunaan: coltex edition [standard | full]' ;;
@@ -999,7 +1013,7 @@ pull_with_bar() {
   # Where from, once (not again on each retry; again after a switch to GitHub).
   if [ -z "${NOTED:-}" ]; then
     local from
-    from="$(get COLTEX_IMAGES)"
+    from="${COLTEX_IMAGES:-$(get COLTEX_IMAGES)}"
     case "${from:-$GHCR_IMAGES}" in
       "$ALIYUN_IMAGES") note "$(T download_aliyun)" ;;
       "$GHCR_IMAGES") note "$(T download_github)" ;;
@@ -1160,6 +1174,9 @@ deploy() {
   elif pull_images "$@"; then
     ensure_data
     up "$@"
+  elif images_missing && from_github "$@"; then
+    ensure_data
+    up "$@"
   elif images_missing; then
     # Only when there are none for this version; a network or registry error is not a reason
     # to build TeX Live here.
@@ -1175,6 +1192,23 @@ deploy() {
   after=" $(running_images | tr '\n' ' ') "
   for old in $before; do
     case "$after" in *" $old "*) ;; *) docker image rm "$old" >/dev/null 2>&1 || true ;; esac
+  done
+}
+# Alibaba Cloud copies a release's images only after ghcr.io has them (the full compiler takes a
+# couple of hours), so a version it doesn't have yet comes from ghcr.io, tagged here under the
+# mirror's names: .env stays as it is, and the next update comes from the mirror again.
+from_github() {
+  local svc mirror github
+  [ "$(get COLTEX_IMAGES)" = "$ALIYUN_IMAGES" ] || return 1
+  note "$(T images_fallback)"
+  NOTED=""
+  COLTEX_IMAGES="$GHCR_IMAGES" pull_images "$@" || return 1
+  for svc in ${*:-$(docker compose config --services)}; do
+    mirror="$(docker compose config --images "$svc")"
+    github="$(COLTEX_IMAGES="$GHCR_IMAGES" docker compose config --images "$svc")"
+    [ "$mirror" = "$github" ] && continue
+    docker tag "$github" "$mirror" || return 1
+    docker image rm "$github" >/dev/null 2>&1 || true
   done
 }
 # The user id owning a file (GNU and busybox stat, then BSD's).
@@ -1225,7 +1259,11 @@ finish_update() {
   if [ -L "$HOME/.local/bin/coltex" ] && [ ! -e /usr/local/bin/coltex ] && path_started; then add_to_path || true; fi
   T updating from="$1" to="$(current)"
   setting COLTEX_IMAGE_TAG "$2"
+  # Until the new images run: an update that stopped half way (no images, a broken download) is
+  # finished by running it again, though the checkout already says the new version.
+  setting COLTEX_UPDATING "$2"
   deploy
+  setting COLTEX_UPDATING ""
 }
 
 case "${1:-help}" in
@@ -1254,7 +1292,7 @@ case "${1:-help}" in
     if [ "$to" = main ]; then
       net git fetch -q --depth 1 origin main && git checkout -q -B main FETCH_HEAD
     else
-      if [ "$to" = "$from" ]; then T latest version="$from"; exit 0; fi
+      if [ "$to" = "$from" ] && [ "$(get COLTEX_UPDATING)" != "$to" ]; then T latest version="$from"; exit 0; fi
       net git fetch -q --depth 1 --force origin tag "$to" && git -c advice.detachedHead=false checkout -q "$to"
     fi
     # The rest is done by the version just checked out, so whatever it needs on the way (a

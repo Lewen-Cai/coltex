@@ -4,7 +4,7 @@ All notable changes to ColTex. Versions follow `vMAJOR.MINOR.PATCH`; while ColTe
 
 ## v0.0.6
 
-Export to Word, 60 templates across twelve fields, groups, templates shared with groups, a better conversion between journal templates, a compiler that keeps up when several people build at once and keeps each project's builds apart. ColTex also moves to the coltexeditor organization on GitHub.
+Export to Word, the AI agent on the web, 60 templates across twelve fields, groups, templates shared with groups, conversion into any template with an AI agent Skill to finish it for the venue, a compiler that keeps up when several people build at once and keeps each project's builds apart. ColTex also moves to the coltexeditor organization on GitHub.
 
 ### New
 
@@ -31,6 +31,8 @@ Export to Word, 60 templates across twelve fields, groups, templates shared with
 - A process a build left running could keep the compiler waiting for that build forever.
 - A build that failed with an error (for example a file deleted while it started) stopped the whole compiler, and every build running or waiting with it hung until it timed out.
 - After installing, `coltex` wasn't found in new SSH sessions on systems whose login doesn't read `~/.bashrc`. The installer now adds `~/.local/bin` to the files a login reads too, and `coltex update` adds it to installs that had it only in `~/.bashrc`.
+- `coltex update` right after a release, while the Alibaba Cloud mirror didn't have its images yet, tried to build them from the sources instead of taking them from GitHub. It now downloads them from GitHub, and the next update uses the mirror again.
+- An update that stopped half way (the images not downloaded) said the new version was already installed when run again. Running it again now finishes it.
 
 ## v0.0.5
 

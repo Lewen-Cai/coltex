@@ -216,7 +216,7 @@ pull_with_bar() {
   # Where from, once (not again on each retry; again after a switch to GitHub).
   if [ -z "${NOTED:-}" ]; then
     local from
-    from="$(get COLTEX_IMAGES)"
+    from="${COLTEX_IMAGES:-$(get COLTEX_IMAGES)}"
     case "${from:-$GHCR_IMAGES}" in
       "$ALIYUN_IMAGES") note "$(T download_aliyun)" ;;
       "$GHCR_IMAGES") note "$(T download_github)" ;;
