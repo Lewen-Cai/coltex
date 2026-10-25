@@ -1,0 +1,72 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{authblk}
+\usepackage{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\onehalfspacing
+
+\title{Title of the Paper}
+\author[1]{First Author\thanks{Corresponding author: first@example.org.}}
+\author[2]{Second Author}
+\affil[1]{Department of Economics, University, City, Country}
+\affil[2]{Institute, City, Country}
+\date{This version: \today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\noindent\textbf{JEL codes:} C21, D82, O47\\
+\noindent\textbf{Keywords:} first keyword, second keyword, third keyword
+
+\section{Introduction}
+State the question, the approach and the main finding. Cite by name, as
+\citet{akerlof1970} showed, or in parentheses \citep{solow1956}.
+
+\section{Model}
+Output is produced as
+\begin{equation}
+  Y_t = K_t^{\alpha} (A_t L_t)^{1-\alpha}.
+  \label{eq:main}
+\end{equation}
+
+\section{Data and empirical strategy}
+Describe the data and the identification strategy~\citep{angrist2009}.
+
+\section{Results}
+Table~\ref{tab:results} reports the estimates.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Main estimates. Standard errors in parentheses.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+     & (1) & (2) \\
+    \midrule
+    Treatment & 0.124 & 0.118 \\
+     & (0.031) & (0.029) \\
+    Controls & No & Yes \\
+    Observations & 12{,}480 & 12{,}480 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Conclusion}
+Summarise the findings and their implications for policy.
+
+\bibliographystyle{aer}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,88 @@
+\documentclass[pmlr]{jmlr}
+\usepackage{booktabs}
+
+\jmlrvolume{vol}
+\jmlryear{2026}
+\jmlrworkshop{Name of the Conference or Workshop}
+\editors{Editor One and Editor Two}
+
+\title[Short Title]{Title of the Paper}
+
+\author[F. Author and S. Author]{\Name{First Author} \Email{first@example.org}\\
+  \addr Department, University, City, Country
+  \AND
+  \Name{Second Author} \Email{second@example.org}\\
+  \addr Company, City, Country}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\begin{keywords}
+first keyword, second keyword, third keyword
+\end{keywords}
+
+\section{Introduction}
+\label{sec:intro}
+Introduce the problem and why it matters, then the contributions of this
+paper. Cite related work like this~\citep{breiman2001random}, or by name, as
+\citet{srivastava2014dropout} show.
+
+\section{Method}
+\label{sec:method}
+We minimise the regularised empirical risk
+\begin{equation}
+  \label{eq:risk}
+  \hat\theta = \arg\min_\theta \frac{1}{n} \sum_{i=1}^{n} \ell\bigl(f_\theta(x_i), y_i\bigr) + \lambda \lVert\theta\rVert_2^2
+\end{equation}
+with Adam~\citep{kingma2015adam}.
+
+\begin{theorem}
+\label{thm:bound}
+State a result here. Theorems, lemmas and proofs come with the class.
+\end{theorem}
+\begin{proof}
+A short proof.
+\end{proof}
+
+\section{Experiments}
+\label{sec:experiments}
+Table~\ref{tab:results} and Figure~\ref{fig:overview} show the results.
+
+\begin{table}[htbp]
+  \floatconts
+    {tab:results}
+    {\caption{Results on the test set.}}
+    {\begin{tabular}{lrr}
+      \toprule
+      Method & Accuracy (\%) & Time (s) \\
+      \midrule
+      Baseline & 81.2 & 12 \\
+      Ours & \textbf{87.5} & 15 \\
+      \bottomrule
+    \end{tabular}}
+\end{table}
+
+\begin{figure}[htbp]
+  \floatconts
+    {fig:overview}
+    {\caption{Overview of the method. Upload an image and use its file name here.}}
+    {\includegraphics[width=0.5\linewidth]{example-image}}
+\end{figure}
+
+\section{Conclusion}
+Summarise the findings and what comes next.
+
+\acks{Thank the people and funding that supported this work.}
+
+\bibliography{references}
+
+\appendix
+\section{Proof of Theorem~\ref{thm:bound}}
+Longer proofs go in the appendix.
+
+\end{document}

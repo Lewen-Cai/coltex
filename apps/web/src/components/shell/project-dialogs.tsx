@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState, type DragEvent, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { FileArchive, Trash2, TriangleAlert, Upload } from 'lucide-react'
+import { Ellipsis, FileArchive, FolderOpen, Pencil, Trash2, TriangleAlert, Upload } from 'lucide-react'
 import { toast } from 'sonner'
-import type { TemplateInfo } from '@coltex/shared'
+import type { TemplateField, TemplateInfo } from '@coltex/shared'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
+import { authClient } from '@/lib/auth'
 import { formatBytes } from '@/lib/format'
-import { t, translateServerMessage } from '@/lib/i18n'
+import { t, tk, translateServerMessage } from '@/lib/i18n'
 import { navigate } from '@/lib/router'
 import { cn } from '@/lib/utils'
 import { confirmDialog } from '../confirm'
+import { openPublishTemplate, TEMPLATES_CHANGED } from '../publish-template-dialog'
 
 const NEW_EVENT = 'coltex:new-project'
 const IMPORT_EVENT = 'coltex:import-project'
@@ -24,11 +30,33 @@ export const PROJECTS_CHANGED = 'coltex:projects-changed'
 export const openNewProject = () => window.dispatchEvent(new Event(NEW_EVENT))
 export const openImportProject = () => window.dispatchEvent(new Event(IMPORT_EVENT))
 
+/** The fields built-in templates are grouped by, in the order of the filter. */
+const FIELDS: { id: TemplateField; label: string }[] = [
+  { id: 'general', label: tk('General') },
+  { id: 'cs', label: tk('Computing & electrical engineering') },
+  { id: 'engineering', label: tk('Engineering') },
+  { id: 'physics', label: tk('Physics') },
+  { id: 'astronomy', label: tk('Astronomy') },
+  { id: 'chemistry', label: tk('Chemistry') },
+  { id: 'biology', label: tk('Life sciences') },
+  { id: 'medicine', label: tk('Medicine') },
+  { id: 'math', label: tk('Mathematics & statistics') },
+  { id: 'economics', label: tk('Economics') },
+  { id: 'social', label: tk('Social sciences & humanities') },
+  { id: 'earth', label: tk('Earth & environment') },
+]
+
 function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [name, setName] = useState('')
   const [templates, setTemplates] = useState<TemplateInfo[]>()
   const [template, setTemplate] = useState('article')
+  const [source, setSource] = useState<'builtin' | 'shared'>('builtin')
+  const [field, setField] = useState<TemplateField | 'all'>('all')
+  const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
+  // Importing a template is for administrators (the server refuses everyone else).
+  const role = authClient.useSession().data?.user.role
+  const canImport = role === 'admin' || role === 'manager'
 
   const load = () =>
     api.listTemplates().then(setTemplates, err => {
@@ -40,10 +68,19 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
     if (open) {
       setName('')
       setTemplate('article')
+      setSource('builtin')
+      setField('all')
       void load()
     }
   }, [open])
 
+  // A shared template changed in the publish dialog opened from here.
+  useEffect(() => {
+    if (!open) return
+    const reload = () => void load()
+    window.addEventListener(TEMPLATES_CHANGED, reload)
+    return () => window.removeEventListener(TEMPLATES_CHANGED, reload)
+  }, [open])
 
   const remove = async (tpl: TemplateInfo) => {
     const ok = await confirmDialog({
@@ -62,6 +99,12 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
     }
   }
 
+  const imported = async (tpl: TemplateInfo) => {
+    await load()
+    setSource('shared')
+    setTemplate(tpl.id)
+  }
+
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
@@ -77,6 +120,46 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
       setBusy(false)
     }
   }
+
+  const actions = (tpl: TemplateInfo) =>
+    (tpl.canRemove || tpl.projectId) && (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('Actions for {name}', { name: tpl.name })}
+            className="absolute top-1.5 right-1.5 opacity-0 group-hover/template:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+          >
+            <Ellipsis />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          {tpl.projectId && (
+            <>
+              <DropdownMenuItem
+                onSelect={() => {
+                  onOpenChange(false)
+                  navigate(`/project/${tpl.projectId}`)
+                }}
+              >
+                <FolderOpen /> {t('Open project')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => openPublishTemplate(tpl.projectId!, tpl.name)}>
+                <Pencil /> {t('Edit template…')}
+              </DropdownMenuItem>
+            </>
+          )}
+          {tpl.projectId && tpl.canRemove && <DropdownMenuSeparator />}
+          {tpl.canRemove && (
+            <DropdownMenuItem variant="destructive" onSelect={() => void remove(tpl)}>
+              <Trash2 /> {t('Remove template')}
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
 
   const card = (tpl: TemplateInfo) => (
     <div key={tpl.id} className="group/template relative">
@@ -96,27 +179,18 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         )}
         {tpl.publishedBy && <span className="text-xs text-muted-foreground">{t('by {name}', { name: tpl.publishedBy })}</span>}
       </button>
-      {tpl.canRemove && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={t('Remove template')}
-          className="absolute top-1.5 right-1.5 opacity-0 group-hover/template:opacity-100 focus-visible:opacity-100"
-          onClick={() => void remove(tpl)}
-        >
-          <Trash2 />
-        </Button>
-      )}
+      {actions(tpl)}
     </div>
   )
 
   const builtins = templates?.filter(x => x.kind === 'builtin') ?? []
   const shared = templates?.filter(x => x.kind === 'shared') ?? []
+  const fields = FIELDS.filter(f => builtins.some(x => x.field === f.id))
+  const shown = source === 'shared' ? shared : builtins.filter(x => field === 'all' || x.field === field)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" aria-describedby={undefined}>
+      <DialogContent className="sm:max-w-3xl" aria-describedby={undefined}>
         <form onSubmit={submit}>
           <DialogHeader>
             <DialogTitle>{t('New project')}</DialogTitle>
@@ -127,20 +201,49 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
               <Input id="project-name" autoFocus value={name} onChange={e => setName(e.target.value)} placeholder={t('e.g. Thesis, NeurIPS submission')} />
             </Field>
             <Field>
-              <FieldLabel>{t('Template')}</FieldLabel>
-              <div className="grid max-h-[min(46vh,420px)] gap-4 overflow-y-auto pr-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <FieldLabel>{t('Template')}</FieldLabel>
+                <div className="flex flex-wrap items-center gap-2">
+                  {source === 'shared' && canImport && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => setImporting(true)}>
+                      <Upload /> {t('Import template')}
+                    </Button>
+                  )}
+                  <Tabs value={source} onValueChange={v => setSource(v as 'builtin' | 'shared')}>
+                    <TabsList>
+                      <TabsTrigger value="builtin">{t('Built-in templates')}</TabsTrigger>
+                      <TabsTrigger value="shared">
+                        {t('Shared on this server')}
+                        {shared.length > 0 && <span className="text-muted-foreground tabular-nums">{shared.length}</span>}
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </div>
+              {source === 'builtin' && fields.length > 1 && (
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  size="sm"
+                  value={field}
+                  onValueChange={v => v && setField(v as TemplateField | 'all')}
+                  className="flex-wrap"
+                >
+                  <ToggleGroupItem value="all">{t('All')}</ToggleGroupItem>
+                  {fields.map(f => (
+                    <ToggleGroupItem key={f.id} value={f.id}>
+                      {t(f.label)}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              )}
+              <div className="grid h-[min(46vh,420px)] content-start gap-2 overflow-y-auto pr-1">
                 {!templates ? (
                   <Spinner className="m-6 justify-self-center" />
+                ) : shown.length === 0 ? (
+                  <p className="p-6 text-center text-sm text-muted-foreground">{t('No shared templates yet')}</p>
                 ) : (
-                  <>
-                    <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">{builtins.map(card)}</div>
-                    {shared.length > 0 && (
-                      <div className="grid gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">{t('Shared on this server')}</span>
-                        <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">{shared.map(card)}</div>
-                      </div>
-                    )}
-                  </>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{shown.map(card)}</div>
                 )}
               </div>
             </Field>
@@ -155,17 +258,172 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
           </DialogFooter>
         </form>
       </DialogContent>
+      <ImportTemplateDialog open={importing} onOpenChange={setImporting} onImported={tpl => void imported(tpl)} />
     </Dialog>
+  )
+}
+
+/** A journal's template zip (Springer Nature's, say) as a shared template. */
+function ImportTemplateDialog({
+  open,
+  onOpenChange,
+  onImported,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onImported: (template: TemplateInfo) => void
+}) {
+  const [file, setFile] = useState<File>()
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setFile(undefined)
+      setName('')
+      setDescription('')
+    }
+  }, [open])
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!file || !name.trim()) return
+    setBusy(true)
+    try {
+      const { template, warnings } = await api.importTemplate(file, { name: name.trim(), description: description.trim() })
+      onOpenChange(false)
+      onImported(template)
+      window.dispatchEvent(new Event(PROJECTS_CHANGED))
+      if (warnings.length === 0) toast.success(t('Imported “{name}”', { name: template.name }))
+      else toast.warning(t('Imported with notes'), { description: warnings.map(w => translateServerMessage(w)).join('\n') })
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>{t('Import template')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="grid gap-4">
+          <ZipDrop
+            file={file}
+            onFile={f => {
+              setFile(f)
+              setName(f.name.replace(/\.zip$/i, '').slice(0, 100))
+            }}
+          />
+          {file && (
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="import-template-name">{t('Template name')}</FieldLabel>
+                <Input id="import-template-name" value={name} maxLength={100} onChange={e => setName(e.target.value)} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="import-template-description">{t('Description')}</FieldLabel>
+                <Textarea
+                  id="import-template-description"
+                  rows={2}
+                  maxLength={300}
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                />
+              </Field>
+            </FieldGroup>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t('Cancel')}
+            </Button>
+            <Button type="submit" disabled={!file || !name.trim() || busy}>
+              {busy && <Spinner />} {t('Import')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/** Where a .zip is dropped or picked, showing the chosen file. */
+function ZipDrop({ file, onFile }: { file: File | undefined; onFile: (file: File) => void }) {
+  const [dragging, setDragging] = useState(false)
+  const input = useRef<HTMLInputElement>(null)
+
+  const pick = (f: File | undefined) => {
+    if (!f) return
+    if (!/\.zip$/i.test(f.name)) return toast.error('Choose a .zip file')
+    onFile(f)
+  }
+
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault()
+    setDragging(false)
+    pick(e.dataTransfer.files[0])
+  }
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => input.current?.click()}
+      onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && input.current?.click()}
+      onDragOver={e => {
+        e.preventDefault()
+        setDragging(true)
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={onDrop}
+      className={cn(
+        'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors',
+        dragging ? 'border-primary bg-accent/60' : 'border-border hover:border-primary/50 hover:bg-muted/50',
+      )}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {file ? (
+          <motion.div key="file" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-3">
+            <span className="rounded-lg bg-primary/10 p-2 text-primary">
+              <FileArchive className="size-6" />
+            </span>
+            <span className="grid text-left">
+              <span className="text-sm font-medium">{file.name}</span>
+              <span className="text-xs text-muted-foreground">{formatBytes(file.size)} · {t('click to choose another')}</span>
+            </span>
+          </motion.div>
+        ) : (
+          <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid justify-items-center gap-2">
+            <span className="rounded-full bg-primary/10 p-3 text-primary">
+              <Upload className="size-5" />
+            </span>
+            <span className="text-sm font-medium">{t('Drop a .zip here, or click to browse')}</span>
+            <span className="text-xs text-muted-foreground">{t('Up to {size}', { size: '200 MB' })}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <input
+        ref={input}
+        type="file"
+        accept=".zip,application/zip"
+        className="hidden"
+        onChange={e => {
+          pick(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
+    </div>
   )
 }
 
 function ImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [file, setFile] = useState<File>()
   const [name, setName] = useState('')
-  const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<{ id: string; warnings: string[] }>()
-  const input = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
@@ -174,19 +432,6 @@ function ImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
       setResult(undefined)
     }
   }, [open])
-
-  const pick = (f: File | undefined) => {
-    if (!f) return
-    if (!/\.zip$/i.test(f.name)) return toast.error('Choose a .zip file')
-    setFile(f)
-    setName(f.name.replace(/\.zip$/i, ''))
-  }
-
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault()
-    setDragging(false)
-    pick(e.dataTransfer.files[0])
-  }
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -241,54 +486,13 @@ function ImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
           </>
         ) : (
           <form onSubmit={submit} className="grid gap-4">
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => input.current?.click()}
-              onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && input.current?.click()}
-              onDragOver={e => {
-                e.preventDefault()
-                setDragging(true)
+            <ZipDrop
+              file={file}
+              onFile={f => {
+                setFile(f)
+                setName(f.name.replace(/\.zip$/i, ''))
               }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={onDrop}
-              className={cn(
-                'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors',
-                dragging ? 'border-primary bg-accent/60' : 'border-border hover:border-primary/50 hover:bg-muted/50',
-              )}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {file ? (
-                  <motion.div key="file" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-3">
-                    <span className="rounded-lg bg-primary/10 p-2 text-primary">
-                      <FileArchive className="size-6" />
-                    </span>
-                    <span className="grid text-left">
-                      <span className="text-sm font-medium">{file.name}</span>
-                      <span className="text-xs text-muted-foreground">{formatBytes(file.size)} · {t('click to choose another')}</span>
-                    </span>
-                  </motion.div>
-                ) : (
-                  <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid justify-items-center gap-2">
-                    <span className="rounded-full bg-primary/10 p-3 text-primary">
-                      <Upload className="size-5" />
-                    </span>
-                    <span className="text-sm font-medium">{t('Drop a .zip here, or click to browse')}</span>
-                    <span className="text-xs text-muted-foreground">{t('Up to {size}', { size: '200 MB' })}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <input
-                ref={input}
-                type="file"
-                accept=".zip,application/zip"
-                className="hidden"
-                onChange={e => {
-                  pick(e.target.files?.[0])
-                  e.target.value = ''
-                }}
-              />
-            </div>
+            />
             {file && (
               <Field>
                 <FieldLabel htmlFor="import-name">{t('Project name')}</FieldLabel>

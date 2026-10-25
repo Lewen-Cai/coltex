@@ -1,0 +1,52 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{authblk}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\title{ToolName: what the software does, in one line}
+\author[1]{First Author}
+\author[2]{Second Author}
+\affil[1]{Department of Bioinformatics, University, City, Country}
+\affil[2]{Institute, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent\textbf{Summary:} What the tool does and why it is needed, in two or three sentences.\\
+\textbf{Availability and implementation:} Where it can be downloaded, its licence and the platforms it runs on.\\
+\textbf{Contact:} first@example.org
+\end{abstract}
+
+\section{Introduction}
+State the need the tool meets and the existing tools~\cite{altschul1990}.
+
+\section{Implementation}
+Describe the design and the algorithms.
+
+\section{Results}
+Show what the tool does on a typical data set (Figure~\ref{fig:overview})~\cite{jumper2021}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{Overview of the method. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Conclusion}
+Summarise what the tool offers.
+
+\section*{Funding}
+Name the funders.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

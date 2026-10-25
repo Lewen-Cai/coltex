@@ -1,1 +1,1 @@
-{"name": "ACM journal", "description": "acmart acmsmall, one column, for ACM journals and transactions", "rootFile": "main.tex", "order": 6}
+{"name": "ACM journal", "description": "acmart acmsmall, one column, for ACM journals and transactions", "rootFile": "main.tex", "order": 16, "field": "cs"}

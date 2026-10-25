@@ -1,0 +1,84 @@
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\numberwithin{equation}{section}
+
+\begin{document}
+
+\title[Short title]{Title of the Paper}
+
+\author{First Author}
+\address{Department of Mathematics, University, City, Country}
+\email{first@example.org}
+
+\author{Second Author}
+\address{Institute, City, Country}
+\email{second@example.org}
+
+\subjclass[2020]{Primary 00A05; Secondary 00A66}
+\keywords{first keyword, second keyword}
+
+\begin{abstract}
+State the main results of the paper in a few sentences.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+Introduce the problem, the main result and how the paper is organised. Cite
+the literature like this~\cite{hardy2008introduction}, or with a page~\cite[p.~5]{rudin1987real}.
+
+\section{Preliminaries}
+\begin{definition}
+A function $f\colon \mathbb{R} \to \mathbb{R}$ is \emph{Lipschitz} if there is
+a constant $L \ge 0$ with $\lvert f(x) - f(y) \rvert \le L \lvert x - y \rvert$
+for all $x, y \in \mathbb{R}$.
+\end{definition}
+
+\begin{example}
+Every differentiable function with a bounded derivative is Lipschitz.
+\end{example}
+
+\section{Main result}
+\begin{theorem}\label{thm:main}
+State the main theorem here.
+\end{theorem}
+
+\begin{lemma}\label{lem:key}
+State a lemma used in the proof.
+\end{lemma}
+
+\begin{proof}
+Prove the lemma. Displayed equations are numbered within sections:
+\begin{equation}\label{eq:sum}
+  \sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}. \qedhere
+\end{equation}
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Combine Lemma~\ref{lem:key} with~\eqref{eq:sum}.
+\end{proof}
+
+\begin{remark}
+Discuss whether the assumptions can be weakened.
+\end{remark}
+
+\section*{Acknowledgements}
+Thank the people and funding that supported this work.
+
+\bibliographystyle{amsplain}
+\bibliography{references}
+
+\end{document}

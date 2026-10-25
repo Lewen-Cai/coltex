@@ -1,0 +1,50 @@
+\documentclass[journal=jpclcd,manuscript=letter]{achemso}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[version=4]{mhchem}
+
+\author{First Author}
+\email{first@example.org}
+\affiliation{Department of Chemistry, University, City, Country}
+\author{Second Author}
+\affiliation{Institute, City, Country}
+
+\title{Title of the Paper}
+
+\keywords{first keyword, second keyword}
+
+\begin{document}
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+A Letter has no section headings. State the question and its context~\cite{kohn1965}.
+
+The central result follows, with numbered equations,
+\begin{equation}
+  E_{\mathrm{c}} = \int \rho(\mathbf{r})\, \varepsilon_{\mathrm{c}}\bigl(\rho(\mathbf{r})\bigr)\, d\mathbf{r},
+  \label{eq:main}
+\end{equation}
+and figures such as Figure~\ref{fig:overview}~\cite{lee1988}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{Overview of the method. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+Close with what the result means.
+
+\begin{acknowledgement}
+Thank the people and funding that supported this work.
+\end{acknowledgement}
+
+\begin{suppinfo}
+List the Supporting Information: methods, spectra, coordinates.
+\end{suppinfo}
+
+\bibliography{references}
+
+\end{document}

@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { asc, eq } from 'drizzle-orm'
 import { customAlphabet } from 'nanoid'
-import { EngineSetting, type TemplateInfo } from '@coltex/shared'
+import { EngineSetting, TemplateField, type TemplateInfo } from '@coltex/shared'
 import type { CollabHooks } from '../collab/server.ts'
 import type { Db } from '../db/client.ts'
 import { projectTemplates, projects, user } from '../db/schema.ts'
@@ -16,7 +16,16 @@ const newTemplateId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12)
 /** Built-in templates: one folder each, with a template.json beside the files. */
 export const BUILTIN_TEMPLATES_DIR = fileURLToPath(new URL('../../templates/', import.meta.url))
 
-type Builtin = { id: string; name: string; description: string; engine: EngineSetting; rootFile: string; order: number; dir: string }
+type Builtin = {
+  id: string
+  name: string
+  description: string
+  field: TemplateField
+  engine: EngineSetting
+  rootFile: string
+  order: number
+  dir: string
+}
 
 async function walk(dir: string, prefix = ''): Promise<{ files: string[]; folders: string[] }> {
   const files: string[] = []
@@ -66,6 +75,7 @@ export class TemplateService {
           id: entry.name,
           name: String(meta.name),
           description: String(meta.description ?? ''),
+          field: TemplateField.parse(meta.field ?? 'general'),
           engine: EngineSetting.parse(meta.engine ?? 'auto'),
           rootFile: String(meta.rootFile ?? 'main.tex'),
           order: Number(meta.order ?? 100),
@@ -79,7 +89,16 @@ export class TemplateService {
 
   async list(viewer: { id: string; role?: string | null }): Promise<TemplateInfo[]> {
     const builtins = (await this.loadBuiltins()).map(
-      (b): TemplateInfo => ({ id: b.id, kind: 'builtin', name: b.name, description: b.description, publishedBy: null, canRemove: false }),
+      (b): TemplateInfo => ({
+        id: b.id,
+        kind: 'builtin',
+        name: b.name,
+        description: b.description,
+        field: b.field,
+        publishedBy: null,
+        canRemove: false,
+        projectId: null,
+      }),
     )
     const rows = await this.db
       .select({ template: projectTemplates, ownerId: projects.ownerId, publisher: user.name })
@@ -93,8 +112,10 @@ export class TemplateService {
         kind: 'shared',
         name: r.template.name,
         description: r.template.description,
+        field: null,
         publishedBy: r.publisher,
         canRemove: viewer.role === 'admin' || r.ownerId === viewer.id,
+        projectId: r.ownerId === viewer.id ? r.template.projectId : null,
       }),
     )
     return [...builtins, ...shared]

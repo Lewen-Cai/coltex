@@ -1,0 +1,121 @@
+\documentclass[a4paper,fleqn]{cas-sc}
+\usepackage[numbers,sort&compress]{natbib}
+
+\shorttitle{Short title of the article}
+\shortauthors{F. Author et al.}
+
+\begin{document}
+
+\title[mode=title]{Title of the Study: A Prospective Cohort of Adults in Primary Care}
+
+\author[1]{First Author}[orcid=0000-0000-0000-0000]
+\cormark[1]
+\ead{first.author@example.org}
+\credit{Conceptualization, Methodology, Writing -- original draft}
+
+\author[1,2]{Second Author}
+\credit{Formal analysis, Writing -- review \& editing}
+
+\author[2]{Third Author}
+\credit{Data curation, Investigation}
+
+\affiliation[1]{organization={Department of Medicine, University Hospital},
+  city={City},
+  postcode={00000},
+  country={Country}}
+\affiliation[2]{organization={School of Public Health, University},
+  city={City},
+  country={Country}}
+
+\cortext[1]{Corresponding author.}
+
+\begin{abstract}
+\noindent\textbf{Background:} State why the question matters and what is unknown.\\
+\textbf{Methods:} Describe the design, setting, participants and main outcome.\\
+\textbf{Results:} Give the main findings with effect sizes and 95\% confidence intervals.\\
+\textbf{Conclusions:} Say what the findings mean for practice or research.
+\end{abstract}
+
+\begin{highlights}
+\item First key finding in one sentence.
+\item Second key finding in one sentence.
+\item What the findings mean for patients or clinicians.
+\end{highlights}
+
+\begin{keywords}
+cohort study \sep primary care \sep risk factors \sep outcomes
+\end{keywords}
+
+\maketitle
+
+\section{Introduction}
+Summarise what is known and the gap this study addresses. Observational
+studies are reported following STROBE~\cite{vonelm2007strobe}, and the study
+was conducted in line with the Declaration of Helsinki~\cite{wma2013helsinki}.
+
+\section{Methods}
+\subsection{Study design and participants}
+Describe the setting, dates, eligibility criteria and how participants were
+recruited.
+
+\subsection{Outcomes}
+Define the primary and secondary outcomes and how they were measured.
+
+\subsection{Statistical analysis}
+Describe the models used. For example, the hazard of the outcome was modelled as
+\begin{equation}
+  h(t \mid x) = h_0(t) \exp\bigl(\beta^\top x\bigr),
+\end{equation}
+with $x$ the exposure and adjustment variables.
+
+\section{Results}
+Table~\ref{tab:baseline} shows the participants' characteristics at baseline,
+and Figure~\ref{fig:flow} how they were selected.
+
+\begin{table}[pos=htbp]
+  \centering
+  \caption{Baseline characteristics of the participants.}
+  \label{tab:baseline}
+  \begin{tabular}{lrr}
+    \toprule
+    Characteristic & Exposed ($n=412$) & Unexposed ($n=398$) \\
+    \midrule
+    Age, years, mean (SD) & 58.4 (11.2) & 57.9 (10.8) \\
+    Women, $n$ (\%) & 221 (53.6) & 207 (52.0) \\
+    Diabetes, $n$ (\%) & 64 (15.5) & 49 (12.3) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[pos=htbp]
+  \centering
+  \includegraphics[width=0.5\linewidth]{example-image}
+  \caption{Selection of participants. Upload an image and use its file name here.}
+  \label{fig:flow}
+\end{figure}
+
+\section{Discussion}
+Interpret the findings, compare them with earlier studies, and discuss
+strengths and limitations.
+
+\section{Conclusions}
+State the main conclusion in a few sentences.
+
+\section*{Ethics approval}
+Name the ethics committee and the approval number, and how consent was obtained.
+
+\section*{Funding}
+List the funders and grant numbers, or state that there was no specific funding.
+
+\section*{Declaration of competing interest}
+The authors declare no competing interests.
+
+\section*{Data availability}
+Say where the data can be obtained, and under which conditions.
+
+\printcredits
+
+\bibliographystyle{cas-model2-names}
+\bibliography{references}
+
+\end{document}

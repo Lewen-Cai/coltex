@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[tableposition=top]{caption}
+\usepackage{authblk}
+\usepackage[numbers,sort&compress,super]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+% Most medical journals ask for double spacing and line numbers when submitting.
+\doublespacing
+\linenumbers
+
+\title{Title of the Trial: Protocol for a Randomised Controlled Trial}
+\author[1]{First Author}
+\author[1,2]{Second Author}
+\author[2]{Third Author}
+\affil[1]{Department of Medicine, University Hospital, City, Country}
+\affil[2]{School of Public Health, University, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Corresponding author:} First Author, Department of Medicine,
+University Hospital, City, Country; first.author@example.org
+
+\begin{abstract}
+\noindent\textbf{Introduction:} State the problem and why the trial is needed.\\
+\textbf{Methods and analysis:} Describe the design, participants, interventions, primary outcome and sample size.\\
+\textbf{Ethics and dissemination:} Say who approved the protocol and how the results will be shared.\\
+\textbf{Trial registration:} Registry and number, e.g. ClinicalTrials.gov NCT00000000.
+\end{abstract}
+
+\noindent\textbf{Keywords:} protocol; randomised controlled trial; primary care
+
+\section{Introduction}
+Summarise the evidence and the question the trial answers. The protocol follows
+SPIRIT.\cite{chan2013spirit}
+
+\section{Methods and analysis}
+\subsection{Trial design and setting}
+Describe the design, the allocation ratio and where the trial takes place.
+
+\subsection{Eligibility criteria}
+List the inclusion and exclusion criteria.
+
+\subsection{Interventions}
+Describe each arm in enough detail to replicate it.
+
+\subsection{Outcomes}
+Define the primary and secondary outcomes and when they are measured.
+
+\subsection{Sample size}
+Justify the number of participants. For a difference $\delta$ in means with
+standard deviation $\sigma$,
+\begin{equation}
+  n = \frac{2 (z_{1-\alpha/2} + z_{1-\beta})^2 \sigma^2}{\delta^2}
+\end{equation}
+participants per arm are needed.
+
+\subsection{Randomisation and blinding}
+Describe the sequence generation, allocation concealment and who is blinded.
+
+\subsection{Statistical analysis}
+Describe the primary analysis and how missing data are handled.
+
+\subsection{Data monitoring}
+Describe the data monitoring committee and the stopping rules.
+
+\section{Ethics and dissemination}
+Name the ethics committee and say how participants give consent, following the
+Declaration of Helsinki.\cite{wma2013helsinki}
+
+\section*{Declarations}
+\noindent\textbf{Ethics approval:} Name the committee and the approval number.\\
+\textbf{Funding:} Name the funders and their role.\\
+\textbf{Competing interests:} Declare any, or state that there are none.\\
+\textbf{Data availability:} Say where the data can be found.\\
+\textbf{Author contributions:} Say who did what.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

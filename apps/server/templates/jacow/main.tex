@@ -1,0 +1,47 @@
+\documentclass[a4paper,biblatex]{jacow}
+\usepackage{graphicx}
+\addbibresource{references.bib}
+
+\begin{document}
+
+\title{Title of the Paper}
+
+\author{F. Author\thanks{first@example.org}, Laboratory, City, Country\\
+        S. Author, University, City, Country}
+
+\maketitle
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\section{Introduction}
+Introduce the machine, the problem and the contributions of this paper~\cite{wiedemann2015}.
+
+\section{Method}
+Describe the simulation or measurement. Numbered equations use the
+\texttt{equation} environment:
+\begin{equation}
+  \beta(s) = \beta^* + \frac{s^2}{\beta^*}.
+  \label{eq:main}
+\end{equation}
+
+\section{Results}
+Figure~\ref{fig:overview} shows the main result.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics*[width=\columnwidth]{example-image}
+  \caption{What the figure shows. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Conclusion}
+Summarise the findings and what comes next.
+
+\section{Acknowledgements}
+Thank the people and funding that supported this work.
+
+\printbibliography
+
+\end{document}

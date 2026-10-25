@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[tableposition=top]{caption}
+\usepackage{authblk}
+\usepackage[numbers,sort&compress,super]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+% Most medical journals ask for double spacing and line numbers when submitting.
+\doublespacing
+\linenumbers
+
+\title{Title of the Research Letter}
+\author[1]{First Author}
+\author[1,2]{Second Author}
+\author[2]{Third Author}
+\affil[1]{Department of Medicine, University Hospital, City, Country}
+\affil[2]{School of Public Health, University, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Corresponding author:} First Author, Department of Medicine,
+University Hospital, City, Country; first.author@example.org
+
+\section*{Introduction}
+A research letter reports a short original study in about 600 words without an
+abstract. State the question in two or three sentences.\cite{vonelm2007strobe}
+
+\section*{Methods}
+Describe the design, data source, participants and analysis briefly.
+
+\section*{Results}
+Give the main findings with confidence intervals (Table~\ref{tab:results}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Main results.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Outcome & Group A & Group B \\
+    \midrule
+    Primary outcome, \% & 12.4 & 9.1 \\
+    Secondary outcome, \% & 30.2 & 27.5 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section*{Discussion}
+Say what the findings mean and name the main limitation.
+
+\section*{Declarations}
+\noindent\textbf{Ethics approval:} Name the committee and the approval number.\\
+\textbf{Funding:} Name the funders and their role.\\
+\textbf{Competing interests:} Declare any, or state that there are none.\\
+\textbf{Data availability:} Say where the data can be found.\\
+\textbf{Author contributions:} Say who did what.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

@@ -1,1 +1,1 @@
-{"name": "APS (REVTeX 4.2)", "description": "revtex4-2, two columns, for Physical Review and AIP journals", "rootFile": "main.tex", "order": 9}
+{"name": "APS (REVTeX 4.2)", "description": "revtex4-2, two columns, for Physical Review and AIP journals", "rootFile": "main.tex", "order": 26, "field": "physics"}

@@ -1,1 +1,1 @@
-{"name": "ACM conference", "description": "acmart sigconf, two columns, ACM reference format", "rootFile": "main.tex", "order": 5}
+{"name": "ACM conference", "description": "acmart sigconf, two columns, ACM reference format", "rootFile": "main.tex", "order": 15, "field": "cs"}

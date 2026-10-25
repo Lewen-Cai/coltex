@@ -1,0 +1,62 @@
+\documentclass{amsproc}
+\usepackage{amssymb}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\numberwithin{equation}{section}
+
+\begin{document}
+
+\title{Title of the Paper}
+
+\author{First Author}
+\address{Department of Mathematics, University, City, Country}
+\email{first@example.org}
+
+\author{Second Author}
+\address{Institute, City, Country}
+\email{second@example.org}
+
+\subjclass[2020]{Primary 11A41; Secondary 11N05}
+\keywords{first keyword, second keyword}
+
+\begin{abstract}
+State the main results of the paper in a few sentences.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+Introduce the problem and the main result~\cite{hardy2008introduction}.
+
+\section{Main result}
+\begin{definition}
+An integer $p > 1$ is \emph{prime} if its only positive divisors are $1$ and $p$.
+\end{definition}
+
+\begin{theorem}\label{thm:main}
+There are infinitely many primes.
+\end{theorem}
+
+\begin{proof}
+Suppose $p_1, \dots, p_n$ were all of them, and let $N = p_1 \cdots p_n + 1$.
+No $p_i$ divides $N$, so a prime factor of $N$ is missing from the list.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:main} also follows from the divergence of
+\begin{equation}\label{eq:sum}
+  \sum_{p} \frac{1}{p} = \infty .
+\end{equation}
+\end{remark}
+
+\bibliographystyle{amsplain}
+\bibliography{references}
+
+\end{document}

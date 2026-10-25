@@ -39,9 +39,19 @@ describe('project templates', () => {
   test('built-in templates: files, folders and compiler', async () => {
     const list = (await api('GET', '/templates', bob)).json()
     const ids = list.map((x: { id: string }) => x.id)
-    assert.deepEqual(ids.slice(0, 3), ['article', 'arxiv', 'ieee-conference'])
-    assert.ok(['acm-sigconf', 'lncs', 'elsevier', 'revtex'].every(id => ids.includes(id)))
-    assert.ok(list.every((x: { kind: string; canRemove: boolean }) => x.kind === 'builtin' && !x.canRemove))
+    assert.deepEqual(ids.slice(0, 3), ['article', 'arxiv', 'elsevier'])
+    assert.ok(['acm-sigconf', 'lncs', 'elsevier', 'revtex', 'jmlr', 'amsart', 'apa7', 'mnras', 'acs-journal', 'nature'].every(id => ids.includes(id)))
+    assert.ok(list.every((x: { kind: string; canRemove: boolean; projectId: string | null }) => x.kind === 'builtin' && !x.canRemove && x.projectId === null))
+    // Every built-in template names its field; the medical ones come together.
+    const medicine = list.filter((x: { field: string }) => x.field === 'medicine').map((x: { id: string }) => x.id)
+    assert.deepEqual(medicine, [
+      'clinical-study', 'trial-protocol', 'observational-study', 'diagnostic-accuracy', 'systematic-review', 'case-report', 'research-letter', 'elsevier-cas', 'oup',
+    ])
+    assert.ok(list.every((x: { field: string | null }) => x.field))
+    // The picker lists them field by field.
+    const fields = list.map((x: { field: string }) => x.field)
+    assert.deepEqual([...new Set(fields)], ['general', 'cs', 'engineering', 'physics', 'astronomy', 'chemistry', 'biology', 'medicine', 'math', 'economics', 'social', 'earth'])
+    assert.ok(fields.every((f: string, i: number) => i === 0 || fields.indexOf(f) === i || fields[i - 1] === f), 'each field in one run')
 
     const paper = (await api('POST', '/projects', bob, { name: 'Paper', template: 'ieee-conference' })).json()
     // New projects pick their engine at each build unless one is asked for.

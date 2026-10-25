@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{authblk}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+
+\title{Title of the Paper}
+\author[1]{First Author}
+\author[2]{Second Author}
+\affil[1]{Department of Statistics, University, City, Country}
+\affil[2]{Institute, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\noindent\textbf{Keywords:} first keyword, second keyword, third keyword
+
+\section{Introduction}
+Introduce the statistical problem. Cite in parentheses \citep{efron1979}, or by
+name, as \citet{tibshirani1996} proposed.
+
+\section{Method}
+For a response $y \in \mathbb{R}^n$ and design $X$, the estimator is
+\begin{equation}
+  \hat\beta = \arg\min_\beta \tfrac{1}{2n} \lVert y - X\beta \rVert_2^2 + \lambda \lVert \beta \rVert_1 .
+  \label{eq:main}
+\end{equation}
+
+\begin{proposition}
+State a property of the estimator in~\eqref{eq:main}.
+\end{proposition}
+
+\begin{proof}
+Prove it, or point to the appendix.
+\end{proof}
+
+\section{Simulation study}
+Table~\ref{tab:sim} compares the estimators over 1000 replications.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Simulation results.}
+  \label{tab:sim}
+  \begin{tabular}{lrr}
+    \toprule
+    Estimator & MSE & Coverage \\
+    \midrule
+    Least squares & 0.412 & 0.95 \\
+    Proposed & \textbf{0.281} & 0.94 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Application}
+Apply the method to a real data set~\citep{dempster1977}.
+
+\section{Discussion}
+Summarise the findings, the limitations and extensions.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,107 @@
+\documentclass[unnumsec,webpdf,contemporary,large]{oup-authoring-template}
+% The page headers draw a society logo here; leave it empty unless the journal gives one.
+\providecommand{\societylogo}{}
+
+\begin{document}
+
+\journaltitle{Journal Title}
+\DOI{DOI}
+\copyrightyear{2026}
+\pubyear{2026}
+\access{Advance Access Publication Date: Day Month Year}
+\appnotes{Original Article}
+
+\firstpage{1}
+
+\title[Short title]{Title of the Study: Outcomes After an Intervention in Adults With a Chronic Condition}
+
+\author[1,$\ast$]{First Author\ORCID{0000-0000-0000-0000}}
+\author[2]{Second Author}
+\author[1,2]{Third Author}
+
+
+\address[1]{\orgdiv{Department of Medicine}, \orgname{University Hospital}, \orgaddress{\street{Street}, \postcode{00000}, \state{City}, \country{Country}}}
+\address[2]{\orgdiv{School of Public Health}, \orgname{University}, \orgaddress{\state{City}, \country{Country}}}
+
+\corresp[$\ast$]{Corresponding author. \href{mailto:first.author@example.org}{first.author@example.org}}
+
+\received{Date}{0}{Year}
+\revised{Date}{0}{Year}
+\accepted{Date}{0}{Year}
+
+\abstract{\textbf{Background:} State why the question matters and what is unknown.
+\textbf{Methods:} Describe the design, setting, participants and main outcome.
+\textbf{Results:} Give the main findings with effect sizes and 95\% confidence intervals.
+\textbf{Conclusions:} Say what the findings mean for practice or research.}
+
+\keywords{randomized controlled trial, chronic disease, quality of life}
+
+\maketitle
+
+\section{Introduction}
+Summarise what is known and the gap this study addresses. The trial is
+reported following CONSORT~\citep{schulz2010consort} and was conducted in line
+with the Declaration of Helsinki~\citep{wma2013helsinki}.
+
+\section{Methods}
+\subsection{Trial design and participants}
+Describe the design, setting, dates, eligibility criteria and randomization.
+
+\subsection{Outcomes}
+Define the primary and secondary outcomes and how they were measured.
+
+\subsection{Statistical analysis}
+Describe the sample size calculation and the models used. The treatment effect
+on the primary outcome was estimated as
+\begin{equation}
+  y_i = \beta_0 + \beta_1\,\mathrm{treatment}_i + \beta_2\,\mathrm{baseline}_i + \varepsilon_i .
+\end{equation}
+
+\section{Results}
+Table~\ref{tab:outcomes} gives the outcomes in each group, and
+Figure~\ref{fig:flow} the flow of participants.
+
+\begin{table}[!t]
+\caption{Primary and secondary outcomes at 12 months.\label{tab:outcomes}}
+\begin{tabular}{lrrr}
+\toprule
+Outcome & Intervention & Control & Difference (95\% CI) \\
+\midrule
+Primary score & 62.1 & 55.4 & 6.7 (3.2 to 10.2) \\
+Hospital admission, \% & 8.2 & 11.9 & $-$3.7 ($-$7.5 to 0.1) \\
+\botrule
+\end{tabular}
+\begin{tablenotes}%
+\item CI, confidence interval.
+\end{tablenotes}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.6\linewidth]{example-image}
+\caption{Flow of participants through the trial. Upload an image and use its file name here.}\label{fig:flow}
+\end{figure}
+
+\section{Discussion}
+Interpret the findings, compare them with earlier studies, and discuss
+strengths and limitations.
+
+\section{Conclusion}
+State the main conclusion in a few sentences.
+
+\section{Trial registration}
+Give the registry and the registration number.
+
+\section{Funding}
+List the funders and grant numbers, or state that there was no specific funding.
+
+\section{Conflict of interest}
+The authors declare no conflicts of interest.
+
+\section{Data availability}
+Say where the data can be obtained, and under which conditions.
+
+\bibliographystyle{oup-abbrvnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,66 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{authblk}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\title{Title of the Review: The State of a Research Field}
+\author[1]{First Author}
+\author[2]{Second Author}
+\affil[1]{Department, University, City, Country}
+\affil[2]{Institute, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Say what the review covers, why now, the main themes and the open questions in
+a few sentences.
+\end{abstract}
+
+\noindent\textbf{Keywords:} first keyword, second keyword, third keyword
+
+\section{Introduction}
+Define the field and the scope of this review, and how the literature was
+selected. Earlier reviews include \citet{lecun2015deep}.
+
+\section{Background}
+Introduce the concepts the rest of the review relies on~\citep{shannon1948}.
+
+\section{First theme}
+Summarise and compare the main lines of work. A table helps readers compare them.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Approaches compared in this review.}
+  \label{tab:approaches}
+  \begin{tabular}{lrr}
+    \toprule
+    Approach & Since & Data needed \\
+    \midrule
+    Approach A & 2015 & Large \\
+    Approach B & 2021 & Small \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Second theme}
+Continue with the next group of studies~\citep{he2016deep,vaswani2017attention}.
+
+\section{Open questions and outlook}
+State what remains unknown and where the field is heading.
+
+\section*{Acknowledgements}
+Thank the people and funding that supported this work.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

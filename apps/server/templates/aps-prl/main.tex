@@ -1,0 +1,47 @@
+\documentclass[reprint,amsmath,amssymb,aps,prl,superscriptaddress]{revtex4-2}
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{Title of the Letter}
+
+\author{First Author}
+\email{first@example.org}
+\affiliation{Department of Physics, University, City, Country}
+\author{Second Author}
+\affiliation{Institute, City, Country}
+
+\date{\today}
+
+\begin{abstract}
+A Letter's abstract is one paragraph of up to 600 characters: the question, the
+result and why it matters.
+\end{abstract}
+
+\maketitle
+
+A Letter has no section headings. Introduce the problem and its context~\cite{bardeen1957}.
+
+The central result follows, with numbered equations,
+\begin{equation}
+  \Delta(T) \approx 1.76\, k_B T_c \sqrt{1 - T/T_c},
+  \label{eq:main}
+\end{equation}
+and figures such as Fig.~\ref{fig:overview}~\cite{feynman1982}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\columnwidth]{example-image}
+  \caption{What the figure shows. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+Close with what the result means and what comes next.
+
+\begin{acknowledgments}
+Thank the people and funding that supported this work.
+\end{acknowledgments}
+
+\bibliography{references}
+
+\end{document}

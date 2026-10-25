@@ -1,0 +1,60 @@
+\documentclass[jou,floatsintext]{apa7}
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage[style=apa,sortcites=true,sorting=nyt,backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+\title{Title of the Paper}
+\shorttitle{Short Title}
+
+\authorsnames[1,2]{First Author, Second Author}
+\authorsaffiliations{{Department of Psychology, University}, {Department of Sociology, University}}
+
+\leftheader{Author}
+\journal{Journal Name}
+\volume{1}
+
+\abstract{State the research question, the participants, the method, the main
+findings with effect sizes, and the conclusions in up to 250 words.}
+
+\keywords{first keyword, second keyword, third keyword}
+
+\begin{document}
+
+\maketitle
+
+Introduce the problem, review the relevant literature and state the
+hypotheses. Cite in parentheses \parencite{cohen1988statistical} or in the
+text, as \textcite{opensciencecollaboration2015estimating} found. The
+manuscript follows the seventh edition of the APA manual
+\parencite{apa2020publication}.
+
+\section{Method}
+\subsection{Participants}
+Describe the sample and how it was recruited.
+
+\subsection{Materials and Procedure}
+Describe the measures and what participants did.
+
+\section{Results}
+Table~\ref{tab:results} reports the descriptive statistics.
+
+\begin{table}[htbp]
+  \caption{Descriptive Statistics by Condition}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Condition & \textit{M} & \textit{SD} \\
+    \midrule
+    Control & 4.21 & 1.02 \\
+    Treatment & 4.87 & 0.96 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Discussion}
+Interpret the results and state the limitations.
+
+\printbibliography
+
+\end{document}

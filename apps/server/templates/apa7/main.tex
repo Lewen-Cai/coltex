@@ -1,0 +1,83 @@
+\documentclass[man,floatsintext]{apa7}
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage[style=apa,sortcites=true,sorting=nyt,backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+\title{Title of the Paper: An Experimental Study of a Psychological Effect}
+\shorttitle{Short Title}
+
+\authorsnames[1,2]{First Author, Second Author}
+\authorsaffiliations{{Department of Psychology, University}, {Department of Sociology, University}}
+
+\leftheader{Author}
+
+\abstract{State the research question, the participants, the method, the main
+findings with effect sizes, and the conclusions in up to 250 words.}
+
+\keywords{first keyword, second keyword, third keyword}
+
+\authornote{
+  \addORCIDlink{First Author}{0000-0000-0000-0000}
+
+  The data and materials are available at a public repository. The authors
+  have no conflicts of interest to disclose.
+
+  Correspondence concerning this article should be addressed to First Author,
+  Department of Psychology, University, Street, City, Country. Email:
+  first@example.org}
+
+\begin{document}
+
+\maketitle
+
+Introduce the problem, review the relevant literature and state the
+hypotheses. Cite in parentheses \parencite{cohen1988statistical} or in the
+text, as \textcite{opensciencecollaboration2015estimating} found. The
+manuscript follows the seventh edition of the APA manual
+\parencite{apa2020publication}.
+
+\section{Method}
+
+\subsection{Participants}
+Describe the sample, how it was recruited and how its size was determined.
+
+\subsection{Materials and Procedure}
+Describe the measures and what participants did, in order.
+
+\subsection{Analysis}
+Describe the statistical analyses. Report effect sizes such as Cohen's
+$d = (M_1 - M_2) / SD_{\mathrm{pooled}}$.
+
+\section{Results}
+Table~\ref{tab:descriptives} gives the descriptive statistics, and
+Figure~\ref{fig:means} the condition means.
+
+\begin{table}
+  \caption{Descriptive Statistics by Condition}
+  \label{tab:descriptives}
+  \begin{tabular}{lccc}
+    \toprule
+    Condition & $n$ & $M$ & $SD$ \\
+    \midrule
+    Control & 60 & 3.42 & 0.91 \\
+    Treatment & 58 & 3.87 & 0.88 \\
+    \bottomrule
+  \end{tabular}
+  \figurenote{Scores range from 1 to 5.}
+\end{table}
+
+\begin{figure}
+  \caption{Mean Scores by Condition}
+  \label{fig:means}
+  \includegraphics[width=0.5\linewidth]{example-image}
+  \figurenote{Upload an image and use its file name here.}
+\end{figure}
+
+\section{Discussion}
+Interpret the results in light of the hypotheses, discuss limitations, and
+say what comes next.
+
+\printbibliography
+
+\end{document}

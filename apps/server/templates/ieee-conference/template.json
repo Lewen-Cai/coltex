@@ -1,1 +1,1 @@
-{"name": "IEEE conference", "description": "IEEEtran, two columns, IEEE reference style", "rootFile": "main.tex", "order": 3}
+{"name": "IEEE conference", "description": "IEEEtran, two columns, IEEE reference style", "rootFile": "main.tex", "order": 10, "field": "cs"}

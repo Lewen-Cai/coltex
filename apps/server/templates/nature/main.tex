@@ -1,0 +1,61 @@
+\documentclass{nature}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\title{Title of the paper in one sentence}
+
+\author{First Author$^{1}$, Second Author$^{1,2}$ \& Third Author$^{2}$}
+
+\begin{document}
+
+\maketitle
+
+\begin{affiliations}
+\item Department, University, City, Country.
+\item Institute, City, Country.
+\end{affiliations}
+
+\begin{abstract}
+A summary paragraph of about 150 words without references: the background,
+the question, the main result and what it means.
+\end{abstract}
+
+The main text has no headings in a Letter and few in an Article. Introduce the
+question and how earlier work left it open\cite{watson1953}.
+
+The main result follows. Equations are numbered like this:
+\begin{equation}
+  E = mc^2,
+  \label{eq:main}
+\end{equation}
+and figures are referred to as Fig.~\ref{fig:overview}\cite{jumper2021}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{\textbf{A one-sentence title for the figure.} Then what each panel
+  shows. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+Close with what the result means and what comes next.
+
+\begin{methods}
+\subsection{Samples.}
+Describe the materials and methods in enough detail to reproduce the work.
+
+\subsection{Statistics.}
+Describe the statistical tests and how the sample sizes were chosen.
+\end{methods}
+
+\bibliographystyle{naturemag}
+\bibliography{references}
+
+\begin{addendum}
+\item[Acknowledgements] Thank the people and funding that supported this work.
+\item[Author contributions] F.A. and S.A. designed the study; T.A. wrote the paper.
+\item[Competing interests] The authors declare no competing interests.
+\item[Correspondence] Requests for materials should be addressed to F.A.\\ (first@example.org).
+\end{addendum}
+
+\end{document}

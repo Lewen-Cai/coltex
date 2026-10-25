@@ -1,0 +1,51 @@
+\documentclass{jpsj2}
+\usepackage{graphicx}
+% BibTeX's styles use \newblock, which the class doesn't define.
+\providecommand{\newblock}{}
+
+\title{Title of the Paper}
+
+\author{First \textsc{Author}$^{1}$\thanks{first@example.org} and Second \textsc{Author}$^{2}$}
+\inst{$^{1}$Department of Physics, University, City 000-0000, Japan\\
+$^{2}$Institute, City 000-0000, Japan}
+
+\abst{State the problem, what you did, and the main result in a few sentences.}
+
+\kword{first keyword, second keyword, third keyword}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Introduce the problem and why it matters, then the contributions of this
+paper.\cite{bardeen1957} Several works at once.\cite{bardeen1957,feynman1982}
+
+\section{Method}
+Describe what you did. Numbered equations use the \texttt{equation} environment:
+\begin{equation}
+  H = -t \sum_{\langle i,j \rangle, \sigma} c^\dagger_{i\sigma} c_{j\sigma} + U \sum_i n_{i\uparrow} n_{i\downarrow}.
+  \label{eq:main}
+\end{equation}
+
+\section{Results}
+Figure~\ref{fig:overview} shows the main result.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\columnwidth]{example-image}
+  \caption{What the figure shows. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Conclusions}
+Summarise the findings and what comes next.
+
+\begin{acknowledgment}
+Thank the people and funding that supported this work.
+\end{acknowledgment}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}

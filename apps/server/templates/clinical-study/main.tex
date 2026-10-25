@@ -1,0 +1,139 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[tableposition=top]{caption}
+\usepackage{authblk}
+\usepackage[numbers,sort&compress,super]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+% Most medical journals ask for double spacing and line numbers when submitting.
+\doublespacing
+\linenumbers
+
+\title{Title of the Trial: A Randomised Controlled Trial of an Intervention in Adults With a Chronic Condition}
+\author[1]{First Author}
+\author[1,2]{Second Author}
+\author[2]{Third Author}
+\affil[1]{Department of Medicine, University Hospital, City, Country}
+\affil[2]{Clinical Trials Unit, University, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Corresponding author:} First Author, Department of Medicine,
+University Hospital, City, Country; first.author@example.org
+
+\noindent\textbf{Word count:} abstract 250, main text 3000.
+
+\begin{abstract}
+\noindent\textbf{Background:} State why the question matters and what is unknown.\\
+\textbf{Methods:} Describe the design, setting, participants, interventions and primary outcome.\\
+\textbf{Results:} Give the main findings with effect sizes and 95\% confidence intervals.\\
+\textbf{Conclusions:} Say what the findings mean for practice or research.\\
+\textbf{Trial registration:} Registry and number, e.g. ClinicalTrials.gov NCT00000000.
+\end{abstract}
+
+\noindent\textbf{Keywords:} randomised controlled trial; chronic disease; quality of life
+
+\clearpage
+
+\section{Introduction}
+Summarise what is known, the gap this trial addresses and its objective.
+
+\section{Methods}
+\subsection{Trial design}
+Describe the design and allocation ratio, and any changes after the trial
+started. The trial is reported following CONSORT.\cite{schulz2010consort}
+
+\subsection{Participants}
+Give the eligibility criteria, settings and locations.
+
+\subsection{Interventions}
+Describe the interventions in each group in enough detail to replicate them.
+
+\subsection{Outcomes}
+Define the primary and secondary outcomes, and how and when they were assessed.
+
+\subsection{Sample size}
+Explain how the sample size was determined.
+
+\subsection{Randomisation and blinding}
+Describe sequence generation, allocation concealment and who was blinded.
+
+\subsection{Statistical analysis}
+Describe the methods used to compare groups. The primary outcome was analysed
+with a linear model adjusted for the baseline value,
+\begin{equation}
+  y_i = \beta_0 + \beta_1\,\mathrm{treatment}_i + \beta_2\,\mathrm{baseline}_i + \varepsilon_i ,
+\end{equation}
+and $\beta_1$ is reported with its 95\% confidence interval.
+
+\section{Results}
+Figure~\ref{fig:flow} shows the flow of participants, and
+Table~\ref{tab:outcomes} the outcomes in each group.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\linewidth]{example-image}
+  \caption{Flow of participants through the trial (CONSORT diagram). Upload an image and use its file name here.}
+  \label{fig:flow}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Primary and secondary outcomes at 12 months.}
+  \label{tab:outcomes}
+  \begin{tabular}{lrrr}
+    \toprule
+    Outcome & Intervention ($n=150$) & Control ($n=148$) & Difference (95\% CI) \\
+    \midrule
+    Primary score, mean (SD) & 62.1 (14.0) & 55.4 (15.2) & 6.7 (3.2 to 10.2) \\
+    Hospital admission, $n$ (\%) & 12 (8.0) & 18 (12.2) & $-$4.2 ($-$10.9 to 2.6) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Discussion}
+Interpret the results, compare them with other trials, and discuss
+generalisability and limitations.
+
+\section{Conclusions}
+State the main conclusion in a few sentences.
+
+\section*{Declarations}
+\subsection*{Ethics approval and consent to participate}
+Name the ethics committee and the approval number. The trial followed the
+Declaration of Helsinki,\cite{wma2013helsinki} and all participants gave
+written informed consent.
+
+\subsection*{Trial registration}
+Registry, number and date of registration.
+
+\subsection*{Funding}
+List the funders and grant numbers, and their role in the trial.
+
+\subsection*{Competing interests}
+The authors declare no competing interests.
+
+\subsection*{Data availability}
+Say where the data can be obtained, and under which conditions.
+
+\subsection*{Author contributions}
+Describe each author's contribution.
+
+\subsection*{Reporting checklist}
+The completed CONSORT checklist is provided as a supplementary file.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

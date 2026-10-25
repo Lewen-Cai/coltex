@@ -11,6 +11,8 @@ import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 
 const EVENT = 'coltex:publish-template'
+/** Fired after a template was published, changed or taken down, so open template lists reload. */
+export const TEMPLATES_CHANGED = 'coltex:templates-changed'
 
 /**
  * Publish a project as a template for everyone on this server (owners only).
@@ -59,6 +61,7 @@ export function PublishTemplateDialogHost() {
     try {
       await fn()
       setTarget(undefined)
+      window.dispatchEvent(new Event(TEMPLATES_CHANGED))
       toast.success(done)
     } catch (err) {
       toast.error((err as Error).message)

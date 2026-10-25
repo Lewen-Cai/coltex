@@ -1,0 +1,79 @@
+\documentclass[journal=jacsat,manuscript=article]{achemso}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[version=4]{mhchem}
+
+\author{First Author}
+\email{first@example.org}
+\affiliation{Department of Chemistry, University, City, Country}
+\author{Second Author}
+\affiliation{Institute, City, Country}
+
+\title{Title of the Paper}
+
+\keywords{first keyword, second keyword}
+
+\begin{document}
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+Introduce the problem and why it matters, then the contributions of this
+paper. Cite related work like this~\cite{kohn1965}, or several works at
+once~\cite{kohn1965,becke1993}.
+
+\section{Experimental Section}
+\label{sec:method}
+Describe what you did in enough detail to reproduce it. Numbered equations use
+the \texttt{equation} environment:
+\begin{equation}
+  \label{eq:main}
+  \ce{CO2 + 4 H2 -> CH4 + 2 H2O}
+\end{equation}
+Refer to it as Equation~\eqref{eq:main}.
+
+\section{Results}
+\label{sec:results}
+Table~\ref{tab:results} and Figure~\ref{fig:overview} show the main results.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Computed bond lengths.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Functional & Bond length (\AA) & Error (\AA) \\
+    \midrule
+    B3LYP & 1.21 & 0.03 \\
+    PBE0 & \textbf{1.18} & 0.02 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{Overview of the method. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Discussion}
+Interpret the results, compare them with earlier work and state the limitations.
+
+\section{Conclusions}
+Summarise the findings and what comes next.
+
+\begin{acknowledgement}
+Thank the people and funding that supported this work.
+\end{acknowledgement}
+
+\begin{suppinfo}
+List the Supporting Information: methods, spectra, coordinates.
+\end{suppinfo}
+
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,78 @@
+\documentclass{nrc2}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{natbib}
+
+\begin{document}
+
+\title{Title of the Paper}
+
+\author{First Author and Second Author}
+
+\address{F. Author. Department of Earth Sciences, University, City, Country.\\
+S. Author. Institute, City, Country.}
+
+\correspond{F. Author (e-mail: first@example.org).}
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\keywords{first keyword, second keyword, third keyword}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+Introduce the problem and why it matters, then the contributions of this
+paper. Cite in parentheses~\citep{lorenz1963}, or by name, as \citet{manabe1967} showed, or several works at
+once~\citep{lorenz1963,manabe1967}.
+
+\section{Method}
+\label{sec:method}
+Describe what you did in enough detail to reproduce it. Numbered equations use
+the \texttt{equation} environment:
+\begin{equation}
+  \label{eq:main}
+  \frac{dx}{dt} = \sigma (y - x).
+\end{equation}
+Refer to it as Equation~(\ref{eq:main}).
+
+\section{Results}
+\label{sec:results}
+Table~\ref{tab:results} and Figure~\ref{fig:overview} show the main results.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Results on the test set.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Method & Accuracy (\%) & Time (s) \\
+    \midrule
+    Baseline & 81.2 & 12 \\
+    Ours & \textbf{87.5} & 15 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{Overview of the method. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Discussion}
+Interpret the results, compare them with earlier work and state the limitations.
+
+\section{Conclusion}
+Summarise the findings and what comes next.
+
+\section*{Acknowledgements}
+Thank the people and funding that supported this work.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

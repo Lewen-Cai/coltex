@@ -1,0 +1,82 @@
+\documentclass[aip,jcp,reprint,amsmath,amssymb]{revtex4-2}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\begin{document}
+
+\title{Title of the Paper}
+
+\author{First Author}
+\email{first@example.org}
+\affiliation{Department of Chemistry, University, City, Country}
+\author{Second Author}
+\affiliation{Institute, City, Country}
+
+\date{\today}
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+Introduce the problem and why it matters, then the contributions of this
+paper. Cite related work like this~\cite{kohn1965}, or several works at
+once~\cite{kohn1965,becke1993}.
+
+\section{Method}
+\label{sec:method}
+Describe what you did in enough detail to reproduce it. Numbered equations use
+the \texttt{equation} environment:
+\begin{equation}
+  \label{eq:main}
+  \begin{split}
+  E_{\mathrm{xc}}^{\mathrm{B3LYP}} &= (1-a) E_{\mathrm{x}}^{\mathrm{LSDA}} + a E_{\mathrm{x}}^{\mathrm{HF}} + b\, \Delta E_{\mathrm{x}}^{\mathrm{B88}} \\
+  &\quad + c\, E_{\mathrm{c}}^{\mathrm{LYP}} + (1-c) E_{\mathrm{c}}^{\mathrm{VWN}}.
+  \end{split}
+\end{equation}
+Refer to it as Equation~\eqref{eq:main}.
+
+\section{Results}
+\label{sec:results}
+Table~\ref{tab:results} and Figure~\ref{fig:overview} show the main results.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Results on the test set.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Method & Accuracy (\%) & Time (s) \\
+    \midrule
+    Baseline & 81.2 & 12 \\
+    Ours & \textbf{87.5} & 15 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\columnwidth]{example-image}
+  \caption{Overview of the method. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\section{Discussion}
+Interpret the results, compare them with earlier work and state the limitations.
+
+\section{Conclusion}
+Summarise the findings and what comes next.
+
+\begin{acknowledgments}
+Thank the people and funding that supported this work.
+\end{acknowledgments}
+
+\section*{Data Availability}
+Say where the data that support the findings can be found.
+
+\bibliography{references}
+
+\end{document}

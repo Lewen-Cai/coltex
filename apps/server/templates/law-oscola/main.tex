@@ -1,0 +1,39 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage[english]{babel}
+\usepackage{csquotes}
+\usepackage[style=oscola,ibidtracker=context,backend=biber]{biblatex}
+\addbibresource{references.bib}
+\usepackage[hidelinks]{hyperref}
+
+\doublespacing
+
+\title{Title of the Article}
+\author{Author Name\\ \small Department, University}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+State the argument of the article and its contribution in a few sentences.
+\end{abstract}
+
+\noindent\textbf{Keywords:} first keyword, second keyword
+
+\section{Introduction}
+State the legal question and the argument. OSCOLA cites in footnotes.\autocite{hart1961}
+
+\section{The law}
+Discuss the authorities.\autocite[22]{dworkin1977}
+
+\section{Conclusion}
+Summarise the argument and its consequences for the law.
+
+\printbibliography
+
+\end{document}

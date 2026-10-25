@@ -5,7 +5,7 @@ import { requireUser } from '../auth/fastify.ts'
 import { config } from '../config.ts'
 import type { Deps } from '../deps.ts'
 import { BadRequestError } from '../errors.ts'
-import { buildProjectZip, detectMainFile, readProjectZip } from '../projects/zip.ts'
+import { buildProjectZip, detectMainFile, readProjectZip, type ProjectArchive } from '../projects/zip.ts'
 
 /** `Content-Disposition` that keeps non-ASCII project names (RFC 6266 / 5987). */
 export function attachment(filename: string): string {
@@ -13,6 +13,31 @@ export function attachment(filename: string): string {
     ? filename.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_')
     : 'project.zip'
   return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+}
+
+/** A zip upload read for a new project, with its main document (if it has a .tex file). */
+export async function readImport(body: unknown): Promise<ProjectArchive & { rootFile: string | undefined }> {
+  if (!Buffer.isBuffer(body)) throw new BadRequestError('Expected the zip file as an application/zip body')
+  const archive = await readProjectZip(body, undefined, { skipBuildFiles: true })
+  if (archive.files.size === 0) throw new BadRequestError('The archive contains no files')
+  return { ...archive, rootFile: detectMainFile(archive.files) }
+}
+
+/** Create the caller's project from an imported zip (a project import, or a template import). */
+export async function projectFromImport(
+  { projects, history }: Pick<Deps, 'projects' | 'history'>,
+  userId: string,
+  name: string,
+  archive: Awaited<ReturnType<typeof readImport>>,
+): Promise<ProjectMeta> {
+  // The engine is picked at each build from what the document loads.
+  const project = await projects.create(userId, name, 'auto', {
+    files: archive.files,
+    folders: archive.folders,
+    rootFile: archive.rootFile ?? 'main.tex',
+  })
+  await history.record(project.id, 'import', [userId])
+  return project
 }
 
 export const archiveRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects, store, collab, history }) => {
@@ -28,19 +53,10 @@ export const archiveRoutes: FastifyPluginAsyncZod<Deps> = async (app, { projects
     },
     async (req, reply) => {
       const user = requireUser(req)
-      if (!Buffer.isBuffer(req.body)) throw new BadRequestError('Expected the zip file as an application/zip body')
-      const archive = await readProjectZip(req.body, undefined, { skipBuildFiles: true })
-      if (archive.files.size === 0) throw new BadRequestError('The archive contains no files')
+      const archive = await readImport(req.body)
       const warnings = [...archive.warnings]
-      const rootFile = detectMainFile(archive.files)
-      if (!rootFile) warnings.push('No .tex file found; set the main document before compiling')
-      // The engine is picked at each build from what the document loads.
-      const project = await projects.create(user.id, req.query.name, 'auto', {
-        files: archive.files,
-        folders: archive.folders,
-        rootFile: rootFile ?? 'main.tex',
-      })
-      await history.record(project.id, 'import', [user.id])
+      if (!archive.rootFile) warnings.push('No .tex file found; set the main document before compiling')
+      const project = await projectFromImport({ projects, history }, user.id, req.query.name, archive)
       return reply.code(201).send({ project, warnings })
     },
   )

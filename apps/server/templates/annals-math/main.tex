@@ -1,0 +1,52 @@
+\documentclass{aomart}
+\usepackage{amssymb}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\numberwithin{equation}{section}
+
+\title[Short title]{Title of the Paper}
+
+\author{First Author}
+\address{Department of Mathematics, University, City, Country}
+\email{first@example.org}
+
+\author{Second Author}
+\address{Institute, City, Country}
+\email{second@example.org}
+
+\keyword{first keyword}
+\keyword{second keyword}
+
+\begin{document}
+
+\begin{abstract}
+State the main results of the paper in a few sentences.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+Introduce the problem, the main result and how the paper is organised~\cite{rudin1987real}.
+
+\section{Main result}
+\begin{definition}
+A function $f\colon \mathbb{R} \to \mathbb{R}$ is \emph{Lipschitz} if there is
+an $L \ge 0$ with $\lvert f(x) - f(y) \rvert \le L \lvert x - y \rvert$ for all $x, y$.
+\end{definition}
+
+\begin{theorem}\label{thm:main}
+A Lipschitz function is uniformly continuous.
+\end{theorem}
+
+\begin{proof}
+Given $\varepsilon > 0$, take $\delta = \varepsilon / L$ (any $\delta$ if $L = 0$).
+\end{proof}
+
+\bibliographystyle{amsplain}
+\bibliography{references}
+
+\end{document}

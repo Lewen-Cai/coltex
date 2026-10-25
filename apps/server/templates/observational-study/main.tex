@@ -1,0 +1,94 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[tableposition=top]{caption}
+\usepackage{authblk}
+\usepackage[numbers,sort&compress,super]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+% Most medical journals ask for double spacing and line numbers when submitting.
+\doublespacing
+\linenumbers
+
+\title{Title of the Study: A Cohort Study of an Exposure and an Outcome}
+\author[1]{First Author}
+\author[1,2]{Second Author}
+\author[2]{Third Author}
+\affil[1]{Department of Medicine, University Hospital, City, Country}
+\affil[2]{School of Public Health, University, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Corresponding author:} First Author, Department of Medicine,
+University Hospital, City, Country; first.author@example.org
+
+\begin{abstract}
+\noindent\textbf{Objective:} State the question.\\
+\textbf{Design, setting and participants:} Describe the study design, where and when, and who took part.\\
+\textbf{Exposures and main outcome measures:} Define them.\\
+\textbf{Results:} Give the main findings with effect sizes and 95\% confidence intervals.\\
+\textbf{Conclusions:} Say what the findings mean.
+\end{abstract}
+
+\noindent\textbf{Keywords:} cohort study; risk factors; epidemiology
+
+\section{Introduction}
+Summarise what is known and the gap this study addresses. The study is reported
+following STROBE.\cite{vonelm2007strobe}
+
+\section{Methods}
+\subsection{Study design and setting}
+Describe the setting, the dates of recruitment and follow-up.
+
+\subsection{Participants}
+Give the eligibility criteria and how participants were selected.
+
+\subsection{Variables and measurement}
+Define the exposures, outcomes, confounders and effect modifiers.
+
+\subsection{Statistical analysis}
+Describe the models used. The hazard of the outcome was modelled as
+\begin{equation}
+  h(t \mid x) = h_0(t) \exp\bigl(\beta^\top x\bigr).
+\end{equation}
+
+\section{Results}
+Table~\ref{tab:baseline} describes the participants.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Characteristics of the participants.}
+  \label{tab:baseline}
+  \begin{tabular}{lrr}
+    \toprule
+    Characteristic & Exposed & Unexposed \\
+    \midrule
+    Age, years (mean) & 61.2 & 59.8 \\
+    Women, \% & 52 & 49 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Discussion}
+Summarise the key results, the limitations and how they compare with other studies.
+
+\section*{Declarations}
+\noindent\textbf{Ethics approval:} Name the committee and the approval number.\\
+\textbf{Funding:} Name the funders and their role.\\
+\textbf{Competing interests:} Declare any, or state that there are none.\\
+\textbf{Data availability:} Say where the data can be found.\\
+\textbf{Author contributions:} Say who did what.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

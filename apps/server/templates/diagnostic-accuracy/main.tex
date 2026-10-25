@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[tableposition=top]{caption}
+\usepackage{authblk}
+\usepackage[numbers,sort&compress,super]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+% Most medical journals ask for double spacing and line numbers when submitting.
+\doublespacing
+\linenumbers
+
+\title{Title of the Study: Accuracy of an Index Test for a Target Condition}
+\author[1]{First Author}
+\author[1,2]{Second Author}
+\author[2]{Third Author}
+\affil[1]{Department of Medicine, University Hospital, City, Country}
+\affil[2]{School of Public Health, University, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Corresponding author:} First Author, Department of Medicine,
+University Hospital, City, Country; first.author@example.org
+
+\begin{abstract}
+\noindent\textbf{Objective:} State which test is studied for which condition.\\
+\textbf{Methods:} Describe the participants, the index test and the reference standard.\\
+\textbf{Results:} Give sensitivity and specificity with 95\% confidence intervals.\\
+\textbf{Conclusions:} Say what the accuracy means for practice.
+\end{abstract}
+
+\noindent\textbf{Keywords:} diagnostic accuracy; sensitivity and specificity; ROC curve
+
+\section{Introduction}
+Describe the clinical role of the test. The study is reported following STARD.\cite{bossuyt2015stard}
+
+\section{Methods}
+\subsection{Participants}
+Give the eligibility criteria and how participants were identified.
+
+\subsection{Test methods}
+Describe the index test and the reference standard, and who read them.
+
+\subsection{Analysis}
+Sensitivity and specificity are
+\begin{equation}
+  \mathrm{Se} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}}, \qquad
+  \mathrm{Sp} = \frac{\mathrm{TN}}{\mathrm{TN} + \mathrm{FP}},
+\end{equation}
+and the area under the ROC curve summarises discrimination.\cite{hanley1982}
+
+\section{Results}
+Table~\ref{tab:accuracy} cross-tabulates the index test with the reference standard.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Index test results against the reference standard.}
+  \label{tab:accuracy}
+  \begin{tabular}{lrr}
+    \toprule
+     & Condition present & Condition absent \\
+    \midrule
+    Index test positive & 90 & 15 \\
+    Index test negative & 10 & 185 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Discussion}
+Discuss the clinical applicability and the limitations.
+
+\section*{Declarations}
+\noindent\textbf{Ethics approval:} Name the committee and the approval number.\\
+\textbf{Funding:} Name the funders and their role.\\
+\textbf{Competing interests:} Declare any, or state that there are none.\\
+\textbf{Data availability:} Say where the data can be found.\\
+\textbf{Author contributions:} Say who did what.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

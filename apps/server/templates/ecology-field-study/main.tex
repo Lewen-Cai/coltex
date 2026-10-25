@@ -1,0 +1,87 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{authblk}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\linenumbers
+
+\title{Title of the Paper}
+\author[1]{First Author}
+\author[2]{Second Author}
+\affil[1]{Department of Ecology, University, City, Country}
+\affil[2]{Field Station, City, Country}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+State the problem, what you did, and the main result in a few sentences.
+\end{abstract}
+
+\noindent\textbf{Keywords:} first keyword, second keyword, third keyword
+
+\section{Introduction}
+Introduce the ecological question and hypotheses. Cite in parentheses
+\citep{hutchinson1957}, or by name, as \citet{macarthur1967} proposed.
+
+\section{Materials and methods}
+\subsection{Study area}
+Describe the site, its climate and habitats (Figure~\ref{fig:overview}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image}
+  \caption{Map of the study area and the sampling plots. Upload an image and use its file name here.}
+  \label{fig:overview}
+\end{figure}
+
+\subsection{Sampling design}
+Describe plots, transects, timing and what was recorded.
+
+\subsection{Statistical analysis}
+Species richness was modelled as
+\begin{equation}
+  S = c A^{z},
+  \label{eq:main}
+\end{equation}
+with $A$ the area sampled.
+
+\section{Results}
+Table~\ref{tab:results} summarises the counts.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Species and individuals recorded by habitat.}
+  \label{tab:results}
+  \begin{tabular}{lrr}
+    \toprule
+    Habitat & Species & Individuals \\
+    \midrule
+    Forest & 42 & 1{,}210 \\
+    Grassland & 27 & 860 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Discussion}
+Interpret the results, compare them with earlier work and state the limitations.
+
+\section*{Data availability}
+Say where the data can be found.
+
+\section*{Acknowledgements}
+Thank the people, permits and funding that supported this work.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
