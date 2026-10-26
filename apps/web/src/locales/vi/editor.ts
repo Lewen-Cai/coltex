@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{used} / {limit}',
   'Resets on {date}': 'Đặt lại vào {date}',
   'Resize the message box': 'Đổi chiều cao ô nhập tin nhắn',
+  'The AI agent can use the web, so its changes wait for your review.': 'Tác tử AI có thể dùng web, nên các thay đổi của nó đều chờ bạn xem xét.',
 }
 
 export default messages

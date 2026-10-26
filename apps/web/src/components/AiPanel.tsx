@@ -92,7 +92,9 @@ export function AiPanel(props: Props) {
   // Asked again after each answer, so the meter follows.
   const allowance = useAiAllowance(running)
   const [permission, setPermission] = useAiPermission()
-  const permissionChoice: PermissionChoice | undefined = props.canEdit && permission ? { value: permission, onChoose: p => void setPermission(p) } : undefined
+  // With the web, the built-in agent's changes always wait for review.
+  const permissionChoice: PermissionChoice | undefined =
+    props.canEdit && permission ? { value: status.web ? 'manual' : permission, locked: status.web, onChoose: p => void setPermission(p) } : undefined
   const limited = !!allowance?.exceeded
   const changes = state?.changes
   const changed = changes?.files.length ?? 0
@@ -868,7 +870,7 @@ function AssistantReply({ text }: { text: string }) {
 const PERMISSION_ICON: Record<AiPermission, LucideIcon> = { manual: ShieldCheck, auto: Shield, full: ShieldAlert }
 
 /** The permission choice inside the model picker (editors only): what the agent may change. */
-export type PermissionChoice = { value: AiPermission; onChoose: (p: AiPermission) => void }
+export type PermissionChoice = { value: AiPermission; locked?: boolean; onChoose: (p: AiPermission) => void }
 
 export function ModelPicker({ status, onChoose, permission }: { status: AiStatus; onChoose: (pick: AiPreference) => void; permission?: PermissionChoice }) {
   const [open, setOpen] = useState(false)
@@ -986,9 +988,10 @@ export function ModelPicker({ status, onChoose, permission }: { status: AiStatus
                         type="button"
                         role="radio"
                         aria-checked={permission.value === p.value}
+                        disabled={permission.locked && p.value !== permission.value}
                         onClick={() => permission.onChoose(p.value)}
                         className={cn(
-                          'flex h-7 items-center gap-1 rounded-md border px-2.5 text-xs transition-colors',
+                          'flex h-7 items-center gap-1 rounded-md border px-2.5 text-xs transition-colors disabled:pointer-events-none disabled:opacity-50',
                           permission.value === p.value ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted',
                         )}
                       >
@@ -1003,6 +1006,7 @@ export function ModelPicker({ status, onChoose, permission }: { status: AiStatus
                 )
               })}
             </div>
+            {permission.locked && <span className="text-xs text-muted-foreground">{t('The AI agent can use the web, so its changes wait for your review.')}</span>}
           </div>
         )}
       </PopoverContent>

@@ -25,6 +25,17 @@ Cosa può modificare l’agente IA lo decidi tu: scegli in **Impostazioni → Ag
 
 Visualizzatori e revisori possono fare domande all’agente IA, ma per loro non può modificare nulla.
 
+## Il web
+
+Una volta configurata la ricerca web, l’agente IA può cercare sul web e leggere pagine: le norme per gli autori aggiornate di una rivista, le note di rilascio di un pacchetto, una fonte per verificare un’affermazione. I modelli di Anthropic, OpenAI e ChatGPT usano la propria ricerca integrata; gli altri modelli il servizio di ricerca collegato dall’amministratore. Le sue ricerche e le pagine lette compaiono come passaggi nella conversazione, e indica da quali pagine viene una risposta.
+
+Perché nulla del tuo progetto esca per questa via:
+- Le ricerche vanno solo al servizio di ricerca scelto dall’amministratore (o alla ricerca del modello stesso) e sono lunghe al massimo 128 caratteri.
+- Legge solo indirizzi che hai scritto nella conversazione o che le sue ricerche hanno restituito, esattamente così; non può inventarsi un indirizzo.
+- Legge soltanto: non carica né invia nulla.
+
+Le pagine web le scrive chiunque e possono contenere istruzioni fatte per ingannare l’agente IA. Perciò, finché hai il web, le modifiche dell’agente IA attendono sempre la tua revisione, anche con **Automatico** o **Accesso completo**, e non elimina né sposta file. I tuoi strumenti IA (MCP) mantengono il tuo permesso.
+
 ## Modelli e ragionamento
 
 - Scegli il modello in fondo al pannello. Con **Automatico**, ColTex sceglie un modello leggero o potente a seconda della domanda.
@@ -39,6 +50,7 @@ Visualizzatori e revisori possono fare domande all’agente IA, ma per loro non 
   - `/compact`: riassume la chat fin qui e prosegue dal riassunto, liberando il contesto. I messaggi restano visibili; l’agente IA li ricorda tramite il riassunto.
   - `/new`: inizia una nuova chat.
   - `/chats`: le chat precedenti.
+- La casella del messaggio cresce con il testo. Trascina il bordo superiore per renderla più alta (resta così in questo browser, anche nella chat del progetto); fai doppio clic sul bordo per tornare com’era.
 
 ## Skill
 

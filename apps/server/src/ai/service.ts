@@ -39,6 +39,8 @@ import {
   type AiUserCustom,
   type AiUserRow,
   type CustomAiProvider,
+  type WebSearchService,
+  type WebSearchTestResult,
 } from '@coltex/shared'
 import type { SessionUser } from '../auth/auth.ts'
 import type { Db } from '../db/client.ts'
@@ -46,6 +48,7 @@ import { aiGroups, aiPermissions, aiPreferences, aiUsage, aiUserGroups, aiUserSe
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../errors.ts'
 import { ProviderHealth } from './health.ts'
 import { judgePrompt, parseTier, type Tier } from './routing.ts'
+import { NATIVE_SEARCH, SERVICE_NAMES, WebSearch, nativeSearchFits, type WebDeps } from './web.ts'
 
 const SETTINGS_KEY = 'ai'
 const DEVICE_ID_KEY = 'ai-device-id'
@@ -62,6 +65,17 @@ export function modelInfo(model: Model<Api>): AiModelInfo {
     thinkingLevels: getSupportedThinkingLevels(model),
   }
 }
+
+/** Search services' API keys live with the providers' credentials (encrypted), under these ids. */
+const webKeyId = (service: WebSearchService) => `web-search:${service}`
+
+/**
+ * What the AI agent may do on the web for one person and model: search with
+ * the admin's search service (`search`, unless the model searches by itself:
+ * `native`), and read pages (`read`).
+ */
+export type WebAccess = { search: WebSearchService | null; native: boolean; read: boolean }
+export const NO_WEB: WebAccess = { search: null, native: false, read: false }
 
 /** The thinking level used until someone picks one: a middle setting, adjusted to the model. */
 const DEFAULT_THINKING = 'medium'
@@ -221,12 +235,14 @@ export class AiService {
   private readonly logins = new Map<string, LoginSession>()
   /** Circuit breakers for the shared credentials, per provider. */
   readonly health = new ProviderHealth()
+  readonly web: WebSearch
 
-  constructor(db: Db, credentials: CredentialStore) {
+  constructor(db: Db, credentials: CredentialStore, webDeps?: WebDeps) {
     this.db = db
     this.credentials = credentials
     this.models = createModels({ credentials })
     for (const provider of builtinProviders()) this.models.setProvider(provider)
+    this.web = new WebSearch(service => this.webKey(service), webDeps)
   }
 
   async init(): Promise<void> {
@@ -255,6 +271,7 @@ export class AiService {
     for (const ref of [next.auto.judge, next.auto.light, next.auto.strong]) {
       if (ref && !this.models.getModel(ref.provider, ref.id)) throw new BadRequestError(`Unknown model ${ref.provider}/${ref.id}`)
     }
+    for (const id of next.web.nativeOff) if (!NATIVE_SEARCH[id]) throw new BadRequestError(`${id} has no web search ColTex can use`)
     await this.db
       .insert(appSettings)
       .values({ key: SETTINGS_KEY, value: next })
@@ -288,7 +305,60 @@ export class AiService {
         }
       }),
     )
-    return { settings: this.settings, providers }
+    const keys = new Set((await this.credentials.list()).map(c => c.providerId))
+    return {
+      settings: this.settings,
+      providers,
+      web: {
+        keys: (['deepseek', 'tavily', 'exa', 'brave'] as const).filter(s => keys.has(webKeyId(s))),
+        deepseekConnected: !!providers.find(p => p.id === 'deepseek')?.configured,
+        native: providers.filter(p => p.configured && NATIVE_SEARCH[p.id]).map(p => p.id),
+      },
+    }
+  }
+
+  // ---- Web search -----------------------------------------------------------
+
+  /** The search service's key: its own, or for DeepSeek the connected DeepSeek provider's. */
+  private async webKey(service: WebSearchService): Promise<string | undefined> {
+    const stored = await this.credentials.read(webKeyId(service))
+    if (stored?.type === 'api_key' && stored.key) return stored.key
+    if (service === 'deepseek') return (await this.models.getAuth('deepseek').catch(() => undefined))?.auth.apiKey
+    return undefined
+  }
+
+  async setWebKey(service: WebSearchService, key: string): Promise<void> {
+    await this.credentials.modify(webKeyId(service), async () => ({ type: 'api_key', key }))
+  }
+
+  async deleteWebKey(service: WebSearchService): Promise<void> {
+    await this.credentials.delete(webKeyId(service))
+  }
+
+  /**
+   * What the agent may do on the web with this model: its own search when it
+   * has one, else the search service when one is set up, else nothing (the
+   * agent then never reads pages either, so permissions keep their meaning).
+   */
+  async webAccess(model: { provider: string; api: string }): Promise<WebAccess> {
+    const { search, nativeOff } = this.settings.web
+    const own = nativeSearchFits(model) && !nativeOff.includes(model.provider)
+    const service = !own && search && (await this.webKey(search)) ? search : null
+    return own || service ? { search: service, native: own, read: true } : NO_WEB
+  }
+
+  /** A search with the chosen service, for the admin page. */
+  async testWebSearch(): Promise<WebSearchTestResult> {
+    const service = this.settings.web.search
+    if (!service) throw new BadRequestError('Choose a search service first')
+    const started = Date.now()
+    try {
+      const results = await this.web.search(service, 'LaTeX')
+      const top = results[0]
+      return { ok: true, message: top ? `${top.title} (${top.url})` : `${SERVICE_NAMES[service]} found nothing`, results: results.length, ms: Date.now() - started }
+    } catch (err) {
+      return { ok: false, message: err instanceof Error ? err.message : String(err), results: 0, ms: Date.now() - started }
+    }
   }
 
   /** Models of providers that are configured, for the admin's model picker. */
@@ -400,7 +470,7 @@ export class AiService {
   }
 
   async statusFor(u: SessionUser): Promise<AiStatus> {
-    const off = { available: false, model: null, thinkingLevel: 'off' as const, models: [], auto: { available: false, on: false, light: null, strong: null } }
+    const off = { available: false, model: null, thinkingLevel: 'off' as const, models: [], auto: { available: false, on: false, light: null, strong: null }, web: false }
     const policy = await this.policyFor(u)
     if (policy.mode === 'none') return { ...off, reason: "You don't have access to the AI agent" }
     const allowed = await this.allowedModels(u)
@@ -419,6 +489,8 @@ export class AiService {
       thinkingLevel: choice.thinkingLevel,
       models: allowed.map(modelInfo),
       auto: { available: auto.available, on, light: auto.light ? modelInfo(auto.light) : null, strong: auto.strong ? modelInfo(auto.strong) : null },
+      // With Auto either model may answer.
+      web: (await Promise.all((on ? [auto.light, auto.strong] : [choice.model]).map(m => m && this.webAccess(m)))).some(w => w?.read),
     }
   }
 

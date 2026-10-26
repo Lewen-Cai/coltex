@@ -25,6 +25,17 @@ Tác tử AI được phép thay đổi những gì là do bạn quyết định
 
 Người xem và người duyệt có thể hỏi tác tử AI, nhưng nó không thể thay đổi gì thay họ.
 
+## Web
+
+Khi tìm kiếm web đã được thiết lập, tác tử AI có thể tìm trên web và đọc trang web: hướng dẫn tác giả hiện hành của một tạp chí, ghi chú phát hành của một gói, một nguồn để kiểm chứng một nhận định. Các mô hình của Anthropic, OpenAI và ChatGPT dùng tìm kiếm tích hợp của chính chúng; các mô hình khác dùng dịch vụ tìm kiếm mà quản trị viên đã kết nối. Những gì nó tìm và các trang nó đọc hiện thành các bước trong cuộc trò chuyện, và nó cho biết câu trả lời dựa trên những trang nào.
+
+Để không gì trong dự án của bạn lọt ra ngoài theo đường này:
+- Truy vấn chỉ gửi tới dịch vụ tìm kiếm mà quản trị viên chọn (hoặc tìm kiếm tích hợp của mô hình), dài tối đa 128 ký tự.
+- Nó chỉ đọc những địa chỉ bạn đã viết trong cuộc trò chuyện hoặc do kết quả tìm kiếm trả về, đúng nguyên văn; nó không thể tự nghĩ ra địa chỉ.
+- Chỉ đọc: không tải lên hay gửi đi thứ gì.
+
+Ai cũng có thể viết trang web, và trong đó có thể có những chỉ dẫn nhằm đánh lừa tác tử AI. Vì vậy, khi bạn dùng được web, các thay đổi của tác tử AI luôn chờ bạn xem lại, kể cả ở chế độ **Tự động** hay **Toàn quyền**, và nó không xóa hay di chuyển tệp. Các công cụ AI của bạn (MCP) vẫn theo quyền bạn đặt.
+
 ## Mô hình và suy nghĩ
 
 - Chọn mô hình ở cuối bảng. Với **Tự động**, ColTex chọn mô hình nhẹ hoặc mạnh tùy theo câu hỏi.
@@ -39,6 +50,7 @@ Người xem và người duyệt có thể hỏi tác tử AI, nhưng nó khôn
   - `/compact`: tóm tắt cuộc trò chuyện đến lúc này và tiếp tục từ bản tóm tắt, giải phóng ngữ cảnh. Các tin nhắn vẫn hiển thị; tác tử AI nhớ chúng qua bản tóm tắt.
   - `/new`: bắt đầu cuộc trò chuyện mới.
   - `/chats`: các cuộc trò chuyện trước.
+- Ô nhập tin nhắn cao dần theo nội dung bạn gõ. Kéo mép trên để làm nó cao hơn (được ghi nhớ trong trình duyệt này, cả trong trò chuyện dự án); nhấp đúp vào mép để trở lại như cũ.
 
 ## Skill
 

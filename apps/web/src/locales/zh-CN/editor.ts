@@ -597,6 +597,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '已用 {used} / {limit}',
   'Resets on {date}': '{date}重置',
   'Resize the message box': '调整输入框高度',
+  'The AI agent can use the web, so its changes wait for your review.': 'AI 智能体可以联网，所以它的修改都要等你审阅后再应用。',
 }
 
 export default messages

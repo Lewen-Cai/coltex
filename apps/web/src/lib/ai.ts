@@ -13,7 +13,7 @@ export function useAiStatus() {
   const [status, setStatus] = useState<AiStatus>()
   useEffect(() => {
     api.aiStatus().then(setStatus, () =>
-      setStatus({ available: false, model: null, thinkingLevel: 'off', models: [], auto: { available: false, on: false, light: null, strong: null } }),
+      setStatus({ available: false, model: null, thinkingLevel: 'off', models: [], auto: { available: false, on: false, light: null, strong: null }, web: false }),
     )
   }, [])
   const choose = useCallback((pick: AiPreference) => {

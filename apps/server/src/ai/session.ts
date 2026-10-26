@@ -1,4 +1,5 @@
 import { Agent } from '@earendil-works/pi-agent-core'
+import type { SimpleStreamOptions } from '@earendil-works/pi-ai'
 import {
   OUTPUT,
   type AiApplyBody,
@@ -31,15 +32,17 @@ import { Changeset, type TurnFile } from './changeset.ts'
 import { AgentChat, shortId } from './chat.ts'
 import { COMPACT_SYSTEM_PROMPT, compactedTranscript, estimateTokens, renderTranscript } from './compact.ts'
 import { conversationTitle, type ConversationStore, type SavedConversation } from './conversations.ts'
-import { permissionNote, systemPrompt, userMessage } from './prompt.ts'
-import { modelInfo, type AiService } from './service.ts'
+import { permissionNote, systemPrompt, userMessage, webNote } from './prompt.ts'
+import { NO_WEB, modelInfo, type AiService } from './service.ts'
 import { saveDraftedSkill, type SkillStore } from './skills.ts'
-import { createTools, errorCount, type ToolContext } from './tools.ts'
+import { WEB_TOOLS, createTools, describeToolCall, errorCount, type ToolContext } from './tools.ts'
+import { WebScope, nativeSearchFits, nativeSearchTracker, urlsIn, withNativeSearch } from './web.ts'
 import type { Tier } from './routing.ts'
 
 /** Per-message limits, so a confused model cannot loop forever. */
 const MAX_TOOL_CALLS = 60
 const MAX_COMPILES = 5
+const MAX_WEB_CALLS = 20
 const IDLE_TTL_MS = 6 * 60 * 60_000
 
 export type AiDeps = {
@@ -58,6 +61,7 @@ export type AiDeps = {
 }
 
 type AppliedFile = { path: string; kind: 'modified' | 'created'; original: string; applied: string }
+
 
 /** The author stopped an automatic apply after its files were written (they stay; Undo takes them back). */
 class StoppedAfterApply extends Error {}
@@ -90,6 +94,10 @@ export class AiSession extends AgentChat {
   private lastApplied?: { snapshot: string; at: string; files: AppliedFile[] }
   /** The permission the agent was last told about (it changes between messages). */
   private told?: AiPermission
+  /** The web access it was last told about. */
+  private toldWeb?: string
+  /** Addresses read_web_page may open: the author's and search results'. */
+  private readonly scope = new WebScope()
   /** Files deleted or moved this turn (full access), for the turn's card. */
   private turnOps: TurnFile[] = []
   /** Whether this turn already kept a version before deleting or moving. */
@@ -115,6 +123,9 @@ export class AiSession extends AgentChat {
       outputsDir: deps.outputsDir,
       canEdit,
       permission: 'manual',
+      web: NO_WEB,
+      webSearch: deps.ai.web,
+      scope: this.scope,
       files: { delete: p => this.deleteNow(p), move: (from, to) => this.moveNow(from, to) },
       authorBuild: () => this.authorBuild,
       skills: () => this.skills,
@@ -128,6 +139,32 @@ export class AiSession extends AgentChat {
           errors,
           warnings: result.diagnostics.length - errors,
         }
+      },
+    }
+    this.scope.add(this.items.flatMap(i => (i.kind === 'user' ? urlsIn(i.text) : [])))
+  }
+
+  /**
+   * The conversation brought in text from the web: its drafts keep waiting
+   * for the author even after the web is turned off for them.
+   */
+  private webUsed(): boolean {
+    return this.items.some(i => i.kind === 'tool' && WEB_TOOLS.has(i.name) && i.status !== 'error')
+  }
+
+  /** Requests with the model's own web search: the tool added to each, its searches shown as steps and their pages readable. */
+  private withNativeSearch(options: SimpleStreamOptions | undefined): SimpleStreamOptions {
+    const track = nativeSearchTracker(e => {
+      if (e.kind === 'urls') return this.scope.add(e.urls)
+      const name = e.kind === 'search' ? 'web_search' : 'read_web_page'
+      this.upsert({ kind: 'tool', id: `web-${e.id}`, name, label: describeToolCall(name, e.kind === 'search' ? { query: e.query } : { url: e.url }), status: 'ok' })
+    })
+    return {
+      ...options,
+      onPayload: async (payload, model) => withNativeSearch((await options?.onPayload?.(payload, model)) ?? payload, model.api),
+      onProviderStreamEvent: async (data, model) => {
+        await options?.onProviderStreamEvent?.(data, model)
+        track(data)
       },
     }
   }
@@ -201,7 +238,8 @@ export class AiSession extends AgentChat {
         // A reopened conversation goes on where it stopped.
         messages: this.restored,
       },
-      streamFn: (m, context, options) => ai.models.streamSimple(m, context, options),
+      streamFn: (m, context, options) =>
+        ai.models.streamSimple(m, context, this.toolContext.web.native && nativeSearchFits(m) ? this.withNativeSearch(options) : options),
       sessionId: this.id,
       toolExecution: 'sequential',
     })
@@ -214,6 +252,7 @@ export class AiSession extends AgentChat {
 
   private toolCalls = 0
   private compiles = 0
+  private webCalls = 0
 
   async send(body: AiMessageBody, project: ProjectMeta, user: SessionUser): Promise<void> {
     if (this.running) throw new ConflictError('The assistant is still working on the previous message')
@@ -223,14 +262,24 @@ export class AiSession extends AgentChat {
     this.skills = await this.deps.skills.available(this.userId)
     const skill = body.skill ? this.skills.find(s => s.name === body.skill) : undefined
     if (body.skill && !skill) throw new BadRequestError(`There is no skill named ${body.skill}`)
-    const permission = this.canEdit ? await this.deps.ai.permission(this.userId) : undefined
-    if (permission) this.toolContext.permission = permission
+    this.scope.add(urlsIn(body.text))
     const { agent, notices } = await this.ensureAgent(user, body)
-    if (permission && permission !== this.told) {
-      // Tools follow the setting (full access adds delete_file and move_file).
+    const web = await this.deps.ai.webAccess(agent.state.model)
+    // Text from the web may carry instructions, so an agent that can read it
+    // never changes the project without the author's review.
+    const reviewed = web.read || this.webUsed()
+    let permission = this.canEdit ? await this.deps.ai.permission(this.userId) : undefined
+    if (permission && reviewed) permission = 'manual'
+    if (permission) this.toolContext.permission = permission
+    const webKey = JSON.stringify(web)
+    if ((permission && permission !== this.told) || webKey !== this.toldWeb) {
+      // Tools follow the settings (full access adds delete_file and move_file; web access its tools).
+      this.toolContext.web = web
       agent.state.tools = createTools(this.toolContext)
-      this.notes.push(permissionNote(permission))
+      if (permission && permission !== this.told) this.notes.push(permissionNote(permission, reviewed))
+      if (webKey !== this.toldWeb && (web.read || this.toldWeb)) this.notes.push(webNote(web))
       this.told = permission
+      this.toldWeb = webKey
     }
     const { text, attachments } = userMessage(body, this.notes, skill)
     this.notes = []
@@ -241,6 +290,7 @@ export class AiSession extends AgentChat {
     this.emit({ type: 'running', running: true })
     this.toolCalls = 0
     this.compiles = 0
+    this.webCalls = 0
     this.turnOps = []
     this.turnCheckpoint = false
     this.stopped = false
@@ -250,6 +300,9 @@ export class AiSession extends AgentChat {
       }
       if (toolCall.name === 'compile' && ++this.compiles > MAX_COMPILES) {
         return { block: true, reason: 'Compile limit for this message reached. Summarise what remains for the author.', terminate: true }
+      }
+      if (WEB_TOOLS.has(toolCall.name) && ++this.webCalls > MAX_WEB_CALLS) {
+        return { block: true, reason: 'Web search and reading limit for this message reached. Answer with what you found.' }
       }
       return undefined
     }

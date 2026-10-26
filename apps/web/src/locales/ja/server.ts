@@ -158,6 +158,8 @@ const messages: Record<string, string> = {
   // What the AI agent was given with a message (the chips under it).
   '{n} compile error': '{n} 件のコンパイルエラー',
   'Compile log': 'コンパイルログ',
+  'Search the web for “{query}”': 'ウェブで「{query}」を検索',
+  'Read web page {url}': 'ウェブページ {url} を読む',
 }
 
 export default messages

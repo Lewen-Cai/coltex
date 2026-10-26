@@ -25,6 +25,17 @@ Apa yang boleh diubah agen AI terserah Anda: pilih di **Pengaturan → Agen AI**
 
 Pelihat dan peninjau dapat bertanya kepada agen AI, tetapi agen itu tidak dapat mengubah apa pun untuk mereka.
 
+## Web
+
+Setelah pencarian web disiapkan, agen AI dapat mencari di web dan membaca halaman web: pedoman penulis terbaru sebuah jurnal, catatan rilis sebuah paket, sumber untuk memeriksa suatu klaim. Model Anthropic, OpenAI, dan ChatGPT memakai pencarian bawaannya sendiri; model lain memakai layanan pencarian yang dihubungkan administrator. Pencarian dan halaman yang dibacanya tampil sebagai langkah dalam percakapan, dan ia menyebutkan halaman mana yang menjadi dasar jawabannya.
+
+Agar tidak ada isi proyek Anda yang keluar lewat jalan ini:
+- Pencarian hanya dikirim ke layanan pencarian yang dipilih administrator (atau pencarian bawaan model), paling panjang 128 karakter.
+- Ia hanya membaca alamat yang Anda tulis di percakapan atau yang dikembalikan pencariannya, persis seperti itu; ia tidak dapat mengarang alamat.
+- Ia hanya membaca: tidak ada yang diunggah atau dikirim.
+
+Halaman web dapat ditulis siapa saja dan bisa berisi instruksi untuk menyesatkan agen AI. Karena itu, selama Anda bisa memakai web, perubahan agen AI selalu menunggu tinjauan Anda, meskipun dengan **Otomatis** atau **Akses penuh**, dan ia tidak menghapus atau memindahkan file. Alat AI Anda (MCP) tetap mengikuti izin Anda.
+
 ## Model dan penalaran
 
 - Pilih model di bagian bawah panel. Dengan **Otomatis**, ColTex memilih model ringan atau kuat tergantung pertanyaannya.
@@ -39,6 +50,7 @@ Pelihat dan peninjau dapat bertanya kepada agen AI, tetapi agen itu tidak dapat 
   - `/compact`: meringkas obrolan sejauh ini dan melanjutkan dari ringkasan itu, sehingga konteks menjadi lega. Pesan-pesan tetap terlihat; agen AI mengingatnya melalui ringkasan.
   - `/new`: memulai obrolan baru.
   - `/chats`: obrolan sebelumnya.
+- Kotak pesan membesar mengikuti yang Anda ketik. Seret tepi atasnya agar lebih tinggi (diingat di peramban ini, juga di obrolan proyek); klik dua kali tepi itu untuk kembali.
 
 ## Skill
 

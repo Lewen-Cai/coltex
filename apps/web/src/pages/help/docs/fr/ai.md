@@ -25,6 +25,17 @@ Ce que l’agent IA peut modifier dépend de vous : choisissez dans **Paramèt
 
 Les lecteurs et les relecteurs peuvent interroger l’agent IA, mais il ne peut rien modifier pour eux.
 
+## Le web
+
+Une fois la recherche web configurée, l’agent IA peut chercher sur le web et lire des pages : les consignes aux auteurs actuelles d’une revue, les notes de version d’un paquet, une source pour vérifier une affirmation. Les modèles d’Anthropic, d’OpenAI et de ChatGPT utilisent leur propre recherche intégrée ; les autres, le service de recherche connecté par l’administrateur. Ses recherches et les pages lues apparaissent comme des étapes dans la conversation, et il indique de quelles pages vient une réponse.
+
+Pour que rien de votre projet ne sorte par ce biais :
+- Les recherches ne vont qu’au service de recherche choisi par l’administrateur (ou à la recherche propre au modèle) et font au plus 128 caractères.
+- Il ne lit que les adresses que vous avez écrites dans la conversation ou que ses recherches ont renvoyées, telles quelles ; il ne peut pas inventer d’adresse.
+- Il ne fait que lire : rien n’est téléversé ni envoyé.
+
+N’importe qui peut écrire une page web, qui peut contenir des instructions destinées à tromper l’agent IA. Tant que vous avez le web, les modifications de l’agent IA attendent donc toujours votre relecture, même en **Auto** ou **Accès complet**, et il ne supprime ni ne déplace de fichiers. Vos outils IA (MCP) gardent votre autorisation.
+
 ## Modèles et réflexion
 
 - Choisissez le modèle en bas du panneau. Avec **Auto**, ColTex choisit un modèle léger ou puissant selon la question.
@@ -39,6 +50,7 @@ Les lecteurs et les relecteurs peuvent interroger l’agent IA, mais il ne peut 
   - `/compact` : résume la conversation jusqu’ici et continue à partir du résumé, ce qui libère le contexte. Les messages restent visibles ; l’agent IA s’en souvient grâce au résumé.
   - `/new` : démarre une nouvelle conversation.
   - `/chats` : les conversations précédentes.
+- La zone de message s’agrandit avec ce que vous tapez. Faites glisser son bord supérieur pour l’agrandir (c’est retenu dans ce navigateur, aussi pour la discussion du projet) ; double-cliquez sur le bord pour revenir en arrière.
 
 ## Skills
 

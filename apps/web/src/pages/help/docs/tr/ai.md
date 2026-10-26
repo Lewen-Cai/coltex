@@ -25,6 +25,17 @@ YZ ajanının neleri değiştirebileceği size kalmıştır: **Ayarlar → YZ aj
 
 Görüntüleyiciler ve inceleyiciler YZ ajanına soru sorabilir, ancak ajan onlar için hiçbir şeyi değiştiremez.
 
+## Web
+
+Web araması ayarlandığında YZ ajanı web’de arama yapıp web sayfalarını okuyabilir: bir derginin güncel yazar yönergeleri, bir paketin sürüm notları, bir iddiayı doğrulamak için bir kaynak. Anthropic, OpenAI ve ChatGPT modelleri kendi yerleşik aramalarını kullanır; diğer modeller yöneticinin bağladığı arama hizmetini kullanır. Yaptığı aramalar ve okuduğu sayfalar konuşmada adım olarak görünür ve bir yanıtın hangi sayfalara dayandığını söyler.
+
+Projenizden hiçbir şey bu yoldan dışarı çıkmasın diye:
+- Aramalar yalnızca yöneticinin seçtiği arama hizmetine (ya da modelin kendi aramasına) gider ve en fazla 128 karakterdir.
+- Yalnızca konuşmada sizin yazdığınız ya da aramalarının döndürdüğü adresleri, olduğu gibi okur; kendisi adres uyduramaz.
+- Yalnızca okur: hiçbir şey yüklenmez ya da gönderilmez.
+
+Web sayfalarını herkes yazabilir ve YZ ajanını yanıltmaya yönelik talimatlar içerebilir. Bu yüzden web’i kullanabildiğiniz sürece, **Otomatik** ya da **Tam erişim** olsa bile YZ ajanının değişiklikleri her zaman incelemenizi bekler ve dosya silmez ya da taşımaz. YZ araçlarınız (MCP) sizin izninizle çalışmaya devam eder.
+
 ## Modeller ve düşünme
 
 - Modeli panelin altında seçin. **Otomatik** ile ColTex soruya göre hafif veya güçlü bir model seçer.
@@ -39,6 +50,7 @@ Görüntüleyiciler ve inceleyiciler YZ ajanına soru sorabilir, ancak ajan onla
   - `/compact`: şimdiye kadarki sohbeti özetleyip özetten devam ederek bağlamı boşaltır. Mesajlar görünür kalır; YZ ajanı onları özet aracılığıyla hatırlar.
   - `/new`: yeni bir sohbet başlatır.
   - `/chats`: önceki sohbetler.
+- Mesaj kutusu yazdıkça büyür. Daha yüksek yapmak için üst kenarını sürükleyin (bu tarayıcıda hatırlanır, proje sohbetinde de); eski hâline döndürmek için kenara çift tıklayın.
 
 ## Skills
 

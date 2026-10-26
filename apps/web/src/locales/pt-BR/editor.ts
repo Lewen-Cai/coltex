@@ -597,6 +597,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{used} de {limit}',
   'Resets on {date}': 'Reinicia em {date}',
   'Resize the message box': 'Redimensionar a caixa de mensagem',
+  'The AI agent can use the web, so its changes wait for your review.': 'O agente de IA pode usar a web, então as alterações dele aguardam sua revisão.',
 }
 
 export default messages

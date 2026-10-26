@@ -25,6 +25,17 @@ Lo que el agente de IA puede cambiar lo decides tú: elígelo en **Configuració
 
 Los lectores y los revisores pueden preguntar al agente de IA, pero este no puede cambiar nada por ellos.
 
+## La web
+
+Cuando la búsqueda web está configurada, el agente de IA puede buscar en la web y leer páginas: las normas actuales para autores de una revista, las notas de versión de un paquete, una fuente para comprobar una afirmación. Los modelos de Anthropic, OpenAI y ChatGPT usan su propia búsqueda integrada; los demás modelos, el servicio de búsqueda que conectó el administrador. Sus búsquedas y las páginas que leyó aparecen como pasos en la conversación, y dice de qué páginas sale cada respuesta.
+
+Para que nada de tu proyecto salga por esta vía:
+- Las búsquedas van solo al servicio de búsqueda que eligió el administrador (o a la búsqueda propia del modelo) y tienen como máximo 128 caracteres.
+- Solo lee direcciones que escribiste en la conversación o que devolvieron sus búsquedas, tal cual; no puede inventarse una dirección.
+- Solo lee: no se sube ni se envía nada.
+
+Las páginas web las escribe cualquiera y pueden contener instrucciones para engañar al agente de IA. Por eso, mientras tengas la web, los cambios del agente de IA siempre esperan tu revisión, incluso con **Automático** o **Acceso total**, y no borra ni mueve archivos. Tus herramientas de IA (MCP) siguen con tu permiso.
+
 ## Modelos y razonamiento
 
 - Elige el modelo en la parte inferior del panel. Con **Automático**, ColTex elige un modelo ligero o uno potente según la pregunta.
@@ -39,6 +50,7 @@ Los lectores y los revisores pueden preguntar al agente de IA, pero este no pued
   - `/compact`: resume el chat hasta ahora y continúa a partir del resumen, liberando contexto. Los mensajes siguen visibles; el agente de IA los recuerda a través del resumen.
   - `/new`: empieza un chat nuevo.
   - `/chats`: los chats anteriores.
+- El cuadro de mensaje crece con lo que escribes. Arrastra su borde superior para hacerlo más alto (se recuerda en este navegador, también en el chat del proyecto); haz doble clic en el borde para volver atrás.
 
 ## Skills
 

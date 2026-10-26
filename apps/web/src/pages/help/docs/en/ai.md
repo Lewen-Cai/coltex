@@ -25,6 +25,17 @@ What the AI agent may change is up to you: choose in **Settings → AI agent**, 
 
 Viewers and reviewers can ask the AI agent, but it can't change anything for them.
 
+## The web
+
+Once web search is set up, the AI agent can search the web and read web pages: a journal's current author guidelines, a package's release notes, a source to check a claim. Anthropic, OpenAI and ChatGPT models use their own built-in search; other models use the search service the administrator connected. Its searches and the pages it read show as steps in the conversation, and it says which pages an answer comes from.
+
+So that nothing of your project leaves this way:
+- Searches go only to the search service the administrator chose (or the model's own search), and are at most 128 characters long.
+- It reads only addresses you wrote in the conversation or that its searches returned, exactly as given; it can't make up an address.
+- It only reads: nothing is uploaded or sent.
+
+Pages on the web are written by anyone and may contain instructions meant to mislead the AI agent. So while you have the web, the AI agent's changes always wait for your review, even with **Auto** or **Full access**, and it doesn't delete or move files. Your AI tools (MCP) keep your permission.
+
 ## Models and thinking
 
 - Choose the model at the bottom of the panel. With **Auto**, ColTex picks a light or a strong model depending on the question.
@@ -39,6 +50,7 @@ Viewers and reviewers can ask the AI agent, but it can't change anything for the
   - `/compact`: summarise the chat so far and continue from the summary, freeing the context. The messages stay visible; the AI agent remembers them through the summary.
   - `/new`: start a new chat.
   - `/chats`: the previous chats.
+- The message box grows with what you type. Drag its top edge to make it taller (it stays so in this browser, in the project chat too); double-click the edge to go back.
 
 ## Skills
 

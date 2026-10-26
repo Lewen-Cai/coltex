@@ -1102,6 +1102,22 @@ export const AiAutoRouting = z.object({
 })
 export type AiAutoRouting = z.infer<typeof AiAutoRouting>
 
+/** Search services the AI agent can search the web with (each with an API key the admin sets). */
+export const WEB_SEARCH_SERVICES = ['deepseek', 'tavily', 'exa', 'brave'] as const
+export const WebSearchService = z.enum(WEB_SEARCH_SERVICES)
+export type WebSearchService = z.infer<typeof WebSearchService>
+
+/**
+ * Web access for the AI agent: models with a built-in web search (Anthropic's
+ * and OpenAI's APIs) use it unless their provider is in `nativeOff`; the
+ * search service is for the other models, and optional.
+ */
+export const AiWebSettings = z.object({
+  search: WebSearchService.nullable().default(null),
+  nativeOff: z.array(z.string().min(1)).max(100).default([]),
+})
+export type AiWebSettings = z.infer<typeof AiWebSettings>
+
 /**
  * There is no default model: people start on "Auto" when it is set up, and
  * on the first model they may use otherwise.
@@ -1109,6 +1125,7 @@ export type AiAutoRouting = z.infer<typeof AiAutoRouting>
 export const AiSettings = z.object({
   auto: AiAutoRouting.default({ judge: null, light: null, strong: null }),
   customProviders: z.array(CustomAiProvider).default([]),
+  web: AiWebSettings.default({ search: null, nativeOff: [] }),
 })
 export type AiSettings = z.infer<typeof AiSettings>
 
@@ -1117,6 +1134,7 @@ export const AiSettingsPatch = z
   .object({
     auto: AiAutoRouting,
     customProviders: z.array(CustomAiProvider),
+    web: AiWebSettings,
   })
   .partial()
 export type AiSettingsPatch = z.infer<typeof AiSettingsPatch>
@@ -1161,8 +1179,23 @@ export type AiModelInfo = z.infer<typeof AiModelInfo>
 export const AiAdminState = z.object({
   settings: AiSettings,
   providers: z.array(AiProviderStatus),
+  web: z.object({
+    /** Search services with an API key stored in ColTex (never sent back). */
+    keys: z.array(WebSearchService),
+    /** Without a key of its own, DeepSeek search uses the key of the connected DeepSeek provider. */
+    deepseekConnected: z.boolean(),
+    /** Connected providers whose models have a built-in web search ColTex uses. */
+    native: z.array(z.string()),
+  }),
 })
 export type AiAdminState = z.infer<typeof AiAdminState>
+
+export const WebSearchKeyBody = z.object({ key: z.string().trim().min(1).max(500) })
+export type WebSearchKeyBody = z.infer<typeof WebSearchKeyBody>
+
+/** A test search from the admin page. */
+export const WebSearchTestResult = z.object({ ok: z.boolean(), message: z.string(), results: z.number(), ms: z.number() })
+export type WebSearchTestResult = z.infer<typeof WebSearchTestResult>
 
 /** A provider login (API key or OAuth) driven step by step from the admin page. */
 export const AiLoginState = z.object({
@@ -1243,6 +1276,8 @@ export const AiStatus = z.object({
   models: z.array(AiModelInfo),
   /** Auto routing: offered when the admin set it up and this person may use both models. */
   auto: z.object({ available: z.boolean(), on: z.boolean(), light: AiModelInfo.nullable(), strong: AiModelInfo.nullable() }),
+  /** The agent can use the web, so its changes always wait for review (the permission is manual). */
+  web: z.boolean(),
   /** Why the assistant is unavailable, for the UI. */
   reason: z.string().optional(),
 })

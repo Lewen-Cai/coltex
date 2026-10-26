@@ -176,7 +176,14 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   })
   history.setCollab(collab)
   const box = new SecretBox('test-secret')
-  const ai = new AiService(db, new DbCredentialStore(db, box))
+  /** The search services' APIs and pages read directly, replaced by tests (no network in tests). */
+  const webFakes = {
+    service: async (_url: string, _init: RequestInit): Promise<Response> => new Response('not faked', { status: 500 }),
+    page: async (url: string): Promise<{ data: Buffer; url: string; contentType?: string }> => {
+      throw new Error(`No fake for ${url}`)
+    },
+  }
+  const ai = new AiService(db, new DbCredentialStore(db, box), { fetch: (url, init) => webFakes.service(url, init), fetchPage: url => webFakes.page(url) })
   await ai.init()
   // Not started: tests feed it samples themselves.
   const monitor = new MonitorHistory(db, () => queue.stats().then(s => s.containers))
@@ -252,6 +259,7 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
     backup,
     referenceFakes,
     linkedFakes,
+    webFakes,
     outputsDir,
     gitBridge,
     dumps,

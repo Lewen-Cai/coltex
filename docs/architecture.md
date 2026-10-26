@@ -343,6 +343,24 @@ project's compile directory (`/work/.trials/<buildId>`), so the project and
 its cached build are never touched. Trial outputs are marked and pruned
 separately from real builds. Limits: 60 tool calls and 12 compiles per message.
 
+**The web** (`ai/web.ts`): everyone with the AI agent has it once there is a
+search for their model (`AiService.webAccess`). Models whose own search
+ColTex uses (Anthropic, OpenAI, ChatGPT; unless the admin turned their
+provider's off, `settings.web.nativeOff`) get it added to each request with
+pi-ai's `onPayload`, and their searches are read from the raw stream events
+(`onProviderStreamEvent`) to show as steps. Other models get `web_search`
+(the admin's search service: DeepSeek, Tavily, Exa or Brave, its API key
+stored with the provider credentials; DeepSeek falls back to the connected
+DeepSeek provider's key). Either way `read_web_page` reads a page (the
+service's reader, else a GET through `url-fetch.ts`, HTML turned into text). What may leave
+the server is limited so that a model misled by a page can't send the
+project anywhere: queries go only to the chosen service and are at most 128
+characters; `read_web_page` opens only addresses the author wrote or a
+search returned, exactly (`WebScope`); nothing is posted. Text from the web
+may carry instructions, so whenever the agent can use the web (or the
+conversation read some before it was turned off), its permission is manual:
+drafts wait for the author and there is no delete/move.
+
 **Review and apply**: the web app splits each file's diff into hunks
 (`lib/hunks.ts`). The author accepts any subset, and the client sends the
 resulting file contents. Apply = flush → baseline compile → snapshot →

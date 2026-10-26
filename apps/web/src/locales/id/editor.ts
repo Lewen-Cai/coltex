@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{used} dari {limit}',
   'Resets on {date}': 'Direset pada {date}',
   'Resize the message box': 'Ubah tinggi kotak pesan',
+  'The AI agent can use the web, so its changes wait for your review.': 'Agen AI dapat memakai web, jadi perubahannya menunggu tinjauan Anda.',
 }
 
 export default messages

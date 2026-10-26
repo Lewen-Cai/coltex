@@ -597,6 +597,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{used} из {limit}',
   'Resets on {date}': 'Сброс {date}',
   'Resize the message box': 'Изменить высоту поля ввода',
+  'The AI agent can use the web, so its changes wait for your review.': 'ИИ-агент может пользоваться интернетом, поэтому его изменения ждут вашей проверки.',
 }
 
 export default messages

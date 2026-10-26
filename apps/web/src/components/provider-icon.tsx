@@ -45,6 +45,10 @@ const LOGOS: Record<string, () => Promise<{ default: string }>> = {
   windsurf: () => import('@lobehub/icons-static-svg/icons/windsurf.svg?raw'),
   geminicli: () => import('@lobehub/icons-static-svg/icons/geminicli-color.svg?raw'),
   cline: () => import('@lobehub/icons-static-svg/icons/cline.svg?raw'),
+  // Web search services (Settings → AI services).
+  tavily: () => import('@lobehub/icons-static-svg/icons/tavily-color.svg?raw'),
+  exa: () => import('@lobehub/icons-static-svg/icons/exa-color.svg?raw'),
+  brave: () => import('@lobehub/icons-static-svg/icons/brave-color.svg?raw'),
 }
 
 /** Pi provider id → logo. */

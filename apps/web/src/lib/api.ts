@@ -99,6 +99,8 @@ import type {
   ProjectSummary,
   Tag,
   ProjectTree,
+  WebSearchService,
+  WebSearchTestResult,
 } from '@coltex/shared'
 
 /** Fired when the session has expired so the app can return to the sign-in screen. */
@@ -442,6 +444,9 @@ export const api = {
   aiLogout: (provider: string) =>
     request<void>(`/api/admin/ai/providers/${encodeURIComponent(provider)}/credential`, { method: 'DELETE' }),
   aiTest: (model: AiModelRef) => request<{ ok: boolean; message: string; ms: number }>('/api/admin/ai/test', json('POST', model)),
+  aiSetWebKey: (service: WebSearchService, key: string) => request<void>(`/api/admin/ai/web/keys/${service}`, json('PUT', { key })),
+  aiDeleteWebKey: (service: WebSearchService) => request<void>(`/api/admin/ai/web/keys/${service}`, { method: 'DELETE' }),
+  aiTestWebSearch: () => request<WebSearchTestResult>('/api/admin/ai/web/test', json('POST', {})),
   aiUsage: (days = 30, userId?: string) =>
     request<AiUsageReport>(`/api/admin/ai/usage?days=${days}${userId ? `&userId=${encodeURIComponent(userId)}` : ''}`),
   aiUsers: (days = 30) => request<AiUserRow[]>(`/api/admin/ai/users?days=${days}`),

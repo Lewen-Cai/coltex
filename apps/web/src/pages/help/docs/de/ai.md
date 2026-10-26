@@ -25,6 +25,17 @@ Was der KI-Agent ändern darf, entscheiden Sie: unter **Einstellungen → KI-Age
 
 Betrachter und Prüfer können den KI-Agenten fragen, aber er kann für sie nichts ändern.
 
+## Das Web
+
+Sobald die Websuche eingerichtet ist, kann der KI-Agent im Web suchen und Webseiten lesen: die aktuellen Autorenrichtlinien einer Zeitschrift, die Versionshinweise eines Pakets, eine Quelle, um eine Behauptung zu prüfen. Modelle von Anthropic, OpenAI und ChatGPT nutzen ihre integrierte Suche, andere Modelle den Suchdienst, den die Administration verbunden hat. Seine Suchen und die gelesenen Seiten erscheinen als Schritte im Gespräch, und er sagt, auf welchen Seiten eine Antwort beruht.
+
+Damit auf diesem Weg nichts von Ihrem Projekt nach außen gelangt:
+- Suchanfragen gehen nur an den Suchdienst, den der Administrator gewählt hat (oder an die eigene Suche des Modells), und sind höchstens 128 Zeichen lang.
+- Er liest nur Adressen, die Sie im Gespräch geschrieben haben oder die seine Suchen geliefert haben, genau so; eigene Adressen kann er nicht erfinden.
+- Er liest nur: Es wird nichts hochgeladen oder gesendet.
+
+Webseiten kann jeder schreiben, und sie können Anweisungen enthalten, die den KI-Agenten in die Irre führen sollen. Solange Sie das Web nutzen können, warten die Änderungen des KI-Agenten deshalb immer auf Ihre Prüfung, auch bei **Auto** oder **Vollzugriff**, und er löscht oder verschiebt keine Dateien. Für Ihre KI-Werkzeuge (MCP) gilt weiter Ihre Berechtigung.
+
 ## Modelle und Denken
 
 - Das Modell wählen Sie unten im Bereich. Mit **Auto** wählt ColTex je nach Frage ein leichtes oder ein starkes Modell.
@@ -39,6 +50,7 @@ Betrachter und Prüfer können den KI-Agenten fragen, aber er kann für sie nich
   - `/compact`: den bisherigen Chat zusammenfassen und von der Zusammenfassung aus weitermachen, um Kontext freizugeben. Die Nachrichten bleiben sichtbar; der KI-Agent erinnert sich über die Zusammenfassung an sie.
   - `/new`: einen neuen Chat beginnen.
   - `/chats`: die früheren Chats.
+- Das Eingabefeld wächst mit dem Text. Ziehen Sie seinen oberen Rand, um es höher zu machen (das bleibt in diesem Browser so, auch im Projekt-Chat); ein Doppelklick auf den Rand stellt es zurück.
 
 ## Skills
 

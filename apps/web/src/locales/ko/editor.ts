@@ -597,6 +597,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{limit} 중 {used} 사용',
   'Resets on {date}': '{date}에 초기화',
   'Resize the message box': '입력창 높이 조절',
+  'The AI agent can use the web, so its changes wait for your review.': 'AI 에이전트가 웹을 사용할 수 있으므로 변경 사항은 모두 검토를 기다립니다.',
 }
 
 export default messages

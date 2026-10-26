@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{used} / {limit}',
   'Resets on {date}': 'Sıfırlanma: {date}',
   'Resize the message box': 'Mesaj kutusunu yeniden boyutlandır',
+  'The AI agent can use the web, so its changes wait for your review.': 'YZ ajanı web’i kullanabildiği için değişiklikleri incelemenizi bekler.',
 }
 
 export default messages

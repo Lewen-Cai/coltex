@@ -5,10 +5,12 @@ import {
   ChevronsUpDown,
   CircleCheck,
   ExternalLink,
+  Globe,
   KeyRound,
   LogIn,
   MoreHorizontal,
   Plus,
+  Power,
   Server,
   Trash2,
   Wand2,
@@ -22,9 +24,11 @@ import type {
   AiProviderStatus,
   AiSettingsPatch,
   CustomAiProvider,
+  WebSearchService,
 } from '@coltex/shared'
+import { WEB_SEARCH_SERVICES } from '@coltex/shared'
 import { confirmDialog } from '@/components/confirm'
-import { ProviderIcon } from '@/components/provider-icon'
+import { ProviderIcon, ToolIcon } from '@/components/provider-icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -261,7 +265,10 @@ export function AdminAiPage() {
         <div className="grid [&>[data-slot=card]]:h-full">
           <AutoRoutingCard settings={settings} models={models} providerName={providerName} onSave={save} />
         </div>
-        <div className="grid lg:col-span-3">
+        <div className="grid lg:col-span-2 [&>[data-slot=card]]:h-full">
+          <WebSearchCard state={state} providerName={providerName} onSave={save} onChanged={load} />
+        </div>
+        <div className="grid [&>[data-slot=card]]:h-full">
           {/* Self-hosted */}
           <Card>
             <CardHeader>
@@ -274,11 +281,27 @@ export function AdminAiPage() {
                 </Button>
               </CardAction>
             </CardHeader>
-            {settings.customProviders.length > 0 && (
-              <CardContent className="grid gap-2">
-                {settings.customProviders.map(p => (
-                  <div key={p.id} className="flex items-center gap-3 rounded-lg border p-3">
-                    <ProviderIcon provider={p.id} hint={`${p.name} ${p.baseUrl}`} className="size-6" />
+            <CardContent className="grid content-start gap-2">
+              {settings.customProviders.length === 0 ? (
+                <button
+                  onClick={() => setAddingEndpoint(true)}
+                  className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-accent/40"
+                >
+                  <span className="flex -space-x-2">
+                    {['ollama', 'vllm', 'lmstudio'].map(id => (
+                      <span key={id} className="rounded-full border-2 border-card bg-card p-1.5 shadow-sm">
+                        <ToolIcon logo={id} className="size-5" />
+                      </span>
+                    ))}
+                  </span>
+                  {t('Add a self-hosted endpoint')}
+                </button>
+              ) : (
+                settings.customProviders.map(p => (
+                  <div key={p.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
+                    <span className="rounded-lg border bg-background p-2">
+                      <ProviderIcon provider={p.id} hint={`${p.name} ${p.baseUrl}`} className="size-6" />
+                    </span>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{p.name}</div>
                       <div className="truncate font-mono text-xs text-muted-foreground">
@@ -298,9 +321,9 @@ export function AdminAiPage() {
                       <Trash2 />
                     </Button>
                   </div>
-                ))}
-              </CardContent>
-            )}
+                ))
+              )}
+            </CardContent>
           </Card>
         </div>
       </div>
@@ -794,5 +817,284 @@ function AutoRoutingCard({
         ))}
       </CardContent>
     </Card>
+  )
+}
+
+const SERVICE_NAMES: Record<WebSearchService, string> = { deepseek: 'DeepSeek', tavily: 'Tavily', exa: 'Exa', brave: 'Brave Search' }
+const ServiceIcon = ({ service, className }: { service: WebSearchService; className?: string }) =>
+  service === 'deepseek' ? <ProviderIcon provider="deepseek" className={className} /> : <ToolIcon logo={service} className={className} />
+
+/**
+ * The AI agent on the web, laid out like the providers: models with a
+ * built-in search use it (each provider can be switched off, as some
+ * accounts must first allow it), and a search service, optional, serves the
+ * other models. Everyone with the AI agent gets the web once one is there.
+ */
+function WebSearchCard({
+  state,
+  providerName,
+  onSave,
+  onChanged,
+}: {
+  state: AiAdminState
+  providerName: (id: string) => string
+  onSave: (patch: AiSettingsPatch, message?: string) => Promise<void>
+  onChanged: () => Promise<void>
+}) {
+  const web = state.settings.web
+  const service = web.search
+  const [connecting, setConnecting] = useState<{ service?: WebSearchService }>()
+  const stored = !!service && state.web.keys.includes(service)
+  const fromProvider = service === 'deepseek' && !stored && state.web.deepseekConnected
+  const ready = !!service && (stored || fromProvider)
+
+  const remove = async () => {
+    if (!service) return
+    if (!(await confirmDialog({ title: t('Remove {name}?', { name: SERVICE_NAMES[service] }), confirmLabel: t('Remove'), destructive: true }))) return
+    try {
+      if (stored) await api.aiDeleteWebKey(service)
+      await onSave({ web: { ...web, search: null } }, t('Removed {name}', { name: SERVICE_NAMES[service] }))
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }
+
+  const test = async () => {
+    if (!service) return
+    const id = toast.loading(t('Testing {name}…', { name: SERVICE_NAMES[service] }))
+    try {
+      const r = await api.aiTestWebSearch()
+      if (r.ok) toast.success(plural(r.results, '{n} result in {seconds} s', '{n} results in {seconds} s', { seconds: (r.ms / 1000).toFixed(1) }), { id, description: r.message })
+      else toast.error(r.message, { id })
+    } catch (err) {
+      toast.error((err as Error).message, { id })
+    }
+  }
+
+  const setNative = (provider: string, on: boolean) =>
+    void onSave({ web: { ...web, nativeOff: on ? web.nativeOff.filter(p => p !== provider) : [...web.nativeOff, provider] } }, t('Web search updated'))
+
+  const tiles = state.web.native.length + (service ? 1 : 0)
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Globe className="size-4 text-muted-foreground" /> {t('Web search')}
+        </CardTitle>
+        <CardAction>
+          <Button variant="outline" onClick={() => setConnecting({})}>
+            <Plus /> {t('Connect')}
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        {tiles === 0 ? (
+          <button
+            onClick={() => setConnecting({})}
+            className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-accent/40"
+          >
+            <span className="flex -space-x-2">
+              {WEB_SEARCH_SERVICES.map(s => (
+                <span key={s} className="rounded-full border-2 border-card bg-card p-1.5 shadow-sm">
+                  <ServiceIcon service={s} className="size-5" />
+                </span>
+              ))}
+            </span>
+            {t('Connect a search service')}
+          </button>
+        ) : (
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3">
+            {state.web.native.map(id => {
+              const on = !web.nativeOff.includes(id)
+              return (
+                <div key={id} className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-shadow hover:shadow-md">
+                  <span className="rounded-lg border bg-background p-2">
+                    <ProviderIcon provider={id} className="size-6" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">{providerName(id)}</div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className={cn('size-1.5 rounded-full', on ? 'bg-emerald-500' : 'bg-muted-foreground/40')} />
+                      {on ? t('Built-in search') : t('Built-in search off')}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon-sm" aria-label={t('{name} actions', { name: providerName(id) })}>
+                        <MoreHorizontal />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => setNative(id, !on)}>
+                        <Power /> {on ? t('Turn off built-in search') : t('Turn on built-in search')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )
+            })}
+            {service && (
+              <div className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-shadow hover:shadow-md">
+                <span className="rounded-lg border bg-background p-2">
+                  <ServiceIcon service={service} className="size-6" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">{SERVICE_NAMES[service]}</div>
+                  <div className={cn('flex items-center gap-1.5 text-xs', ready ? 'text-muted-foreground' : 'text-amber-700 dark:text-amber-400')}>
+                    <span className={cn('size-1.5 shrink-0 rounded-full', ready ? 'bg-emerald-500' : 'bg-amber-500')} />
+                    <span className="truncate">{stored ? t('API key') : fromProvider ? t('Uses the DeepSeek provider’s key') : t('No API key')}</span>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon-sm" aria-label={t('{name} actions', { name: SERVICE_NAMES[service] })}>
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {ready && (
+                      <DropdownMenuItem onSelect={() => void test()}>
+                        <Zap /> {t('Test')}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onSelect={() => setConnecting({ service })}>
+                      <KeyRound /> {stored ? t('Change API key') : t('Set API key')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={() => void remove()}>
+                      <Trash2 /> {t('Remove')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+      <SearchConnectDialog
+        open={!!connecting}
+        initial={connecting?.service}
+        state={state}
+        onOpenChange={open => !open && setConnecting(undefined)}
+        onConnected={async name => {
+          setConnecting(undefined)
+          toast.success(t('Connected {name}', { name }))
+          await onChanged()
+        }}
+      />
+    </Card>
+  )
+}
+
+/** Picks the search service (one at a time) and takes its key, like connecting a provider. */
+function SearchConnectDialog(props: {
+  open: boolean
+  initial?: WebSearchService
+  state: AiAdminState
+  onOpenChange: (open: boolean) => void
+  onConnected: (name: string) => Promise<void>
+}) {
+  const [picked, setPicked] = useState<WebSearchService>()
+  const [key, setKey] = useState('')
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (props.open) {
+      setPicked(props.initial)
+      setKey('')
+    }
+  }, [props.open, props.initial])
+  const web = props.state.settings.web
+
+  const connect = async (withKey: boolean) => {
+    if (!picked) return
+    setBusy(true)
+    try {
+      if (withKey) await api.aiSetWebKey(picked, key.trim())
+      // One service at a time: the one it replaces doesn't keep its key.
+      if (web.search && web.search !== picked && props.state.web.keys.includes(web.search)) await api.aiDeleteWebKey(web.search)
+      await api.aiUpdateSettings({ web: { ...web, search: picked } })
+      await props.onConnected(SERVICE_NAMES[picked])
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="gap-0 p-0 sm:max-w-lg" aria-describedby={undefined}>
+        <DialogHeader className="p-5 pb-3">
+          <DialogTitle>{picked ? t('Connect {name}', { name: SERVICE_NAMES[picked] }) : t('Connect a search service')}</DialogTitle>
+        </DialogHeader>
+        <AnimatePresence mode="wait" initial={false}>
+          {!picked ? (
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Command className="rounded-none border-t">
+                <CommandList className="max-h-96">
+                  <CommandGroup>
+                    {WEB_SEARCH_SERVICES.map(s => (
+                      <CommandItem key={s} value={SERVICE_NAMES[s]} onSelect={() => setPicked(s)} className="gap-3 py-2">
+                        <ServiceIcon service={s} className="size-5" />
+                        <span className="flex-1">{SERVICE_NAMES[s]}</span>
+                        {web.search === s && (
+                          <Badge variant="outline" className="gap-1">
+                            <span className="size-1.5 rounded-full bg-emerald-500" /> {t('Connected')}
+                          </Badge>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </motion.div>
+          ) : (
+            <motion.div key="key" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="grid gap-3 border-t p-5">
+              <div className="flex items-center gap-3 rounded-xl bg-muted/60 p-3">
+                <ServiceIcon service={picked} className="size-8" />
+                <div className="text-sm font-medium">{SERVICE_NAMES[picked]}</div>
+              </div>
+              {picked === 'deepseek' && props.state.web.deepseekConnected && (
+                <button
+                  disabled={busy}
+                  onClick={() => void connect(false)}
+                  className="flex items-center gap-3 rounded-xl border p-4 text-left transition-all hover:border-primary hover:bg-accent/40"
+                >
+                  <span className="rounded-lg bg-primary p-2 text-primary-foreground">
+                    <LogIn className="size-4" />
+                  </span>
+                  <span className="text-sm font-medium">{t('Use the DeepSeek provider’s key')}</span>
+                </button>
+              )}
+              <form
+                onSubmit={e => {
+                  e.preventDefault()
+                  if (key.trim()) void connect(true)
+                }}
+                className="flex gap-2"
+              >
+                <Input
+                  autoFocus
+                  type="password"
+                  autoComplete="off"
+                  aria-label={t('{name} API key', { name: SERVICE_NAMES[picked] })}
+                  placeholder={t('{name} API key', { name: SERVICE_NAMES[picked] })}
+                  value={key}
+                  onChange={e => setKey(e.target.value)}
+                />
+                <Button type="submit" disabled={busy || !key.trim()}>
+                  {busy && <Spinner />} {t('Connect')}
+                </Button>
+              </form>
+              {!props.initial && (
+                <Button variant="ghost" className="justify-self-start" onClick={() => setPicked(undefined)}>
+                  ← {t('All search services')}
+                </Button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   )
 }

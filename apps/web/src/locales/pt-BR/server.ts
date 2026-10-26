@@ -158,6 +158,8 @@ const messages: Record<string, string> = {
   // What the AI agent was given with a message (the chips under it).
   '{n} compile error': '{n} erro de compilação',
   'Compile log': 'Log de compilação',
+  'Search the web for “{query}”': 'Pesquisar “{query}” na web',
+  'Read web page {url}': 'Ler a página da web {url}',
 }
 
 export default messages

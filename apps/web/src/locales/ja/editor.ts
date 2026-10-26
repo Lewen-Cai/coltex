@@ -597,6 +597,7 @@ const messages: Record<string, string> = {
   '{used} of {limit}': '{limit} 中 {used} を使用',
   'Resets on {date}': '{date} にリセット',
   'Resize the message box': '入力欄の高さを変更',
+  'The AI agent can use the web, so its changes wait for your review.': 'AI エージェントはウェブを使えるため、変更はすべてあなたの確認を待ちます。',
 }
 
 export default messages
