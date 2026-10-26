@@ -6,6 +6,7 @@ import { useAiAllowance } from '@/lib/ai-limits'
 import { t } from '@/lib/i18n'
 import { Item, ModelPicker, SessionStatus, ToolGroup, groupItems } from '@/components/AiPanel'
 import { Button } from '@/components/ui/button'
+import { useComposerHeight } from '@/components/composer-height'
 
 /**
  * The skills chat beside the library (Settings → AI skills): the agent,
@@ -19,6 +20,7 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
   const [text, setText] = useState('')
   const scroller = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLTextAreaElement>(null)
+  const box = useComposerHeight('skill-chat', text, input)
   const composer = useRef<HTMLDivElement>(null)
   // The composer floats over the end of the conversation: the list keeps room for it.
   const [composerHeight, setComposerHeight] = useState(0)
@@ -123,7 +125,8 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
             {error && (
               <div className="mb-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-1.5 text-sm break-words text-destructive">{error}</div>
             )}
-            <div className="rounded-xl border bg-card shadow-lg transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+            <div className="relative rounded-xl border bg-card shadow-lg transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              {box.handle}
               <textarea
                 ref={input}
                 value={text}
@@ -134,9 +137,10 @@ export function SkillChat({ onSaved, prefill }: { onSaved: () => void; prefill?:
                     submit()
                   }
                 }}
-                rows={Math.min(6, Math.max(2, text.split('\n').length))}
+                rows={2}
+                style={box.style}
                 placeholder={t('Describe the skill you want, or paste text to try a draft on…')}
-                className="block min-h-0 w-full resize-none bg-transparent px-3 pt-2.5 text-sm outline-none"
+                className="block min-h-0 w-full bg-transparent px-3 pt-2.5 text-sm outline-none"
               />
               <div className="flex items-center gap-2 px-1.5 pb-1.5">
                 {status && <ModelPicker status={status} onChoose={choose} />}

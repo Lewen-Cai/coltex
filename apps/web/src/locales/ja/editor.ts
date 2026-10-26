@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': '{limit} トークン中 {used} を使用',
   '{used} of {limit}': '{limit} 中 {used} を使用',
   'Resets on {date}': '{date} にリセット',
+  'Resize the message box': '入力欄の高さを変更',
 }
 
 export default messages

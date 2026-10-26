@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ComponentProps, type KeyboardEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type ComponentProps, type KeyboardEvent, type RefObject } from 'react'
 import { t } from '@/lib/i18n'
 import { matchPeople, mentionQuery, rememberPick, splitMentions, type Mentionable } from '@/lib/mentions'
 import { cn } from '@/lib/utils'
@@ -51,6 +51,8 @@ type Props = Omit<ComponentProps<'textarea'>, 'value' | 'onChange'> & {
   onValueChange: (value: string) => void
   /** Who can be mentioned (the project's members, without the writer). */
   people: readonly Mentionable[]
+  /** The textarea itself, for callers that size it (useComposerHeight). */
+  textareaRef?: RefObject<HTMLTextAreaElement | null>
 }
 
 /**
@@ -59,8 +61,9 @@ type Props = Omit<ComponentProps<'textarea'>, 'value' | 'onChange'> & {
  * `textToMentions` when it sends. While the list is open, arrow keys, Enter,
  * Tab and Escape belong to it.
  */
-export function MentionTextarea({ value, onValueChange, people, onKeyDown, className, ...rest }: Props) {
-  const ref = useRef<HTMLTextAreaElement>(null)
+export function MentionTextarea({ value, onValueChange, people, onKeyDown, className, textareaRef, ...rest }: Props) {
+  const own = useRef<HTMLTextAreaElement>(null)
+  const ref = textareaRef ?? own
   const [caret, setCaret] = useState(0)
   const [active, setActive] = useState(0)
   const [dismissed, setDismissed] = useState<number | null>(null)

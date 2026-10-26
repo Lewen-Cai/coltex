@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': '已用 {used} / {limit} tokens',
   '{used} of {limit}': '已用 {used} / {limit}',
   'Resets on {date}': '{date}重置',
+  'Resize the message box': '调整输入框高度',
 }
 
 export default messages

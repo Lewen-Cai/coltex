@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': 'Токенов: {used} из {limit}',
   '{used} of {limit}': '{used} из {limit}',
   'Resets on {date}': 'Сброс {date}',
+  'Resize the message box': 'Изменить высоту поля ввода',
 }
 
 export default messages

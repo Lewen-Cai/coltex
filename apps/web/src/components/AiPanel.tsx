@@ -49,6 +49,7 @@ import { Button } from './ui/button.tsx'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover.tsx'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip.tsx'
+import { useComposerHeight } from './composer-height.tsx'
 
 export type AiContextInfo = {
   /** Errors in the latest compile, offered as context. */
@@ -83,6 +84,7 @@ export function AiPanel(props: Props) {
   }
   const { state, error, busy } = session
   const [text, setText] = useState('')
+  const box = useComposerHeight('ai', text)
   const [withErrors, setWithErrors] = useState(true)
   const [withSelection, setWithSelection] = useState(true)
   const scroller = useRef<HTMLDivElement>(null)
@@ -265,6 +267,7 @@ export function AiPanel(props: Props) {
           </div>
         )}
         <div className="relative rounded-lg border border-border bg-background transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+          {box.handle}
           {matches.length > 0 && (
             <div role="listbox" aria-label={t('Commands')} className="absolute inset-x-0 bottom-full z-10 mb-1.5 max-h-72 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
               {matches.map((c, i) => (
@@ -311,9 +314,11 @@ export function AiPanel(props: Props) {
                 submit()
               }
             }}
-            rows={Math.min(6, Math.max(2, text.split('\n').length))}
+            rows={2}
+            ref={box.ref}
+            style={box.style}
             placeholder={t('Ask about LaTeX, your project, or your writing…')}
-            className="block min-h-0 w-full resize-none bg-transparent px-2.5 pt-2 text-sm outline-none"
+            className="block min-h-0 w-full bg-transparent px-2.5 pt-2 text-sm outline-none"
           />
           <div className="flex items-center gap-1 px-1.5 pb-1.5">
             <ModelPicker status={status} onChoose={props.onChoose} permission={permissionChoice} />

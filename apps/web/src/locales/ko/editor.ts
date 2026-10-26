@@ -596,6 +596,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': '{limit} 토큰 중 {used} 사용',
   '{used} of {limit}': '{limit} 중 {used} 사용',
   'Resets on {date}': '{date}에 초기화',
+  'Resize the message box': '입력창 높이 조절',
 }
 
 export default messages

@@ -14,6 +14,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from './ui/empty.tsx'
 import { Mention, MentionTextarea } from './mentions.tsx'
 import { Spinner } from './ui/spinner.tsx'
 import { UserAvatar } from './user-avatar.tsx'
+import { useComposerHeight } from './composer-height.tsx'
 
 /** Messages from one person within this long of each other share a header. */
 const GROUP_GAP_MS = 5 * 60 * 1000
@@ -93,6 +94,7 @@ export function ChatPanel({
   onClose: () => void
 }) {
   const [draft, setDraft] = useState('')
+  const box = useComposerHeight('chat', draft)
   const [sending, setSending] = useState(false)
   const [editing, setEditing] = useState<{ id: string; text: string }>()
   const [loadingOlder, setLoadingOlder] = useState(false)
@@ -312,7 +314,8 @@ export function ChatPanel({
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <div className="flex items-end gap-2 rounded-xl border bg-background p-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+        <div className="relative flex items-end gap-2 rounded-xl border bg-background p-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+          {box.handle}
           <MentionTextarea
             people={people}
             value={draft}
@@ -320,7 +323,9 @@ export function ChatPanel({
             onKeyDown={onKey}
             placeholder={t('Message everyone in the project…')}
             rows={1}
-            className="max-h-40 min-h-9 resize-none border-0 bg-transparent px-1.5 py-1.5 shadow-none focus-visible:ring-0 dark:bg-transparent"
+            textareaRef={box.ref}
+            style={box.style}
+            className="min-h-9 field-sizing-fixed border-0 bg-transparent px-1.5 py-1.5 shadow-none focus-visible:ring-0 dark:bg-transparent"
           />
           <Button size="icon-sm" onClick={() => void send()} disabled={!draft.trim() || sending} aria-label={t('Send')}>
             {sending ? <Spinner /> : <SendHorizontal />}

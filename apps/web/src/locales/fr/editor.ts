@@ -595,6 +595,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': '{used} jetons sur {limit}',
   '{used} of {limit}': '{used} sur {limit}',
   'Resets on {date}': 'Réinitialisation le {date}',
+  'Resize the message box': 'Redimensionner la zone de message',
 }
 
 export default messages

@@ -20,6 +20,7 @@ Export to Word, the AI agent on the web, 60 templates across twelve fields, grou
 - A project's builds wait their turn on the server, so one busy project no longer holds the compiler while other people's builds wait.
 - The AI agent compiles less: not to look at what's wrong (it reads the latest build's log), not the same draft twice, and at most five times a message. Builds it no longer needs after Stop are taken out of the queue.
 - The word count counts `\abstract{...}` as the abstract.
+- The message boxes of the AI agent, the project chat and the skills chat grow with the text, and can be made taller by dragging their top edge.
 - The repository is now github.com/coltexeditor/coltex and the images are at ghcr.io/coltexeditor. Old links keep working, and `coltex update` moves an install's image address and Git remote to the new ones by itself.
 - The short install command is `curl -fsSL https://coltexeditor.github.io/install.sh | bash`.
 - The vulnerability scan lists its findings by image and package, with the fixed version, and keeps the full report with the run.

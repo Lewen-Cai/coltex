@@ -595,6 +595,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': '{used} / {limit} token',
   '{used} of {limit}': '{used} / {limit}',
   'Resets on {date}': 'Đặt lại vào {date}',
+  'Resize the message box': 'Đổi chiều cao ô nhập tin nhắn',
 }
 
 export default messages

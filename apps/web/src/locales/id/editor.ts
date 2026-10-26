@@ -595,6 +595,7 @@ const messages: Record<string, string> = {
   '{used} of {limit} tokens': '{used} dari {limit} token',
   '{used} of {limit}': '{used} dari {limit}',
   'Resets on {date}': 'Direset pada {date}',
+  'Resize the message box': 'Ubah tinggi kotak pesan',
 }
 
 export default messages
