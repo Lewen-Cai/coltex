@@ -626,8 +626,10 @@ Deterministic, in `packages/convert` (no AI involved):
    key=value affiliations), llncs (`\inst`, `\institute`) and REVTeX.
    Where acknowledgments and the bibliography were is marked, so the target
    puts its versions there. Front matter in an `\input` file is inlined.
-3. **Render** (`render.ts`, `targets.ts`) for IEEE journal / conference, ACM
-   sigconf / acmsmall, Elsevier, Springer LNCS, APS REVTeX and plain article:
+3. **Render** (`render.ts`, `targets.ts`) for the 16 built-in targets (IEEE
+   journal / conference, ACM sigconf / acmsmall, Elsevier, Elsevier CAS
+   single and double column, OUP, Springer LNCS, APS REVTeX, AMS, APA 7,
+   AASTeX, MNRAS, ACS and plain article):
    - front matter in the target's conventions;
    - packages that clash with the class are left out, and packages the class
      loads itself get their options through `\PassOptionsToPackage`;
@@ -643,27 +645,58 @@ Deterministic, in `packages/convert` (no AI involved):
    single-column floats for two-column targets, and leftovers of the source
    class (`\IEEEPARstart`, IEEE biographies, ACM `\Description`,
    `teaserfigure`, Elsevier highlights).
+5. **Into a template** (`template.ts`, `convertToTemplate`): any template is a
+   target, its main file the starting point. The extractor reads the
+   template's sample front matter too and says how it writes authors
+   (`Paper.authorStyle`: labelled, sequence, authblk, IEEE, LNCS, marks, APA,
+   JMLR, NRC, …); `features()` reads the details from the sample (the
+   affiliation command, the label scheme, key=value or tagged affiliations
+   and which tags the class has, `\fnm`/`\sur`, how the corresponding author
+   and emails are marked). The paper's title, authors, abstract and keywords
+   replace the samples in place, the sample text after the front matter is
+   replaced by the body, and the template's bibliography style, acknowledgments
+   form and publication details stay. The paper's packages go after the
+   template's (before its hyperref), their options through
+   `\PassOptionsToPackage` ahead of the class; its definitions go last in the
+   preamble and replace the template's of the same name. What the class loads
+   comes from its file in the template, or for a TeX Live class from the
+   compiler (`texLookup` of its `\RequirePackage` lines), else ColTex's tables;
+   it decides natbib, amsthm and amssymb next to a maths font. The template's
+   other files go into the new project, its sample main file beside the paper.
 
 **Server** (`convert/service.ts`): `GET /projects/:id/convert` returns the
 extracted metadata and the targets. `POST /projects/:id/convert {target, name,
-metadata, options}` re-extracts the body from the source (only the reviewed
+metadata, options}` (`target` a built-in id, or `{template}`, `{project}` the
+person can read, or `{upload}` from `POST …/convert/template`, a zip held an
+hour for the person who sent it) re-extracts the body from the source (only the reviewed
 metadata comes from the client), writes a **new project** owned by the caller
 (any member may convert), records a `convert` version, and builds both
 projects so the report compares errors, undefined references/citations,
 overfull boxes and warnings. The original project is never modified.
 
 **UI** (`ConvertDialog.tsx`, opened from the editor toolbar or a project's
-menu): pick a template → check and correct the metadata (authors, affiliation
-fields, template fields such as the journal or venue, review mode) → result
-with the build comparison and the converter's notes. "Open and fix with AI"
-opens the new project, builds it and hands the remaining problems to the
-assistant, which proposes diffs as usual.
+menu): pick a built-in conversion (Journals) or a template (Templates: the
+template list, one of the person's projects, a zip) → check and correct the
+metadata (authors, affiliation fields, template fields such as the journal or
+venue, review mode) → result with the build comparison and the converter's
+notes. With errors or warnings, "Open and fix with AI" opens the new project,
+builds it and sends the AI agent the problems with the built-in
+`template-conversion` Skill (`apps/server/skills/template-conversion`):
+confirm the venue with the author, look up its guidelines on the web, fix the
+build, apply the guidelines, keep the content intact, report a checklist. With
+a model that takes images the agent can look at pages of the PDF
+(`view_pdf_page`: `PAGE_QUEUE`, `pdftoppm` in the compiler as the project's
+user; page images of earlier messages are replaced by a note in requests and
+in saved conversations).
 
 **Verification**: `packages/convert/test` has the extractor and renderer
 tests, including a round trip (convert to each template and read it back).
-`scripts/matrix.ts` converts every fixture to every target for compiling with
-the compiler image; all 48 combinations build without errors or undefined
-references.
+`scripts/matrix.ts` converts every fixture to every target, and
+`scripts/template-matrix.ts` every built-in template to every target, for
+compiling with the compiler image; all must build. `scripts/byot-matrix.ts`
+converts the fixtures and some built-in templates into every built-in template
+and the test class in `test/fixtures/templates` (`COLTEX_CLASSES` stands in for
+the compiler's class lookup).
 
 ## Roadmap
 
@@ -684,10 +717,9 @@ references.
    replies, resolve) and track changes (per user or for everyone, accept and
    reject per change, per file or project-wide) ✅. UI redesign (shadcn/ui) ✅.
 2. **AI debug** — log rules, "fix with AI", diff review, snapshot + recompile ✅.
-3. **Template conversion** — IR, eight targets (IEEE ×2, ACM ×2, Elsevier, LNCS,
-   REVTeX, article), build comparison, AI hand-off ✅. Later: more publishers
-   (Springer Nature sn-jnl and MDPI, which aren't in TeX Live and would be
-   uploaded as class files), and a CCS-concepts helper for ACM.
+3. **Template conversion** — IR, 16 targets, build comparison, AI hand-off ✅.
+   Any template as the target (template list, a project, a journal's zip) and
+   the template-conversion Skill ✅. Later: a CCS-concepts helper for ACM.
 4. **Collaboration (part 2)**: reviewer role (server-enforced suggestions) ✅,
    link-first sharing with optional sign-up ✅, ownership transfer ✅.
    @mentions and in-app notifications ✅.

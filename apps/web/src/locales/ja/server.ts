@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': 'コンパイルログ',
   'Search the web for “{query}”': 'ウェブで「{query}」を検索',
   'Read web page {url}': 'ウェブページ {url} を読む',
+  'Look at page {page} of the PDF': 'PDF の {page} ページを見る',
 }
 
 export default messages

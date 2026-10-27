@@ -1,5 +1,5 @@
 import { clean, cut, findEnvs, findMacros, mask, readGroup, splitTop, unbrace, type Group } from './scan.ts'
-import type { Affiliation, Author, Bibliography, Paper, TargetOptions, UsedPackage } from './types.ts'
+import type { Affiliation, Author, AuthorStyle, Bibliography, Paper, TargetOptions, UsedPackage } from './types.ts'
 
 export class ConvertError extends Error {}
 
@@ -702,21 +702,26 @@ export function extractPaper(input: string, read?: (path: string) => string | un
   // ---- authors and affiliations ----
   const table = new AffiliationTable()
   let authors: Author[] = []
+  let authorStyle: AuthorStyle = 'none'
   const authorHits = findMacros(m, src, 'author', { opts: 1, args: 1 }, 0, frontEnd)
   if (sourceClass === 'jmlr' || authorHits.some(h => /\\Name\s*\{/.test(h.args[0]?.inner ?? ''))) {
+    authorStyle = 'jmlr'
     for (const h of authorHits) {
       authors.push(...jmlrAuthors(h.args[0]?.inner ?? '', table))
       remove(h)
     }
   } else if (findMacros(m, src, 'authorsnames', { opts: 1, args: 1 }, 0, frontEnd).length) {
     const r = apaAuthors(m, src, frontEnd, table)
+    authorStyle = 'apa'
     authors = r.authors
     r.ranges.forEach(remove)
   } else if (sourceClass === 'asmeconf' || findMacros(m, src, 'SetAuthors', { args: 1 }, 0, frontEnd).length) {
     const r = asmeAuthors(m, src, frontEnd, table)
+    authorStyle = 'asme'
     authors = r.authors
     r.ranges.forEach(remove)
   } else if (sourceClass === 'jacow') {
+    authorStyle = 'jacow'
     for (const h of authorHits) {
       authors.push(...jacowAuthors(h.args[0]?.inner ?? '', table))
       remove(h)
@@ -749,6 +754,7 @@ export function extractPaper(input: string, read?: (path: string) => string | un
       }
     }
     authors = markedAuthors(names, affLines, table)
+    authorStyle = 'marks'
     remove(authorHits[0])
   } else if (sourceClass === 'nrc2' && authorHits[0]) {
     const address = findMacros(m, src, 'address', { args: 1 }, 0, frontEnd)[0]
@@ -759,15 +765,18 @@ export function extractPaper(input: string, read?: (path: string) => string | un
       .filter(Boolean)
       .map(l => table.add(l))
     authors.forEach((a, i) => (a.affiliations = ids[i] ? [ids[i]!] : ids.slice(0, 1)))
+    authorStyle = 'nrc'
     remove(authorHits[0])
     remove(address)
   } else if (sourceClass === 'IEEEtran' || authorHits.some(h => h.args[0]?.inner.includes('\\IEEEauthorblockN'))) {
+    authorStyle = 'ieee'
     for (const h of authorHits) {
       authors.push(...ieeeAuthors(h.args[0]?.inner ?? '', table))
       remove(h)
     }
   } else if (sourceClass === 'llncs' || findMacros(m, src, 'institute', { args: 1 }, 0, frontEnd).length) {
     const inst = findMacros(m, src, 'institute', { args: 1 }, 0, frontEnd)[0]
+    authorStyle = 'lncs'
     for (const h of authorHits) {
       authors.push(...lncsAuthors(h.args[0]?.inner ?? '', inst?.args[0]?.inner, table))
       remove(h)
@@ -778,21 +787,27 @@ export function extractPaper(input: string, read?: (path: string) => string | un
     const labelled =
       LABELLED_CLASSES.includes(sourceClass) || /\\(?:fnm|sur|orgname|orgdiv)\s*\{/.test(front) ? labelledAuthors(m, src, frontEnd, table, notes) : undefined
     if (labelled) {
+      authorStyle = 'labelled'
       authors = labelled.authors
       labelled.ranges.forEach(remove)
     } else if (findMacros(m, src, 'affil', { opts: 1, args: 1 }, 0, frontEnd).length) {
       const r = authblkAuthors(m, src, frontEnd, table, notes)
+      authorStyle = 'authblk'
       authors = r.authors
       r.ranges.forEach(remove)
     } else if (
       authorHits.length > 1 ||
       ['acmart', 'revtex4-2', 'revtex4-1', 'amsart', 'elsarticle'].includes(sourceClass) ||
-      findMacros(m, src, 'affiliation', { args: 1 }, 0, frontEnd).length
+      findMacros(m, src, 'affiliation', { args: 1 }, 0, frontEnd).length ||
+      // The AMS classes' kind (aomart): \author, \address and \email, even for one author.
+      findMacros(m, src, 'address', { args: 1 }, 0, frontEnd).length
     ) {
       const r = sequenceAuthors(m, src, frontEnd, table)
+      authorStyle = 'sequence'
       authors = r.authors
       r.ranges.forEach(remove)
     } else if (authorHits[0]) {
+      authorStyle = 'block'
       authors = blockAuthors(authorHits[0].args[0]?.inner ?? '', table)
       remove(authorHits[0])
     }
@@ -1003,6 +1018,7 @@ export function extractPaper(input: string, read?: (path: string) => string | un
     bibliography,
     notes,
     hints,
+    authorStyle,
   }
 }
 

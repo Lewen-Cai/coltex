@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'ACS 期刊代碼（選填）',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '為原文件類別或被移除的套件提供的指令給出了簡單定義：{list}。',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX 要求每位作者都有電子郵件和單位；缺少的地方已填入預留內容。',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': '已轉換到範本 {name}（{cls}），範本的範例內容已換成論文的內容。',
+  'The template has no \\title; add the title where the journal wants it.': '範本中沒有 \\title，請依期刊要求的位置加上標題。',
+  'The template has no \\author; add the authors where the journal wants them.': '範本中沒有 \\author，請依期刊要求的位置加上作者。',
+  'The paper has no authors; the template’s author commands were left empty.': '論文中沒有作者，範本的作者命令留空了。',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': '範本中沒有摘要，已把摘要放在標題後面。請確認期刊要求放在哪裡。',
+  'The template shows no keywords; they were put after the abstract as a plain line.': '範本中沒有關鍵詞，已把關鍵詞作為普通一行放在摘要後面。',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': '範本使用 biblatex，已開啟它的 natbib 選項，論文中的 \\citet 和 \\citep 保持不變。',
+  'The paper\'s definitions replace the template\'s: {list}.': '論文自己的定義取代了範本中的同名定義：{list}。',
+  'The template\'s sample {file} is kept as {to}.': '範本的範例檔 {file} 保留為 {to}。',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': '範本的開頭部分還有 {list}，裡面仍是範例文字：請填寫。',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': '範本的開頭部分還有 {list}，裡面仍是範例文字：請填寫。',
+  'The template\'s publication details are kept as it has them: {list}.': '範本中的出版資訊保持原樣：{list}。',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': '標題的註釋沒有保留（{note}），請依期刊要求的方式加上，通常放在致謝裡。',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': '保留了論文自己的 {file}，沒有使用範本中的同名檔案。',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': '論文沒有關鍵詞，範本的範例關鍵詞還在：請替換。',
 }
 
 export default messages

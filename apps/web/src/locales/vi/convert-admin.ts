@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'Mã tạp chí ACS (không bắt buộc)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Đã định nghĩa đơn giản các lệnh mà lớp cũ hoặc một gói bị bỏ cung cấp: {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX yêu cầu mỗi tác giả có email và đơn vị; đã điền giá trị tạm ở những chỗ còn thiếu.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': 'Đã chuyển sang mẫu {name} ({cls}); nội dung mẫu đã được thay bằng nội dung bài báo.',
+  'The template has no \\title; add the title where the journal wants it.': 'Mẫu không có \\title; hãy thêm tiêu đề vào chỗ tạp chí yêu cầu.',
+  'The template has no \\author; add the authors where the journal wants them.': 'Mẫu không có \\author; hãy thêm tác giả vào chỗ tạp chí yêu cầu.',
+  'The paper has no authors; the template’s author commands were left empty.': 'Bài báo không có tác giả; các lệnh tác giả của mẫu để trống.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'Mẫu không có tóm tắt; đã đặt nó sau tiêu đề. Hãy kiểm tra tạp chí muốn đặt ở đâu.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'Mẫu không có từ khóa; đã đặt chúng sau tóm tắt thành một dòng thường.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'Mẫu dùng biblatex; tùy chọn natbib giữ nguyên \\citet và \\citep của bài báo.',
+  'The paper\'s definitions replace the template\'s: {list}.': 'Định nghĩa của bài báo thay cho định nghĩa cùng tên của mẫu: {list}.',
+  'The template\'s sample {file} is kept as {to}.': 'Tệp mẫu {file} của mẫu được giữ lại thành {to}.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'Phần đầu của mẫu còn có {list}, vẫn là nội dung mẫu: hãy điền vào.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'Phần đầu của mẫu còn có {list}, vẫn là nội dung mẫu: hãy điền vào.',
+  'The template\'s publication details are kept as it has them: {list}.': 'Thông tin xuất bản của mẫu được giữ nguyên: {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'Chú thích của tiêu đề đã bị bỏ ({note}); hãy thêm theo cách tạp chí yêu cầu, thường ở phần lời cảm ơn.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': 'Đã giữ {file} của bài báo; bản trong mẫu bị bỏ qua.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': 'Bài báo không có từ khóa; từ khóa mẫu của mẫu vẫn còn: hãy thay chúng.',
 }
 
 export default messages

@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': '編譯記錄檔',
   'Search the web for “{query}”': '網路搜尋「{query}」',
   'Read web page {url}': '讀取網頁 {url}',
+  'Look at page {page} of the PDF': '查看 PDF 第 {page} 頁',
 }
 
 export default messages

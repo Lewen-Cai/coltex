@@ -597,6 +597,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Đặt lại vào {date}',
   'Resize the message box': 'Đổi chiều cao ô nhập tin nhắn',
   'The AI agent can use the web, so its changes wait for your review.': 'Tác tử AI có thể dùng web, nên các thay đổi của nó đều chờ bạn xem xét.',
+  'Journals': 'Tạp chí',
+  'Templates': 'Mẫu',
+  'Upload a template (.zip)': 'Tải lên mẫu (.zip)',
+  'One of my projects': 'Một dự án của tôi',
+  'Search projects…': 'Tìm dự án…',
+  'No project found.': 'Không tìm thấy dự án.',
+  'Search templates…': 'Tìm mẫu…',
+  'The paper is to be submitted to {venue}.': 'Bài báo sẽ được gửi tới {venue}.',
 }
 
 export default messages

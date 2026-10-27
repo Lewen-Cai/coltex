@@ -1,5 +1,8 @@
 export { ACK_MARK, BIB_MARK, ConvertError, extractPaper, structureAffiliation } from './extract.ts'
+export type { Conversion } from './types.ts'
 export { convertPaper } from './render.ts'
+export { convertToTemplate, type TemplateConversion, type TemplateInput } from './template.ts'
 export { TARGETS, targetInfo } from './targets.ts'
 export { bibtexCompatible, transformTex } from './transform.ts'
+export { mask } from './scan.ts'
 export type * from './types.ts'

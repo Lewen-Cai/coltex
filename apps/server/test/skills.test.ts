@@ -104,11 +104,14 @@ describe('skill files', () => {
     assert.throws(() => skillFile(skills, 'writing', 'nope.md'), /has no file/)
   })
 
-  test('only skill-creator is built in, without its licence file', () => {
+  test('the built-in skills are skill-creator (without its licence file) and template-conversion', () => {
     const skills = loadBuiltinSkills(BUILTIN_SKILLS_DIR)
     assert.deepEqual(
       skills.map(s => [s.name, Object.keys(s.files)]),
-      [['skill-creator', ['references/examples.md']]],
+      [
+        ['skill-creator', ['references/examples.md']],
+        ['template-conversion', ['references/checklist.md']],
+      ],
     )
   })
 

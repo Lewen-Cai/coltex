@@ -32,7 +32,7 @@ export const openNewProject = () => window.dispatchEvent(new Event(NEW_EVENT))
 export const openImportProject = () => window.dispatchEvent(new Event(IMPORT_EVENT))
 
 /** The tag on a template card: built in, or whom it is shared with. */
-function sharingTag(tpl: TemplateInfo): string {
+export function sharingTag(tpl: TemplateInfo): string {
   switch (tpl.sharing) {
     case 'builtin':
       return t('Built-in')

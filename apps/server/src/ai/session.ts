@@ -35,7 +35,7 @@ import { conversationTitle, type ConversationStore, type SavedConversation } fro
 import { permissionNote, systemPrompt, userMessage, webNote } from './prompt.ts'
 import { NO_WEB, modelInfo, type AiService } from './service.ts'
 import { saveDraftedSkill, type SkillStore } from './skills.ts'
-import { WEB_TOOLS, createTools, describeToolCall, errorCount, type ToolContext } from './tools.ts'
+import { WEB_TOOLS, createTools, describeToolCall, errorCount, withoutPageImages, type ToolContext } from './tools.ts'
 import { WebScope, nativeSearchFits, nativeSearchTracker, urlsIn, withNativeSearch } from './web.ts'
 import type { Tier } from './routing.ts'
 
@@ -43,12 +43,14 @@ import type { Tier } from './routing.ts'
 const MAX_TOOL_CALLS = 60
 const MAX_COMPILES = 5
 const MAX_WEB_CALLS = 20
+/** Page images per message: each is a thousand tokens or more. */
+const MAX_PAGE_VIEWS = 8
 const IDLE_TTL_MS = 6 * 60 * 60_000
 
 export type AiDeps = {
   ai: AiService
   store: ProjectStore
-  queue: Pick<CompileQueue, 'compile' | 'texLookup'> & Partial<Pick<CompileQueue, 'hasManuals'>>
+  queue: Pick<CompileQueue, 'compile' | 'texLookup' | 'renderPage'> & Partial<Pick<CompileQueue, 'hasManuals'>>
   collab: CollabHooks
   history: HistoryService
   projects: ProjectService
@@ -197,7 +199,7 @@ export class AiSession extends AgentChat {
     if (this.forgotten || !this.items.some(i => i.kind === 'user')) return
     this.title ??= conversationTitle(this.items)
     await this.deps.conversations
-      .save(this.userId, this.projectId, { id: this.id, title: this.title, items: this.items, messages: this.transcript(), contextTokens: this.context })
+      .save(this.userId, this.projectId, { id: this.id, title: this.title, items: this.items, messages: withoutPageImages(this.transcript()), contextTokens: this.context })
       .catch(() => {})
   }
 
@@ -242,6 +244,8 @@ export class AiSession extends AgentChat {
         ai.models.streamSimple(m, context, this.toolContext.web.native && nativeSearchFits(m) ? this.withNativeSearch(options) : options),
       sessionId: this.id,
       toolExecution: 'sequential',
+      // Page images from earlier messages aren't sent again.
+      transformContext: async messages => withoutPageImages(messages, messages.findLastIndex(m => m.role === 'user')),
     })
     agent.subscribe(event => this.onAgentEvent(event))
     this.agent = agent
@@ -253,6 +257,7 @@ export class AiSession extends AgentChat {
   private toolCalls = 0
   private compiles = 0
   private webCalls = 0
+  private pageViews = 0
 
   async send(body: AiMessageBody, project: ProjectMeta, user: SessionUser): Promise<void> {
     if (this.running) throw new ConflictError('The assistant is still working on the previous message')
@@ -271,10 +276,12 @@ export class AiSession extends AgentChat {
     let permission = this.canEdit ? await this.deps.ai.permission(this.userId) : undefined
     if (permission && reviewed) permission = 'manual'
     if (permission) this.toolContext.permission = permission
+    const vision = agent.state.model.input.includes('image')
     const webKey = JSON.stringify(web)
-    if ((permission && permission !== this.told) || webKey !== this.toldWeb) {
-      // Tools follow the settings (full access adds delete_file and move_file; web access its tools).
+    if ((permission && permission !== this.told) || webKey !== this.toldWeb || vision !== this.toolContext.vision) {
+      // Tools follow the settings (full access adds delete_file and move_file; web access its tools; a model that sees images view_pdf_page).
       this.toolContext.web = web
+      this.toolContext.vision = vision
       agent.state.tools = createTools(this.toolContext)
       if (permission && permission !== this.told) this.notes.push(permissionNote(permission, reviewed))
       if (webKey !== this.toldWeb && (web.read || this.toldWeb)) this.notes.push(webNote(web))
@@ -291,6 +298,7 @@ export class AiSession extends AgentChat {
     this.toolCalls = 0
     this.compiles = 0
     this.webCalls = 0
+    this.pageViews = 0
     this.turnOps = []
     this.turnCheckpoint = false
     this.stopped = false
@@ -300,6 +308,9 @@ export class AiSession extends AgentChat {
       }
       if (toolCall.name === 'compile' && ++this.compiles > MAX_COMPILES) {
         return { block: true, reason: 'Compile limit for this message reached. Summarise what remains for the author.', terminate: true }
+      }
+      if (toolCall.name === 'view_pdf_page' && ++this.pageViews > MAX_PAGE_VIEWS) {
+        return { block: true, reason: 'Page view limit for this message reached. Go on from what you have seen.' }
       }
       if (WEB_TOOLS.has(toolCall.name) && ++this.webCalls > MAX_WEB_CALLS) {
         return { block: true, reason: 'Web search and reading limit for this message reached. Answer with what you found.' }

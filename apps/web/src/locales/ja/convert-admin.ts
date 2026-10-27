@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'ACS ジャーナルコード（任意）',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '元のクラスや外したパッケージにあったコマンドに簡単な定義を与えました：{list}。',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX ではすべての著者にメールアドレスと所属が必要です。足りない箇所には仮の値を入れました。',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': 'テンプレート {name}（{cls}）に変換し、サンプルの内容を論文の内容に置き換えました。',
+  'The template has no \\title; add the title where the journal wants it.': 'テンプレートに \\title がありません。ジャーナルが求める位置にタイトルを入れてください。',
+  'The template has no \\author; add the authors where the journal wants them.': 'テンプレートに \\author がありません。ジャーナルが求める位置に著者を入れてください。',
+  'The paper has no authors; the template’s author commands were left empty.': '論文に著者がないため、テンプレートの著者コマンドは空のままです。',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'テンプレートに要旨がないため、タイトルの後に置きました。ジャーナルが求める位置を確認してください。',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'テンプレートにキーワードがないため、要旨の後に普通の行として置きました。',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'テンプレートは biblatex を使います。natbib オプションで論文の \\citet と \\citep をそのまま使えます。',
+  'The paper\'s definitions replace the template\'s: {list}.': '論文の定義でテンプレートの同名の定義を置き換えました：{list}。',
+  'The template\'s sample {file} is kept as {to}.': 'テンプレートのサンプル {file} は {to} として残しました。',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'テンプレートの前付けには {list} もあり、まだサンプルの文章です。記入してください。',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'テンプレートの前付けには {list} もあり、まだサンプルの文章です。記入してください。',
+  'The template\'s publication details are kept as it has them: {list}.': 'テンプレートの出版情報はそのままにしてあります：{list}。',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'タイトルの注（{note}）は入れていません。ジャーナルの求める形で、多くは謝辞に加えてください。',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': '論文の {file} を残し、テンプレートの同名ファイルは入れていません。',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': '論文にキーワードがないため、テンプレートのサンプルのキーワードが残っています。置き換えてください。',
 }
 
 export default messages

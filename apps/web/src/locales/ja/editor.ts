@@ -598,6 +598,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': '{date} にリセット',
   'Resize the message box': '入力欄の高さを変更',
   'The AI agent can use the web, so its changes wait for your review.': 'AI エージェントはウェブを使えるため、変更はすべてあなたの確認を待ちます。',
+  'Journals': 'ジャーナル',
+  'Templates': 'テンプレート',
+  'Upload a template (.zip)': 'テンプレートをアップロード（.zip）',
+  'One of my projects': '自分のプロジェクトから',
+  'Search projects…': 'プロジェクトを検索…',
+  'No project found.': 'プロジェクトが見つかりません。',
+  'Search templates…': 'テンプレートを検索…',
+  'The paper is to be submitted to {venue}.': '論文は {venue} に投稿する予定です。',
 }
 
 export default messages

@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'ACS dergi kodu (isteğe bağlı)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Eski sınıfın ya da çıkarılan bir paketin sağladığı komutlara basit tanımlar verildi: {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX her yazar için bir e-posta ve bir kurum ister; eksik olan yerlere yer tutucular kondu.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': '{name} ({cls}) şablonuna dönüştürüldü; şablonun örnek metni makalenin metniyle değiştirildi.',
+  'The template has no \\title; add the title where the journal wants it.': 'Şablonda \\title yok; başlığı derginin istediği yere ekleyin.',
+  'The template has no \\author; add the authors where the journal wants them.': 'Şablonda \\author yok; yazarları derginin istediği yere ekleyin.',
+  'The paper has no authors; the template’s author commands were left empty.': 'Makalede yazar yok; şablonun yazar komutları boş bırakıldı.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'Şablonda özet yok; başlığın ardına kondu. Derginin nerede istediğini kontrol edin.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'Şablonda anahtar sözcük yok; özetin ardına düz bir satır olarak kondu.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'Şablon biblatex kullanıyor; natbib seçeneği makaledeki \\citet ve \\citep komutlarını korur.',
+  'The paper\'s definitions replace the template\'s: {list}.': 'Makalenin tanımları şablonun tanımlarının yerini aldı: {list}.',
+  'The template\'s sample {file} is kept as {to}.': 'Şablonun örnek dosyası {file}, {to} olarak saklandı.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'Şablonun ön kısmında örnek metniyle {list} de var: bunları doldurun.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'Şablonun ön kısmında örnek metniyle {list} de var: bunu doldurun.',
+  'The template\'s publication details are kept as it has them: {list}.': 'Şablonun yayın bilgileri olduğu gibi bırakıldı: {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'Başlığın notu çıkarıldı ({note}); derginin istediği şekilde, çoğu zaman teşekkür kısmına ekleyin.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': 'Makalenin {file} dosyası korundu; şablondaki kopyası eklenmedi.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': 'Makalede anahtar sözcük yok; şablonun örnek anahtar sözcükleri hâlâ duruyor: bunları değiştirin.',
 }
 
 export default messages

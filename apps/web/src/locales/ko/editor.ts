@@ -598,6 +598,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': '{date}에 초기화',
   'Resize the message box': '입력창 높이 조절',
   'The AI agent can use the web, so its changes wait for your review.': 'AI 에이전트가 웹을 사용할 수 있으므로 변경 사항은 모두 검토를 기다립니다.',
+  'Journals': '학술지',
+  'Templates': '템플릿',
+  'Upload a template (.zip)': '템플릿 업로드(.zip)',
+  'One of my projects': '내 프로젝트 중 하나',
+  'Search projects…': '프로젝트 검색…',
+  'No project found.': '프로젝트를 찾을 수 없습니다.',
+  'Search templates…': '템플릿 검색…',
+  'The paper is to be submitted to {venue}.': '논문은 {venue}에 투고할 예정입니다.',
 }
 
 export default messages

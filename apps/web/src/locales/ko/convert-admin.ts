@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'ACS 저널 코드(선택)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '원래 클래스나 뺀 패키지에 있던 명령에 간단한 정의를 넣었습니다: {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX는 모든 저자에게 이메일과 소속이 필요합니다. 빠진 곳에는 임시 값을 넣었습니다.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': '템플릿 {name}({cls})으로 변환했으며, 템플릿의 예시 내용을 논문 내용으로 바꿨습니다.',
+  'The template has no \\title; add the title where the journal wants it.': '템플릿에 \\title이 없습니다. 학술지가 요구하는 위치에 제목을 넣으세요.',
+  'The template has no \\author; add the authors where the journal wants them.': '템플릿에 \\author가 없습니다. 학술지가 요구하는 위치에 저자를 넣으세요.',
+  'The paper has no authors; the template’s author commands were left empty.': '논문에 저자가 없어 템플릿의 저자 명령을 비워 두었습니다.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': '템플릿에 초록이 없어 제목 뒤에 넣었습니다. 학술지가 원하는 위치를 확인하세요.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': '템플릿에 키워드가 없어 초록 뒤에 일반 줄로 넣었습니다.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': '템플릿이 biblatex를 사용합니다. natbib 옵션으로 논문의 \\citet과 \\citep을 그대로 둡니다.',
+  'The paper\'s definitions replace the template\'s: {list}.': '논문의 정의가 템플릿의 같은 이름 정의를 대신합니다: {list}.',
+  'The template\'s sample {file} is kept as {to}.': '템플릿의 예시 {file}은(는) {to}(으)로 남겨 두었습니다.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': '템플릿 앞부분에 {list}도 있으며 아직 예시 문장입니다. 채워 넣으세요.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': '템플릿 앞부분에 {list}도 있으며 아직 예시 문장입니다. 채워 넣으세요.',
+  'The template\'s publication details are kept as it has them: {list}.': '템플릿의 출판 정보는 그대로 두었습니다: {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': '제목의 주석({note})은 넣지 않았습니다. 학술지가 원하는 방식으로, 보통 감사의 글에 넣으세요.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': '논문의 {file}을(를) 유지하고 템플릿의 같은 파일은 넣지 않았습니다.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': '논문에 키워드가 없어 템플릿의 예시 키워드가 남아 있습니다. 바꿔 넣으세요.',
 }
 
 export default messages

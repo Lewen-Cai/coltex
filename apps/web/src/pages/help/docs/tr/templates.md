@@ -48,6 +48,8 @@ Bilmekte fayda var:
 
 Bir projenin menüsündeki **Şablona dönüştür…** (proje ayarlarında: "Dergi şablonuna dönüştür"), bir makaleyi başka bir dergi veya konferans için yeniden yazar: IEEE Transactions, IEEE Konferansı, ACM Konferansı, ACM Dergisi, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS veya düz bir makale. Her yerleşik şablon bunlardan herhangi birine dönüştürülebilir.
 
+**Şablonlar** altında makale bunun yerine herhangi bir şablona gider: şablon listesinden biri, projelerinizden biri (**Projelerimden biri**) ya da bir derginin indirmeye sunduğu zip (**Şablon yükle (.zip)**). Makalenin başlığı, yazarları, kurumları, özeti ve anahtar sözcükleri şablonun örneklerinin olduğu yere, şablonun kendi yazımıyla yazılır; ardından gelen örnek metin makalenizle değiştirilir. Şablonun sınıf ve stil dosyaları da gelir, örnek ana dosyası başvuru için projede kalır.
+
 - Başlık, yazarlar, kurumlar, özet, paketler ve kaynakça **yeni bir projede** yeniden oluşturulur ve ardından derlenir. Özgün proje olduğu gibi kalır.
 - Springer Nature'ın `sn-jnl` şablonuyla yazılmış makaleler de okunur; BMC, OUP ve Elsevier CAS makaleleri de öyle: ad ve soyadıyla yazarlar, kurumlar, `\abstract{}` ve yapılandırılmış özetler, anahtar kelimeler ve sondaki beyanlar bölümü.
-- Bir rapor neyin değiştirildiğini ve neyin denetlenmesi gerektiğini listeler. Geri kalanları YZ halledebilir.
+- Bir rapor neyin değiştiğini ve neyin kontrol edileceğini listeler. Derlemede hata ya da raporda uyarı varsa **Aç ve YZ ile düzelt** yeni projeyi açar ve YZ ajanı yerleşik **template-conversion** Skill'ini izler: önce hangi dergiye ya da konferansa göndereceğinizi sorar, güncel yazar yönergelerini araştırır, makalenin derlenmesini sağlar ve içeriğini değiştirmeden yönergelere uydurur. Değişiklikleri incelemenizi bekler.

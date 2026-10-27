@@ -598,6 +598,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Сброс {date}',
   'Resize the message box': 'Изменить высоту поля ввода',
   'The AI agent can use the web, so its changes wait for your review.': 'ИИ-агент может пользоваться интернетом, поэтому его изменения ждут вашей проверки.',
+  'Journals': 'Журналы',
+  'Templates': 'Шаблоны',
+  'Upload a template (.zip)': 'Загрузить шаблон (.zip)',
+  'One of my projects': 'Один из моих проектов',
+  'Search projects…': 'Поиск проектов…',
+  'No project found.': 'Проекты не найдены.',
+  'Search templates…': 'Поиск шаблонов…',
+  'The paper is to be submitted to {venue}.': 'Статья будет подана в {venue}.',
 }
 
 export default messages

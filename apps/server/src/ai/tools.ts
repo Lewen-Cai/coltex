@@ -23,7 +23,7 @@ export type ToolContext = {
   project: ProjectMeta
   store: ProjectStore
   changeset: Changeset
-  queue: Pick<CompileQueue, 'compile' | 'texLookup'>
+  queue: Pick<CompileQueue, 'compile' | 'texLookup' | 'renderPage'>
   outputsDir: string
   /** Editors get the drafting tools; everyone else gets a read-only assistant. */
   canEdit: boolean
@@ -37,6 +37,8 @@ export type ToolContext = {
   onTrial: (result: CompileResult) => void
   /** The compiler has the package manuals (the full edition); otherwise texlive_doc isn't offered. */
   manuals?: boolean
+  /** The model takes images: view_pdf_page is offered. */
+  vision?: boolean
   /** What the agent may do on the web for this message. */
   web: WebAccess
   webSearch: Pick<WebSearch, 'search' | 'read'>
@@ -71,6 +73,17 @@ function tool<P extends TSchema>(def: {
     executionMode: 'sequential',
     execute: async (_id, params, signal) => text(await def.execute(params, signal)),
   }
+}
+
+/** A tool whose result may carry an image (view_pdf_page). */
+function pageTool<P extends TSchema>(def: {
+  name: string
+  label: string
+  description: string
+  parameters: P
+  execute: (params: Static<P>) => Promise<AgentToolResult<undefined>>
+}): AgentTool<P, undefined> {
+  return { ...def, executionMode: 'sequential', execute: async (_id, params) => def.execute(params) }
 }
 
 export function errorCount(diagnostics: Diagnostic[]): number {
@@ -209,9 +222,27 @@ export function describeToolCall(name: string, args: Record<string, unknown>): s
       return `Search the web for “${String(args.query ?? '')}”`
     case 'read_web_page':
       return `Read web page ${String(args.url ?? '')}`
+    case 'view_pdf_page':
+      return `Look at page ${String(args.page ?? 1)} of the PDF`
     default:
       return name
   }
+}
+
+/** What replaces a page image the model already saw (in later messages and in saved conversations). */
+export const PAGE_SEEN = '[A page image was shown here.]'
+
+/**
+ * The transcript without the page images of earlier messages (`keepFrom`:
+ * the index from which they stay): sent again with every request, they would
+ * cost their tokens each time.
+ */
+export function withoutPageImages<M extends { role: string }>(messages: M[], keepFrom = messages.length): M[] {
+  return messages.map((m, i) => {
+    const content = (m as { content?: unknown }).content
+    if (i >= keepFrom || m.role !== 'toolResult' || !Array.isArray(content) || !content.some(b => b?.type === 'image')) return m
+    return { ...m, content: content.map(b => (b?.type === 'image' ? { type: 'text', text: PAGE_SEEN } : b)) }
+  })
 }
 
 /** Tools that build a draft for the author to apply. */
@@ -469,6 +500,28 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
       },
     }),
 
+    pageTool({
+      name: 'view_pdf_page',
+      label: 'View PDF page',
+      description:
+        "Look at one page of the PDF as an image: your last trial compile if you ran one, otherwise the author's latest build. Use it to check the layout the log can't show: figures and tables in their columns, overflowing equations and tables, large gaps, the title block. Each page costs many tokens: look at the pages you need.",
+      parameters: Type.Object({ page: Type.Integer({ minimum: 1, description: 'Page number, from 1' }) }),
+      execute: async ({ page }) => {
+        const build = lastTrialBuild ?? ctx.authorBuild()
+        if (!build) return text('No PDF is available yet. Run compile first.')
+        const r = await ctx.queue.renderPage({ projectId: ctx.project.id, buildId: build, page })
+        if (!r.pages) return text('That build has no PDF.')
+        if (!r.png) return text(`The PDF has ${r.pages} page${r.pages === 1 ? '' : 's'}; there is no page ${page}.`)
+        return {
+          content: [
+            { type: 'text', text: `Page ${page} of ${r.pages} (${lastTrialBuild ? 'your last trial compile' : "the author's build"}).` },
+            { type: 'image', data: r.png, mimeType: 'image/png' },
+          ],
+          details: undefined,
+        }
+      },
+    }),
+
     tool({
       name: 'texlive_source',
       label: 'TeX Live source',
@@ -541,6 +594,7 @@ export function createTools(ctx: ToolContext): AgentTool<any, undefined>[] {
       (!FILE_TOOLS.has(t.name) || (ctx.canEdit && ctx.permission === 'full')) &&
       (ctx.manuals !== false || t.name !== 'texlive_doc') &&
       (t.name !== 'web_search' || !!ctx.web.search) &&
-      (t.name !== 'read_web_page' || ctx.web.read),
+      (t.name !== 'read_web_page' || ctx.web.read) &&
+      (t.name !== 'view_pdf_page' || !!ctx.vision),
   )
 }

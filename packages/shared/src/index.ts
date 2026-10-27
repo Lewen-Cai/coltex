@@ -917,6 +917,14 @@ export const SynctexResult = z.object({
 })
 export type SynctexResult = z.infer<typeof SynctexResult>
 
+/** A page of a build as an image, for the AI agent to look at the layout. */
+export const PAGE_QUEUE = 'page'
+export const PageJob = BuildRef.extend({ page: z.number().int().min(1).max(10_000), dpi: z.number().int().min(50).max(200).default(100) })
+export type PageJob = z.infer<typeof PageJob>
+/** `png` (base64) is null when the build has no PDF or no such page. */
+export const PageResult = z.object({ pages: z.number().int(), png: z.string().nullable() })
+export type PageResult = z.infer<typeof PageResult>
+
 // ---------------------------------------------------------------------------
 // Cleanup: a deleted project's compile directory and build outputs, removed by
 // the compiler worker (only it sees its compile directories)
@@ -1815,8 +1823,25 @@ export const ConvertAnalysis = z.object({
 })
 export type ConvertAnalysis = z.infer<typeof ConvertAnalysis>
 
+/**
+ * What to convert into: one of the built-in journal conversions, or a
+ * template the author brings: a template from the list (built-in or shared),
+ * one of their projects, or a zip they uploaded (`POST …/convert/template`).
+ */
+export const ConvertInto = z.union([
+  ConvertTargetId,
+  z.object({ template: z.string().min(1).max(100) }),
+  z.object({ project: ProjectId }),
+  z.object({ upload: z.string().regex(/^[a-z0-9]+-[a-z0-9]+$/) }),
+])
+export type ConvertInto = z.infer<typeof ConvertInto>
+
+/** A template zip held for a conversion (for an hour, for the person who sent it). */
+export const ConvertUpload = z.object({ upload: z.string(), name: z.string(), rootFile: z.string(), documentClass: z.string() })
+export type ConvertUpload = z.infer<typeof ConvertUpload>
+
 export const ConvertBody = z.object({
-  target: ConvertTargetId,
+  target: ConvertInto,
   name: z.string().trim().min(1).max(200),
   metadata: ConvertMetadata,
   options: ConvertOptions.default({}),
@@ -1837,7 +1862,10 @@ export type BuildSummary = z.infer<typeof BuildSummary>
 export const ConvertReport = z.object({
   projectId: ProjectId,
   name: z.string(),
-  target: ConvertTargetId,
+  /** A built-in conversion's id, or the template's name. */
+  target: z.string(),
+  /** The document class the paper is in now. */
+  documentClass: z.string(),
   notes: z.array(z.object({ level: z.enum(['info', 'warning']), text: z.string() })),
   changedFiles: z.array(z.string()),
   build: BuildSummary.nullable(),

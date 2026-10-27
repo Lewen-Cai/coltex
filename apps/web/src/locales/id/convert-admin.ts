@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'Kode jurnal ACS (opsional)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Perintah yang disediakan kelas lama atau paket yang ditinggalkan diberi definisi sederhana: {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX mewajibkan email dan afiliasi untuk setiap penulis; tempat yang kosong diisi teks pengganti.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': 'Dikonversi ke templat {name} ({cls}); teks contohnya diganti dengan teks makalah.',
+  'The template has no \\title; add the title where the journal wants it.': 'Templat tidak memiliki \\title; tambahkan judul di tempat yang diminta jurnal.',
+  'The template has no \\author; add the authors where the journal wants them.': 'Templat tidak memiliki \\author; tambahkan penulis di tempat yang diminta jurnal.',
+  'The paper has no authors; the template’s author commands were left empty.': 'Makalah tidak memiliki penulis; perintah penulis pada templat dibiarkan kosong.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'Templat tidak menampilkan abstrak; abstrak diletakkan setelah judul. Periksa di mana jurnal menginginkannya.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'Templat tidak menampilkan kata kunci; kata kunci diletakkan setelah abstrak sebagai baris biasa.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'Templat memakai biblatex; opsi natbib-nya mempertahankan \\citet dan \\citep makalah.',
+  'The paper\'s definitions replace the template\'s: {list}.': 'Definisi makalah menggantikan definisi templat: {list}.',
+  'The template\'s sample {file} is kept as {to}.': 'Berkas contoh {file} dari templat disimpan sebagai {to}.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'Bagian awal templat juga memuat {list}, masih berisi teks contoh: isilah.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'Bagian awal templat juga memuat {list}, masih berisi teks contoh: isilah.',
+  'The template\'s publication details are kept as it has them: {list}.': 'Detail publikasi templat dipertahankan apa adanya: {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'Catatan judul dihilangkan ({note}); tambahkan sesuai ketentuan jurnal, sering di ucapan terima kasih.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': '{file} milik makalah dipertahankan; salinan dari templat tidak disertakan.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': 'Makalah tidak memiliki kata kunci; kata kunci contoh templat masih ada: gantilah.',
 }
 
 export default messages

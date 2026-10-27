@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'ACS 期刊代码（可选）',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': '为原文档类或被移除的宏包提供的命令给出了简单定义：{list}。',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX 要求每位作者都有邮箱和单位；缺少的地方已填入占位内容。',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': '已转换到模板 {name}（{cls}），模板的示例内容已换成论文的内容。',
+  'The template has no \\title; add the title where the journal wants it.': '模板里没有 \\title，请按期刊要求的位置加上标题。',
+  'The template has no \\author; add the authors where the journal wants them.': '模板里没有 \\author，请按期刊要求的位置加上作者。',
+  'The paper has no authors; the template’s author commands were left empty.': '论文里没有作者，模板的作者命令留空了。',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': '模板里没有摘要，已把摘要放在标题后面。请确认期刊要求放在哪里。',
+  'The template shows no keywords; they were put after the abstract as a plain line.': '模板里没有关键词，已把关键词作为普通一行放在摘要后面。',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': '模板用的是 biblatex，已打开它的 natbib 选项，论文里的 \\citet 和 \\citep 保持不变。',
+  'The paper\'s definitions replace the template\'s: {list}.': '论文自己的定义替换了模板里的同名定义：{list}。',
+  'The template\'s sample {file} is kept as {to}.': '模板的示例文件 {file} 保留为 {to}。',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': '模板的开头部分还有 {list}，里面仍是示例文字：请填写。',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': '模板的开头部分还有 {list}，里面仍是示例文字：请填写。',
+  'The template\'s publication details are kept as it has them: {list}.': '模板里的出版信息保持原样：{list}。',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': '标题的注释没有保留（{note}），请按期刊要求的方式加上，通常放在致谢里。',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': '保留了论文自己的 {file}，没有用模板里的同名文件。',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': '论文没有关键词，模板的示例关键词还在：请替换。',
 }
 
 export default messages

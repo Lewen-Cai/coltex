@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': 'Derleme günlüğü',
   'Search the web for “{query}”': 'Web’de ara: “{query}”',
   'Read web page {url}': 'Web sayfasını oku: {url}',
+  'Look at page {page} of the PDF': 'PDF’nin {page}. sayfasına bak',
 }
 
 export default messages

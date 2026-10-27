@@ -6,6 +6,9 @@ import {
   COMPILE_QUEUE,
   COMPILER_RESOURCES_KEY,
   CompileResult,
+  PAGE_QUEUE,
+  PageJob,
+  PageResult,
   SYNCTEX_QUEUE,
   SynctexResult,
   TEXLIVE_QUEUE,
@@ -24,6 +27,7 @@ import { ServiceUnavailableError } from './errors.ts'
 
 const buildSuffix = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
 const SYNCTEX_TIMEOUT_MS = 15_000
+const PAGE_TIMEOUT_MS = 30_000
 /** Converting a large PDF manual to text the first time takes a while. */
 const TEXLIVE_TIMEOUT_MS = 90_000
 /** The compiler stops pandoc after two minutes; this covers the copy and the queue. */
@@ -52,6 +56,8 @@ export class CompileQueue {
   private readonly synctexQueue: Queue<SynctexJob, SynctexResult>
   private readonly compileEvents: QueueEvents
   private readonly synctexEvents: QueueEvents
+  private readonly pageQueue: Queue<PageJob, PageResult>
+  private readonly pageEvents: QueueEvents
   private readonly texliveQueue: Queue<TexLookupJob, TexLookupResult>
   private readonly texliveEvents: QueueEvents
   private readonly cleanupQueue: Queue<CleanupJob>
@@ -71,6 +77,8 @@ export class CompileQueue {
     this.synctexQueue = new Queue(SYNCTEX_QUEUE, { connection: this.connection })
     this.compileEvents = new QueueEvents(COMPILE_QUEUE, { connection: this.eventsConnection })
     this.synctexEvents = new QueueEvents(SYNCTEX_QUEUE, { connection: this.eventsConnection.duplicate() })
+    this.pageQueue = new Queue(PAGE_QUEUE, { connection: this.connection })
+    this.pageEvents = new QueueEvents(PAGE_QUEUE, { connection: this.eventsConnection.duplicate() })
     this.texliveQueue = new Queue(TEXLIVE_QUEUE, { connection: this.connection })
     this.texliveEvents = new QueueEvents(TEXLIVE_QUEUE, { connection: this.eventsConnection.duplicate() })
     this.cleanupQueue = new Queue(CLEANUP_QUEUE, { connection: this.connection })
@@ -175,6 +183,16 @@ export class CompileQueue {
     return SynctexResult.parse(await job.waitUntilFinished(this.synctexEvents, SYNCTEX_TIMEOUT_MS))
   }
 
+  /** A page of a build as a PNG (for the AI agent to look at the layout). */
+  async renderPage(input: Omit<PageJob, 'dpi'> & { dpi?: number }): Promise<PageResult> {
+    if ((await this.pageQueue.getWorkersCount()) === 0) {
+      throw new ServiceUnavailableError('No compiler worker is running')
+    }
+    await this.pageEvents.waitUntilReady()
+    const job = await this.pageQueue.add('page', PageJob.parse(input), { removeOnComplete: true, removeOnFail: 100 })
+    return PageResult.parse(await job.waitUntilFinished(this.pageEvents, PAGE_TIMEOUT_MS))
+  }
+
   /** Read or search an installed TeX Live file or package documentation (for the assistant). */
   async texLookup(input: TexLookupJob): Promise<TexLookupResult> {
     if ((await this.texliveQueue.getWorkersCount()) === 0) {
@@ -229,8 +247,8 @@ export class CompileQueue {
   }
 
   async close(): Promise<void> {
-    await Promise.all([this.compileEvents.close(), this.synctexEvents.close(), this.texliveEvents.close(), this.wordEvents.close()])
-    await Promise.all([this.compileQueue.close(), this.synctexQueue.close(), this.texliveQueue.close(), this.cleanupQueue.close(), this.wordQueue.close()])
+    await Promise.all([this.compileEvents.close(), this.synctexEvents.close(), this.pageEvents.close(), this.texliveEvents.close(), this.wordEvents.close()])
+    await Promise.all([this.compileQueue.close(), this.synctexQueue.close(), this.pageQueue.close(), this.texliveQueue.close(), this.cleanupQueue.close(), this.wordQueue.close()])
     this.connection.disconnect()
     this.eventsConnection.disconnect()
   }

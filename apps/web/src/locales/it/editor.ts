@@ -598,6 +598,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Si azzera il {date}',
   'Resize the message box': 'Ridimensiona la casella del messaggio',
   'The AI agent can use the web, so its changes wait for your review.': 'L’agente IA può usare il web, quindi le sue modifiche attendono la tua revisione.',
+  'Journals': 'Riviste',
+  'Templates': 'Modelli',
+  'Upload a template (.zip)': 'Carica un modello (.zip)',
+  'One of my projects': 'Uno dei miei progetti',
+  'Search projects…': 'Cerca progetti…',
+  'No project found.': 'Nessun progetto trovato.',
+  'Search templates…': 'Cerca modelli…',
+  'The paper is to be submitted to {venue}.': 'L’articolo sarà inviato a {venue}.',
 }
 
 export default messages

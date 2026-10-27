@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   ArrowLeft,
@@ -8,6 +8,8 @@ import {
   CircleAlert,
   CircleCheck,
   ExternalLink,
+  FileArchive,
+  FolderOpen,
   Info,
   LayoutTemplate,
   Plus,
@@ -17,21 +19,25 @@ import {
   UserRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { BuildSummary, ConvertAffiliation, ConvertAnalysis, ConvertAuthor, ConvertMetadata, ConvertOptions, ConvertReport, ConvertTarget } from '@coltex/shared'
+import type { BuildSummary, ConvertAffiliation, ConvertAnalysis, ConvertAuthor, ConvertInto, ConvertMetadata, ConvertOptions, ConvertReport, ConvertTarget, ProjectSummary, TemplateInfo } from '@coltex/shared'
 import { useAiStatus } from '../lib/ai.ts'
 import { api } from '../lib/api.ts'
 import { inSentence, intlLocale, plural, t, tk, translateServerMessage } from '../lib/i18n.ts'
 import { navigate } from '../lib/router.ts'
 import { cn } from '../lib/utils.ts'
+import { sharingTag } from './shell/project-dialogs.tsx'
 import { Badge } from './ui/badge.tsx'
 import { Button } from './ui/button.tsx'
 import { Checkbox } from './ui/checkbox.tsx'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command.tsx'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog.tsx'
 import { Input } from './ui/input.tsx'
 import { Label } from './ui/label.tsx'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover.tsx'
 import { Spinner } from './ui/spinner.tsx'
 import { Switch } from './ui/switch.tsx'
 import { Textarea } from './ui/textarea.tsx'
+import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group.tsx'
 
 const OPEN_EVENT = 'coltex:convert'
 /** The editor picks this up to start the assistant on the converted project. */
@@ -62,11 +68,17 @@ export function ConvertDialogHost() {
 
 type Step = 'target' | 'details' | 'result'
 
+/** What the paper goes into: a built-in conversion, or a template the author brings. */
+type Into = { kind: 'builtin'; target: ConvertTarget } | { kind: 'template'; into: Exclude<ConvertInto, string>; name: string; key: string }
+
+/** The built-in skill the AI agent follows to finish a conversion. */
+const CONVERSION_SKILL = 'template-conversion'
+
 function ConvertDialog({ projectId, projectName, open, onOpenChange }: { projectId: string; projectName: string; open: boolean; onOpenChange: (o: boolean) => void }) {
   const [analysis, setAnalysis] = useState<ConvertAnalysis>()
   const [error, setError] = useState<string>()
   const [step, setStep] = useState<Step>('target')
-  const [targetId, setTargetId] = useState<ConvertTarget['id']>()
+  const [into, setInto] = useState<Into>()
   const [meta, setMeta] = useState<ConvertMetadata>()
   const [options, setOptions] = useState<ConvertOptions>({})
   const [name, setName] = useState('')
@@ -85,27 +97,28 @@ function ConvertDialog({ projectId, projectName, open, onOpenChange }: { project
     )
   }, [open, analysis, projectId])
 
-  const target = analysis?.targets.find(x => x.id === targetId)
+  const target = into?.kind === 'builtin' ? into.target : undefined
+  const intoLabel = into ? (into.kind === 'builtin' ? t(into.target.label) : into.name) : ''
   useEffect(() => {
-    if (target) setName(`${projectName} – ${t(target.label)}`)
-  }, [target, projectName])
+    if (intoLabel) setName(`${projectName} – ${intoLabel}`)
+  }, [intoLabel, projectName])
 
   const missing = useMemo(() => {
-    if (!meta || !target) return []
+    if (!meta || !into) return []
     const out: string[] = []
     if (!meta.title.trim()) out.push(t('a title'))
     if (!meta.authors.length) out.push(t('at least one author'))
-    for (const f of target.fields) if (f.required && !getField(options, f.key)?.trim()) out.push(inSentence(t(f.label)))
+    for (const f of target?.fields ?? []) if (f.required && !getField(options, f.key)?.trim()) out.push(inSentence(t(f.label)))
     return out
   }, [meta, target, options])
 
   const run = async () => {
-    if (!meta || !targetId) return
+    if (!meta || !into) return
     setBusy(true)
     setStep('result')
     setReport(undefined)
     try {
-      const r = await api.convert(projectId, { target: targetId, name: name.trim(), metadata: meta, options })
+      const r = await api.convert(projectId, { target: into.kind === 'builtin' ? into.target.id : into.into, name: name.trim(), metadata: meta, options })
       setReport(r)
       window.dispatchEvent(new Event('coltex:projects-changed'))
     } catch (e) {
@@ -136,11 +149,11 @@ function ConvertDialog({ projectId, projectName, open, onOpenChange }: { project
               <Spinner /> {t('Reading the project…')}
             </div>
           ) : step === 'target' ? (
-            <TargetStep analysis={analysis} value={targetId} onChange={setTargetId} />
-          ) : step === 'details' && target ? (
-            <DetailsStep analysis={analysis} target={target} meta={meta} setMeta={setMeta} options={options} setOptions={setOptions} name={name} setName={setName} />
+            <TargetStep analysis={analysis} projectId={projectId} value={into} onChange={setInto} />
+          ) : step === 'details' && into ? (
+            <DetailsStep analysis={analysis} target={target} label={intoLabel} meta={meta} setMeta={setMeta} options={options} setOptions={setOptions} name={name} setName={setName} />
           ) : (
-            <ResultStep report={report} target={target} sourceClass={analysis.sourceClass} onClose={() => onOpenChange(false)} />
+            <ResultStep report={report} label={intoLabel} options={options} sourceClass={analysis.sourceClass} onClose={() => onOpenChange(false)} />
           )}
         </div>
 
@@ -159,7 +172,7 @@ function ConvertDialog({ projectId, projectName, open, onOpenChange }: { project
                 {t('Cancel')}
               </Button>
               {step === 'target' ? (
-                <Button disabled={!targetId} onClick={() => setStep('details')}>
+                <Button disabled={!into} onClick={() => setStep('details')}>
                   {t('Next')} <ArrowRight />
                 </Button>
               ) : (
@@ -216,7 +229,8 @@ function Steps({ step }: { step: Step }) {
   )
 }
 
-function TargetStep({ analysis, value, onChange }: { analysis: ConvertAnalysis; value?: string; onChange: (id: ConvertTarget['id']) => void }) {
+function TargetStep({ analysis, projectId, value, onChange }: { analysis: ConvertAnalysis; projectId: string; value?: Into; onChange: (into: Into) => void }) {
+  const [mode, setMode] = useState<Into['kind']>(value?.kind ?? 'builtin')
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -228,33 +242,171 @@ function TargetStep({ analysis, value, onChange }: { analysis: ConvertAnalysis; 
         <Badge variant="secondary">
           {analysis.bibliography === 'none' ? t('no bibliography') : analysis.bibliography === 'inline' ? t('inline bibliography') : analysis.bibliography}
         </Badge>
+        <ToggleGroup type="single" variant="outline" size="sm" value={mode} onValueChange={v => v && setMode(v as Into['kind'])} className="ml-auto">
+          <ToggleGroupItem value="builtin">{t('Journals')}</ToggleGroupItem>
+          <ToggleGroupItem value="template">{t('Templates')}</ToggleGroupItem>
+        </ToggleGroup>
       </div>
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-        {analysis.targets.map((target, i) => (
-          <motion.button
-            key={target.id}
-            type="button"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }}
-            onClick={() => onChange(target.id)}
-            aria-pressed={value === target.id}
-            className={cn(
-              'flex flex-col rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/50',
-              value === target.id && 'border-primary bg-primary/5 ring-1 ring-primary',
-            )}
-          >
-            <span className="flex items-baseline justify-between gap-3">
-              <span className="text-sm font-medium">{t(target.label)}</span>
-              <span className="shrink-0 text-xs text-muted-foreground">{target.publisher}</span>
-            </span>
-            <span className="mt-1 text-xs leading-snug text-muted-foreground">{t(target.description)}</span>
-            <span className="mt-1.5 text-[11px] text-muted-foreground">
-              <span className="font-mono">{target.documentClass}.cls</span> · {target.twoColumn ? t('Two columns') : t('One column')}
-            </span>
-          </motion.button>
-        ))}
+      {mode === 'builtin' ? (
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+          {analysis.targets.map((target, i) => (
+            <motion.button
+              key={target.id}
+              type="button"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+              onClick={() => onChange({ kind: 'builtin', target })}
+              aria-pressed={value?.kind === 'builtin' && value.target.id === target.id}
+              className={cn(
+                'flex flex-col rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/50',
+                value?.kind === 'builtin' && value.target.id === target.id && 'border-primary bg-primary/5 ring-1 ring-primary',
+              )}
+            >
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-medium">{t(target.label)}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{target.publisher}</span>
+              </span>
+              <span className="mt-1 text-xs leading-snug text-muted-foreground">{t(target.description)}</span>
+              <span className="mt-1.5 text-[11px] text-muted-foreground">
+                <span className="font-mono">{target.documentClass}.cls</span> · {target.twoColumn ? t('Two columns') : t('One column')}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      ) : (
+        <TemplatePicker projectId={projectId} value={value?.kind === 'template' ? value : undefined} onChange={onChange} />
+      )}
+    </div>
+  )
+}
+
+/** Any template as the target: one from the list, one of the person's projects, or a journal's zip. */
+function TemplatePicker({ projectId, value, onChange }: { projectId: string; value?: Extract<Into, { kind: 'template' }>; onChange: (into: Into) => void }) {
+  const [templates, setTemplates] = useState<TemplateInfo[]>()
+  const [projects, setProjects] = useState<ProjectSummary[]>()
+  const [query, setQuery] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [picking, setPicking] = useState(false)
+  const file = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    api.listTemplates().then(setTemplates, e => {
+      setTemplates([])
+      toast.error((e as Error).message)
+    })
+  }, [])
+  useEffect(() => {
+    if (picking && !projects) api.listProjects().then(list => setProjects(list.filter(p => p.id !== projectId)), e => toast.error((e as Error).message))
+  }, [picking, projects, projectId])
+
+  const upload = async (f: File) => {
+    setUploading(true)
+    try {
+      const name = f.name.replace(/\.zip$/i, '')
+      const held = await api.convertUpload(projectId, f, name)
+      onChange({ kind: 'template', into: { upload: held.upload }, name, key: `upload:${held.upload}` })
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const label = (tpl: TemplateInfo) => (tpl.kind === 'builtin' ? translateServerMessage(tpl.name) : tpl.name)
+  const all = [...(templates?.filter(x => x.kind === 'shared') ?? []), ...(templates?.filter(x => x.kind === 'builtin') ?? [])]
+  const q = query.trim().toLowerCase()
+  const shown = q ? all.filter(x => `${label(x)} ${x.name} ${x.description}`.toLowerCase().includes(q)) : all
+  const own = value && !('template' in value.into) ? value : undefined
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <input
+          ref={file}
+          type="file"
+          accept=".zip,application/zip"
+          className="hidden"
+          onChange={e => {
+            const f = e.target.files?.[0]
+            e.target.value = ''
+            if (f) void upload(f)
+          }}
+        />
+        <Button variant="outline" disabled={uploading} onClick={() => file.current?.click()}>
+          {uploading ? <Spinner /> : <FileArchive />} {t('Upload a template (.zip)')}
+        </Button>
+        <Popover open={picking} onOpenChange={setPicking}>
+          <PopoverTrigger asChild>
+            <Button variant="outline">
+              <FolderOpen /> {t('One of my projects')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-80 p-0">
+            <Command>
+              <CommandInput placeholder={t('Search projects…')} />
+              <CommandList className="max-h-72">
+                {!projects ? (
+                  <div className="flex justify-center p-4">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <>
+                    <CommandEmpty>{t('No project found.')}</CommandEmpty>
+                    <CommandGroup>
+                      {projects.map(p => (
+                        <CommandItem
+                          key={p.id}
+                          value={`${p.name} ${p.id}`}
+                          onSelect={() => {
+                            setPicking(false)
+                            onChange({ kind: 'template', into: { project: p.id }, name: p.name, key: `project:${p.id}` })
+                          }}
+                        >
+                          <span className="truncate">{p.name}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <Input value={query} onChange={e => setQuery(e.target.value)} placeholder={t('Search templates…')} className="min-w-40 flex-1" />
       </div>
+      {own && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary bg-primary/5 p-3 text-sm ring-1 ring-primary">
+          {'upload' in own.into ? <FileArchive className="size-4 text-primary" /> : <FolderOpen className="size-4 text-primary" />}
+          <span className="font-medium">{own.name}</span>
+        </div>
+      )}
+      {!templates ? (
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+          {shown.map(tpl => {
+            const on = value?.key === `template:${tpl.id}`
+            return (
+              <button
+                key={tpl.id}
+                type="button"
+                onClick={() => onChange({ kind: 'template', into: { template: tpl.id }, name: label(tpl), key: `template:${tpl.id}` })}
+                aria-pressed={on}
+                className={cn('grid content-start gap-0.5 rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/50', on && 'border-primary bg-primary/5 ring-1 ring-primary')}
+              >
+                <span className="text-sm font-medium">{label(tpl)}</span>
+                {tpl.description && <span className="text-xs leading-snug text-muted-foreground">{tpl.kind === 'builtin' ? translateServerMessage(tpl.description) : tpl.description}</span>}
+                <span className="mt-1.5 flex">
+                  <Badge variant={tpl.sharing === 'builtin' ? 'secondary' : 'outline'} className="max-w-full truncate font-normal">
+                    {sharingTag(tpl)}
+                  </Badge>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -274,7 +426,8 @@ function Section({ icon: Icon, title, action, children }: { icon: typeof Info; t
 
 function DetailsStep(props: {
   analysis: ConvertAnalysis
-  target: ConvertTarget
+  target?: ConvertTarget
+  label: string
   meta: ConvertMetadata
   setMeta: (m: ConvertMetadata) => void
   options: ConvertOptions
@@ -283,7 +436,7 @@ function DetailsStep(props: {
   setName: (n: string) => void
 }) {
   const { analysis, target, meta, setMeta, options, setOptions } = props
-  const needsCountry = target.documentClass === 'acmart'
+  const needsCountry = target?.documentClass === 'acmart'
   const patchAuthor = (i: number, p: Partial<ConvertAuthor>) => setMeta({ ...meta, authors: meta.authors.map((a, j) => (j === i ? { ...a, ...p } : a)) })
   const patchAff = (i: number, p: Partial<ConvertAffiliation>) =>
     setMeta({
@@ -414,9 +567,9 @@ function DetailsStep(props: {
         </div>
       </Section>
 
-      <Section icon={LayoutTemplate} title={t('{template} options', { template: t(target.label) })}>
+      <Section icon={LayoutTemplate} title={t('{template} options', { template: props.label })}>
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-          {target.fields.map(f => (
+          {(target?.fields ?? []).map(f => (
             <Field key={f.key} label={`${t(f.label)}${f.required ? ' *' : ''}`}>
               <Input placeholder={f.placeholder} value={getField(options, f.key) ?? ''} onChange={e => setOptions(setField(options, f.key, e.target.value))} />
             </Field>
@@ -425,7 +578,7 @@ function DetailsStep(props: {
             <Input value={props.name} onChange={e => props.setName(e.target.value)} />
           </Field>
         </div>
-        {target.review && (
+        {target?.review && (
           <label className="flex items-center gap-2 rounded-lg border p-2.5 text-sm">
             <Switch checked={!!options.review} onCheckedChange={v => setOptions({ ...options, review: v })} />
             {t('Review version')}
@@ -467,7 +620,7 @@ const STATUS: Record<NonNullable<ConvertReport['build']>['status'], string> = {
   error: tk('error'),
 }
 
-function ResultStep({ report, target, sourceClass, onClose }: { report?: ConvertReport; target?: ConvertTarget; sourceClass: string; onClose: () => void }) {
+function ResultStep({ report, label, options, sourceClass, onClose }: { report?: ConvertReport; label: string; options: ConvertOptions; sourceClass: string; onClose: () => void }) {
   const { status: ai } = useAiStatus()
   if (!report) {
     return (
@@ -493,7 +646,7 @@ function ResultStep({ report, target, sourceClass, onClose }: { report?: Convert
           cites: b.undefinedCitations,
         })
       : t('a failed build')
-    const vars = { source: sourceClass, template: target ? t(target.label) : report.target, counts }
+    const vars = { source: sourceClass, template: label || report.target, counts }
     const prompt = [
       base
         ? t('ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).', {
@@ -504,12 +657,13 @@ function ResultStep({ report, target, sourceClass, onClose }: { report?: Convert
           })
         : t('ColTex converted this project from {source} to the {template} template. The build now has {counts}.', vars),
       t('Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.'),
+      options.journal || options.venue?.name ? t('The paper is to be submitted to {venue}.', { venue: options.journal || options.venue?.name || '' }) : '',
       warnings.length ? `${t('Things the converter flagged:')}\n${warnings.map(w => `- ${translateServerMessage(w.text)}`).join('\n')}` : '',
     ]
       .filter(Boolean)
       .join('\n\n')
     try {
-      sessionStorage.setItem(AI_START_KEY(report.projectId), prompt)
+      sessionStorage.setItem(AI_START_KEY(report.projectId), JSON.stringify({ text: prompt, skill: CONVERSION_SKILL }))
     } catch {}
     onClose()
     navigate(`/project/${report.projectId}`)
@@ -578,7 +732,7 @@ function ResultStep({ report, target, sourceClass, onClose }: { report?: Convert
       )}
 
       {/* Why the AI hand-off below can't be used (no provider connected, or no model allowed). */}
-      {problems && ai && !ai.available && (
+      {(problems || warnings.length > 0) && ai && !ai.available && (
         <p className="flex items-start gap-2 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs text-muted-foreground">
           <Sparkles className="mt-0.5 size-3.5 shrink-0" />
           {ai.reason ? translateServerMessage(ai.reason) : t('The AI agent is not available.')}
@@ -589,7 +743,7 @@ function ResultStep({ report, target, sourceClass, onClose }: { report?: Convert
         <Button variant="outline" onClick={onClose}>
           {t('Close')}
         </Button>
-        {problems && (
+        {(problems || warnings.length > 0) && (
           <Button variant="outline" onClick={fixWithAi} disabled={!ai?.available} className="border-primary/40 text-primary">
             <Sparkles /> {t('Open and fix with AI')}
           </Button>

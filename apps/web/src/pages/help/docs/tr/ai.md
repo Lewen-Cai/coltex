@@ -8,6 +8,7 @@ Sol çubuktaki **YZ**, YZ ajanını açar. Bir yönetici bir model hizmeti bağl
 - Derleme hatalarını açıklar veya düzeltir (günlükte de bir "YZ ile düzelt" düğmesi vardır).
 - Seçimi yeniden yazar, iyileştirir veya çevirir.
 - Projeye genel bir bakış sunar, başvurulmayan etiketleri bulur vb.
+- Düzeni kontrol etmek için PDF sayfalarına bakar; şekil ve tabloların sütunlarına sığıp sığmadığı ya da taşan denklemler gibi (görüntü görebilen modellerle).
 
 Açık dosya, seçim ve son derleme hataları mesajınıza eklenir; bir eki dışarıda bırakmak için ona tıklayın.
 
@@ -63,6 +64,7 @@ Skill, tekrar tekrar yaptığınız bir görev için bir talimat kümesidir; ör
 - **Ayarlar → YZ skills** bölümünde kişisel skills solda listelenir; talimatlarını ve başvuru dosyalarını okumak için birini seçin ya da skill yazmak üzere YZ ajanıyla bir sohbet açmak için **YZ ile oluştur** düğmesine tıklayın (kişisel skills arasından birinde **Sohbette iyileştir**, o skill hakkında bir mesaj başlatır). Sohbet yerleşik **skill-creator** adlı skill talimatlarını izler: skill ile ne yapmak istediğinizi sorar, taslağını hazırlar (yararlı olduğunda başvuru dosyalarıyla) ve bir taslağı yapıştırdığınız bir metin üzerinde deneyebilir. Taslaklar yalnızca siz kaydettiğinizde kaydedilir; zaten kullandığınız bir adla kaydetmek, değiştirmeden önce sorar. Sohbet, yeni bir sohbet başlatana kadar saklanır.
 - ColTex yerleşik skills ile gelir (**Yerleşik** altında listelenir). Onları okuyabilir ve indirebilirsiniz ama değiştiremezsiniz; aynı adlı kişisel bir skill varsa onun yerine o kullanılır.
   - **skill-creator**: skill yazma (skills sohbeti bunu izler).
+  - **template-conversion**: şablon dönüştürmeyi tamamlama: dergiyi ya da konferansı sorar, yazar yönergelerini araştırır ve makaleyi uydurur (dönüştürmeden sonra **Aç ve YZ ile düzelt** bunu başlatır).
 
 ## Kendi YZ araçlarınız (MCP)
 

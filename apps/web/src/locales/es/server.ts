@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': 'Registro de compilación',
   'Search the web for “{query}”': 'Buscar «{query}» en la web',
   'Read web page {url}': 'Leer la página web {url}',
+  'Look at page {page} of the PDF': 'Ver la página {page} del PDF',
 }
 
 export default messages

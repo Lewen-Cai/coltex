@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': 'Nhật ký biên dịch',
   'Search the web for “{query}”': 'Tìm trên web “{query}”',
   'Read web page {url}': 'Đọc trang web {url}',
+  'Look at page {page} of the PDF': 'Xem trang {page} của PDF',
 }
 
 export default messages

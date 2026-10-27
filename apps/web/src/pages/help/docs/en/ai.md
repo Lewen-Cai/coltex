@@ -8,6 +8,7 @@
 - Explains or fixes compile errors (the log has a "Fix with AI" button too).
 - Rewrites, polishes or translates the selection.
 - Gives an overview of the project, finds unreferenced labels, and so on.
+- Looks at pages of the PDF to check the layout, such as figures and tables in their columns or equations that run over (with models that can see images).
 
 The open file, the selection and recent compile errors are attached to your message; click an attachment to leave it out.
 
@@ -63,6 +64,7 @@ A skill is a set of instructions for a task you do again and again, for example 
 - In **Settings → AI skills**, your skills are listed on the left; pick one to read its instructions and reference files, or **Create with AI** to open a chat with the AI agent for writing skills (**Improve in chat** on one of your skills starts a message about it). The chat follows the built-in **skill-creator** skill: it asks how you would use the skill, drafts it (with reference files when they help), and can try a draft on text you paste. Drafts are saved only when you save them; saving one under a name you already use asks before replacing it. The chat is kept until you start a new one.
 - ColTex comes with built-in skills (listed under **Built-in**). You can read and download them but not change them; a skill of your own with the same name is used instead.
   - **skill-creator**: writing skills (the skills chat follows it).
+  - **template-conversion**: finishing a template conversion: it asks for the journal or conference, looks up its author guidelines and brings the paper in line (**Open and fix with AI** after a conversion starts it).
 
 ## Your own AI tools (MCP)
 

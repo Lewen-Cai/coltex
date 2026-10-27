@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': 'Journal de compilation',
   'Search the web for “{query}”': 'Rechercher « {query} » sur le web',
   'Read web page {url}': 'Lire la page web {url}',
+  'Look at page {page} of the PDF': 'Regarder la page {page} du PDF',
 }
 
 export default messages

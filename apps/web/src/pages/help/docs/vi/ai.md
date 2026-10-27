@@ -8,6 +8,7 @@
 - Giải thích hoặc sửa lỗi biên dịch (nhật ký cũng có nút “Sửa bằng AI”).
 - Viết lại, trau chuốt hoặc dịch đoạn đã chọn.
 - Cho cái nhìn tổng quan về dự án, tìm các nhãn không được tham chiếu, v.v.
+- Xem các trang PDF để kiểm tra bố cục, như hình và bảng có nằm trong cột không, công thức có tràn ra không (với các mô hình xem được ảnh).
 
 Tệp đang mở, vùng chọn và các lỗi biên dịch gần đây được đính kèm vào tin nhắn của bạn; nhấp vào một tệp đính kèm để bỏ nó ra.
 
@@ -63,6 +64,7 @@ Skill là một bộ hướng dẫn cho một công việc bạn làm đi làm l
 - Trong **Cài đặt → Skill AI**, các skill của bạn được liệt kê ở bên trái; chọn một skill để đọc hướng dẫn và tệp tham khảo của nó, hoặc **Tạo bằng AI** để mở cuộc trò chuyện với tác tử AI nhằm viết skill (**Cải thiện trong cuộc trò chuyện** trên một skill của bạn sẽ bắt đầu một tin nhắn về skill đó). Cuộc trò chuyện làm theo skill tích hợp sẵn **skill-creator**: nó hỏi bạn sẽ dùng skill ra sao, soạn nháp skill (kèm tệp tham khảo khi hữu ích), và có thể thử bản nháp trên đoạn văn bản bạn dán vào. Bản nháp chỉ được lưu khi bạn lưu; lưu với một tên bạn đã dùng sẽ hỏi trước khi thay thế. Cuộc trò chuyện được giữ cho đến khi bạn bắt đầu cuộc mới.
 - ColTex có sẵn các skill tích hợp (liệt kê trong **Tích hợp sẵn**). Bạn có thể đọc và tải chúng xuống nhưng không thay đổi được; một skill của riêng bạn trùng tên sẽ được dùng thay thế.
   - **skill-creator**: viết skill (cuộc trò chuyện về skill làm theo nó).
+  - **template-conversion**: hoàn tất việc chuyển mẫu: hỏi tạp chí hoặc hội nghị, tra cứu hướng dẫn tác giả và chỉnh bài cho phù hợp (**Mở và sửa bằng AI** sau khi chuyển sẽ dùng nó).
 
 ## Công cụ AI của riêng bạn (MCP)
 

@@ -48,6 +48,8 @@ Cần biết:
 
 **Chuyển sang mẫu khác…** trong menu của dự án (trong cài đặt dự án: “Chuyển sang mẫu tạp chí”) viết lại một bài báo cho tạp chí hoặc hội nghị khác: IEEE Transactions, Hội nghị IEEE, Hội nghị ACM, Tạp chí ACM, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS hoặc một article đơn giản. Mọi mẫu tích hợp đều chuyển được sang bất kỳ định dạng nào trong số này.
 
+Trong **Mẫu**, bài báo được chuyển sang một mẫu bất kỳ: một mẫu trong danh sách mẫu, một dự án của bạn (**Một dự án của tôi**), hoặc tệp zip mà tạp chí cho tải về (**Tải lên mẫu (.zip)**). Tiêu đề, tác giả, đơn vị, tóm tắt và từ khóa được ghi vào đúng chỗ mẫu có ví dụ, theo cách viết của chính mẫu, còn phần văn bản ví dụ phía sau được thay bằng bài báo của bạn. Các tệp lớp và tệp kiểu của mẫu đi kèm, và tệp chính ví dụ của mẫu được giữ lại trong dự án để tham khảo.
+
 - Tiêu đề, tác giả, đơn vị công tác, tóm tắt, các gói và tài liệu tham khảo được dựng lại trong một **dự án mới**, sau đó dự án này được biên dịch. Bản gốc vẫn giữ nguyên.
 - Bài viết theo mẫu `sn-jnl` của Springer Nature cũng đọc được, các bài theo mẫu BMC, OUP và Elsevier CAS cũng vậy: tác giả với tên và họ, đơn vị công tác, `\abstract{}` và tóm tắt có cấu trúc, từ khóa và phần tuyên bố ở cuối bài.
-- Một báo cáo liệt kê những gì đã thay đổi và những gì cần kiểm tra. AI có thể xử lý phần còn lại.
+- Báo cáo liệt kê những gì đã đổi và những gì cần kiểm tra. Nếu bản dịch có lỗi hoặc báo cáo có cảnh báo, **Mở và sửa bằng AI** mở dự án mới và tác tử AI làm theo Skill tích hợp **template-conversion**: trước tiên nó hỏi bạn định gửi bài cho tạp chí hay hội nghị nào, tra cứu hướng dẫn tác giả hiện hành, làm cho bài biên dịch được rồi chỉnh theo hướng dẫn mà không đổi nội dung. Các thay đổi của nó chờ bạn xem lại.

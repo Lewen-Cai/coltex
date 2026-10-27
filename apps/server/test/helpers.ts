@@ -158,6 +158,10 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
         ? { found: true, file: `tex/latex/booktabs/booktabs.${job.kind === 'doc' ? 'pdf' : 'sty'}`, totalLines: 3, text: '1: \\newcommand\\toprule' }
         : { found: false, text: `“${job.name}” is not installed in this TeX Live.` }
     },
+    // A three-page PDF; each page a 1×1 PNG.
+    async renderPage(job: { page: number }) {
+      return { pages: 3, png: job.page <= 3 ? 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' : null }
+    },
     async synctex(job: SynctexJob): Promise<SynctexResult> {
       return job.kind === 'code'
         ? { pdf: [{ page: 1, h: 10, v: 20, width: 30, height: 5 }] }
@@ -242,8 +246,9 @@ export async function createTestApp(options: { builtinSkills?: string } = {}) {
   })
   const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir, conversations: new ConversationStore(db), skills })
   const accounts = new AccountService(db, auth, box)
+  const templates = new TemplateService(db, store, collab)
   const app = await buildApp(
-    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), word: new WordExport({ store, collab, queue, outputsDir }), groups: new GroupService(db, notifications, { closeUser: (projectId, userId) => collab.closeUser(projectId, userId) }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
+    { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue, templates }), word: new WordExport({ store, collab, queue, outputsDir }), groups: new GroupService(db, notifications, { closeUser: (projectId, userId) => collab.closeUser(projectId, userId) }), notifications, monitor, backup, references, gitBridge, templates, linkedFiles, builds, network, signIns, places },
     { logger: false, handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
   )
   return {

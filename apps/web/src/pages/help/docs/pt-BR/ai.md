@@ -8,6 +8,7 @@
 - Explica ou corrige erros de compilação (o log também tem um botão "Corrigir com IA").
 - Reescreve, aprimora ou traduz a seleção.
 - Dá uma visão geral do projeto, encontra rótulos sem referência e assim por diante.
+- Olha páginas do PDF para conferir o layout, como figuras e tabelas nas colunas ou equações que passam da margem (com modelos que veem imagens).
 
 O arquivo aberto, a seleção e os erros de compilação recentes são anexados à sua mensagem; clique em um anexo para deixá-lo de fora.
 
@@ -63,6 +64,7 @@ Uma skill é um conjunto de instruções para uma tarefa que você faz repetidam
 - Em **Configurações → Skills de IA**, suas skills aparecem à esquerda; escolha uma para ler as instruções e os arquivos de referência, ou **Criar com IA** para abrir uma conversa com o agente de IA para escrever skills (**Melhorar na conversa**, em uma das suas skills, inicia uma mensagem sobre ela). A conversa segue a skill integrada **skill-creator**: ela pergunta como você usaria a skill, rascunha-a (com arquivos de referência quando ajudam) e pode testar um rascunho em um texto que você colar. Os rascunhos só são salvos quando você os salva; salvar um com um nome que você já usa pede confirmação antes de substituir. A conversa é mantida até você iniciar uma nova.
 - O ColTex vem com skills integradas (listadas em **Integradas**). Você pode lê-las e baixá-las, mas não alterá-las; uma skill sua com o mesmo nome é usada no lugar.
   - **skill-creator**: escrever skills (a conversa de skills segue esta).
+  - **template-conversion**: terminar uma conversão de modelo: pergunta a revista ou conferência, consulta as normas para autores e ajusta o artigo (**Abrir e corrigir com IA** após uma conversão o inicia).
 
 ## Suas próprias ferramentas de IA (MCP)
 

@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'Код журнала ACS (необязательно)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Командам из прежнего класса или исключённого пакета даны простые определения: {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX требует e-mail и место работы для каждого автора; где их не было, поставлены заглушки.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': 'Преобразовано в шаблон {name} ({cls}); пример текста шаблона заменён текстом статьи.',
+  'The template has no \\title; add the title where the journal wants it.': 'В шаблоне нет \\title; добавьте заголовок туда, где его требует журнал.',
+  'The template has no \\author; add the authors where the journal wants them.': 'В шаблоне нет \\author; добавьте авторов туда, где их требует журнал.',
+  'The paper has no authors; the template’s author commands were left empty.': 'В статье нет авторов; команды авторов в шаблоне оставлены пустыми.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'В шаблоне нет аннотации; она помещена после заголовка. Проверьте, где её хочет видеть журнал.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'В шаблоне нет ключевых слов; они помещены после аннотации обычной строкой.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'Шаблон использует biblatex; его опция natbib сохраняет \\citet и \\citep статьи.',
+  'The paper\'s definitions replace the template\'s: {list}.': 'Определения статьи заменяют одноимённые определения шаблона: {list}.',
+  'The template\'s sample {file} is kept as {to}.': 'Пример {file} из шаблона сохранён как {to}.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'В начале шаблона есть ещё {list} с примерным текстом: заполните их.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'В начале шаблона есть ещё {list} с примерным текстом: заполните его.',
+  'The template\'s publication details are kept as it has them: {list}.': 'Сведения о публикации из шаблона оставлены как есть: {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'Примечание к заголовку опущено ({note}); добавьте его так, как требует журнал, часто в благодарностях.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': 'Оставлен файл {file} статьи; копия из шаблона не добавлена.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': 'В статье нет ключевых слов; примерные ключевые слова шаблона остались: замените их.',
 }
 
 export default messages

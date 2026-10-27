@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'Código de revista de la ACS (opcional)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Se dieron definiciones sencillas a comandos que tenían la clase anterior o un paquete omitido: {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX exige un correo y una afiliación para cada autor; se pusieron marcadores donde faltaban.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': 'Convertido a la plantilla {name} ({cls}); su texto de ejemplo se sustituyó por el del artículo.',
+  'The template has no \\title; add the title where the journal wants it.': 'La plantilla no tiene \\title; añade el título donde lo pida la revista.',
+  'The template has no \\author; add the authors where the journal wants them.': 'La plantilla no tiene \\author; añade los autores donde los pida la revista.',
+  'The paper has no authors; the template’s author commands were left empty.': 'El artículo no tiene autores; los comandos de autor de la plantilla quedaron vacíos.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'La plantilla no muestra resumen; se colocó tras el título. Comprueba dónde lo quiere la revista.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'La plantilla no muestra palabras clave; se colocaron tras el resumen como una línea normal.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'La plantilla usa biblatex; su opción natbib mantiene los \\citet y \\citep del artículo.',
+  'The paper\'s definitions replace the template\'s: {list}.': 'Las definiciones del artículo sustituyen a las de la plantilla: {list}.',
+  'The template\'s sample {file} is kept as {to}.': 'El archivo de ejemplo {file} de la plantilla se conserva como {to}.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'La parte inicial de la plantilla también tiene {list}, aún con su texto de ejemplo: rellénalos.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'La parte inicial de la plantilla también tiene {list}, aún con su texto de ejemplo: rellénalo.',
+  'The template\'s publication details are kept as it has them: {list}.': 'Los datos de publicación de la plantilla se mantienen tal como están: {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'La nota del título se omitió ({note}); añádela como pida la revista, a menudo en los agradecimientos.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': 'Se conservó el {file} del artículo; la copia de la plantilla se omitió.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': 'El artículo no tiene palabras clave; siguen las de ejemplo de la plantilla: sustitúyelas.',
 }
 
 export default messages

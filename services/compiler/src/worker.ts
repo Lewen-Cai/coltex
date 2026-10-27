@@ -8,6 +8,8 @@ import {
   CleanupJob,
   CompileJob,
   OUTPUT,
+  PAGE_QUEUE,
+  PageJob,
   SYNCTEX_QUEUE,
   SynctexJob,
   TEXLIVE_QUEUE,
@@ -17,6 +19,7 @@ import {
   type WordResult,
   type CompileResult,
   type Diagnostic,
+  type PageResult,
   type SynctexResult,
   type TexLookupResult,
 } from '@coltex/shared'
@@ -25,6 +28,7 @@ import { config } from './config.ts'
 import { syncProject } from './sync.ts'
 import { runLatexmk } from './latexmk.ts'
 import { synctex } from './synctex.ts'
+import { renderPage } from './page.ts'
 import { texLookup } from './texlive.ts'
 import { reportResources } from './resources.ts'
 import { writeOverlay } from './overlay.ts'
@@ -191,6 +195,9 @@ const synctexWorker = new Worker<SynctexJob, SynctexResult>(
   { connection, concurrency: 4 },
 )
 
+// Pages of a build as images, for the AI agent to look at the layout.
+const pageWorker = new Worker<PageJob, PageResult>(PAGE_QUEUE, job => renderPage(PageJob.parse(job.data), { outputsDir: config.outputsDir }), { connection, concurrency: 2 })
+
 // The assistant's lookups in TeX Live (package sources and documentation).
 const texliveWorker = new Worker<TexLookupJob, TexLookupResult>(
   TEXLIVE_QUEUE,
@@ -225,7 +232,7 @@ const cleanupWorker = new Worker<CleanupJob>(
 const stopReporting = reportResources(connection, () => worker.concurrency)
 
 worker.on('ready', () => console.log(`[compiler] ready, ${slots.describe()}`))
-for (const w of [worker, synctexWorker, texliveWorker, wordWorker, cleanupWorker]) {
+for (const w of [worker, synctexWorker, pageWorker, texliveWorker, wordWorker, cleanupWorker]) {
   w.on('failed', (job, err) => console.error(`[compiler] ${w.name} job ${job?.id} failed:`, err))
 }
 
@@ -233,7 +240,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, async () => {
     stopReporting()
     stopSlots()
-    await Promise.all([worker.close(), synctexWorker.close(), texliveWorker.close(), wordWorker.close(), cleanupWorker.close()])
+    await Promise.all([worker.close(), synctexWorker.close(), pageWorker.close(), texliveWorker.close(), wordWorker.close(), cleanupWorker.close()])
     await connection.quit()
     process.exit(0)
   })

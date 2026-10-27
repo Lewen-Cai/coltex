@@ -5,17 +5,17 @@ import { bibtexCompatible, missingTheorems, stripBiblatexPreamble, theoremsForLl
 import type { Affiliation, Author, Conversion, ConversionNote, Paper, TargetId, TargetOptions, UsedPackage } from './types.ts'
 
 /** A value inside key={...}: braces balanced as written, but never empty. */
-const kv = (s: string | undefined) => (s ?? '').trim()
+export const kv = (s: string | undefined) => (s ?? '').trim()
 
 /** The affiliation as one line: as written, since the structured fields may leave parts out (street, state). */
-function affiliationText(a: Affiliation): string {
+export function affiliationText(a: Affiliation): string {
   return a.raw || [a.department, a.institution, a.city, a.country].filter(Boolean).join(', ')
 }
 
 /** A name with a comma (a degree: "Jane Doe, MD") braced, so lists of names still split right. */
-const braced = (name: string) => (name.includes(',') ? `{${name}}` : name)
+export const braced = (name: string) => (name.includes(',') ? `{${name}}` : name)
 
-function joinNames(names: string[]): string {
+export function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('')
   if (names.length === 2) return `${names[0]} and ${names[1]}`
   return `${names.slice(0, -1).join(', ')}, and ${names.at(-1)}`
@@ -24,7 +24,7 @@ function joinNames(names: string[]): string {
 /** Surname particles that belong to the family name ("van der Berg", "de la Cruz"). */
 const PARTICLES = new Set(['van', 'von', 'der', 'den', 'de', 'del', 'della', 'di', 'da', 'dos', 'du', 'la', 'le', 'ten', 'ter', 'bin', 'al'])
 
-function shortAuthors(authors: Author[]): string {
+export function shortAuthors(authors: Author[]): string {
   const last = (n: string) => {
     const words = n.replace(/,.*$/, '').trim().split(/\s+/)
     let i = words.length - 1
@@ -38,7 +38,7 @@ function shortAuthors(authors: Author[]): string {
 }
 
 /** Authors grouped by their (first) affiliation, in order of appearance. */
-function groupByAffiliation(paper: Paper): { affiliation?: Affiliation; authors: Author[] }[] {
+export function groupByAffiliation(paper: Paper): { affiliation?: Affiliation; authors: Author[] }[] {
   const groups: { affiliation?: Affiliation; authors: Author[] }[] = []
   for (const a of paper.authors) {
     const aff = paper.affiliations.find(x => x.id === a.affiliations[0])
@@ -49,7 +49,7 @@ function groupByAffiliation(paper: Paper): { affiliation?: Affiliation; authors:
   return groups
 }
 
-const affiliationsOf = (paper: Paper, a: Author) => a.affiliations.flatMap(id => paper.affiliations.filter(x => x.id === id))
+export const affiliationsOf = (paper: Paper, a: Author) => a.affiliations.flatMap(id => paper.affiliations.filter(x => x.id === id))
 
 // ---------------------------------------------------------------------------
 // Front matter per target family
@@ -107,7 +107,7 @@ function ieee(paper: Paper, conference: boolean, o: TargetOptions): Parts {
 }
 
 /** Split \thanks{...} out of a title. */
-function splitTitleNotes(title: string): { title: string; notes: string[] } {
+export function splitTitleNotes(title: string): { title: string; notes: string[] } {
   const m = mask(title)
   const hits = findMacros(m, title, 'thanks', { args: 1 })
   return { title: cut(title, hits).trim(), notes: hits.map(h => h.args[0]?.inner ?? '') }

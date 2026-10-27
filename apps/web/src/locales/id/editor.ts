@@ -597,6 +597,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Direset pada {date}',
   'Resize the message box': 'Ubah tinggi kotak pesan',
   'The AI agent can use the web, so its changes wait for your review.': 'Agen AI dapat memakai web, jadi perubahannya menunggu tinjauan Anda.',
+  'Journals': 'Jurnal',
+  'Templates': 'Templat',
+  'Upload a template (.zip)': 'Unggah templat (.zip)',
+  'One of my projects': 'Salah satu proyek saya',
+  'Search projects…': 'Cari proyek…',
+  'No project found.': 'Proyek tidak ditemukan.',
+  'Search templates…': 'Cari templat…',
+  'The paper is to be submitted to {venue}.': 'Makalah akan dikirim ke {venue}.',
 }
 
 export default messages

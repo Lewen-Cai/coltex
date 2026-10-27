@@ -231,7 +231,7 @@ export const CLASS_LOADS: Record<string, string[]> = {
 }
 
 /** Packages that fight with a journal class's own layout or front matter. */
-const LAYOUT = ['geometry', 'fullpage', 'a4wide', 'vmargin', 'savetrees', 'titling', 'fancyhdr', 'titlesec', 'setspace', 'abstract', 'authblk', 'sectsty', 'anysize', 'layout']
+export const LAYOUT = ['geometry', 'fullpage', 'a4wide', 'vmargin', 'savetrees', 'titling', 'fancyhdr', 'titlesec', 'setspace', 'abstract', 'authblk', 'sectsty', 'anysize', 'layout']
 
 export const DROP: Record<string, string[]> = {
   IEEEtran: [...LAYOUT, 'natbib', 'biblatex', 'times', 'mathptmx', 'caption', 'appendix'],

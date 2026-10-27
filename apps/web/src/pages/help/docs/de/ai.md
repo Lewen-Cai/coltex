@@ -8,6 +8,7 @@
 - Erklärt oder behebt Kompilierfehler (das Protokoll hat dafür auch eine Schaltfläche „Mit KI beheben“).
 - Formuliert die Auswahl um, überarbeitet oder übersetzt sie.
 - Gibt einen Überblick über das Projekt, findet nicht referenzierte Labels und vieles mehr.
+- Sieht sich Seiten der PDF an, um das Layout zu prüfen, etwa Abbildungen und Tabellen in ihren Spalten oder überlaufende Formeln (mit Modellen, die Bilder sehen können).
 
 Die geöffnete Datei, die Auswahl und aktuelle Kompilierfehler werden Ihrer Nachricht angehängt; klicken Sie auf einen Anhang, um ihn wegzulassen.
 
@@ -63,6 +64,7 @@ Ein Skill ist eine Sammlung von Anweisungen für eine Aufgabe, die Sie immer wie
 - Unter **Einstellungen → KI-Skills** sind Ihre Skills links aufgelistet; wählen Sie einen aus, um seine Anweisungen und Referenzdateien zu lesen, oder **Mit KI erstellen**, um einen Chat mit dem KI-Agenten zum Schreiben von Skills zu öffnen (**Im Chat verbessern** bei einem Ihrer Skills beginnt eine Nachricht dazu). Der Chat folgt dem integrierten Skill **skill-creator**: Er fragt, wie Sie den Skill verwenden würden, entwirft ihn (mit Referenzdateien, wenn sie helfen) und kann einen Entwurf an eingefügtem Text ausprobieren. Entwürfe werden erst gespeichert, wenn Sie sie speichern; wenn Sie einen unter einem bereits verwendeten Namen speichern, wird vor dem Ersetzen nachgefragt. Der Chat bleibt erhalten, bis Sie einen neuen beginnen.
 - ColTex bringt integrierte Skills mit (aufgelistet unter **Integriert**). Sie können sie lesen und herunterladen, aber nicht ändern; ein eigener Skill mit gleichem Namen wird stattdessen verwendet.
   - **skill-creator**: Skills schreiben (der Skills-Chat folgt ihm).
+  - **template-conversion**: eine Vorlagenkonvertierung abschließen: Er fragt nach der Zeitschrift oder Konferenz, sucht deren Autorenrichtlinien und passt den Artikel an (**Öffnen und mit KI beheben** nach einer Konvertierung startet ihn).
 
 ## Ihre eigenen KI-Tools (MCP)
 

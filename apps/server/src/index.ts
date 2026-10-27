@@ -123,8 +123,9 @@ const linkedFiles = new LinkedFileService({
 })
 const references = new ReferenceService({ db, box, store, collab, history, projects })
 const aiSessions = new AiSessionManager({ ai, store, queue, collab, history, projects, references, linkedFiles, outputsDir: config.outputsDir, conversations: new ConversationStore(db), skills })
+const templates = new TemplateService(db, store, collab)
 const app = await buildApp(
-  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue }), word: new WordExport({ store, collab, queue, outputsDir: config.outputsDir }), groups: new GroupService(db, notifications, { closeUser: (projectId, userId) => collab.closeUser(projectId, userId) }), notifications, monitor, backup, references, gitBridge, templates: new TemplateService(db, store, collab), linkedFiles, builds, network, signIns, places },
+  { db, auth, accounts, projects, store, queue, collab, ai, aiSessions, skills, skillChats, history, review: new ReviewService({ db, collab, history, notifications }), convert: new ConvertService({ store, collab, projects, history, queue, templates }), word: new WordExport({ store, collab, queue, outputsDir: config.outputsDir }), groups: new GroupService(db, notifications, { closeUser: (projectId, userId) => collab.closeUser(projectId, userId) }), notifications, monitor, backup, references, gitBridge, templates, linkedFiles, builds, network, signIns, places },
   { handleUpgrade: (req, socket, head) => collab.handleUpgrade(req, socket, head) },
 )
 

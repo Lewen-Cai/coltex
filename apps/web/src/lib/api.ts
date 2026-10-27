@@ -48,7 +48,8 @@ import type {
   WordExportRequest,
   ConvertMetadata,
   ConvertOptions,
-  ConvertTargetId,
+  ConvertInto,
+  ConvertUpload,
   ShareRole,
   TemplateAudience,
   TemplateBody,
@@ -501,8 +502,15 @@ export const api = {
   exportWord: (id: string, body: WordExportRequest) => request<WordExportReady>(`/api/projects/${id}/export/word`, json('POST', body)),
   wordDownloadUrl: (id: string, exportId: string) => `/api/projects/${id}/export/word/${exportId}`,
   analyzeConvert: (id: string) => request<ConvertAnalysis>(`/api/projects/${id}/convert`),
-  convert: (id: string, body: { target: ConvertTargetId; name: string; metadata: ConvertMetadata; options: ConvertOptions }) =>
+  convert: (id: string, body: { target: ConvertInto; name: string; metadata: ConvertMetadata; options: ConvertOptions }) =>
     request<ConvertReport>(`/api/projects/${id}/convert`, json('POST', body)),
+  /** A template zip to convert into, held on the server for the conversion. */
+  convertUpload: (id: string, file: File, name: string) =>
+    request<ConvertUpload>(`/api/projects/${id}/convert/template?name=${encodeURIComponent(name)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/zip' },
+      body: file,
+    }),
 
   // ---- Review: comments and tracked changes ----
   review: (id: string) => request<ReviewState>(`/api/projects/${id}/review`),

@@ -1,13 +1,25 @@
 import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import type { ConvertAnalysis, ConvertReport } from '@coltex/shared'
+import yazl from 'yazl'
+import type { ConvertAnalysis, ConvertReport, ConvertUpload } from '@coltex/shared'
 import { numbersSections } from '../src/convert/word.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
 
 const fixture = (name: string) => fs.readFileSync(new URL(`../../../packages/convert/test/fixtures/${name}`, import.meta.url), 'utf8')
+
+function zipOf(files: Record<string, string>): Promise<Buffer> {
+  const zip = new yazl.ZipFile()
+  for (const [p, data] of Object.entries(files)) zip.addBuffer(Buffer.from(data), p)
+  zip.end()
+  return new Promise(resolve => {
+    const chunks: Buffer[] = []
+    zip.outputStream.on('data', (c: Buffer) => chunks.push(c))
+    zip.outputStream.on('end', () => resolve(Buffer.concat(chunks)))
+  })
+}
 
 describe('journal template conversion', () => {
   let t: TestApp
@@ -80,6 +92,57 @@ describe('journal template conversion', () => {
     assert.equal(res.statusCode, 201)
     const mine = (await call(viewer, 'GET', '/projects')).json() as { id: string; role: string }[]
     assert.equal(mine.find(p => p.id === res.json().projectId)?.role, 'owner')
+  })
+
+  test('into a template from the list: its sample stays beside the paper', async () => {
+    const a = (await call(owner, 'GET', `/projects/${projectId}/convert`)).json() as ConvertAnalysis
+    const res = await call(owner, 'POST', `/projects/${projectId}/convert`, { target: { template: 'elsevier-cas' }, name: 'Edge paper (CAS)', metadata: a.metadata })
+    assert.equal(res.statusCode, 201)
+    const report = res.json() as ConvertReport
+    assert.equal(report.documentClass, 'cas-sc')
+    const files = (await call(owner, 'GET', `/projects/${report.projectId}`)).json().files.map((f: { path: string }) => f.path)
+    assert.ok(files.includes('main-template.tex') && files.includes('references.bib'), files.join(', '))
+    const converted = (await call(owner, 'GET', `/projects/${report.projectId}/files/main.tex`)).body
+    assert.match(converted, /\\documentclass\[[^\]]*\]\{cas-sc\}/)
+    assert.match(converted, /\\author\[1\]\{Dan Brown\}/)
+    assert.match(converted, /\\affiliation\[1\]\{organization=\{Dept\. of Electrical Engineering, Stanford University\}/)
+    assert.ok(!converted.includes('Title of the Paper'), 'the sample title is gone')
+  })
+
+  test('into an uploaded journal zip, for the person who sent it only', async () => {
+    const dir = '../../../packages/convert/test/fixtures/templates/byot-journal/'
+    const read = (f: string) => fs.readFileSync(new URL(dir + f, import.meta.url), 'utf8')
+    const zip = await zipOf({ 'byot/main.tex': read('main.tex'), 'byot/byot-journal.cls': read('byot-journal.cls'), 'byot/sn-bibliography.bib': read('sn-bibliography.bib') })
+    const up = await t.app.inject({ method: 'POST', url: `/api/projects/${projectId}/convert/template?name=Test%20Journal`, headers: { cookie: owner, 'content-type': 'application/zip' }, payload: zip })
+    assert.equal(up.statusCode, 201)
+    const held = up.json() as ConvertUpload
+    assert.equal(held.documentClass, 'byot-journal')
+    const a = (await call(owner, 'GET', `/projects/${projectId}/convert`)).json() as ConvertAnalysis
+    const theirs = await call(viewer, 'POST', `/projects/${projectId}/convert`, { target: { upload: held.upload }, name: 'Not mine', metadata: a.metadata })
+    assert.equal(theirs.statusCode, 400)
+    const res = await call(owner, 'POST', `/projects/${projectId}/convert`, { target: { upload: held.upload }, name: 'Edge paper (journal)', metadata: a.metadata })
+    assert.equal(res.statusCode, 201)
+    const report = res.json() as ConvertReport
+    assert.equal(report.target, 'Test Journal')
+    const files = (await call(owner, 'GET', `/projects/${report.projectId}`)).json().files.map((f: { path: string }) => f.path)
+    // The zip's one top folder goes, as for an imported project.
+    assert.ok(files.includes('byot-journal.cls') && files.includes('main-template.tex'), files.join(', '))
+    const converted = (await call(owner, 'GET', `/projects/${report.projectId}/files/main.tex`)).body
+    assert.match(converted, /\\author\[1\]\{\\fnm\{Dan\} \\sur\{Brown\}\}/)
+    assert.match(converted, /\\affil\[1\]\{\\orgdiv\{Dept\. of Electrical Engineering\}, \\orgname\{Stanford University\}/)
+    assert.match(converted, /\\keywords\{edge computing, inference, latency\}/)
+  })
+
+  test("into one of the person's projects, not someone else's", async () => {
+    const tpl = (await call(owner, 'POST', '/projects', { name: 'My journal template' })).json().id
+    await call(owner, 'PUT', `/projects/${tpl}/files/main.tex`, '\\documentclass{article}\n\\begin{document}\n\\title{Sample}\n\\author{Someone}\n\\maketitle\n\\section{Intro}\nText.\n\\end{document}\n', 'text/plain')
+    const a = (await call(owner, 'GET', `/projects/${projectId}/convert`)).json() as ConvertAnalysis
+    assert.equal((await call(viewer, 'POST', `/projects/${projectId}/convert`, { target: { project: tpl }, name: 'X', metadata: a.metadata })).statusCode, 404)
+    const res = await call(owner, 'POST', `/projects/${projectId}/convert`, { target: { project: tpl }, name: 'Edge paper (mine)', metadata: a.metadata })
+    assert.equal(res.statusCode, 201)
+    const converted = (await call(owner, 'GET', `/projects/${(res.json() as ConvertReport).projectId}/files/main.tex`)).body
+    assert.match(converted, /\\title\{Fast Edge Inference/)
+    assert.ok(!converted.includes('Someone'))
   })
 
   test('a main file without \\begin{document} is reported, not crashed on', async () => {

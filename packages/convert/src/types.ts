@@ -51,7 +51,12 @@ export type Paper = {
   notes: string[]
   /** Target options found in the source (e.g. elsarticle's \journal, acmart's \acmConference). */
   hints: TargetOptions
+  /** How the source wrote its authors (for a template target: how to write them back). */
+  authorStyle?: AuthorStyle
 }
+
+/** The ways of writing authors and affiliations the extractor reads. */
+export type AuthorStyle = 'jmlr' | 'apa' | 'asme' | 'jacow' | 'marks' | 'nrc' | 'ieee' | 'lncs' | 'labelled' | 'authblk' | 'sequence' | 'block' | 'none'
 
 /** Fields a target needs beyond the paper itself (venue, journal, review mode). */
 export type TargetOptions = {

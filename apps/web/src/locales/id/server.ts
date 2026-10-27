@@ -160,6 +160,7 @@ const messages: Record<string, string> = {
   'Compile log': 'Log kompilasi',
   'Search the web for “{query}”': 'Cari di web “{query}”',
   'Read web page {url}': 'Baca halaman web {url}',
+  'Look at page {page} of the PDF': 'Lihat halaman {page} PDF',
 }
 
 export default messages

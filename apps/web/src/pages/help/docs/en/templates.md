@@ -48,6 +48,8 @@ Good to know:
 
 **Convert to template…** in a project's menu (in the project settings: "Convert to a journal template") rewrites a paper for another journal or conference: IEEE Transactions, IEEE Conference, ACM Conference, ACM Journal, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS or a plain article. Every built-in template can be converted to each of these.
 
+Under **Templates** the paper goes into any template instead: one from the template list, one of your projects (**One of my projects**), or the zip a journal offers for download (**Upload a template (.zip)**). The paper's title, authors, affiliations, abstract and keywords are written where the template has its sample ones, in the template's own way, and the sample text after them is replaced by your paper. The template's class and style files come along, and its sample main file stays in the project for reference.
+
 - The title, authors, affiliations, abstract, packages and bibliography are rebuilt in a **new project**, which is then compiled. The original stays as it is.
 - Papers written in Springer Nature's `sn-jnl` template are read too, as are BMC, OUP and Elsevier CAS ones: authors with first names and surnames, affiliations, `\abstract{}` and structured abstracts, keywords and the back matter.
-- A report lists what was changed and what to check. The AI can take care of what remains.
+- A report lists what was changed and what to check. If the build has errors or the report has warnings, **Open and fix with AI** opens the new project with the AI agent following the built-in **template-conversion** Skill: it first asks which journal or conference you're submitting to, looks up its current author guidelines, makes the paper build, and brings it in line with the guidelines without changing what it says. Its changes wait for your review.

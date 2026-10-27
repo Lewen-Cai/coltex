@@ -8,6 +8,7 @@
 - Menjelaskan atau memperbaiki galat kompilasi (log juga memiliki tombol "Perbaiki dengan AI").
 - Menulis ulang, memoles, atau menerjemahkan bagian yang dipilih.
 - Memberikan gambaran umum proyek, menemukan label yang tidak pernah dirujuk, dan sebagainya.
+- Melihat halaman PDF untuk memeriksa tata letak, seperti gambar dan tabel di kolomnya atau persamaan yang melewati batas (dengan model yang dapat melihat gambar).
 
 File yang terbuka, bagian yang dipilih, dan galat kompilasi terbaru dilampirkan ke pesan Anda; klik sebuah lampiran untuk tidak menyertakannya.
 
@@ -63,6 +64,7 @@ Skill adalah sekumpulan instruksi untuk tugas yang Anda lakukan berulang kali, m
 - Di **Pengaturan → Skill AI**, skill Anda tercantum di sebelah kiri; pilih salah satunya untuk membaca instruksi dan file referensinya, atau **Buat dengan AI** untuk membuka obrolan dengan agen AI guna menulis skill (**Perbaiki di obrolan** pada salah satu skill Anda memulai pesan tentang skill itu). Obrolan ini mengikuti skill bawaan **skill-creator**: agen menanyakan bagaimana Anda akan menggunakan skill itu, membuat drafnya (dengan file referensi jika membantu), dan dapat mencoba draf pada teks yang Anda tempel. Draf hanya disimpan ketika Anda menyimpannya; menyimpan dengan nama yang sudah Anda gunakan akan meminta konfirmasi sebelum mengganti. Obrolan disimpan sampai Anda memulai yang baru.
 - ColTex dilengkapi skill bawaan (tercantum di bawah **Bawaan**). Anda dapat membaca dan mengunduhnya tetapi tidak dapat mengubahnya; skill Anda sendiri dengan nama yang sama akan digunakan sebagai gantinya.
   - **skill-creator**: menulis skill (obrolan skill mengikutinya).
+  - **template-conversion**: menyelesaikan konversi templat: menanyakan jurnal atau konferensi, mencari pedoman penulisnya, dan menyesuaikan makalah (**Buka dan perbaiki dengan AI** setelah konversi memulainya).
 
 ## Alat AI Anda sendiri (MCP)
 

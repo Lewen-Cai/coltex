@@ -33,7 +33,7 @@ export type Deps = {
   accounts: AccountService
   projects: ProjectService
   store: ProjectStore
-  queue: Pick<CompileQueue, 'compile' | 'synctex' | 'stats' | 'texLookup'>
+  queue: Pick<CompileQueue, 'compile' | 'synctex' | 'stats' | 'texLookup' | 'renderPage'>
   collab: CollabHooks
   ai: AiService
   aiSessions: AiSessionManager

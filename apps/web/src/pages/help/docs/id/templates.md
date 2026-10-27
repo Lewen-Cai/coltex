@@ -48,6 +48,8 @@ Perlu diketahui:
 
 **Konversi ke templat…** di menu proyek (di pengaturan proyek: "Konversi ke templat jurnal") menulis ulang makalah untuk jurnal atau konferensi lain: IEEE Transactions, IEEE Conference, ACM Conference, ACM Journal, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS, atau artikel polos. Setiap templat bawaan dapat dikonversi ke salah satu dari ini.
 
+Di **Templat**, makalah masuk ke templat apa pun: templat dari daftar templat, salah satu proyek Anda (**Salah satu proyek saya**), atau zip yang disediakan jurnal untuk diunduh (**Unggah templat (.zip)**). Judul, penulis, afiliasi, abstrak, dan kata kunci ditulis di tempat contoh templat berada, dengan cara templat itu sendiri, dan teks contoh sesudahnya diganti dengan makalah Anda. Berkas kelas dan gaya templat ikut dibawa, dan berkas utama contohnya tetap ada di proyek sebagai rujukan.
+
 - Judul, penulis, afiliasi, abstrak, paket, dan bibliografi dibangun ulang dalam **proyek baru**, yang kemudian dikompilasi. Proyek asli tetap seperti semula.
 - Makalah yang ditulis dengan templat `sn-jnl` dari Springer Nature juga dibaca, begitu pula templat BMC, OUP, dan Elsevier CAS: penulis dengan nama depan dan nama belakang, afiliasi, `\abstract{}` dan abstrak terstruktur, kata kunci, serta bagian akhir berisi pernyataan.
-- Sebuah laporan mencantumkan apa yang diubah dan apa yang perlu diperiksa. AI dapat menangani sisanya.
+- Laporan mencantumkan apa yang diubah dan apa yang perlu diperiksa. Jika kompilasi ada galat atau laporan ada peringatan, **Buka dan perbaiki dengan AI** membuka proyek baru dengan agen AI mengikuti Skill bawaan **template-conversion**: pertama ia menanyakan jurnal atau konferensi tujuan Anda, mencari pedoman penulis terbarunya, membuat makalah dapat dikompilasi, lalu menyesuaikannya dengan pedoman tanpa mengubah isinya. Perubahannya menunggu tinjauan Anda.

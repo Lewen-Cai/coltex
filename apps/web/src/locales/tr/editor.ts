@@ -597,6 +597,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Sıfırlanma: {date}',
   'Resize the message box': 'Mesaj kutusunu yeniden boyutlandır',
   'The AI agent can use the web, so its changes wait for your review.': 'YZ ajanı web’i kullanabildiği için değişiklikleri incelemenizi bekler.',
+  'Journals': 'Dergiler',
+  'Templates': 'Şablonlar',
+  'Upload a template (.zip)': 'Şablon yükle (.zip)',
+  'One of my projects': 'Projelerimden biri',
+  'Search projects…': 'Proje ara…',
+  'No project found.': 'Proje bulunamadı.',
+  'Search templates…': 'Şablon ara…',
+  'The paper is to be submitted to {venue}.': 'Makale {venue} için gönderilecek.',
 }
 
 export default messages

@@ -598,6 +598,14 @@ const messages: Record<string, string> = {
   'Resets on {date}': '{date}重置',
   'Resize the message box': '调整输入框高度',
   'The AI agent can use the web, so its changes wait for your review.': 'AI 智能体可以联网，所以它的修改都要等你审阅后再应用。',
+  'Journals': '期刊',
+  'Templates': '模板',
+  'Upload a template (.zip)': '上传模板（.zip）',
+  'One of my projects': '我的某个项目',
+  'Search projects…': '搜索项目…',
+  'No project found.': '没有找到项目。',
+  'Search templates…': '搜索模板…',
+  'The paper is to be submitted to {venue}.': '论文准备投稿到 {venue}。',
 }
 
 export default messages

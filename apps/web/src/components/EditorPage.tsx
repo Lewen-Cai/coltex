@@ -882,7 +882,13 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
     } catch {}
     if (!prompt) return
     aiStart.current = true
-    void compile().then(build => sendToAi(prompt!, { errors: true, selection: false }, undefined, build))
+    // A conversion hands over its message and the skill to follow.
+    let start: { text: string; skill?: string } = { text: prompt }
+    try {
+      const parsed = JSON.parse(prompt) as { text?: unknown; skill?: unknown }
+      if (typeof parsed.text === 'string') start = { text: parsed.text, skill: typeof parsed.skill === 'string' ? parsed.skill : undefined }
+    } catch {}
+    void compile().then(build => sendToAi(start.text, { errors: true, selection: false }, undefined, build, start.skill))
     // Runs once the project and the assistant are ready.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aiAvailable, canEdit, project, projectId])

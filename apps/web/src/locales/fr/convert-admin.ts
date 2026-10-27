@@ -380,6 +380,21 @@ const messages: Record<string, string> = {
   'ACS journal code (optional)': 'Code de revue ACS (facultatif)',
   'Gave simple definitions to commands the old class or a left-out package provided: {list}.': 'Définitions simples données aux commandes que fournissaient l’ancienne classe ou un package écarté : {list}.',
   'AASTeX requires an email and an affiliation for every author; placeholders were put where they were missing.': 'AASTeX exige une adresse e-mail et une affiliation pour chaque auteur ; des valeurs provisoires ont été mises là où elles manquaient.',
+  'Converted into the template {name} ({cls}); its sample text was replaced by the paper\'s.': 'Converti dans le modèle {name} ({cls}) ; son texte d’exemple a été remplacé par celui de l’article.',
+  'The template has no \\title; add the title where the journal wants it.': 'Le modèle n’a pas de \\title ; ajoutez le titre là où la revue le demande.',
+  'The template has no \\author; add the authors where the journal wants them.': 'Le modèle n’a pas de \\author ; ajoutez les auteurs là où la revue les demande.',
+  'The paper has no authors; the template’s author commands were left empty.': 'L’article n’a pas d’auteurs ; les commandes d’auteur du modèle sont restées vides.',
+  'The template shows no abstract; it was put after the title. Check where the journal wants it.': 'Le modèle ne montre pas de résumé ; il a été placé après le titre. Vérifiez où la revue le veut.',
+  'The template shows no keywords; they were put after the abstract as a plain line.': 'Le modèle ne montre pas de mots-clés ; ils ont été placés après le résumé sur une ligne simple.',
+  'The template uses biblatex; its natbib option keeps the paper\'s \\citet and \\citep.': 'Le modèle utilise biblatex ; son option natbib conserve les \\citet et \\citep de l’article.',
+  'The paper\'s definitions replace the template\'s: {list}.': 'Les définitions de l’article remplacent celles du modèle : {list}.',
+  'The template\'s sample {file} is kept as {to}.': 'Le fichier d’exemple {file} du modèle est conservé sous le nom {to}.',
+  'The template\'s front matter also has {list}, still with its sample text: fill them in.': 'La partie liminaire du modèle contient aussi {list}, encore avec leur texte d’exemple : remplissez-les.',
+  'The template\'s front matter also has {list}, still with its sample text: fill it in.': 'La partie liminaire du modèle contient aussi {list}, encore avec son texte d’exemple : remplissez-le.',
+  'The template\'s publication details are kept as it has them: {list}.': 'Les informations de publication du modèle sont conservées telles quelles : {list}.',
+  'The title\'s note was left out ({note}); add it the way the journal wants, often in the acknowledgments.': 'La note du titre a été omise ({note}) ; ajoutez-la comme la revue le demande, souvent dans les remerciements.',
+  'Kept the paper\'s {file}; the template\'s copy was left out.': 'Le fichier {file} de l’article est conservé ; la copie du modèle a été omise.',
+  'The paper has no keywords; the template\'s sample keywords are still there: replace them.': 'L’article n’a pas de mots-clés ; ceux d’exemple du modèle sont toujours là : remplacez-les.',
 }
 
 export default messages
