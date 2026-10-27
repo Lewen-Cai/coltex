@@ -337,6 +337,18 @@ Text.
   ])
   assert.equal(oup.affiliations[0]!.raw, 'Department of Genetics, University of Oxford, South Parks Road, OX1 3QU, UK')
   assert.equal(oup.affiliations[1]!.city, 'Heidelberg')
+  // Parts written without a tag keep their place, and an untagged institution is the institution.
+  const loose = extractPaper(`\\documentclass{oup-authoring-template}
+\\begin{document}
+\\title{T}
+\\author[1]{Ann Lee}
+\\address[1]{\\orgdiv{Faculty of Science}, Northbridge University, \\orgaddress{Eastwick, EW 4021, \\country{Freedonia}}}
+\\abstract{A.}
+\\maketitle
+Text.
+\\end{document}`).affiliations[0]!
+  assert.equal(loose.raw, 'Faculty of Science, Northbridge University, Eastwick, EW 4021, Freedonia')
+  assert.deepEqual([loose.department, loose.institution, loose.country], ['Faculty of Science', 'Northbridge University', 'Freedonia'])
   assert.equal(oup.abstract, '\\textbf{Motivation} Genomes are long.\\\\ \\textbf{Results} We read them.')
   assert.deepEqual(oup.keywords, ['genomics', 'alignment'])
   assert.equal(oup.hints.journal, 'Bioinformatics')

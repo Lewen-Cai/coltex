@@ -233,6 +233,39 @@ function keyvalAffiliation(inner: string): { raw: string; structured: Omit<Affil
   return { raw, structured }
 }
 
+/** The parts of a tagged affiliation (BMC writes \\cny for the country). */
+const AFFILIATION_TAGS = ['orgdiv', 'orgname', 'orgaddress', 'street', 'city', 'postcode', 'state', 'country', 'cny']
+
+/**
+ * A tagged affiliation as text, in the order it was written: each part's text where its tag
+ * was, and what was written between the tags kept (an institution or an address that has no
+ * tag of its own, as OUP's samples allow). `loose` is only the text outside every tag.
+ */
+function untagged(s: string): { text: string; loose: string } {
+  const m = mask(s)
+  const hits = AFFILIATION_TAGS.flatMap(name => findMacros(m, s, name, { args: 1 }))
+    .filter(h => h.args[0])
+    .sort((a, b) => a.start - b.start)
+  let text = ''
+  let loose = ''
+  let from = 0
+  for (const h of hits) {
+    // Parts inside another (\city in \orgaddress) come with it.
+    if (h.start < from) continue
+    text += `${s.slice(from, h.start)}, ${untagged(h.args[0]!.inner).text}, `
+    loose += `${s.slice(from, h.start)}, `
+    from = h.end
+  }
+  return { text: text + s.slice(from), loose: loose + s.slice(from) }
+}
+
+/** Comma-separated text with each part trimmed and empty ones (from tags side by side) left out. */
+const commaList = (s: string) =>
+  plain(s.replace(/\\email\s*\{[^{}]*\}/g, '').replace(/\\\\|\\newline\b/g, ','))
+    .split(',')
+    .map(x => x.trim())
+    .filter(Boolean)
+
 /**
  * Springer Nature, OUP and BMC affiliations, tagged part by part:
  * \orgdiv{..}, \orgname{..}, \orgaddress{\street{..}, \city{..}, \postcode{..}, \state{..}, \country{..}}
@@ -249,14 +282,15 @@ function taggedAffiliation(inner: string): { raw: string; structured: Omit<Affil
     }
     return undefined
   }
+  const { text, loose } = untagged(inner)
   const structured = {
     department: get('orgdiv'),
-    institution: get('orgname'),
+    // An institution written without \orgname: the text between the tags.
+    institution: get('orgname') ?? commaList(loose)[0],
     city: get('city'),
     country: get('country', 'cny'),
   }
-  const parts = [structured.department, structured.institution, get('street'), structured.city, get('state'), get('postcode'), structured.country]
-  return { raw: parts.filter(Boolean).join(', '), structured }
+  return { raw: commaList(text).join(', '), structured }
 }
 
 /** One affiliation in whatever form it was written: acmart's fields, key=value, tagged parts, or text lines. */

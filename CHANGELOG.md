@@ -38,6 +38,7 @@ Export to Word, the AI agent on the web, 60 templates across twelve fields, grou
 
 ### Fixed
 
+- An affiliation written partly outside its tags (an institution without `\orgname`, an address written in `\orgaddress` as plain text, as OUP's and Springer Nature's classes allow) kept only its tagged parts in Word export and conversion. The rest is now kept, in the order it was written.
 - When the AI agent reached the limit of steps for one message, it stopped without a word. It now tells you what it did and what is left (and if it doesn't, a note says it stopped and that “continue” lets it go on).
 - Links in the PDF preview did nothing. Citations and references to figures, tables, equations and sections now jump to their place, and web addresses open in a new tab.
 - A process a build left running could keep the compiler waiting for that build forever.
