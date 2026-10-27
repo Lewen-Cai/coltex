@@ -71,6 +71,7 @@ Some journals take only Word files. **Export to Wordâ€¦** in a project's menu (â
 
 - The title page comes from the document: title, authors, affiliations, corresponding author, abstract and keywords, for the classes template conversion reads (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Maths become Word equations. Word numbers the figures and tables, PDF and EPS figures become pictures, and numbered equations keep their numbers, so `\eqref` still points to them.
+- Tables become Word tables you can edit, merged cells included. The reference list stays where the bibliography was, under its heading (References, or the document's own), and citations link to their entries.
 - **Citation style**: **Like the document** follows the document's bibliography style. You can also pick APA, Vancouver, AMA, IEEE, Nature or Chicago, or a `.csl` file uploaded to the project.
 - **Word template**: upload a journal's Word template (`.docx`) to the project and pick it here; the document takes its styles. The field appears when the project has a `.docx` file.
 - Check the result before sending it: your own macros and complex tables may need fixing in Word. TikZ drawings aren't converted: compile them to images and include those instead.

@@ -23,7 +23,8 @@ export type Author = {
 
 export type Bibliography =
   | { kind: 'bibtex'; files: string[]; style?: string }
-  | { kind: 'biblatex'; files: string[]; options?: string }
+  /** `title`: the heading \printbibliography was given. */
+  | { kind: 'biblatex'; files: string[]; options?: string; title?: string }
   /** A thebibliography environment; it stays in the body. */
   | { kind: 'inline' }
   | { kind: 'none' }

@@ -14,10 +14,16 @@ local function exists(p)
   return false
 end
 
+-- The reader adds \graphicspath's folders to the resource path; pandoc would embed a PDF
+-- found there as it is, which Word shows as "This picture can't be displayed".
 local function locate(src)
-  if exists(src) then return src end
-  for _, ext in ipairs(LOOK_FOR) do
-    if exists(src .. ext) then return src .. ext end
+  local dirs = src:sub(1, 1) == '/' and { '' } or PANDOC_STATE.resource_path
+  for _, dir in ipairs(dirs) do
+    local base = (dir == '' or dir == '.') and src or dir:gsub('/*$', '/') .. src
+    if exists(base) then return base end
+    for _, ext in ipairs(LOOK_FOR) do
+      if exists(base .. ext) then return base .. ext end
+    end
   end
   -- Pictures TeX finds in TeX Live, like mwe's example-image the templates use.
   if not src:find('/') then
@@ -30,7 +36,7 @@ local function locate(src)
 end
 
 local function to_png(path)
-  if converted[path] then return converted[path] end
+  if converted[path] ~= nil then return converted[path] end
   count = count + 1
   local base = '.coltex-word/figure-' .. count
   pandoc.system.make_directory('.coltex-word', true)
@@ -42,7 +48,7 @@ local function to_png(path)
       pandoc.pipe('gs', { '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE', '-dEPSCrop', '-sDEVICE=png16m', '-r200', '-o', base .. '.png', path }, '')
     end
   end)
-  converted[path] = ok and exists(base .. '.png') and base .. '.png' or path
+  converted[path] = ok and exists(base .. '.png') and base .. '.png' or false
   return converted[path]
 end
 
@@ -51,7 +57,13 @@ function Image(img)
   if not found then return nil end
   local ext = (found:match('%.([%w]+)$') or ''):lower()
   if ext == 'pdf' or ext == 'eps' then
-    img.src = to_png(found)
+    local png = to_png(found)
+    -- A PDF left in the document is a broken picture in Word: say which one instead.
+    if not png then
+      pandoc.log.warn('Could not turn ' .. found .. ' into a picture for Word')
+      return pandoc.Strong({ pandoc.Str('[Figure ' .. found .. ' could not be converted]') })
+    end
+    img.src = png
   elseif RASTER[ext] then
     img.src = found
   end
@@ -114,8 +126,39 @@ local function place_abstract(doc)
   return doc
 end
 
+-- citeproc (run before this filter) puts the reference list at the end, without a heading.
+-- The export's wrapper writes the heading where the bibliography was, then this mark.
+local REFERENCES_MARK = 'COLTEX-REFERENCES-HERE'
+
+local function place_references(doc)
+  local refs, at
+  for i, block in ipairs(doc.blocks) do
+    if block.t == 'Div' and block.identifier == 'refs' then refs = i end
+    if block.t == 'Para' and pandoc.utils.stringify(block) == REFERENCES_MARK then at = i end
+  end
+  if at then
+    if not refs then
+      -- Nothing was cited: no list, and no heading over nothing.
+      doc.blocks:remove(at)
+      if at > 1 and doc.blocks[at - 1].t == 'Header' then doc.blocks:remove(at - 1) end
+      return doc
+    end
+    local list = doc.blocks:remove(refs)
+    if refs < at then at = at - 1 end
+    doc.blocks[at] = list
+    return doc
+  end
+  -- A document pandoc read as it is: a heading unless one comes right before the list.
+  if refs and not (refs > 1 and doc.blocks[refs - 1].t == 'Header') then
+    doc.blocks:insert(refs, pandoc.Header(1, 'References', pandoc.Attr('', { 'unnumbered' })))
+    return doc
+  end
+  return nil
+end
+
 return {
   { Image = Image, Math = number_math },
   { Link = ref_link },
   { Pandoc = place_abstract },
+  { Pandoc = place_references },
 }

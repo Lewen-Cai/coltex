@@ -71,6 +71,7 @@ Algunas revistas solo aceptan archivos de Word. **Exportar a Word…** en el men
 
 - La portada sale del documento: título, autores, afiliaciones, autor de correspondencia, resumen y palabras clave, para las clases que lee la conversión de plantillas (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Las fórmulas se convierten en ecuaciones de Word. Word numera las figuras y las tablas, las figuras PDF y EPS pasan a ser imágenes y las ecuaciones numeradas conservan su número, así que `\eqref` sigue apuntando a ellas.
+- Las tablas se convierten en tablas de Word editables, con las celdas combinadas incluidas. La lista de referencias queda donde estaba la bibliografía, bajo su título (References o el del propio documento), y las citas enlazan con sus entradas.
 - **Estilo de citas**: **Como en el documento** sigue el estilo bibliográfico del documento. También puedes elegir APA, Vancouver, AMA, IEEE, Nature o Chicago, o un archivo `.csl` subido al proyecto.
 - **Plantilla de Word**: sube al proyecto la plantilla de Word (`.docx`) de la revista y elígela aquí; el documento toma sus estilos. El campo aparece cuando el proyecto tiene un archivo `.docx`.
 - Revisa el resultado antes de enviarlo: tus propias macros y las tablas complejas pueden necesitar retoques en Word. Los dibujos TikZ no se convierten: compílalos como imágenes e incluye esas imágenes.

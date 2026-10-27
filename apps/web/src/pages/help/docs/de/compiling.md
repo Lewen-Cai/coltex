@@ -71,6 +71,7 @@ Manche Zeitschriften nehmen nur Word-Dateien an. **Als Word exportieren…** im 
 
 - Die Titelseite stammt aus dem Dokument: Titel, Autoren, Affiliationen, korrespondierender Autor, Abstract und Schlüsselwörter, für die Klassen, die die Vorlagenumwandlung liest (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Formeln werden zu Word-Formeln. Word nummeriert Abbildungen und Tabellen, PDF- und EPS-Abbildungen werden zu Bildern, und nummerierte Gleichungen behalten ihre Nummern, sodass `\eqref` weiter auf sie verweist.
+- Tabellen werden zu bearbeitbaren Word-Tabellen, verbundene Zellen eingeschlossen. Das Literaturverzeichnis steht dort, wo die Bibliografie war, unter seiner Überschrift (References oder der des Dokuments), und Zitate verlinken auf ihre Einträge.
 - **Zitierstil**: **Wie im Dokument** folgt dem Literaturstil des Dokuments. Sie können auch APA, Vancouver, AMA, IEEE, Nature oder Chicago wählen oder eine `.csl`-Datei, die Sie ins Projekt hochgeladen haben.
 - **Word-Vorlage**: Laden Sie die Word-Vorlage (`.docx`) einer Zeitschrift ins Projekt hoch und wählen Sie sie hier; das Dokument übernimmt ihre Formatvorlagen. Das Feld erscheint, wenn das Projekt eine `.docx`-Datei enthält.
 - Prüfen Sie das Ergebnis vor dem Einreichen: eigene Makros und komplexe Tabellen müssen in Word eventuell nachbearbeitet werden. TikZ-Zeichnungen werden nicht umgewandelt: Kompilieren Sie sie zu Bildern und binden Sie diese stattdessen ein.

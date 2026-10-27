@@ -71,6 +71,7 @@ Alguns periódicos só aceitam arquivos do Word. **Exportar para o Word…** no 
 
 - A página de rosto vem do documento: título, autores, afiliações, autor correspondente, resumo e palavras-chave, para as classes que a conversão de modelo lê (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - As fórmulas viram equações do Word. O Word numera as figuras e tabelas, figuras em PDF e EPS viram imagens e as equações numeradas mantêm seus números, então `\eqref` continua apontando para elas.
+- As tabelas viram tabelas do Word editáveis, com as células mescladas. A lista de referências fica onde estava a bibliografia, sob o seu título (References, ou o do próprio documento), e as citações levam às suas entradas.
 - **Estilo de citação**: **Igual ao documento** segue o estilo bibliográfico do documento. Você também pode escolher APA, Vancouver, AMA, IEEE, Nature ou Chicago, ou um arquivo `.csl` enviado ao projeto.
 - **Modelo do Word**: envie ao projeto o modelo do Word (`.docx`) de um periódico e escolha-o aqui; o documento passa a usar os estilos dele. O campo aparece quando o projeto tem um arquivo `.docx`.
 - Confira o resultado antes de enviar: suas próprias macros e tabelas complexas podem precisar de ajustes no Word. Desenhos TikZ não são convertidos: compile-os como imagens e inclua essas imagens no lugar.

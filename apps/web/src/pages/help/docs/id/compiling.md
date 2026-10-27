@@ -71,6 +71,7 @@ Beberapa jurnal hanya menerima file Word. **Ekspor ke Word…** di menu proyek (
 
 - Halaman judul diambil dari dokumen: judul, penulis, afiliasi, penulis korespondensi, abstrak, dan kata kunci, untuk kelas yang dibaca oleh konversi templat (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Rumus menjadi persamaan Word. Gambar dan tabel diberi nomor oleh Word, gambar PDF dan EPS diubah menjadi gambar biasa, dan persamaan bernomor tetap mempertahankan nomornya sehingga `\eqref` tetap merujuk ke sana.
+- Tabel menjadi tabel Word yang dapat diedit, termasuk sel yang digabung. Daftar pustaka tetap di tempat bibliografi semula, di bawah judulnya (References, atau judul dari dokumen), dan sitasi tertaut ke entrinya.
 - **Gaya sitasi**: **Sama seperti dokumen** mengikuti gaya bibliografi dokumen. Anda juga dapat memilih APA, Vancouver, AMA, IEEE, Nature, atau Chicago, atau file `.csl` yang diunggah ke proyek.
 - **Templat Word**: unggah templat Word (`.docx`) dari jurnal ke proyek dan pilih di sini; dokumen akan memakai gayanya. Kolom ini muncul jika proyek memiliki file `.docx`.
 - Periksa hasilnya sebelum mengirim: makro buatan sendiri dan tabel yang rumit mungkin perlu diperbaiki di Word. Gambar TikZ tidak dikonversi: kompilasi menjadi gambar terlebih dahulu dan sertakan gambar itu sebagai gantinya.

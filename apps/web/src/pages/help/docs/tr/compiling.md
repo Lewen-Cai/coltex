@@ -71,6 +71,7 @@ Bazı dergiler yalnızca Word dosyası kabul eder. Proje listesinde bir projenin
 
 - Başlık sayfası belgeden alınır: başlık, yazarlar, kurumlar, sorumlu yazar, özet ve anahtar kelimeler; şablon dönüştürmenin okuyabildiği sınıflar için (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Matematik ifadeleri Word denklemlerine dönüşür. Şekilleri ve tabloları Word numaralandırır, PDF ve EPS şekiller resme dönüşür, numaralı denklemler numaralarını korur; böylece `\eqref` onları göstermeye devam eder.
+- Tablolar, birleştirilmiş hücreleri de içeren düzenlenebilir Word tablolarına dönüşür. Kaynakça, bibliyografyanın bulunduğu yerde kendi başlığıyla (References ya da belgenin kendi başlığı) kalır ve atıflar ilgili girdilere bağlanır.
 - **Kaynak gösterme stili**: **Belgedeki gibi**, belgenin kaynakça stiline uyar. APA, Vancouver, AMA, IEEE, Nature veya Chicago'yu ya da projeye yüklediğiniz bir `.csl` dosyasını da seçebilirsiniz.
 - **Word şablonu**: Bir derginin Word şablonunu (`.docx`) projeye yükleyip burada seçin; belge onun stillerini alır. Bu alan, projede bir `.docx` dosyası olduğunda görünür.
 - Göndermeden önce sonucu kontrol edin: kendi makrolarınız ve karmaşık tablolar Word'de düzeltme gerektirebilir. TikZ çizimleri dönüştürülmez: önce onları resim olarak derleyin ve yerlerine bu resimleri koyun.

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import yazl from 'yazl'
 import type { ConvertAnalysis, ConvertReport, ConvertUpload } from '@coltex/shared'
-import { numbersSections } from '../src/convert/word.ts'
+import { extractPaper } from '@coltex/convert'
+import { numbersSections, wordWrapper } from '../src/convert/word.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -164,7 +165,9 @@ describe('journal template conversion', () => {
     assert.match(wrapper, /\\begin\{abstract\}/)
     assert.ok(wrapper.indexOf('COLTEX-ABSTRACT-HERE') > wrapper.indexOf('\\maketitle'), 'the abstract is placed after the affiliations')
     assert.equal(job.numberSections, true)
-    assert.match(wrapper, /\\bibliography\{refs\}/)
+    // The reference list gets LaTeX's heading where the bibliography was.
+    assert.match(wrapper, /\\providecommand\{\\refname\}\{References\}/)
+    assert.match(wrapper, /\\section\*\{\\refname\}\n\n\\bibliography\{refs\}\n\nCOLTEX-REFERENCES-HERE/)
     assert.equal(job.csl, 'ieee', 'IEEEtran references come out numbered')
 
     const { id } = res.json() as { id: string }
@@ -179,6 +182,22 @@ describe('journal template conversion', () => {
     assert.equal(t.wordJobs.at(-1)!.csl, 'vancouver')
     const missing = await call(viewer, 'POST', `/projects/${projectId}/export/word`, { reference: 'journal.docx' })
     assert.equal(missing.statusCode, 400, 'a Word template must be a file of the project')
+  })
+
+  test("Word export: the reference list's heading is the author's own, biblatex's title, or \\refname", () => {
+    const paper = (body: string, preamble = '') => wordWrapper(extractPaper(`\\documentclass{article}\n${preamble}\\begin{document}\n\\title{T}\\maketitle\nText \\cite{k}.\n${body}\n\\end{document}\n`))
+    const own = paper('\\section*{Works cited}\n\\bibliographystyle{plain}\n\\bibliography{refs}')
+    assert.match(own, /\\section\*\{Works cited\}\s*\\bibliography\{refs\}\n\nCOLTEX-REFERENCES-HERE/)
+    assert.equal(own.match(/\\section\*/g)?.length, 1)
+    const titled = paper('\\printbibliography[heading=bibintoc,title={Sources}]', '\\usepackage{biblatex}\n\\addbibresource{refs.bib}\n')
+    assert.match(titled, /\\section\*\{Sources\}\n\nCOLTEX-REFERENCES-HERE/)
+    // A document without a bibliography gets no heading.
+    assert.doesNotMatch(paper(''), /\\section\*\{\\refname\}|COLTEX-REFERENCES-HERE/)
+  })
+
+  test('Word export: a single affiliation keeps its first word', () => {
+    const wrapper = wordWrapper(extractPaper('\\documentclass{article}\n\\usepackage{authblk}\n\\title{T}\n\\author[1]{Ann Author}\n\\affil[1]{Dept. of Testing, Example University}\n\\begin{document}\n\\maketitle\nText.\n\\end{document}\n'))
+    assert.match(wrapper, /\\noindent Dept\. of Testing/)
   })
 
   test('Word export numbers sections only when the document does', () => {

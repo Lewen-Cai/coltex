@@ -71,6 +71,7 @@ Certaines revues n’acceptent que des fichiers Word. **Exporter vers Word…** 
 
 - La page de titre vient du document : titre, auteurs, affiliations, auteur correspondant, résumé et mots-clés, pour les classes que lit la conversion de modèle (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Les formules deviennent des équations Word. Word numérote les figures et les tableaux, les figures PDF et EPS deviennent des images, et les équations numérotées gardent leur numéro, donc `\eqref` y renvoie toujours.
+- Les tableaux deviennent des tableaux Word modifiables, cellules fusionnées comprises. La liste des références reste à la place de la bibliographie, sous son titre (References, ou celui du document), et les citations renvoient à leurs entrées.
 - **Style de citation** : **Comme le document** suit le style bibliographique du document. Vous pouvez aussi choisir APA, Vancouver, AMA, IEEE, Nature ou Chicago, ou un fichier `.csl` téléversé dans le projet.
 - **Modèle Word** : téléversez le modèle Word (`.docx`) d’une revue dans le projet et choisissez-le ici ; le document prend ses styles. Le champ apparaît quand le projet contient un fichier `.docx`.
 - Vérifiez le résultat avant de l’envoyer : vos propres macros et les tableaux complexes peuvent demander des retouches dans Word. Les dessins TikZ ne sont pas convertis : compilez-les en images et incluez ces images à la place.

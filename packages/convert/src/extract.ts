@@ -926,7 +926,13 @@ export function extractPaper(input: string, read?: (path: string) => string | un
   const files = (s: string) => s.split(',').map(f => clean(f).replace(/\.bib$/, '')).filter(Boolean)
   const marks: { at: number; text: string }[] = []
   if (biblatex) {
-    bibliography = { kind: 'biblatex', files: [...resources.flatMap(r => files(r.args[0]?.inner ?? '')), ...bibCmds.flatMap(b => files(b.args[0]?.inner ?? ''))], options: biblatex.options }
+    const title = /(?:^|,)\s*title\s*=\s*(\{(?:[^{}]|\{[^{}]*\})*\}|[^,]+)/.exec(prints[0]?.opts[0]?.inner ?? '')?.[1]?.trim()
+    bibliography = {
+      kind: 'biblatex',
+      files: [...resources.flatMap(r => files(r.args[0]?.inner ?? '')), ...bibCmds.flatMap(b => files(b.args[0]?.inner ?? ''))],
+      options: biblatex.options,
+      ...(title ? { title: title.replace(/^\{([\s\S]*)\}$/, '$1') } : {}),
+    }
     resources.forEach(remove)
     prints.forEach((p, i) => (i === 0 ? marks.push({ at: p.start, text: BIB_MARK }) : null))
     prints.forEach(remove)

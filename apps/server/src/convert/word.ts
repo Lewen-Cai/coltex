@@ -15,6 +15,8 @@ const KEEP_MS = 10 * 60_000
 const WRAPPER = '.coltex-word.tex'
 /** Where the abstract goes; pandoc/word.lua moves it there from Word's title block. */
 const ABSTRACT_MARK = 'COLTEX-ABSTRACT-HERE'
+/** Where the reference list goes; citeproc puts it at the end, pandoc/word.lua moves it here. */
+const REFERENCES_MARK = 'COLTEX-REFERENCES-HERE'
 
 export type WordExportReady = { id: string; warnings: string[] }
 
@@ -120,7 +122,7 @@ export function wordWrapper(paper: Paper): string {
   if (paper.affiliations.length) {
     front.push(
       paper.affiliations
-        .map((a, i) => `\\noindent${paper.affiliations.length > 1 ? `\\textsuperscript{${i + 1}}` : ''}${a.raw}`)
+        .map((a, i) => `\\noindent ${paper.affiliations.length > 1 ? `\\textsuperscript{${i + 1}}` : ''}${a.raw}`)
         .join('\n\n'),
     )
   }
@@ -134,8 +136,14 @@ export function wordWrapper(paper: Paper): string {
   const files = bib.kind === 'bibtex' || bib.kind === 'biblatex' ? bib.files : []
   // The extractor marks where the acknowledgements and the bibliography were; they go back there.
   const ack = paper.acknowledgments?.trim() ? `\\section*{Acknowledgements}\n${paper.acknowledgments.trim()}` : ''
-  const references = bib.kind === 'bibtex' && files.length ? `\\bibliography{${files.join(',')}}` : ''
   let body = paper.body.trim()
+  // A heading, as LaTeX gives the list (pandoc writes none), unless the author wrote one just before it.
+  const before = body.includes(BIB_MARK) ? body.slice(0, body.indexOf(BIB_MARK)) : body
+  const headed = /\\(?:section|chapter)\*?\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}\s*$/.test(before)
+  const heading = headed ? '' : `\\section*{${bib.kind === 'biblatex' && bib.title ? bib.title : '\\refname'}}`
+  const references = files.length
+    ? [heading, bib.kind === 'bibtex' ? `\\bibliography{${files.join(',')}}` : '', REFERENCES_MARK].filter(Boolean).join('\n\n')
+    : ''
   const place = (mark: string, text: string) => {
     if (!body.includes(mark)) return text
     body = body.replace(mark, () => text)
@@ -147,6 +155,8 @@ export function wordWrapper(paper: Paper): string {
     '\\documentclass{article}',
     // Table rules of journal classes (OUP, Springer Nature) that pandoc doesn't know.
     '\\providecommand{\\botrule}{\\bottomrule}',
+    // The reference list's heading; the document may rename it.
+    '\\providecommand{\\refname}{References}',
     paper.preamble.trim(),
     ...(bib.kind === 'biblatex' ? files.map(f => `\\addbibresource{${f}}`) : []),
     paper.title ? `\\title{${paper.title}}` : '',

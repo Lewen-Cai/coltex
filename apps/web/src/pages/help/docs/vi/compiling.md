@@ -71,6 +71,7 @@ Một số tạp chí chỉ nhận tệp Word. **Xuất sang Word…** trong men
 
 - Trang tiêu đề lấy từ chính tài liệu: tiêu đề, tác giả, đơn vị công tác, tác giả liên hệ, tóm tắt và từ khóa, với các lớp mà tính năng chuyển mẫu đọc được (Springer Nature `sn-jnl`, Elsevier, Elsevier CAS, OUP, BMC, IEEE, ACM, LNCS, REVTeX, `article`).
 - Công thức toán trở thành phương trình Word. Word đánh số hình và bảng, hình PDF và EPS được chuyển thành ảnh, còn phương trình có số vẫn giữ số của mình nên `\eqref` vẫn trỏ đúng.
+- Bảng trở thành bảng Word có thể chỉnh sửa, kể cả các ô đã gộp. Danh mục tài liệu tham khảo nằm ở chỗ của phần thư mục, dưới tiêu đề của nó (References hoặc tiêu đề do tài liệu đặt), và các trích dẫn liên kết đến mục tương ứng.
 - **Kiểu trích dẫn**: **Giống tài liệu** theo kiểu tài liệu tham khảo mà tài liệu đang dùng. Bạn cũng có thể chọn APA, Vancouver, AMA, IEEE, Nature hoặc Chicago, hay một tệp `.csl` đã tải lên dự án.
 - **Mẫu Word**: tải mẫu Word (`.docx`) của tạp chí lên dự án rồi chọn ở đây; tài liệu sẽ dùng các kiểu định dạng của mẫu đó. Mục này chỉ hiện khi dự án có tệp `.docx`.
 - Hãy kiểm tra kết quả trước khi gửi: macro tự định nghĩa và bảng phức tạp có thể cần chỉnh lại trong Word. Hình vẽ TikZ không được chuyển đổi: hãy biên dịch chúng thành ảnh rồi chèn ảnh đó vào.

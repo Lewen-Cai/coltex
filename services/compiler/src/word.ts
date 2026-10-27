@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { WORD_CITATION_STYLES, type WordJob, type WordResult } from '@coltex/shared'
 import { syncProject } from './sync.ts'
 import { writeOverlay } from './overlay.ts'
+import { prepareSources } from './word-source.ts'
 import { childEnv, killUser, ownTree, ownWorkDir, projectUser, runProcess, serverUser, type RunResult, type User } from './sandbox.ts'
 
 const PANDOC_DIR = fileURLToPath(new URL('../pandoc/', import.meta.url))
@@ -44,6 +45,7 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
     await fs.rm(scratch, { recursive: true, force: true })
     await syncProject(srcDir, scratch)
     await writeOverlay(scratch, job.overlay)
+    await prepareSources(scratch)
     const user = projectUser(job.projectId)
     await ownWorkDir(scratch, user)
     const entry = inside(scratch, job.entry)
@@ -58,11 +60,14 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
       '--standalone',
       ...(job.numberSections ? ['--number-sections'] : []),
       '--citeproc',
+      // Citations link to their entries, as hyperref makes them in the PDF.
+      '--metadata=link-citations=true',
       `--lua-filter=${path.join(PANDOC_DIR, 'word.lua')}`,
       `--resource-path=.${path.delimiter}${scratch}`,
       `--output=${written}`,
     ]
-    if (job.reference) args.push(`--reference-doc=${inside(scratch, job.reference)}`)
+    // Without a journal's template, ColTex's: pandoc's own styles with black headings (its are blue).
+    args.push(`--reference-doc=${job.reference ? inside(scratch, job.reference) : path.join(PANDOC_DIR, 'reference.docx')}`)
     if (job.csl) {
       const builtin = (WORD_CITATION_STYLES as readonly string[]).includes(job.csl)
       args.push(`--csl=${builtin ? path.join(PANDOC_DIR, 'csl', `${job.csl}.csl`) : inside(scratch, job.csl)}`)
@@ -78,7 +83,8 @@ export async function toWord(job: WordJob, dirs: { projectsDir: string; workDir:
     const warnings = run.output
       .split('\n')
       .filter(l => l.startsWith('[WARNING]'))
-      .map(l => l.replace(/^\[WARNING\]\s*/, ''))
+      // The filter's own warnings come with its location, which says nothing to the author.
+      .map(l => l.replace(/^\[WARNING\]\s*/, '').replace(/^Scripting warning at \S+ line \d+ column \d+: /, ''))
       .slice(0, 50)
     return { exportId: job.exportId, file: `${EXPORTS}/${file}`, warnings }
   } finally {
