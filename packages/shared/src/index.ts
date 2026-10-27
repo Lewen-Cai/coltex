@@ -267,12 +267,13 @@ export const SignInEvent = z.object({
 export type SignInEvent = z.infer<typeof SignInEvent>
 
 /** Newest first; `before` (an event's `at`) pages back. */
-export const SignInEventPage = z.object({ events: z.array(SignInEvent), hasMore: z.boolean() })
+/** One page of sign-ins, newest first: `page` counts from 1, `total` is every event the filter matches. */
+export const SignInEventPage = z.object({ events: z.array(SignInEvent), page: z.number().int(), pageSize: z.number().int(), total: z.number().int() })
 export type SignInEventPage = z.infer<typeof SignInEventPage>
 export const SignInEventQuery = z.object({
   user: z.string().max(64).optional(),
   failed: z.stringbool().optional(),
-  before: z.iso.datetime().optional(),
+  page: z.coerce.number().int().min(1).max(10_000).default(1),
 })
 
 /** A device someone is signed in on (a session), as the system administrator sees it. */

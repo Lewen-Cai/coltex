@@ -16,13 +16,13 @@ const SessionParams = UserParams.extend({ sessionId: z.string().min(1).max(64) }
  * unlocks accounts and addresses (user's decision 2026-10-24).
  */
 export const signInRoutes: FastifyPluginAsyncZod<Deps> = async (app, { db, signIns, places }) => {
-  app.get('/me/sign-ins', { schema: { querystring: z.object({ before: z.iso.datetime().optional() }), response: { 200: SignInEventPage } } }, async req =>
-    signIns.events({ userId: requireUser(req).id, before: req.query.before }),
+  app.get('/me/sign-ins', { schema: { querystring: SignInEventQuery.pick({ page: true }), response: { 200: SignInEventPage } } }, async req =>
+    signIns.events({ userId: requireUser(req).id, page: req.query.page }),
   )
 
   app.get('/admin/sign-ins', { schema: { querystring: SignInEventQuery, response: { 200: SignInEventPage } } }, async req => {
     requireAdmin(req)
-    return signIns.events({ userId: req.query.user, failed: req.query.failed, before: req.query.before })
+    return signIns.events({ userId: req.query.user, failed: req.query.failed, page: req.query.page })
   })
 
   app.get('/admin/sign-ins/blocks', { schema: { response: { 200: SignInBlocks } } }, async req => {

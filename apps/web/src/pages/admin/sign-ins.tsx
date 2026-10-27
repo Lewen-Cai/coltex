@@ -141,7 +141,7 @@ export function AdminSignInsPage() {
 
   const person = useMemo(() => users?.find(u => u.id === userId), [users, userId])
   const locked = !!blocks?.accounts.some(a => a.id === userId)
-  const load = useCallback((before?: string) => api.signIns({ user: userId, failed, before }), [userId, failed])
+  const load = useCallback((page: number) => api.signIns({ user: userId, failed, page }), [userId, failed])
 
   const unlock = async () => {
     try {

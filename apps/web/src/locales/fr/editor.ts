@@ -59,6 +59,7 @@ const messages: Record<string, string> = {
   Typesetting: 'Composition',
   Compiled: 'Compilé',
   'Timed out': 'Délai dépassé',
+  'Build failed': 'Échec de la compilation',
   Failed: 'Échec',
   '{seconds} s': '{seconds} s',
   'All {count}': 'Tout ({count})',

@@ -59,6 +59,7 @@ const messages: Record<string, string> = {
   Typesetting: 'Dizgi',
   Compiled: 'Derlendi',
   'Timed out': 'Zaman aşımı',
+  'Build failed': 'Derleme başarısız',
   Failed: 'Başarısız',
   '{seconds} s': '{seconds} sn',
   'All {count}': 'Tümü ({count})',

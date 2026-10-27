@@ -39,7 +39,7 @@ export function LogPanel({ result, rawLogUrl, onJump, onAskAi, canFix = true }: 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-card px-3 py-2">
         <Badge variant={ok ? 'outline' : 'destructive'} className="gap-1">
           {ok ? <CircleCheck className="text-emerald-600 dark:text-emerald-400" /> : <FileWarning />}
-          {ok ? t('Compiled') : result.status === 'timeout' ? t('Timed out') : t('Failed')}
+          {ok ? t('Compiled') : result.status === 'timeout' ? t('Timed out') : t('Build failed')}
         </Badge>
         <span className="text-sm text-muted-foreground">{t('{seconds} s', { seconds: (result.durationMs / 1000).toFixed(1) })}</span>
         <ToggleGroup type="single" size="sm" value={filter} onValueChange={v => v && setFilter(v as Filter)} className="ml-2">

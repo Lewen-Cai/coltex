@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { and, desc, eq, gt, inArray, lt, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, gt, inArray, lt } from 'drizzle-orm'
 import { customAlphabet } from 'nanoid'
 import type { Redis } from 'ioredis'
 import { createChallenge, verifySolution } from 'altcha-lib/v1'
@@ -22,6 +22,9 @@ const newId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16)
 const MINUTE = 60
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
+
+/** Sign-ins per page of the lists (Settings → Account, the administrator's page). */
+export const SIGN_IN_PAGE_SIZE = 10
 
 /**
  * The rules (user's decision 2026-10-24). An address is familiar for an account when the account
@@ -414,24 +417,33 @@ export class SignInGuard {
     })
   }
 
-  /** Newest first, 50 at a time: one person's, or (for the system administrator) everyone's. */
-  async events(filter: { userId?: string; failed?: boolean; before?: string }): Promise<SignInEventPage> {
-    const limit = 50
-    const where: (SQL | undefined)[] = [
+  /**
+   * Newest first, a numbered page at a time: one person's, or (for the system administrator)
+   * everyone's. Ties in time are ordered by id, so no event falls between two pages.
+   */
+  async events(filter: { userId?: string; failed?: boolean; page?: number }): Promise<SignInEventPage> {
+    const pageSize = SIGN_IN_PAGE_SIZE
+    const page = filter.page ?? 1
+    const where = and(
       filter.userId ? eq(signInEvents.userId, filter.userId) : undefined,
       filter.failed ? inArray(signInEvents.outcome, ['failure', 'two_factor_failure', 'refused', 'locked', 'ip_blocked']) : undefined,
-      filter.before ? lt(signInEvents.createdAt, new Date(filter.before)) : undefined,
-    ]
-    const rows = await this.db
-      .select({ e: signInEvents, name: user.name })
-      .from(signInEvents)
-      .leftJoin(user, eq(user.id, signInEvents.userId))
-      .where(and(...where))
-      .orderBy(desc(signInEvents.createdAt))
-      .limit(limit + 1)
+    )
+    const [rows, [counted]] = await Promise.all([
+      this.db
+        .select({ e: signInEvents, name: user.name })
+        .from(signInEvents)
+        .leftJoin(user, eq(user.id, signInEvents.userId))
+        .where(where)
+        .orderBy(desc(signInEvents.createdAt), desc(signInEvents.id))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      this.db.select({ total: count() }).from(signInEvents).where(where),
+    ])
     return {
-      hasMore: rows.length > limit,
-      events: rows.slice(0, limit).map(({ e, name }): SignInEvent => ({
+      page,
+      pageSize,
+      total: counted?.total ?? 0,
+      events: rows.map(({ e, name }): SignInEvent => ({
         id: e.id,
         at: e.createdAt.toISOString(),
         outcome: e.outcome,

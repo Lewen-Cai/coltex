@@ -161,12 +161,11 @@ export const api = {
   suspendUser: (id: string, suspended: boolean) => request<void>(`/api/admin/users/${id}/suspended`, json('PUT', { suspended })),
   deleteUser: (id: string) => request<void>(`/api/admin/users/${id}`, { method: 'DELETE' }),
   // ---- Sign-ins (one's own; everyone's, devices and unlocking for the system administrator) ----
-  mySignIns: (before?: string) => request<SignInEventPage>(`/api/me/sign-ins${before ? `?${new URLSearchParams({ before })}` : ''}`),
-  signIns: (q: { user?: string; failed?: boolean; before?: string }) => {
-    const params = new URLSearchParams()
+  mySignIns: (page: number) => request<SignInEventPage>(`/api/me/sign-ins?${new URLSearchParams({ page: String(page) })}`),
+  signIns: (q: { user?: string; failed?: boolean; page: number }) => {
+    const params = new URLSearchParams({ page: String(q.page) })
     if (q.user) params.set('user', q.user)
     if (q.failed) params.set('failed', 'true')
-    if (q.before) params.set('before', q.before)
     return request<SignInEventPage>(`/api/admin/sign-ins?${params}`)
   },
   signInBlocks: () => request<SignInBlocks>('/api/admin/sign-ins/blocks'),

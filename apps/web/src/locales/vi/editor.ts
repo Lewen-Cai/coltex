@@ -59,6 +59,7 @@ const messages: Record<string, string> = {
   Typesetting: 'Dàn trang',
   Compiled: 'Đã biên dịch',
   'Timed out': 'Hết thời gian',
+  'Build failed': 'Biên dịch thất bại',
   Failed: 'Thất bại',
   '{seconds} s': '{seconds} giây',
   'All {count}': 'Tất cả {count}',

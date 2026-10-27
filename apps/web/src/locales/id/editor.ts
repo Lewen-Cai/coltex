@@ -59,6 +59,7 @@ const messages: Record<string, string> = {
   Typesetting: 'Penataan huruf',
   Compiled: 'Berhasil dikompilasi',
   'Timed out': 'Waktu habis',
+  'Build failed': 'Kompilasi gagal',
   Failed: 'Gagal',
   '{seconds} s': '{seconds} dtk',
   'All {count}': 'Semua {count}',

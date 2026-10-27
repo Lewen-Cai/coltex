@@ -215,7 +215,7 @@ function PasswordCard() {
 }
 
 export function AccountSettingsPage({ user }: { user: SessionUser }) {
-  const loadSignIns = useCallback((before?: string) => api.mySignIns(before), [])
+  const loadSignIns = useCallback((page: number) => api.mySignIns(page), [])
   return (
     <>
       {/* Side by side, one height: the shorter card keeps its button at the bottom. */}

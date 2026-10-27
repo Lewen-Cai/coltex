@@ -7,7 +7,7 @@ import path from 'node:path'
 import { solveChallenge } from 'altcha-lib/v1'
 import type { SignInChallenge, SignInEventPage } from '@coltex/shared'
 import { IpPlaces, placeParts } from '../src/auth/ip-place.ts'
-import { RULES } from '../src/auth/sign-in-guard.ts'
+import { RULES, SIGN_IN_PAGE_SIZE } from '../src/auth/sign-in-guard.ts'
 import { cookieFrom, createTestApp } from './helpers.ts'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -184,10 +184,10 @@ describe('sign-ins', () => {
     assert.equal(backupCodes.length, 10)
     const secret = new URL(totpURI).searchParams.get('secret')!
     // Turning it on means confirming one code while signed in; that is not a sign-in.
-    const before = (await events(admin, `/api/admin/sign-ins?user=${aliceId}`)).events.length
+    const before = (await events(admin, `/api/admin/sign-ins?user=${aliceId}`)).total
     const confirm = await t.app.inject({ method: 'POST', url: '/api/auth/two-factor/verify-totp', headers: { cookie: cookieFrom(enable) || alice, origin: ORIGIN }, payload: { code: totp(secret) } })
     assert.equal(confirm.statusCode, 200)
-    assert.equal((await events(admin, `/api/admin/sign-ins?user=${aliceId}`)).events.length, before)
+    assert.equal((await events(admin, `/api/admin/sign-ins?user=${aliceId}`)).total, before)
 
     const step = await signIn('alice@lab.test', PASSWORD, '192.168.1.20')
     assert.equal(step.statusCode, 200)
@@ -219,6 +219,24 @@ describe('sign-ins', () => {
     assert.equal(own.filter((s: { current: boolean }) => s.current).length, 1)
     assert.equal((await t.app.inject({ method: 'DELETE', url: `/api/admin/users/${aliceId}/sessions`, headers: { cookie: admin } })).statusCode, 204)
     assert.deepEqual((await t.app.inject({ method: 'GET', url: `/api/admin/users/${aliceId}/sessions`, headers: { cookie: admin } })).json(), [])
+  })
+
+  test('sign-ins come in numbered pages, newest first, none missed or repeated', async () => {
+    for (let i = 0; i < 2 * SIGN_IN_PAGE_SIZE + 3; i++) await t.signIns.record({ userId: aliceId, email: 'alice@lab.test', outcome: 'failure', ip: '192.168.1.30', userAgent: null })
+    const url = `/api/admin/sign-ins?user=${aliceId}`
+    const first = await events(admin, url)
+    assert.equal(first.page, 1)
+    assert.equal(first.pageSize, SIGN_IN_PAGE_SIZE)
+    assert.equal(first.events.length, SIGN_IN_PAGE_SIZE)
+    assert.ok(first.total >= 2 * SIGN_IN_PAGE_SIZE + 3)
+    const pages = Math.ceil(first.total / SIGN_IN_PAGE_SIZE)
+    const seen: SignInEventPage['events'] = []
+    for (let page = 1; page <= pages; page++) seen.push(...(await events(admin, `${url}&page=${page}`)).events)
+    assert.equal(seen.length, first.total)
+    assert.equal(new Set(seen.map(e => e.id)).size, first.total)
+    assert.ok(seen.every((e, i) => i === 0 || e.at <= seen[i - 1]!.at))
+    assert.deepEqual((await events(admin, `${url}&page=${pages + 1}`)).events, [])
+    assert.equal((await t.app.inject({ method: 'GET', url: '/api/me/sign-ins?page=0', headers: { cookie: admin } })).statusCode, 400)
   })
 
   test("better-auth's rate limits count in the shared store", async () => {

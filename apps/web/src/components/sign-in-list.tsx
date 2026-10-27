@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import type { IpPlace, SignInEvent, SignInEventPage } from '@coltex/shared'
@@ -87,47 +88,48 @@ function Outcome({ e }: { e: SignInEvent }) {
 }
 
 /**
- * A list of sign-ins, newest first, 50 at a time: one's own (Settings → Account), or for the
- * system administrator everyone's or one person's, with the person in a column of its own.
+ * A list of sign-ins, newest first, one page at a time (the server's page size): one's own
+ * (Settings → Account), or for the system administrator everyone's or one person's, with the
+ * person in a column of its own. A page keeps showing until the next one is in, so the table
+ * doesn't jump while it loads.
  */
 export function SignInList({
   load,
   showPerson,
   onPerson,
 }: {
-  load: (before?: string) => Promise<SignInEventPage>
+  load: (page: number) => Promise<SignInEventPage>
   showPerson?: boolean
   onPerson?: (e: SignInEvent) => void
 }) {
-  const [events, setEvents] = useState<SignInEvent[]>()
+  const [data, setData] = useState<SignInEventPage>()
   const names = usePlaceNames(getLocale())
-  const [hasMore, setHasMore] = useState(false)
-  const [more, setMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
 
-  const first = useCallback(() => {
-    load().then(
-      page => {
-        setEvents(page.events)
-        setHasMore(page.hasMore)
-      },
-      e => toast.error((e as Error).message),
-    )
-  }, [load])
-  useEffect(first, [first])
-
-  const next = async () => {
-    setMore(true)
-    try {
-      const page = await load(events?.at(-1)?.at)
-      setEvents(list => [...(list ?? []), ...page.events])
-      setHasMore(page.hasMore)
-    } catch (e) {
-      toast.error((e as Error).message)
-    } finally {
-      setMore(false)
+  useEffect(() => {
+    let current = true
+    setLoading(true)
+    load(page)
+      .then(
+        next => {
+          if (!current) return
+          // Records older than 90 days go meanwhile: past the last page, show the last one.
+          const last = Math.max(1, Math.ceil(next.total / next.pageSize))
+          if (page > last) setPage(last)
+          else setData(next)
+        },
+        e => current && toast.error((e as Error).message),
+      )
+      .finally(() => current && setLoading(false))
+    return () => {
+      current = false
     }
-  }
+  }, [load, page])
 
+  const events = data?.events
+  const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1
+  const from = data ? (data.page - 1) * data.pageSize + 1 : 0
   const columns = showPerson ? 5 : 4
   return (
     <div className="@container min-w-0">
@@ -200,11 +202,24 @@ export function SignInList({
           )}
         </TableBody>
       </Table>
-      {hasMore && (
-        <div className="flex justify-center border-t p-3">
-          <Button variant="ghost" size="sm" disabled={more} onClick={() => void next()}>
-            {more && <Spinner />} {t('Show more')}
-          </Button>
+      {data && data.total > data.pageSize && (
+        <div className="flex items-center justify-between gap-3 border-t py-2 pr-2 pl-4">
+          <span className="text-sm text-muted-foreground tabular-nums">
+            {t('{from}–{to} of {total}', {
+              from: from.toLocaleString(intlLocale()),
+              to: (from + data.events.length - 1).toLocaleString(intlLocale()),
+              total: data.total.toLocaleString(intlLocale()),
+            })}
+          </span>
+          <span className="flex items-center gap-1">
+            {loading && <Spinner className="mr-1 text-muted-foreground" />}
+            <Button variant="ghost" size="icon-sm" aria-label={t('Previous page')} disabled={loading || data.page <= 1} onClick={() => setPage(data.page - 1)}>
+              <ChevronLeft />
+            </Button>
+            <Button variant="ghost" size="icon-sm" aria-label={t('Next page')} disabled={loading || data.page >= pages} onClick={() => setPage(data.page + 1)}>
+              <ChevronRight />
+            </Button>
+          </span>
         </div>
       )}
     </div>
