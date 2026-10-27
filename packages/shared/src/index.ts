@@ -1025,6 +1025,7 @@ export type ThinkingLevel = z.infer<typeof ThinkingLevel>
 
 export const CustomAiModel = z.object({
   id: z.string().min(1).max(200),
+  /** Not asked for any more: the server sets them. Settings saved before keep theirs. */
   contextWindow: z.number().int().min(1024).default(128_000),
   maxTokens: z.number().int().min(256).default(16_384),
   reasoning: z.boolean().default(false),

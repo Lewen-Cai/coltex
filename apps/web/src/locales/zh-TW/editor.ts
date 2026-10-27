@@ -606,6 +606,7 @@ const messages: Record<string, string> = {
   'No project found.': '找不到專案。',
   'Search templates…': '搜尋範本…',
   'The paper is to be submitted to {venue}.': '論文準備投稿到 {venue}。',
+  'Context: {used} tokens': '上下文：已用 {used} 個 token',
 }
 
 export default messages

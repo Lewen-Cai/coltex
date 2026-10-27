@@ -18,7 +18,20 @@ export const tokens = compactTokens
 
 /** How much of the model's context the conversation takes: a ring and the numbers. */
 export function ContextMeter({ used, window }: { used: number | null; window: number | null }) {
-  if (!window) return null
+  // A self-hosted model's window is its server's setting: only what the chat uses.
+  if (!window) {
+    if (used === null) return null
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="tabular-nums" aria-label={t('Context')}>
+            {tokens(used)}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{t('Context: {used} tokens', { used: used.toLocaleString() })}</TooltipContent>
+      </Tooltip>
+    )
+  }
   const share = used === null ? null : Math.min(1, used / window)
   const tone = share === null ? 'text-muted-foreground' : share >= 0.9 ? 'text-destructive' : share >= 0.7 ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
   const r = 6

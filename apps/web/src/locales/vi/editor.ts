@@ -605,6 +605,7 @@ const messages: Record<string, string> = {
   'No project found.': 'Không tìm thấy dự án.',
   'Search templates…': 'Tìm mẫu…',
   'The paper is to be submitted to {venue}.': 'Bài báo sẽ được gửi tới {venue}.',
+  'Context: {used} tokens': 'Ngữ cảnh: đã dùng {used} token',
 }
 
 export default messages

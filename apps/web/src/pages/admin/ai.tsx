@@ -45,7 +45,6 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Spinner } from '@/components/ui/spinner'
@@ -376,10 +375,12 @@ function ModelPicker(props: {
               <span className="grid text-left leading-tight">
                 <span className="font-medium">{props.value.name}</span>
                 <span className="text-xs font-normal text-muted-foreground">
-                  {t('{provider} · {context} context', {
-                    provider: props.providerName(props.value.provider),
-                    context: formatNumber(props.value.contextWindow),
-                  })}
+                  {props.value.contextWindow
+                    ? t('{provider} · {context} context', {
+                        provider: props.providerName(props.value.provider),
+                        context: formatNumber(props.value.contextWindow),
+                      })
+                    : props.providerName(props.value.provider)}
                   {props.value.reasoning ? ` · ${t('reasoning')}` : ''}
                 </span>
               </span>
@@ -531,7 +532,6 @@ function EndpointDialog(props: {
   const [name, setName] = useState('')
   const [baseUrl, setBaseUrl] = useState('')
   const [modelIds, setModelIds] = useState('')
-  const [contextWindow, setContextWindow] = useState('32768')
 
   useEffect(() => {
     if (props.open) {
@@ -545,11 +545,11 @@ function EndpointDialog(props: {
     e.preventDefault()
     let id = `custom-${slug(name)}`
     for (let n = 2; props.existing.some(p => p.id === id); n++) id = `custom-${slug(name)}-${n}`
-    const ctx = Number(contextWindow)
+    // The context window and answer length are the server's settings, not ColTex's.
     const models = modelIds
       .split(/[,\s]+/)
       .filter(Boolean)
-      .map(m => ({ id: m, contextWindow: ctx, maxTokens: Math.min(16_384, Math.floor(ctx / 2)), reasoning: false }))
+      .map(m => ({ id: m, contextWindow: 128_000, maxTokens: 16_384, reasoning: false }))
     void props.onAdd({ id, name: name.trim(), baseUrl: baseUrl.trim(), models })
   }
 
@@ -573,21 +573,6 @@ function EndpointDialog(props: {
               <FieldLabel htmlFor="ep-models">{t('Models')}</FieldLabel>
               <Input id="ep-models" required placeholder="qwen3:32b, llama3.3" value={modelIds} onChange={e => setModelIds(e.target.value)} />
               <FieldDescription>{t('Model ids as the server names them, comma-separated.')}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel>{t('Context window')}</FieldLabel>
-              <Select value={contextWindow} onValueChange={setContextWindow}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[8192, 32768, 131072, 262144].map(n => (
-                    <SelectItem key={n} value={String(n)}>
-                      {t('{n}k tokens', { n: n / 1024 })}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </Field>
           </FieldGroup>
           <DialogFooter>

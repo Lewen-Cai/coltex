@@ -606,6 +606,7 @@ const messages: Record<string, string> = {
   'No project found.': '프로젝트를 찾을 수 없습니다.',
   'Search templates…': '템플릿 검색…',
   'The paper is to be submitted to {venue}.': '논문은 {venue}에 투고할 예정입니다.',
+  'Context: {used} tokens': '컨텍스트: {used}토큰 사용',
 }
 
 export default messages

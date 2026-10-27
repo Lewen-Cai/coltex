@@ -60,7 +60,8 @@ export function modelInfo(model: Model<Api>): AiModelInfo {
     provider: model.provider,
     id: model.id,
     name: model.name,
-    contextWindow: model.contextWindow,
+    // A self-hosted model's limits are its server's (see customProvider): unknown here.
+    contextWindow: model.maxTokens === 0 ? 0 : model.contextWindow,
     reasoning: model.reasoning,
     thinkingLevels: getSupportedThinkingLevels(model),
   }
@@ -135,8 +136,11 @@ function customProvider(config: CustomAiProvider): Provider {
         reasoning: m.reasoning,
         input: ['text'],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        // The context and the answer's length are set on the server (Ollama's num_ctx, vLLM's
+        // max_model_len) and depend on the model: no max_tokens is sent (pi-ai sends none for 0;
+        // its window only bounds that), and the panel shows the tokens used without a share.
         contextWindow: m.contextWindow,
-        maxTokens: m.maxTokens,
+        maxTokens: 0,
       }),
     ),
     api: openAICompletionsApi(),

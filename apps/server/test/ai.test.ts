@@ -1,5 +1,6 @@
 import { after, before, beforeEach, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
+import http from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { fauxAssistantMessage, fauxProvider, fauxText, fauxToolCall, getCurrentTools, type FauxProviderHandle, type Message } from '@earendil-works/pi-ai'
 import type { AiSessionState, AiStreamEvent, CompileJob, CompileResult } from '@coltex/shared'
@@ -680,17 +681,37 @@ describe('AI agent', () => {
     assert.equal((await t.db.select().from(aiCredentials)).length, 0)
   })
 
-  test('custom OpenAI-compatible endpoints become providers with models', async () => {
+  test('custom OpenAI-compatible endpoints become providers with models, their limits left to the server', async () => {
+    // A stand-in endpoint that records the request and answers with one streamed word.
+    const bodies: Record<string, unknown>[] = []
+    const server = http.createServer((req, res) => {
+      let data = ''
+      req.on('data', c => (data += c))
+      req.on('end', () => {
+        bodies.push(JSON.parse(data || '{}'))
+        res.writeHead(200, { 'content-type': 'text/event-stream' })
+        res.write(`data: ${JSON.stringify({ id: 'c', object: 'chat.completion.chunk', created: 0, model: 'qwen3-32b', choices: [{ index: 0, delta: { role: 'assistant', content: 'OK' }, finish_reason: 'stop' }] })}\n\n`)
+        res.end('data: [DONE]\n\n')
+      })
+    })
+    await new Promise<void>(r => server.listen(0, '127.0.0.1', r))
+    const port = (server.address() as AddressInfo).port
     const res = await api('PUT', '/admin/ai/settings', admin, {
-      customProviders: [{ id: 'custom-lab', name: 'Lab GPU', baseUrl: 'http://gpu.lab:8000/v1', models: [{ id: 'qwen3-32b' }] }],
+      customProviders: [{ id: 'custom-lab', name: 'Lab GPU', baseUrl: `http://127.0.0.1:${port}/v1`, models: [{ id: 'qwen3-32b' }] }],
     })
     assert.equal(res.statusCode, 200, res.body)
     const lab = (await api('GET', '/admin/ai', admin)).json().providers.find((p: { id: string }) => p.id === 'custom-lab')
     assert.equal(lab.custom, true)
     assert.equal(lab.configured.type, 'api_key', 'keyless endpoints count as configured')
     const models = (await api('GET', '/admin/ai/models', admin)).json()
-    assert.ok(models.some((m: { provider: string; id: string }) => m.provider === 'custom-lab' && m.id === 'qwen3-32b'))
+    const qwen = models.find((m: { provider: string; id: string }) => m.provider === 'custom-lab' && m.id === 'qwen3-32b')
+    assert.equal(qwen?.contextWindow, 0, 'the window is the server’s: unknown here')
+    const tried = await api('POST', '/admin/ai/test', admin, { provider: 'custom-lab', id: 'qwen3-32b' })
+    assert.equal(tried.json().ok, true, tried.body)
+    assert.equal(bodies.length, 1)
+    assert.ok(!('max_tokens' in bodies[0]!) && !('max_completion_tokens' in bodies[0]!), JSON.stringify(bodies[0]))
     await api('PUT', '/admin/ai/settings', admin, { customProviders: [] })
+    server.close()
   })
 
   test('usage is reported in total, per day, per model and per person', async () => {

@@ -605,6 +605,7 @@ const messages: Record<string, string> = {
   'No project found.': 'Proje bulunamadı.',
   'Search templates…': 'Şablon ara…',
   'The paper is to be submitted to {venue}.': 'Makale {venue} için gönderilecek.',
+  'Context: {used} tokens': 'Bağlam: {used} token kullanıldı',
 }
 
 export default messages

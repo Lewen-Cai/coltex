@@ -606,6 +606,7 @@ const messages: Record<string, string> = {
   'No project found.': 'No se encontró ningún proyecto.',
   'Search templates…': 'Buscar plantillas…',
   'The paper is to be submitted to {venue}.': 'El artículo se enviará a {venue}.',
+  'Context: {used} tokens': 'Contexto: {used} tokens usados',
 }
 
 export default messages

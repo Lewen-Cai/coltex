@@ -373,7 +373,8 @@ export function SessionStatus({
   const model = status.model
   const thinking = !auto && !!model && model.thinkingLevels.length >= 2
   // The model the conversation last used; else the one the next message goes to.
-  const window = state?.model?.contextWindow ?? (auto ? status.auto.strong?.contextWindow : model?.contextWindow) ?? null
+  // 0: a self-hosted model, whose window is its server's.
+  const window = (state?.model?.contextWindow ?? (auto ? status.auto.strong?.contextWindow : model?.contextWindow)) || null
   const used = state?.contextTokens ?? (state && state.items.length === 0 ? 0 : null)
   if (!thinking && !window && !allowance && !permission) return null
   const PermissionIcon = permission && PERMISSION_ICON[permission]
