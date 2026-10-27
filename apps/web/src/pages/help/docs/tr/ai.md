@@ -12,6 +12,8 @@ Sol çubuktaki **YZ**, YZ ajanını açar. Bir yönetici bir model hizmeti bağl
 
 Açık dosya, seçim ve son derleme hataları mesajınıza eklenir; bir eki dışarıda bırakmak için ona tıklayın.
 
+Bir iletide YZ ajanı en fazla 60 adım atabilir (okuma, düzenleme, derleme, arama…). Sınıra ulaşınca durur ve ne yaptığını, nelerin kaldığını söyler; devam etmesi için “devam” yazın.
+
 ## İzinler
 
 YZ ajanının neleri değiştirebileceği size kalmıştır: **Ayarlar → YZ ajanı** bölümünde veya panelin altındaki model seçicide (düşünme düzeyinin altında) seçin; mesaj kutusunun altındaki satır seçiminizi gösterir. Aynı seçim, MCP üzerinden bağlanan kendi ajanlarınız için de geçerlidir (aşağıya bakın).

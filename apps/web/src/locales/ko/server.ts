@@ -161,6 +161,8 @@ const messages: Record<string, string> = {
   'Search the web for “{query}”': '웹에서 “{query}” 검색',
   'Read web page {url}': '웹 페이지 {url} 읽기',
   'Look at page {page} of the PDF': 'PDF {page}쪽 보기',
+  'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.':
+    'AI 에이전트가 메시지 하나에 허용된 단계 수에 도달해 멈췄습니다. “계속”을 보내면 이어서 진행합니다.',
 }
 
 export default messages

@@ -161,6 +161,8 @@ const messages: Record<string, string> = {
   'Search the web for “{query}”': 'Web’de ara: “{query}”',
   'Read web page {url}': 'Web sayfasını oku: {url}',
   'Look at page {page} of the PDF': 'PDF’nin {page}. sayfasına bak',
+  'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.':
+    'YZ ajanı bir ileti için adım sınırına ulaştığından durdu. Devam etmesi için “devam” yazın.',
 }
 
 export default messages

@@ -161,6 +161,8 @@ const messages: Record<string, string> = {
   'Search the web for “{query}”': '联网搜索“{query}”',
   'Read web page {url}': '读取网页 {url}',
   'Look at page {page} of the PDF': '查看 PDF 第 {page} 页',
+  'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.':
+    'AI 智能体已达到单条消息的步骤上限，暂时停下。发送“继续”可以让它接着做。',
 }
 
 export default messages

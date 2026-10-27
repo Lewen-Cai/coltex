@@ -161,6 +161,8 @@ const messages: Record<string, string> = {
   'Search the web for “{query}”': 'ウェブで「{query}」を検索',
   'Read web page {url}': 'ウェブページ {url} を読む',
   'Look at page {page} of the PDF': 'PDF の {page} ページを見る',
+  'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.':
+    'AI エージェントは 1 件のメッセージで実行できるステップの上限に達したため止まりました。「続けて」と送ると続きを行います。',
 }
 
 export default messages

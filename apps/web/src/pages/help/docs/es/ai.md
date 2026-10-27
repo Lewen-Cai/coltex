@@ -12,6 +12,8 @@
 
 El archivo abierto, la selección y los errores de compilación recientes se adjuntan a tu mensaje; haz clic en un adjunto para excluirlo.
 
+En un mensaje, el agente de IA puede dar hasta 60 pasos (leer, editar, compilar, buscar…). Si llega ahí, se detiene y te dice qué hizo y qué falta; envía «continúa» para que siga.
+
 ## Permisos
 
 Lo que el agente de IA puede cambiar lo decides tú: elígelo en **Configuración → Agente de IA**, o en el selector de modelo en la parte inferior del panel (bajo el nivel de razonamiento); la línea bajo el cuadro de mensaje lo muestra. La misma elección se aplica a tus propios agentes conectados mediante MCP (ver más abajo).

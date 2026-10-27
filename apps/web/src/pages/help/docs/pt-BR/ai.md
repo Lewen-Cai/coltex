@@ -12,6 +12,8 @@
 
 O arquivo aberto, a seleção e os erros de compilação recentes são anexados à sua mensagem; clique em um anexo para deixá-lo de fora.
 
+Em uma mensagem, o agente de IA pode dar até 60 etapas (ler, editar, compilar, pesquisar…). Ao chegar lá, ele para e diz o que fez e o que falta; envie “continue” para ele seguir.
+
 ## Permissões
 
 O que o agente de IA pode alterar é você quem decide: escolha em **Configurações → Agente de IA** ou no seletor de modelo embaixo do painel (abaixo do nível de raciocínio); a linha abaixo da caixa de mensagem mostra a escolha. A mesma escolha vale para os seus próprios agentes conectados via MCP (veja abaixo).

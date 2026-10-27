@@ -12,6 +12,8 @@
 
 The open file, the selection and recent compile errors are attached to your message; click an attachment to leave it out.
 
+One message can take the AI agent up to 60 steps (reading, editing, compiling, searching…). When it gets there, it stops and tells you what it did and what is left; send “continue” to let it go on.
+
 ## Permissions
 
 What the AI agent may change is up to you: choose in **Settings → AI agent**, or in the model picker at the bottom of the panel (under the thinking level); the line under the message box shows it. The same choice applies to your own agents connected over MCP (see below).

@@ -12,6 +12,8 @@
 
 Il file aperto, la selezione e gli errori di compilazione recenti vengono allegati al tuo messaggio; fai clic su un allegato per escluderlo.
 
+Per un messaggio l’agente IA può fare fino a 60 passaggi (leggere, modificare, compilare, cercare…). Se ci arriva, si ferma e ti dice cosa ha fatto e cosa resta; invia «continua» per farlo proseguire.
+
 ## Permessi
 
 Cosa può modificare l’agente IA lo decidi tu: scegli in **Impostazioni → Agente IA** o nel selettore del modello in fondo al pannello (sotto il livello di ragionamento); la riga sotto la casella dei messaggi lo mostra. La stessa scelta vale per i tuoi agenti collegati tramite MCP (vedi sotto).

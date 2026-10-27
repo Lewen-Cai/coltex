@@ -5,7 +5,7 @@ import type { SessionUser } from '../auth/auth.ts'
 import type { Db } from '../db/client.ts'
 import { aiSkillChats } from '../db/schema.ts'
 import { ConflictError, ForbiddenError } from '../errors.ts'
-import { AgentChat, shortId, type SavedChat } from './chat.ts'
+import { AgentChat, shortId, STEP_LIMIT_NOTICE, stepLimit, type SavedChat } from './chat.ts'
 import { languageNote, workshopPrompt } from './prompt.ts'
 import type { Tier } from './routing.ts'
 import { modelInfo, type AiService } from './service.ts'
@@ -128,15 +128,20 @@ export class SkillWorkshop extends AgentChat {
     this.running = true
     this.emit({ type: 'running', running: true })
     this.toolCalls = 0
-    agent.beforeToolCall = async () =>
-      ++this.toolCalls > MAX_TOOL_CALLS
-        ? { block: true, reason: 'Tool call limit for this message reached. Stop and summarise your progress for the author.', terminate: true }
-        : undefined
+    let cutOff = false
+    agent.beforeToolCall = async () => {
+      const limit = stepLimit(++this.toolCalls, MAX_TOOL_CALLS)
+      cutOff ||= !!limit?.terminate
+      return limit
+    }
     const note = body.language && body.language !== this.toldLanguage ? `[${languageNote(body.language)}]\n\n` : ''
     if (body.language) this.toldLanguage = body.language
     void agent
       .prompt(note + body.text.trim())
       .catch((err: unknown) => this.notice('error', err instanceof Error ? err.message : String(err)))
+      .then(() => {
+        if (cutOff) this.notice('info', STEP_LIMIT_NOTICE)
+      })
       .finally(() => {
         this.running = false
         this.lastActive = Date.now()

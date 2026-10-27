@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import type { Agent, AgentEvent, AgentMessage } from '@earendil-works/pi-agent-core'
+import type { Agent, AgentEvent, AgentMessage, BeforeToolCallResult } from '@earendil-works/pi-agent-core'
 import type { AssistantMessage, Usage } from '@earendil-works/pi-ai'
 import type { AiItem, AiSessionState, AiStreamEvent } from '@coltex/shared'
 import { contextTokens } from './compact.ts'
@@ -7,6 +7,25 @@ import { SKILLS_SECTION, skillsSection } from './prompt.ts'
 import type { AiService } from './service.ts'
 import type { LoadedSkill } from './skills.ts'
 import { describeToolCall } from './tools.ts'
+
+/** Tool calls a model may still try after the limit, refused, before its turn is cut off. */
+const OVER_LIMIT_GRACE = 3
+/** Shown when a turn had to be cut off; translated in the web app. */
+export const STEP_LIMIT_NOTICE = 'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.'
+
+/**
+ * The step limit of one message. Past it, tool calls are refused but the turn goes on, so the
+ * model reads why and answers the author (ending the turn at once left them without a reply);
+ * only a model that keeps calling tools is cut off (`terminate`), and the caller says so.
+ */
+export function stepLimit(calls: number, max: number): BeforeToolCallResult | undefined {
+  if (calls <= max) return undefined
+  return {
+    block: true,
+    reason: "Tool call limit for this message reached. Don't call any more tools: reply to the author now with what you did and what is left to do.",
+    terminate: calls > max + OVER_LIMIT_GRACE,
+  }
+}
 
 export const shortId = () => crypto.randomUUID().slice(0, 12)
 

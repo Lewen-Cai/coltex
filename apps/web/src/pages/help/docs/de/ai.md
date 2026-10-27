@@ -12,6 +12,8 @@
 
 Die geöffnete Datei, die Auswahl und aktuelle Kompilierfehler werden Ihrer Nachricht angehängt; klicken Sie auf einen Anhang, um ihn wegzulassen.
 
+Für eine Nachricht kann der KI-Agent bis zu 60 Schritte machen (lesen, bearbeiten, kompilieren, suchen …). Erreicht er die Grenze, hält er an und sagt, was er getan hat und was noch fehlt; senden Sie „weiter“, damit er fortfährt.
+
 ## Berechtigungen
 
 Was der KI-Agent ändern darf, entscheiden Sie: unter **Einstellungen → KI-Agent** oder in der Modellauswahl unten im Bereich (unter der Denkstufe); die Zeile unter dem Eingabefeld zeigt die Wahl an. Dieselbe Wahl gilt für Ihre eigenen, über MCP angebundenen Agenten (siehe unten).

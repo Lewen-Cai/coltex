@@ -12,6 +12,8 @@
 
 Tệp đang mở, vùng chọn và các lỗi biên dịch gần đây được đính kèm vào tin nhắn của bạn; nhấp vào một tệp đính kèm để bỏ nó ra.
 
+Trong một tin nhắn, tác tử AI có thể làm tối đa 60 bước (đọc, sửa, biên dịch, tìm kiếm…). Khi đến giới hạn, nó dừng lại và cho bạn biết đã làm gì và còn lại gì; gửi “tiếp tục” để nó làm tiếp.
+
 ## Quyền
 
 Tác tử AI được phép thay đổi những gì là do bạn quyết định: chọn trong **Cài đặt → Tác tử AI**, hoặc trong bộ chọn mô hình ở cuối bảng (bên dưới mức suy nghĩ); dòng bên dưới ô nhập tin nhắn cho biết lựa chọn hiện tại. Lựa chọn này cũng áp dụng cho các tác tử của riêng bạn kết nối qua MCP (xem bên dưới).

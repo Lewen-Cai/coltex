@@ -161,6 +161,8 @@ const messages: Record<string, string> = {
   'Search the web for “{query}”': 'Tìm trên web “{query}”',
   'Read web page {url}': 'Đọc trang web {url}',
   'Look at page {page} of the PDF': 'Xem trang {page} của PDF',
+  'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.':
+    'Tác tử AI đã dừng vì đạt giới hạn số bước cho một tin nhắn. Gửi “tiếp tục” để nó làm tiếp.',
 }
 
 export default messages

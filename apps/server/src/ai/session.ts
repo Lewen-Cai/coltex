@@ -29,7 +29,7 @@ import type { ReferenceService } from '../references/service.ts'
 import { cleanPath } from '../storage/paths.ts'
 import type { ProjectStore } from '../storage/types.ts'
 import { Changeset, type TurnFile } from './changeset.ts'
-import { AgentChat, shortId } from './chat.ts'
+import { AgentChat, shortId, STEP_LIMIT_NOTICE, stepLimit } from './chat.ts'
 import { COMPACT_SYSTEM_PROMPT, compactedTranscript, estimateTokens, renderTranscript } from './compact.ts'
 import { conversationTitle, type ConversationStore, type SavedConversation } from './conversations.ts'
 import { languageNote, permissionNote, systemPrompt, userMessage, webNote } from './prompt.ts'
@@ -308,12 +308,16 @@ export class AiSession extends AgentChat {
     this.turnOps = []
     this.turnCheckpoint = false
     this.stopped = false
+    let cutOff = false
     agent.beforeToolCall = async ({ toolCall }) => {
-      if (++this.toolCalls > MAX_TOOL_CALLS) {
-        return { block: true, reason: 'Tool call limit for this message reached. Stop and summarise your progress for the author.', terminate: true }
+      const limit = stepLimit(++this.toolCalls, MAX_TOOL_CALLS)
+      if (limit) {
+        cutOff ||= !!limit.terminate
+        return limit
       }
+      // Refused, not cut off: the agent can still finish its edits and say what remains.
       if (toolCall.name === 'compile' && ++this.compiles > MAX_COMPILES) {
-        return { block: true, reason: 'Compile limit for this message reached. Summarise what remains for the author.', terminate: true }
+        return { block: true, reason: "Compile limit for this message reached. Don't compile again: finish, and tell the author what is left to check." }
       }
       if (toolCall.name === 'view_pdf_page' && ++this.pageViews > MAX_PAGE_VIEWS) {
         return { block: true, reason: 'Page view limit for this message reached. Go on from what you have seen.' }
@@ -331,6 +335,7 @@ export class AiSession extends AgentChat {
       .prompt(text)
       .catch((err: unknown) => this.notice('error', err instanceof Error ? err.message : String(err)))
       .then(async () => {
+        if (cutOff) this.notice('info', STEP_LIMIT_NOTICE)
         // A card after the reply listing what this turn changed in the draft.
         const files = [...this.turnOps, ...(await this.changeset.endTurn().catch(() => []))]
         if (files.length) this.upsert({ kind: 'changes', id: shortId(), files })

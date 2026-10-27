@@ -161,6 +161,8 @@ const messages: Record<string, string> = {
   'Search the web for “{query}”': 'Поиск в интернете: «{query}»',
   'Read web page {url}': 'Чтение веб-страницы {url}',
   'Look at page {page} of the PDF': 'Посмотреть страницу {page} PDF',
+  'The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.':
+    'ИИ-агент остановился на пределе шагов для одного сообщения. Отправьте «продолжай», чтобы он продолжил.',
 }
 
 export default messages

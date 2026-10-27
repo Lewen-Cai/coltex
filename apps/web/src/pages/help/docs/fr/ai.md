@@ -12,6 +12,8 @@
 
 Le fichier ouvert, la sélection et les erreurs de compilation récentes sont joints à votre message ; cliquez sur une pièce jointe pour l’exclure.
 
+Pour un message, l’agent IA peut faire jusqu’à 60 étapes (lire, modifier, compiler, chercher…). S’il y arrive, il s’arrête et vous dit ce qu’il a fait et ce qui reste ; envoyez « continue » pour qu’il poursuive.
+
 ## Autorisations
 
 Ce que l’agent IA peut modifier dépend de vous : choisissez dans **Paramètres → Agent IA**, ou dans le sélecteur de modèle en bas du panneau (sous le niveau de réflexion) ; la ligne sous la zone de message l’indique. Le même choix s’applique à vos propres agents connectés via MCP (voir plus bas).

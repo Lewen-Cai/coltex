@@ -471,6 +471,36 @@ describe('AI agent', () => {
     }
   })
 
+  test('past the step limit the agent is refused tools and answers; one that keeps calling them is cut off with a notice', async () => {
+    const read = () => fauxAssistantMessage(fauxToolCall('read_file', { path: 'main.tex' }), { stopReason: 'toolUse' })
+    const notices = async () => (await state()).items.flatMap(i => (i.kind === 'notice' ? [i.text] : []))
+    const replies = async () => (await state()).items.flatMap(i => (i.kind === 'assistant' ? [i.text] : []))
+    let told = ''
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    // 60 steps, then one more that is refused: the model reads why and answers.
+    faux.setResponses([
+      ...Array.from({ length: 61 }, read),
+      (context: { messages: Message[] }) => {
+        told = JSON.stringify(context.messages.at(-1))
+        return fauxAssistantMessage(fauxText('Read the file; the rest is left for you.'))
+      },
+    ])
+    await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'Look around' })
+    await idle()
+    assert.match(told, /Tool call limit for this message reached/)
+    assert.deepEqual(await replies(), ['Read the file; the rest is left for you.'])
+    assert.deepEqual(await notices(), [])
+
+    // A model that goes on calling tools is cut off after a few refusals, and the author is told.
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    faux.setResponses([...Array.from({ length: 70 }, read), fauxAssistantMessage(fauxText('never reached'))])
+    await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'Look around again' })
+    await idle()
+    assert.deepEqual(await replies(), [])
+    assert.deepEqual(await notices(), ['The AI agent stopped at the limit of steps for one message. Send “continue” to let it go on.'])
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+  })
+
   test('the agent is told the interface language, once and again when it changes', async () => {
     const seen: string[] = []
     const watch = (reply: ReturnType<typeof fauxAssistantMessage>) => (context: { messages: Message[] }) => {

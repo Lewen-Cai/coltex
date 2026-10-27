@@ -12,6 +12,8 @@
 
 File yang terbuka, bagian yang dipilih, dan galat kompilasi terbaru dilampirkan ke pesan Anda; klik sebuah lampiran untuk tidak menyertakannya.
 
+Dalam satu pesan, agen AI bisa menjalankan hingga 60 langkah (membaca, mengedit, mengompilasi, mencari…). Saat sampai di sana, ia berhenti dan memberi tahu apa yang sudah dan belum dikerjakan; kirim “lanjutkan” agar ia meneruskan.
+
 ## Izin
 
 Apa yang boleh diubah agen AI terserah Anda: pilih di **Pengaturan → Agen AI**, atau di pemilih model di bagian bawah panel (di bawah tingkat penalaran); baris di bawah kotak pesan menampilkannya. Pilihan yang sama berlaku untuk agen Anda sendiri yang terhubung melalui MCP (lihat di bawah).
