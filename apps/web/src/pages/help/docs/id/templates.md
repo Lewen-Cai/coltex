@@ -8,6 +8,7 @@
 - **Dibagikan oleh administrator sistem**: untuk semua orang di server ini.
 - **Dibagikan di** nama grup: dibagikan dengan grup yang Anda ikuti.
 - **Dibagikan oleh** sebuah nama: dibagikan kepada Anda secara pribadi.
+- **Hanya Anda**: templat yang Anda impor untuk diri sendiri.
 
 Tombol di atas daftar (**Semua**, lalu bidang-bidang) menampilkan templat satu bidang. Anda hanya melihat templat yang dibagikan dengan Anda. Lihat juga [Memulai](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Perlu diketahui:
 
 Banyak jurnal dan konferensi menerbitkan templat LaTeX yang tidak disertakan di ColTex: lisensinya tidak mengizinkan penyebaran ulang, atau templat itu bukan bagian dari TeX Live. Di antaranya NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Unduh templat resmi dari situs konferensi atau penerbit, lalu impor sebagai templat:
 
-1. Klik **Proyek baru**, lalu **Impor templat** (hanya administrator).
-2. Pilih zip, beri nama, deskripsi, dan **Bidang**, pilih siapa yang menerimanya di **Dibagikan dengan**, lalu klik **Impor**.
+1. Klik **Proyek baru**, lalu **Impor templat**.
+2. Pilih zip, beri nama, deskripsi, dan **Bidang**, lalu klik **Impor**. Templat hanya untuk Anda kecuali Anda menyalakan **Bagikan dengan orang lain** (admin) dan memilih penerimanya.
 
 Perlu diketahui:
 
-- Untuk siapa templat itu mengikuti aturan penerbitan (di atas): admin berbagi dengan grupnya dan orang yang dipilihnya, administrator sistem juga dengan semua orang.
-- Zip menjadi proyek Anda, diterbitkan sebagai templat. Dokumen utamanya ditemukan seperti saat mengimpor proyek; berkas build dan sampah sistem dilewati.
-- Menu ⋯ templat berisi **Buka proyek** (untuk mengubah berkasnya), **Edit templat…** (untuk mengganti nama, mengubah penerima, atau membatalkan penerbitan), dan **Hapus templat**.
+- Berbagi mengikuti aturan penerbitan (di atas): admin berbagi dengan grup mereka dan orang yang dipilih, administrator sistem juga dengan semua orang. Templat yang hanya untuk Anda berlabel **Hanya Anda**.
+- Mengimpor tidak menambah proyek di ruang kerja Anda: templat menyimpan berkasnya sendiri. Dokumen utamanya ditemukan seperti saat mengimpor proyek; berkas build dan sampah sistem dibuang.
+- Menu ⋯ templat berisi **Edit berkas**, **Edit templat…** (mengganti nama, mengubah penerima, atau membatalkan penerbitan; setelah dibatalkan, berkasnya menjadi proyek Anda) dan **Hapus templat**, yang menghapus berkasnya.
 
 ## Mengonversi ke templat jurnal
 

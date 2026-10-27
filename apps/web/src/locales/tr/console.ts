@@ -390,6 +390,10 @@ const messages: Record<string, string> = {
   'Social sciences & humanities': 'Sosyal ve beşeri bilimler',
   'Earth & environment': 'Yer ve çevre',
   'No template found.': 'Şablon bulunamadı.',
+  'Only you': 'Yalnızca siz',
+  'Share with others': 'Başkalarıyla paylaş',
+  'Its files are deleted.': 'Dosyaları silinir.',
+  'Edit files': 'Dosyaları düzenle',
 }
 
 export default messages

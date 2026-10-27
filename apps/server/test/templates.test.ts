@@ -87,7 +87,11 @@ describe('project templates', () => {
     // Only the owner publishes, only administrators share, and only the system administrator with everyone.
     assert.equal((await api('PUT', `/projects/${source}/template`, carol, body({ groupIds: [group] }))).statusCode, 403)
     assert.equal((await api('PUT', `/projects/${source}/template`, admin, body({ groupIds: [group] }))).statusCode, 404)
-    assert.equal((await api('PUT', `/projects/${source}/template`, bob, body({}))).statusCode, 400, 'someone to share it with')
+    // No one to share it with: a template for himself alone, which anyone may have.
+    assert.equal((await api('PUT', `/projects/${source}/template`, bob, body({}))).statusCode, 200)
+    assert.equal((await api('GET', '/templates', bob)).json().find((x: { projectId: string | null }) => x.projectId === source).sharing, 'private')
+    assert.ok(!(await api('GET', '/templates', carol)).json().some((x: { name: string }) => x.name === 'Lab thesis'), 'which no one else sees')
+    assert.ok((await api('GET', '/projects', bob)).json().some((p: { id: string }) => p.id === source), 'a published project stays in the list')
     assert.equal((await api('PUT', `/projects/${source}/template`, bob, body({ everyone: true }))).statusCode, 403)
     const elsewhere = (await api('POST', '/groups', dave, { name: 'Not Bob’s' })).json().id
     assert.equal((await api('PUT', `/projects/${source}/template`, bob, body({ groupIds: [elsewhere] }))).statusCode, 404, 'groups he is in')

@@ -8,6 +8,7 @@
 - **Partagé par l’administrateur système** : pour tout le monde sur ce serveur.
 - **Partagé avec** le nom d’un groupe : partagé avec un groupe dont vous faites partie.
 - **Partagé par** un nom : partagé avec vous personnellement.
+- **Vous seul** : un modèle que vous avez importé pour vous.
 
 Les boutons au-dessus de la liste (**Tout**, puis les domaines) affichent les modèles d’un domaine. Vous ne voyez que les modèles partagés avec vous. Voir aussi [Premiers pas](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Pour qui :
 
 Beaucoup de revues et de conférences publient des modèles LaTeX qui ne sont pas intégrés à ColTex : leur licence n’en permet pas la redistribution, ou ils ne font pas partie de TeX Live. En font partie NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Téléchargez le modèle officiel sur le site de la conférence ou de l’éditeur, puis importez-le comme modèle :
 
-1. Cliquez sur **Nouveau projet**, puis sur **Importer un modèle** (administrateurs seulement).
-2. Choisissez le zip, donnez-lui un nom, une description et un **Domaine**, choisissez qui le reçoit sous **Partagé avec**, puis cliquez sur **Importer**.
+1. Cliquez sur **Nouveau projet**, puis sur **Importer un modèle**.
+2. Choisissez le zip, donnez-lui un nom, une description et un **Domaine**, puis cliquez sur **Importer**. Il n’est que pour vous, sauf si vous activez **Partager avec d’autres** (administrateurs) et choisissez avec qui.
 
 À savoir :
 
-- Les destinataires suivent les règles de la publication (ci-dessus) : les administrateurs partagent avec leurs groupes et les personnes qu’ils choisissent, l’administrateur système aussi avec tout le monde.
-- Le zip devient un de vos projets, publié comme modèle. Son document principal est trouvé comme lors de l’import d’un projet ; les fichiers de compilation et les fichiers système sont écartés.
-- Le menu ⋯ du modèle propose **Ouvrir le projet** (pour modifier ses fichiers), **Modifier le modèle…** (pour le renommer, changer ses destinataires ou le dépublier) et **Retirer le modèle**.
+- Le partage suit les règles de publication (ci-dessus) : les administrateurs partagent avec leurs groupes et les personnes choisies, l’administrateur système aussi avec tout le monde. Un modèle pour vous seul porte l’étiquette **Vous seul**.
+- L’import n’ajoute aucun projet à votre espace de travail : le modèle garde ses fichiers lui-même. Son document principal est trouvé comme lors de l’import d’un projet ; les fichiers de compilation et les fichiers système inutiles sont écartés.
+- Le menu ⋯ du modèle propose **Modifier les fichiers**, **Modifier le modèle…** (pour le renommer, changer avec qui il est partagé ou le dépublier ; ses fichiers deviennent alors un de vos projets) et **Retirer le modèle**, qui supprime ses fichiers.
 
 ## Convertir vers un modèle de revue
 

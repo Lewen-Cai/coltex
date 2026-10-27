@@ -8,6 +8,7 @@
 - **Quản trị viên hệ thống đã chia sẻ**: cho mọi người trên máy chủ này.
 - **Chia sẻ trong** tên một nhóm: được chia sẻ với một nhóm bạn tham gia.
 - Một tên **đã chia sẻ**: được chia sẻ riêng với bạn.
+- **Chỉ mình bạn**: mẫu bạn nhập cho riêng mình.
 
 Các nút phía trên danh sách (**Tất cả**, rồi các lĩnh vực) hiện mẫu của một lĩnh vực. Bạn chỉ thấy các mẫu được chia sẻ với bạn. Xem thêm [Bắt đầu](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Cần biết:
 
 Nhiều tạp chí và hội nghị phát hành mẫu LaTeX không được tích hợp sẵn trong ColTex: giấy phép của chúng không cho phép phân phối lại, hoặc chúng không có trong TeX Live. Trong số đó có NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Hãy tải mẫu chính thức từ trang web của hội nghị hoặc nhà xuất bản rồi nhập nó làm mẫu:
 
-1. Nhấn **Dự án mới**, rồi **Nhập mẫu** (chỉ quản trị viên).
-2. Chọn tệp zip, đặt tên, mô tả và **Lĩnh vực**, chọn ai nhận trong **Chia sẻ với**, rồi nhấn **Nhập**.
+1. Nhấn **Dự án mới**, rồi nhấn **Nhập mẫu**.
+2. Chọn tệp zip, đặt tên, mô tả và **Lĩnh vực**, rồi nhấn **Nhập**. Mẫu chỉ dành cho bạn, trừ khi bạn bật **Chia sẻ với người khác** (quản trị viên) và chọn người nhận.
 
 Cần biết:
 
-- Người nhận theo cùng quy tắc như khi xuất bản (ở trên): quản trị viên chia sẻ với nhóm của mình và những người họ chọn, quản trị viên hệ thống còn với mọi người.
-- Tệp zip trở thành một dự án của bạn, được xuất bản thành mẫu. Tài liệu chính được tìm như khi nhập dự án; tệp biên dịch và tệp rác của hệ thống bị bỏ qua.
-- Menu ⋯ của mẫu có **Mở dự án** (để sửa tệp), **Sửa mẫu…** (để đổi tên, đổi người nhận hoặc hủy xuất bản) và **Xóa mẫu**.
+- Việc chia sẻ theo quy tắc xuất bản (ở trên): quản trị viên chia sẻ với nhóm của mình và những người được chọn, quản trị viên hệ thống còn chia sẻ được với mọi người. Mẫu chỉ dành cho bạn có nhãn **Chỉ mình bạn**.
+- Nhập mẫu không thêm dự án vào không gian làm việc: mẫu tự giữ các tệp của nó. Tài liệu chính được tìm như khi nhập dự án; tệp biên dịch và tệp rác của hệ thống bị bỏ qua.
+- Menu ⋯ của mẫu có **Sửa tệp**, **Sửa mẫu…** (đổi tên, đổi người được chia sẻ hoặc gỡ xuất bản; khi gỡ, các tệp trở thành một dự án của bạn) và **Xóa mẫu**, sẽ xóa các tệp của nó.
 
 ## Chuyển sang mẫu tạp chí
 

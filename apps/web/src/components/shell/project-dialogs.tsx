@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
@@ -42,6 +43,8 @@ export function sharingTag(tpl: TemplateInfo): string {
       return t('Shared across {groups}', { groups: tpl.groups.join(', ') })
     case 'people':
       return tpl.publishedBy ? t('Shared by {name}', { name: tpl.publishedBy }) : t('Shared with you')
+    case 'private':
+      return t('Only you')
   }
 }
 
@@ -53,8 +56,6 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [query, setQuery] = useState('')
   const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
-  // Importing a template is for administrators (the server refuses everyone else).
-  const { canShare: canImport } = useCanShareTemplates()
 
   const load = () =>
     api.listTemplates().then(setTemplates, err => {
@@ -83,7 +84,8 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const remove = async (tpl: TemplateInfo) => {
     const ok = await confirmDialog({
       title: t('Remove “{name}” from the templates?', { name: tpl.name }),
-      description: t('The project it comes from stays as it is.'),
+      // An imported template's files are only the template's; a published project stays.
+      description: tpl.templateOnly ? t('Its files are deleted.') : t('The project it comes from stays as it is.'),
       confirmLabel: t('Remove'),
       destructive: true,
     })
@@ -143,7 +145,7 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                   navigate(`/project/${tpl.projectId}`)
                 }}
               >
-                <FolderOpen /> {t('Open project')}
+                <FolderOpen /> {tpl.templateOnly ? t('Edit files') : t('Open project')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => openPublishTemplate(tpl.projectId!, tpl.name)}>
                 <Pencil /> {t('Edit template…')}
@@ -238,21 +240,19 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                   <>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {/* Importing a journal's template comes first, where people look for templates. */}
-                      {canImport && (
-                        <button
-                          type="button"
-                          onClick={() => setImporting(true)}
-                          className="flex h-full min-h-20 items-center gap-3 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 p-3 text-left text-primary transition-colors hover:border-primary hover:bg-primary/10"
-                        >
-                          <span className="rounded-lg bg-primary p-2 text-primary-foreground">
-                            <Upload className="size-4" />
-                          </span>
-                          <span className="grid gap-0.5">
-                            <span className="text-sm font-medium">{t('Import template')}</span>
-                            <span className="text-xs text-primary/80">.zip</span>
-                          </span>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setImporting(true)}
+                        className="flex h-full min-h-20 items-center gap-3 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 p-3 text-left text-primary transition-colors hover:border-primary hover:bg-primary/10"
+                      >
+                        <span className="rounded-lg bg-primary p-2 text-primary-foreground">
+                          <Upload className="size-4" />
+                        </span>
+                        <span className="grid gap-0.5">
+                          <span className="text-sm font-medium">{t('Import template')}</span>
+                          <span className="text-xs text-primary/80">.zip</span>
+                        </span>
+                      </button>
                       {shown.map(card)}
                     </div>
                     {q && !shown.length && <p className="py-6 text-center text-sm text-muted-foreground">{t('No template found.')}</p>}
@@ -291,7 +291,11 @@ function ImportTemplateDialog({
   const [description, setDescription] = useState('')
   const [field, setField] = useState<TemplateField>('general')
   const [audience, setAudience] = useState<AudienceDraft>(NO_AUDIENCE)
+  const [sharing, setSharing] = useState(false)
   const [busy, setBusy] = useState(false)
+  // Anyone imports a template for themselves; administrators may also share it.
+  const { canShare } = useCanShareTemplates()
+  const shared = canShare && sharing
 
   useEffect(() => {
     if (open) {
@@ -300,15 +304,17 @@ function ImportTemplateDialog({
       setDescription('')
       setField('general')
       setAudience(NO_AUDIENCE)
+      setSharing(false)
     }
   }, [open])
 
+  const ready = !!file && !!name.trim() && (!shared || hasAudience(audience))
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!file || !name.trim() || !hasAudience(audience)) return
+    if (!file || !ready) return
     setBusy(true)
     try {
-      const { template, warnings } = await api.importTemplate(file, { name: name.trim(), description: description.trim(), field, audience: audienceBody(audience) })
+      const { template, warnings } = await api.importTemplate(file, { name: name.trim(), description: description.trim(), field, audience: audienceBody(shared ? audience : NO_AUDIENCE) })
       onOpenChange(false)
       onImported(template)
       window.dispatchEvent(new Event(PROJECTS_CHANGED))
@@ -352,14 +358,20 @@ function ImportTemplateDialog({
                 />
               </Field>
               <FieldSelect value={field} onChange={setField} />
-              <AudienceEditor value={audience} onChange={setAudience} />
+              {canShare && (
+                <Field orientation="horizontal">
+                  <Switch id="import-template-share" checked={sharing} onCheckedChange={setSharing} />
+                  <FieldLabel htmlFor="import-template-share">{t('Share with others')}</FieldLabel>
+                </Field>
+              )}
+              {shared && <AudienceEditor value={audience} onChange={setAudience} />}
             </FieldGroup>
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('Cancel')}
             </Button>
-            <Button type="submit" disabled={!file || !name.trim() || !hasAudience(audience) || busy}>
+            <Button type="submit" disabled={!ready || busy}>
               {busy && <Spinner />} {t('Import')}
             </Button>
           </DialogFooter>

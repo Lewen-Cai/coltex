@@ -9,7 +9,7 @@ import { EngineSetting, TemplateField, type ProjectTemplateState, type TemplateA
 import type { CollabHooks } from '../collab/server.ts'
 import type { Db } from '../db/client.ts'
 import { projectTemplates, projects, templateGroups, templateUsers, user, userGroupMembers, userGroups } from '../db/schema.ts'
-import { BadRequestError, ForbiddenError, NotFoundError } from '../errors.ts'
+import { ForbiddenError, NotFoundError } from '../errors.ts'
 import type { ProjectStore } from '../storage/types.ts'
 import type { ProjectContent } from './service.ts'
 
@@ -129,10 +129,11 @@ export class TemplateService {
         canRemove: false,
         projectId: null,
         target: b.target,
+        templateOnly: false,
       }),
     )
     const rows = await this.db
-      .select({ template: projectTemplates, ownerId: projects.ownerId, publisher: user.name, publisherRole: user.role })
+      .select({ template: projectTemplates, ownerId: projects.ownerId, templateOnly: projects.templateOnly, publisher: user.name, publisherRole: user.role })
       .from(projectTemplates)
       .innerJoin(projects, eq(projects.id, projectTemplates.projectId))
       .leftJoin(user, eq(user.id, projectTemplates.publishedBy))
@@ -147,6 +148,7 @@ export class TemplateService {
           .where(inArray(templateGroups.templateId, ids))
           .orderBy(userGroups.name)
       : []
+    const peopleRows = ids.length ? await this.db.select({ templateId: templateUsers.templateId }).from(templateUsers).where(inArray(templateUsers.templateId, ids)) : []
     const shared = rows.map((r): TemplateInfo => {
       const own = r.template.publishedBy === viewer.id || viewer.role === 'admin'
       // People see the groups they share it through; its publisher sees them all.
@@ -157,13 +159,20 @@ export class TemplateService {
         name: r.template.name,
         description: r.template.description,
         field: TemplateField.catch('general').parse(r.template.field),
-        sharing: r.template.everyone ? 'server' : groups.length ? 'groups' : 'people',
+        sharing: r.template.everyone
+          ? 'server'
+          : groups.length
+            ? 'groups'
+            : groupRows.some(g => g.templateId === r.template.id) || peopleRows.some(p => p.templateId === r.template.id)
+              ? 'people'
+              : 'private',
         groups,
         bySystemAdmin: r.publisherRole === 'admin',
         publishedBy: r.publisher,
         canRemove: viewer.role === 'admin' || r.ownerId === viewer.id,
         projectId: r.ownerId === viewer.id ? r.template.projectId : null,
         target: null,
+        templateOnly: r.templateOnly,
       }
     })
     return [...builtins, ...shared]
@@ -224,14 +233,18 @@ export class TemplateService {
    * 2026-10-25): admins share with their groups and with people they pick,
    * the system administrator also with everyone on the server.
    */
-  /** Whether this person may share a template with this audience; the groups and people, deduplicated. */
+  /**
+   * Whether this person may share a template with this audience; the groups and people,
+   * deduplicated. No one is a template for its publisher alone, which anyone may have (user's
+   * decision 2026-10-27); sharing it stays for admins.
+   */
   async checkAudience(viewer: Viewer, audience: z.output<typeof TemplateAudience>): Promise<{ everyone: boolean; groups: string[]; people: string[] }> {
-    if (viewer.role !== 'admin' && viewer.role !== 'manager') throw new ForbiddenError('Only admins can share templates')
     const { everyone, groupIds, userIds } = audience
-    if (everyone && viewer.role !== 'admin') throw new ForbiddenError('Only the system administrator can share a template with everyone')
     const groups = [...new Set(groupIds)]
     const people = [...new Set(userIds)].filter(id => id !== viewer.id)
-    if (!everyone && groups.length === 0 && people.length === 0) throw new BadRequestError('Choose who the template is for')
+    if (!everyone && groups.length === 0 && people.length === 0) return { everyone: false, groups, people }
+    if (viewer.role !== 'admin' && viewer.role !== 'manager') throw new ForbiddenError('Only admins can share templates')
+    if (everyone && viewer.role !== 'admin') throw new ForbiddenError('Only the system administrator can share a template with everyone')
     if (groups.length) {
       // Admins share with groups they are in; the system administrator with any.
       const found = await this.db
@@ -276,19 +289,27 @@ export class TemplateService {
     return this.forProject(projectId)
   }
 
+  /** An imported template's project becomes an ordinary one, so its files aren't lost. */
   async unpublishProject(projectId: string) {
-    await this.db.delete(projectTemplates).where(eq(projectTemplates.projectId, projectId))
+    await this.db.transaction(async tx => {
+      await tx.delete(projectTemplates).where(eq(projectTemplates.projectId, projectId))
+      await tx.update(projects).set({ templateOnly: false }).where(eq(projects.id, projectId))
+    })
   }
 
-  /** Take a shared template down from the list: its project's owner or an admin. */
-  async remove(templateId: string, viewer: { id: string; role?: string | null }) {
+  /**
+   * Take a shared template down from the list: its project's owner or an admin. Returns the
+   * project when it only held the template's files (an import), for the caller to delete.
+   */
+  async remove(templateId: string, viewer: { id: string; role?: string | null }): Promise<string | undefined> {
     const [row] = await this.db
-      .select({ ownerId: projects.ownerId })
+      .select({ ownerId: projects.ownerId, projectId: projects.id, templateOnly: projects.templateOnly })
       .from(projectTemplates)
       .innerJoin(projects, eq(projects.id, projectTemplates.projectId))
       .where(eq(projectTemplates.id, templateId))
     if (!row) throw new NotFoundError('Template not found')
     if (viewer.role !== 'admin' && row.ownerId !== viewer.id) throw new ForbiddenError('Only the project owner or the system administrator can remove this template')
     await this.db.delete(projectTemplates).where(eq(projectTemplates.id, templateId))
+    return row.templateOnly ? row.projectId : undefined
   }
 }

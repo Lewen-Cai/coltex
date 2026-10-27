@@ -390,6 +390,10 @@ const messages: Record<string, string> = {
   'Social sciences & humanities': 'Khoa học xã hội và nhân văn',
   'Earth & environment': 'Trái Đất và môi trường',
   'No template found.': 'Không tìm thấy mẫu.',
+  'Only you': 'Chỉ mình bạn',
+  'Share with others': 'Chia sẻ với người khác',
+  'Its files are deleted.': 'Các tệp của nó sẽ bị xóa.',
+  'Edit files': 'Sửa tệp',
 }
 
 export default messages

@@ -8,6 +8,7 @@
 - **Condiviso dall’amministratore di sistema**: per tutti su questo server.
 - **Condiviso in** il nome di un gruppo: condiviso con un gruppo di cui fai parte.
 - **Condiviso da** un nome: condiviso con te personalmente.
+- **Solo tu**: un modello che hai importato per te.
 
 I pulsanti sopra l’elenco (**Tutti**, poi gli ambiti) mostrano i modelli di un ambito. Vedi solo i modelli condivisi con te. Vedi anche [Primi passi](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Da sapere:
 
 Molte riviste e conferenze pubblicano modelli LaTeX che non sono integrati in ColTex: le loro licenze non ne consentono la ridistribuzione, oppure non fanno parte di TeX Live. Tra questi ci sono NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Scarica il modello ufficiale dal sito della conferenza o dell’editore e importalo come modello:
 
-1. Fai clic su **Nuovo progetto** e poi su **Importa modello** (solo amministratori).
-2. Scegli lo zip, dagli un nome, una descrizione e un **Ambito**, scegli a chi va in **Condiviso con** e fai clic su **Importa**.
+1. Fai clic su **Nuovo progetto**, poi su **Importa modello**.
+2. Scegli lo zip, dagli un nome, una descrizione e un **Ambito**, e fai clic su **Importa**. È solo per te, a meno che tu non attivi **Condividi con altri** (amministratori) e scelga con chi.
 
 Da sapere:
 
-- Per chi può essere segue le regole della pubblicazione (sopra): gli amministratori condividono con i loro gruppi e con le persone che scelgono, l’amministratore di sistema anche con tutti.
-- Lo zip diventa un tuo progetto, pubblicato come modello. Il documento principale viene trovato come quando si importa un progetto; i file di compilazione e di sistema sono esclusi.
-- Il menu ⋯ del modello ha **Apri progetto** (per modificarne i file), **Modifica modello…** (per rinominarlo, cambiare i destinatari o annullarne la pubblicazione) e **Rimuovi modello**.
+- La condivisione segue le regole della pubblicazione (sopra): gli amministratori condividono con i propri gruppi e con le persone scelte, l’amministratore di sistema anche con tutti. Un modello solo per te ha l’etichetta **Solo tu**.
+- L’importazione non aggiunge progetti al tuo spazio di lavoro: il modello conserva i propri file. Il documento principale si trova come nell’importazione di un progetto; file di compilazione e residui di sistema vengono esclusi.
+- Il menu ⋯ del modello ha **Modifica i file**, **Modifica modello…** (per rinominarlo, cambiare con chi è condiviso o ritirarlo; ritirandolo, i suoi file diventano un tuo progetto) e **Rimuovi modello**, che ne elimina i file.
 
 ## Convertire in un modello di rivista
 

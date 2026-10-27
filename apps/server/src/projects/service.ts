@@ -60,7 +60,8 @@ export class ProjectService {
       .from(projectMembers)
       .innerJoin(projects, eq(projects.id, projectMembers.projectId))
       .innerJoin(user, eq(user.id, projects.ownerId))
-      .where(eq(projectMembers.userId, userId))
+      // A project that only holds an imported template's files is listed as the template.
+      .where(and(eq(projectMembers.userId, userId), eq(projects.templateOnly, false)))
       .orderBy(desc(projects.updatedAt))
     return rows.map(r => ({
       ...toMeta(r.project),
@@ -159,6 +160,11 @@ export class ProjectService {
   /** Bump updatedAt after file changes so project lists sort by recent activity. */
   async touch(projectId: string): Promise<void> {
     await this.db.update(projects).set({ updatedAt: new Date() }).where(eq(projects.id, projectId))
+  }
+
+  /** Whether a project only holds an imported template's files (see `projects.templateOnly`). */
+  async setTemplateOnly(projectId: string, templateOnly: boolean): Promise<void> {
+    await this.db.update(projects).set({ templateOnly }).where(eq(projects.id, projectId))
   }
 
   async delete(projectId: string): Promise<void> {

@@ -531,10 +531,10 @@ export const TemplateInfo = z.object({
   field: TemplateField.nullable(),
   /**
    * Who it is shared with, for its tag: everyone on the server, groups (their
-   * names in `groups`: the viewer's own, or all of them for its publisher), or
-   * only people picked one by one.
+   * names in `groups`: the viewer's own, or all of them for its publisher),
+   * people picked one by one, or no one but its publisher (`private`).
    */
-  sharing: z.enum(['builtin', 'server', 'groups', 'people']),
+  sharing: z.enum(['builtin', 'server', 'groups', 'people', 'private']),
   groups: z.array(z.string()),
   /** Shared by the system administrator. */
   bySystemAdmin: z.boolean(),
@@ -546,6 +546,8 @@ export const TemplateInfo = z.object({
   projectId: z.string().nullable(),
   /** Built-in templates that a conversion target writes into (its id): conversion uses that target. */
   target: z.string().nullable(),
+  /** An imported template: its project only holds its files (not in the project list) and goes with it. */
+  templateOnly: z.boolean(),
 })
 export type TemplateInfo = z.infer<typeof TemplateInfo>
 

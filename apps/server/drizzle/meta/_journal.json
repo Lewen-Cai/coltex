@@ -288,6 +288,13 @@
       "when": 1792931863473,
       "tag": "0040_template_audience",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793077400592,
+      "tag": "0041_template_only_projects",
+      "breakpoints": true
     }
   ]
 }

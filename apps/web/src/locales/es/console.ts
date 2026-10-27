@@ -390,6 +390,10 @@ const messages: Record<string, string> = {
   'Social sciences & humanities': 'Ciencias sociales y humanidades',
   'Earth & environment': 'Tierra y medio ambiente',
   'No template found.': 'No se encontró ninguna plantilla.',
+  'Only you': 'Solo tú',
+  'Share with others': 'Compartir con otros',
+  'Its files are deleted.': 'Sus archivos se eliminan.',
+  'Edit files': 'Editar archivos',
 }
 
 export default messages

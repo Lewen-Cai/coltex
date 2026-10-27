@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ADD COLUMN "template_only" boolean DEFAULT false NOT NULL;

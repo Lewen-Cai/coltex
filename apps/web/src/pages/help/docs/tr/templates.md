@@ -8,6 +8,7 @@
 - **Sistem yöneticisi paylaştı**: bu sunucudaki herkes için.
 - Bir grup adıyla **ile paylaşıldı**: üyesi olduğunuz bir grupla paylaşılmış.
 - Bir adla **paylaştı**: sizinle kişisel olarak paylaşılmış.
+- **Yalnızca siz**: kendiniz için içe aktardığınız bir şablon.
 
 Listenin üstündeki düğmeler (**Tümü**, sonra alanlar) tek bir alanın şablonlarını gösterir. Yalnızca sizinle paylaşılan şablonları görürsünüz. Ayrıca [Başlarken](#/help/getting-started) bölümüne bakın.
 
@@ -37,14 +38,14 @@ Bilmekte fayda var:
 
 Birçok dergi ve konferansın yayımladığı LaTeX şablonları ColTex’e yerleşik değildir: lisansları yeniden dağıtılmalarına izin vermez ya da TeX Live’ın parçası değildirler. Bunlar arasında NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics vardır. Resmî şablonu konferansın ya da yayıncının web sitesinden indirin ve şablon olarak içe aktarın:
 
-1. **Yeni proje** düğmesine, ardından **Şablonu içe aktar** düğmesine tıklayın (yalnızca yöneticiler).
-2. Zip dosyasını seçin, bir ad, açıklama ve **Alan** girin, **Paylaşılan** altında kimin alacağını seçin ve **İçe aktar** düğmesine tıklayın.
+1. **Yeni proje**ye, ardından **Şablonu içe aktar**a tıklayın.
+2. Zip’i seçin, bir ad, açıklama ve **Alan** girin, **İçe aktar**a tıklayın. **Başkalarıyla paylaş**ı (yöneticiler) açıp kiminle paylaşacağınızı seçmezseniz yalnızca sizindir.
 
 Bilmekte fayda var:
 
-- Kimin için olabileceği yayımlama kurallarına uyar (yukarıda): yöneticiler kendi gruplarıyla ve seçtikleri kişilerle, sistem yöneticisi ayrıca herkesle paylaşır.
-- Zip sizin bir projeniz olur ve şablon olarak yayımlanır. Ana belge, proje içe aktarılırken olduğu gibi bulunur; derleme dosyaları ve sistem kalıntıları dışarıda kalır.
-- Şablonun ⋯ menüsünde **Projeyi aç** (dosyalarını değiştirmek için), **Şablonu düzenle…** (adını veya kimin için olduğunu değiştirmek ya da yayımdan kaldırmak için) ve **Şablonu kaldır** vardır.
+- Paylaşım yayımlama kurallarına uyar (yukarıda): yöneticiler kendi gruplarıyla ve seçtikleri kişilerle, sistem yöneticisi ayrıca herkesle paylaşır. Yalnızca size ait bir şablonun etiketi **Yalnızca siz** olur.
+- İçe aktarma çalışma alanınıza proje eklemez: şablon dosyalarını kendisi tutar. Ana belgesi proje içe aktarılırken olduğu gibi bulunur; derleme dosyaları ve sistem artıkları dışarıda kalır.
+- Şablonun ⋯ menüsünde **Dosyaları düzenle**, **Şablonu düzenle…** (yeniden adlandırmak, kiminle paylaşıldığını değiştirmek veya yayından kaldırmak; kaldırınca dosyaları sizin bir projeniz olur) ve dosyalarını da silen **Şablonu kaldır** vardır.
 
 ## Dergi şablonuna dönüştürme
 

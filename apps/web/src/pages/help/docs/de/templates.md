@@ -8,6 +8,7 @@
 - **Vom Systemadministrator geteilt**: für alle auf diesem Server.
 - **Geteilt in** einem Gruppennamen: mit einer Gruppe geteilt, in der Sie sind.
 - **Geteilt von** einem Namen: persönlich mit Ihnen geteilt.
+- **Nur Sie**: eine Vorlage, die Sie für sich importiert haben.
 
 Die Schaltflächen über der Liste (**Alle**, dann die Fachgebiete) zeigen die Vorlagen eines Fachgebiets. Sie sehen nur die Vorlagen, die mit Ihnen geteilt sind. Siehe auch [Erste Schritte](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Gut zu wissen:
 
 Viele Zeitschriften und Konferenzen veröffentlichen LaTeX-Vorlagen, die nicht in ColTex eingebaut sind: Ihre Lizenzen erlauben keine Weitergabe, oder sie gehören nicht zu TeX Live. Dazu gehören NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Laden Sie die offizielle Vorlage von der Website der Konferenz oder des Verlags herunter und importieren Sie sie als Vorlage:
 
-1. Auf **Neues Projekt** klicken, dann auf **Vorlage importieren** (nur Administratoren).
-2. Das Zip wählen, Namen, Beschreibung und **Fachgebiet** angeben, unter **Geteilt mit** wählen, wer sie bekommt, und auf **Importieren** klicken.
+1. Klicken Sie auf **Neues Projekt** und dann auf **Vorlage importieren**.
+2. Wählen Sie das Zip, geben Sie Name, Beschreibung und **Fachgebiet** an und klicken Sie auf **Importieren**. Sie ist nur für Sie, außer Sie schalten **Mit anderen teilen** ein (Admins) und wählen, wer sie bekommt.
 
 Gut zu wissen:
 
-- Für wen sie sein kann, folgt den Regeln fürs Veröffentlichen (oben): Admins teilen mit ihren Gruppen und gewählten Personen, der Systemadministrator auch mit allen.
-- Das Zip wird zu einem Projekt von Ihnen, als Vorlage veröffentlicht. Das Hauptdokument wird wie beim Importieren eines Projekts erkannt; Build-Dateien und Systemreste bleiben weg.
-- Das ⋯-Menü der Vorlage hat **Projekt öffnen** (um ihre Dateien zu ändern), **Vorlage bearbeiten…** (um sie umzubenennen, die Empfänger zu ändern oder sie zurückzuziehen) und **Vorlage entfernen**.
+- Für das Teilen gelten die Regeln des Veröffentlichens (oben): Admins teilen mit ihren Gruppen und ausgewählten Personen, der Systemadministrator auch mit allen. Eine Vorlage nur für Sie trägt die Marke **Nur Sie**.
+- Der Import legt kein Projekt in Ihrem Arbeitsbereich an: Die Vorlage behält ihre Dateien selbst. Ihr Hauptdokument wird wie beim Import eines Projekts gefunden; Build-Dateien und Systemreste bleiben draußen.
+- Das ⋯-Menü der Vorlage hat **Dateien bearbeiten**, **Vorlage bearbeiten…** (umbenennen, ändern, für wen sie ist, oder die Veröffentlichung zurückziehen; ihre Dateien werden dann ein Projekt von Ihnen) und **Vorlage entfernen**, das ihre Dateien löscht.
 
 ## In eine Zeitschriftenvorlage umwandeln
 

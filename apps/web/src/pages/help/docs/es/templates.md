@@ -8,6 +8,7 @@
 - **Compartido por el administrador del sistema**: para todos en este servidor.
 - **Compartido en** el nombre de un grupo: compartida con un grupo en el que estás.
 - **Compartido por** un nombre: compartida contigo personalmente.
+- **Solo tú**: una plantilla que importaste para ti.
 
 Los botones sobre la lista (**Todo** y luego los campos) muestran las plantillas de un campo. Solo ves las plantillas compartidas contigo. Ver también [Primeros pasos](#/help/getting-started).
 
@@ -37,14 +38,14 @@ A tener en cuenta:
 
 Muchas revistas y congresos publican plantillas de LaTeX que no vienen incluidas en ColTex: sus licencias no permiten redistribuirlas, o no forman parte de TeX Live. Entre ellas están NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Descarga la plantilla oficial del sitio web del congreso o de la editorial e impórtala como plantilla:
 
-1. Pulsa **Nuevo proyecto** y luego **Importar plantilla** (solo administradores).
-2. Elige el zip, dale un nombre, una descripción y un **Campo**, elige para quién en **Compartido con** y pulsa **Importar**.
+1. Haz clic en **Nuevo proyecto** y luego en **Importar plantilla**.
+2. Elige el zip, dale un nombre, una descripción y un **Campo**, y haz clic en **Importar**. Es solo para ti salvo que actives **Compartir con otros** (administradores) y elijas con quién.
 
 A tener en cuenta:
 
-- Para quién puede ser sigue las reglas de publicar (arriba): los administradores comparten con sus grupos y con personas que elijan; el administrador del sistema, también con todos.
-- El zip se convierte en un proyecto tuyo, publicado como plantilla. Su documento principal se detecta como al importar un proyecto; los archivos de compilación y del sistema se omiten.
-- El menú ⋯ de la plantilla tiene **Abrir proyecto** (para cambiar sus archivos), **Editar plantilla…** (para cambiar el nombre o los destinatarios, o retirarla) y **Quitar plantilla**.
+- Compartir sigue las reglas de publicación (arriba): los administradores comparten con sus grupos y con las personas que elijan, y el administrador del sistema también con todos. Una plantilla solo para ti lleva la etiqueta **Solo tú**.
+- Importar no añade ningún proyecto a tu espacio de trabajo: la plantilla guarda sus propios archivos. Su documento principal se detecta como al importar un proyecto; los archivos de compilación y la basura del sistema se descartan.
+- El menú ⋯ de la plantilla tiene **Editar archivos**, **Editar plantilla…** (para renombrarla, cambiar con quién se comparte o retirarla; al retirarla, sus archivos pasan a ser un proyecto tuyo) y **Quitar plantilla**, que borra sus archivos.
 
 ## Convertir a una plantilla de revista
 

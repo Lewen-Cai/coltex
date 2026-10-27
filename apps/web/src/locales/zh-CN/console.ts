@@ -390,6 +390,10 @@ const messages: Record<string, string> = {
   'Social sciences & humanities': '社会科学与人文',
   'Earth & environment': '地球与环境',
   'No template found.': '没有找到模板。',
+  'Only you': '仅自己可见',
+  'Share with others': '共享给其他人',
+  'Its files are deleted.': '它的文件会被删除。',
+  'Edit files': '编辑文件',
 }
 
 export default messages

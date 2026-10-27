@@ -8,6 +8,7 @@
 - **Compartilhado pelo administrador do sistema**: para todos neste servidor.
 - **Compartilhado em** o nome de um grupo: compartilhado com um grupo de que você participa.
 - **Compartilhado por** um nome: compartilhado com você pessoalmente.
+- **Só você**: um modelo que você importou para si.
 
 Os botões acima da lista (**Todos** e depois as áreas) mostram os modelos de uma área. Você só vê os modelos compartilhados com você. Veja também [Primeiros passos](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Bom saber:
 
 Muitos periódicos e conferências publicam modelos LaTeX que não vêm embutidos no ColTex: suas licenças não permitem redistribuí-los, ou eles não fazem parte do TeX Live. Entre eles estão NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Baixe o modelo oficial no site da conferência ou da editora e importe-o como modelo:
 
-1. Clique em **Novo projeto** e depois em **Importar modelo** (só administradores).
-2. Escolha o zip, dê um nome, uma descrição e uma **Área**, escolha quem recebe em **Compartilhado com** e clique em **Importar**.
+1. Clique em **Novo projeto** e depois em **Importar modelo**.
+2. Escolha o zip, dê um nome, uma descrição e uma **Área**, e clique em **Importar**. Ele é só seu, a menos que você ative **Compartilhar com outras pessoas** (administradores) e escolha com quem.
 
 Bom saber:
 
-- Para quem pode ser segue as regras de publicação (acima): administradores compartilham com seus grupos e pessoas escolhidas; o administrador do sistema, também com todos.
-- O zip vira um projeto seu, publicado como modelo. O documento principal é encontrado como ao importar um projeto; arquivos de compilação e do sistema ficam de fora.
-- O menu ⋯ do modelo tem **Abrir projeto** (para mudar os arquivos), **Editar modelo…** (para renomear, mudar para quem é ou despublicar) e **Remover modelo**.
+- O compartilhamento segue as regras de publicação (acima): administradores compartilham com seus grupos e com pessoas escolhidas, e o administrador do sistema também com todos. Um modelo só seu tem a etiqueta **Só você**.
+- Importar não cria projeto no seu espaço de trabalho: o modelo guarda os próprios arquivos. O documento principal é encontrado como ao importar um projeto; arquivos de compilação e lixo do sistema ficam de fora.
+- O menu ⋯ do modelo tem **Editar arquivos**, **Editar modelo…** (para renomear, mudar com quem é compartilhado ou despublicar; ao despublicar, os arquivos viram um projeto seu) e **Remover modelo**, que apaga os arquivos.
 
 ## Converter para um modelo de periódico
 

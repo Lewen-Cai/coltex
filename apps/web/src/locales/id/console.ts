@@ -390,6 +390,10 @@ const messages: Record<string, string> = {
   'Social sciences & humanities': 'Ilmu sosial dan humaniora',
   'Earth & environment': 'Bumi dan lingkungan',
   'No template found.': 'Template tidak ditemukan.',
+  'Only you': 'Hanya Anda',
+  'Share with others': 'Bagikan dengan orang lain',
+  'Its files are deleted.': 'Berkasnya akan dihapus.',
+  'Edit files': 'Edit berkas',
 }
 
 export default messages

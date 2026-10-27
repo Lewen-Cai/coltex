@@ -390,6 +390,10 @@ const messages: Record<string, string> = {
   'Social sciences & humanities': '사회과학·인문학',
   'Earth & environment': '지구·환경',
   'No template found.': '템플릿을 찾을 수 없습니다.',
+  'Only you': '나만 보기',
+  'Share with others': '다른 사람과 공유',
+  'Its files are deleted.': '파일이 삭제됩니다.',
+  'Edit files': '파일 편집',
 }
 
 export default messages

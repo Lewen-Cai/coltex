@@ -50,7 +50,7 @@ describe('importing a template from a zip', () => {
     await t?.close()
   })
 
-  test('a journal zip in a folder becomes a shared template; junk and build files are left out', async () => {
+  test('a journal zip in a folder becomes a shared template, not a project in the list; junk and build files are left out', async () => {
     // Laid out like the journals' downloads: one top folder, the class, a sample
     // document, bibliography styles, and what the author's editor left behind.
     const zip = await makeZip([
@@ -77,6 +77,8 @@ describe('importing a template from a zip', () => {
     )
     assert.equal(template.projectId, project.id)
     assert.equal(template.canRemove, true)
+    assert.equal(template.templateOnly, true)
+    assert.ok(!(await t.app.inject({ url: '/api/projects', headers: { cookie: bob } })).json().some((p: { id: string }) => p.id === project.id), 'importing makes no project in the list')
     assert.deepEqual([template.sharing, template.field], ['people', 'medicine'])
 
     const files = (await t.app.inject({ url: `/api/projects/${project.id}`, headers: { cookie: bob } }))
@@ -96,17 +98,36 @@ describe('importing a template from a zip', () => {
     assert.equal((await t.app.inject({ url: `/api/projects/${project.id}/template`, headers: { cookie: bob } })).json().id, template.id)
   })
 
-  test('only administrators may import', async () => {
+  test('anyone imports a template for themselves; sharing it is for admins', async () => {
     const zip = await makeZip([{ path: 'main.tex', data: '\\documentclass{article}\n\\begin{document}\nHi\n\\end{document}\n' }])
     const before = await projectCount(dan)
     const everyone = `audience=${encodeURIComponent('{"everyone":true}')}`
-    assert.equal((await upload(dan, zip, `name=Mine&${everyone}`)).statusCode, 403)
-    assert.equal(await projectCount(dan), before, 'nothing is made for a member')
+    assert.equal((await upload(dan, zip, `name=Mine&${everyone}`)).statusCode, 403, 'members share nothing')
     const bobBefore = await projectCount(bob)
     assert.equal((await upload(bob, zip, `name=Everyone&${everyone}`)).statusCode, 403, 'admins share with their groups and people')
-    assert.equal((await upload(bob, zip, 'name=Nobody')).statusCode, 400, 'someone to share it with')
     assert.equal(await projectCount(bob), bobBefore, 'nothing is made when who it is for is wrong')
     assert.equal((await upload(admin, zip, `name=From%20the%20system%20admin&${everyone}`)).statusCode, 201)
+
+    // With no one to share it with, it is the importer's own.
+    const res = await upload(dan, zip, 'name=Mine')
+    assert.equal(res.statusCode, 201, res.body)
+    const { template, project } = res.json()
+    assert.deepEqual([template.sharing, template.templateOnly, template.projectId], ['private', true, project.id])
+    assert.equal(await projectCount(dan), before, "its project isn't in the project list")
+    assert.ok((await t.app.inject({ url: `/api/projects/${project.id}`, headers: { cookie: dan } })).statusCode === 200, 'but opens, to change the files')
+    const seen = async (cookie: string) => (await t.app.inject({ url: '/api/templates', headers: { cookie } })).json().some((x: { id: string }) => x.id === template.id)
+    assert.equal(await seen(bob), false, 'no one else sees it')
+    assert.equal(await seen(dan), true)
+    const made = (await t.app.inject({ method: 'POST', url: '/api/projects', headers: { cookie: dan }, payload: { name: 'Paper', template: template.id } })).json()
+    assert.equal(await projectCount(dan), before + 1, 'a project made from it is an ordinary one')
+
+    // Removing it removes its files; unpublishing keeps them, as an ordinary project.
+    assert.equal((await t.app.inject({ method: 'DELETE', url: `/api/templates/${template.id}`, headers: { cookie: dan } })).statusCode, 204)
+    assert.equal((await t.app.inject({ url: `/api/projects/${project.id}`, headers: { cookie: dan } })).statusCode, 404)
+    assert.equal((await t.app.inject({ url: `/api/projects/${made.id}`, headers: { cookie: dan } })).statusCode, 200)
+    const kept = (await upload(dan, zip, 'name=Kept')).json()
+    assert.equal((await t.app.inject({ method: 'DELETE', url: `/api/projects/${kept.project.id}/template`, headers: { cookie: dan } })).statusCode, 204)
+    assert.ok((await t.app.inject({ url: '/api/projects', headers: { cookie: dan } })).json().some((p: { id: string }) => p.id === kept.project.id))
   })
 
   test('a zip without a .tex file is refused, and leaves no project behind', async () => {

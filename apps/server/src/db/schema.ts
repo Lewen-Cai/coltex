@@ -158,6 +158,8 @@ export const projects = pgTable(
     spellCheckLanguage: text('spell_check_language').notNull().default('en_US'),
     /** Who has track changes on (see TrackChangesState). */
     trackChanges: jsonb('track_changes').$type<{ everyone: boolean; users: string[] }>().notNull().default({ everyone: false, users: [] }),
+    /** Holds an imported template's files: not in the project list (user's decision 2026-10-27). */
+    templateOnly: boolean('template_only').notNull().default(false),
     ...timestamps,
   },
   t => [index('projects_owner_id_idx').on(t.ownerId)],

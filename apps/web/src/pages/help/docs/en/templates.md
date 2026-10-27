@@ -8,6 +8,7 @@
 - **Shared by the system administrator**: for everyone on this server.
 - **Shared across** a group's name: shared with a group you are in.
 - **Shared by** a name: shared with you in person.
+- **Only you**: a template you imported for yourself.
 
 The buttons above the list (**All**, then the fields) show the templates of one field. You see only the templates shared with you. See also [Getting started](#/help/getting-started).
 
@@ -37,14 +38,14 @@ Good to know:
 
 Many journals and conferences publish LaTeX templates that aren't built into ColTex: their licences don't allow passing them on, or they aren't part of TeX Live. Among them are NeurIPS, ICML, ICLR, ACL, EMNLP, CVPR, ICCV, AAAI, IJCAI, USENIX, IEEE Access, Springer Nature (`sn-jnl`), PNAS, Science, Cell, eLife, PLOS, Frontiers, MDPI, BMC, Wiley, Taylor & Francis, SAGE, IOP, SIAM, Copernicus, AGU, Astronomy & Astrophysics. Download the official template from the conference's or the publisher's website, then import it as a template:
 
-1. Click **New project**, then **Import template** (administrators only).
-2. Choose the zip, give it a name, a description and a **Field**, choose who gets it under **Shared with**, and click **Import**.
+1. Click **New project**, then **Import template**.
+2. Choose the zip, give it a name, a description and a **Field**, and click **Import**. It is for you alone unless you turn on **Share with others** (administrators) and choose who gets it.
 
 Good to know:
 
-- Who it can be for follows the rules for publishing (above): admins share with their groups and with people they pick, the system administrator also with everyone.
-- The zip becomes a project of yours, published as a template. Its main document is found as when importing a project; build files and system clutter are left out.
-- The template's ⋯ menu has **Open project** (to change its files), **Edit template…** (to rename it, change who it is for, or unpublish it) and **Remove template**.
+- Sharing follows the rules for publishing (above): admins share with their groups and with people they pick, the system administrator also with everyone. A template for you alone is tagged **Only you**.
+- Importing adds no project to your workspace: the template keeps its files itself. Its main document is found as when importing a project; build files and system clutter are left out.
+- The template's ⋯ menu has **Edit files**, **Edit template…** (to rename it, change who it is for, or unpublish it, which turns its files into a project of yours) and **Remove template**, which deletes its files.
 
 ## Converting to a journal template
 

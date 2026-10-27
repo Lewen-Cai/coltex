@@ -4,7 +4,7 @@ import { ImportedTemplate, ProjectId, ProjectTemplateState, TemplateBody, Templa
 import { requireUser } from '../auth/fastify.ts'
 import { config } from '../config.ts'
 import type { Deps } from '../deps.ts'
-import { BadRequestError, ForbiddenError } from '../errors.ts'
+import { BadRequestError } from '../errors.ts'
 import { projectFromImport, readImport } from './archive.ts'
 
 const IdParams = z.object({ id: ProjectId })
@@ -13,13 +13,16 @@ export const templateRoutes: FastifyPluginAsyncZod<Deps> = async (app, { project
   app.get('/templates', { schema: { response: { 200: z.array(TemplateInfo) } } }, req => templates.list(requireUser(req)))
 
   app.delete('/templates/:id', { schema: { params: z.object({ id: z.string().min(1).max(64) }) } }, async (req, reply) => {
-    await templates.remove(req.params.id, requireUser(req))
+    const project = await templates.remove(req.params.id, requireUser(req))
+    // An imported template's files go with it.
+    if (project) await projects.delete(project)
     return reply.code(204).send()
   })
 
-  // A journal's template zip (say, Springer Nature's) as a shared template in
-  // one step: a project of the caller's holds the files, so they can change
-  // them later like any template they published.
+  // A journal's template zip (say, Springer Nature's) as a template in one step.
+  // A project of the caller's holds the files, so they can change them later,
+  // but isn't in their project list (user's decision 2026-10-27): importing a
+  // template isn't making a project.
   app.post(
     '/templates/import',
     {
@@ -27,15 +30,15 @@ export const templateRoutes: FastifyPluginAsyncZod<Deps> = async (app, { project
       schema: { querystring: TemplateImportQuery, response: { 201: ImportedTemplate } },
     },
     async (req, reply) => {
-      // Administrators only (user's decision 2026-10-25): admins for their groups and people they
-      // pick, the system administrator also for everyone (checked again when it is published).
+      // Anyone for themselves; sharing it is for admins (their groups and people they pick, the
+      // system administrator also everyone), checked before anything is made and again when it
+      // is published.
       const user = requireUser(req)
-      if (user.role !== 'admin' && user.role !== 'manager') throw new ForbiddenError('Only admins can import templates')
-      // Who it is for is checked before anything is made.
       await templates.checkAudience(user, req.query.audience)
       const archive = await readImport(req.body)
       if (!archive.rootFile) throw new BadRequestError('The archive contains no .tex file')
       const project = await projectFromImport({ projects, history }, user.id, req.query.name, archive)
+      await projects.setTemplateOnly(project.id, true)
       await templates.publish(project.id, user, req.query)
       const template = (await templates.list(user)).find(x => x.projectId === project.id)!
       return reply.code(201).send({ template, project, warnings: archive.warnings })
