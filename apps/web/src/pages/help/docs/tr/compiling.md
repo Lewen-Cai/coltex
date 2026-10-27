@@ -42,6 +42,7 @@ Bunlar bu tarayıcıda proje başına saklanır.
 
 - **Kaynak → PDF**: imleç kaynaktayken PDF çubuğundaki **Bul** düğmesine (veya sağ tık menüsündeki "PDF’te göster" seçeneğine) tıklayın; PDF oraya kayar ve orayı vurgular.
 - **PDF → kaynak**: PDF’e çift tıklayın; düzenleyici dosyayı o satırda açar.
+- **PDF’teki bağlantılar**: atıflar, şekillere, tablolara, denklemlere ve bölümlere yapılan göndermeler ve içindekiler PDF’te ilgili yere gider (`hyperref` ile); web adresleri yeni sekmede açılır.
 
 ## Yerleşim: düzenleyici, PDF veya ikisi
 

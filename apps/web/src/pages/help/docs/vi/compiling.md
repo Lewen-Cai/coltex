@@ -42,6 +42,7 @@ Con số trên **Nhật ký** là số lỗi. Nhật ký liệt kê lỗi, cản
 
 - **Mã nguồn → PDF**: khi con trỏ ở trong mã nguồn, nhấp **Định vị** trên thanh PDF (hoặc “Đến vị trí trong PDF” trong menu chuột phải); PDF sẽ cuộn tới đó và tô sáng vị trí.
 - **PDF → mã nguồn**: nhấp đúp vào PDF; trình soạn thảo mở tệp tại dòng đó.
+- **Liên kết trong PDF**: trích dẫn, tham chiếu đến hình, bảng, phương trình, mục và mục lục sẽ nhảy đến đúng chỗ trong PDF (cần `hyperref`); địa chỉ web mở trong thẻ mới.
 
 ## Bố cục: trình soạn thảo, PDF hoặc cả hai
 

@@ -34,6 +34,7 @@ Export to Word, the AI agent on the web, 60 templates across twelve fields, grou
 
 ### Fixed
 
+- Links in the PDF preview did nothing. Citations and references to figures, tables, equations and sections now jump to their place, and web addresses open in a new tab.
 - A process a build left running could keep the compiler waiting for that build forever.
 - A build that failed with an error (for example a file deleted while it started) stopped the whole compiler, and every build running or waiting with it hung until it timed out.
 - After installing, `coltex` wasn't found in new SSH sessions on systems whose login doesn't read `~/.bashrc`. The installer now adds `~/.local/bin` to the files a login reads too, and `coltex update` adds it to installs that had it only in `~/.bashrc`.

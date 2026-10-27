@@ -42,6 +42,7 @@ The number on **Logs** is the error count. The log lists errors, warnings and ty
 
 - **Source → PDF**: with the cursor in the source, click **Locate** in the PDF bar (or "Go to PDF" in the right-click menu); the PDF scrolls there and highlights it.
 - **PDF → source**: double-click the PDF; the editor opens the file at that line.
+- **Links in the PDF**: citations, references to figures, tables, equations and sections, and the table of contents jump to their place in the PDF (with `hyperref`); web addresses open in a new tab.
 
 ## Layout: editor, PDF or both
 

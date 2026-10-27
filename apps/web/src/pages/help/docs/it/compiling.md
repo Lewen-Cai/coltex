@@ -42,6 +42,7 @@ Il numero su **Log** è il conteggio degli errori. Il log elenca errori, avvisi 
 
 - **Sorgente → PDF**: con il cursore nel sorgente, fai clic su **Individua** nella barra del PDF (o su “Vai al PDF” nel menu del tasto destro); il PDF scorre fino a quel punto e lo evidenzia.
 - **PDF → sorgente**: fai doppio clic sul PDF; l’editor apre il file a quella riga.
+- **Link nel PDF**: citazioni, rimandi a figure, tabelle, equazioni e sezioni, e l’indice portano al punto giusto del PDF (con `hyperref`); gli indirizzi web si aprono in una nuova scheda.
 
 ## Layout: editor, PDF o entrambi
 

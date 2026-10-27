@@ -42,6 +42,7 @@ Angka pada **Log** adalah jumlah galat. Log mencantumkan galat, peringatan, dan 
 
 - **Sumber → PDF**: dengan kursor di kode sumber, klik **Temukan** di bilah PDF (atau "Ke PDF" di menu klik kanan); PDF bergulir ke sana dan menyorotnya.
 - **PDF → sumber**: klik dua kali PDF; editor membuka file di baris tersebut.
+- **Tautan di PDF**: sitasi, rujukan ke gambar, tabel, persamaan dan bagian, serta daftar isi melompat ke tempatnya di PDF (dengan `hyperref`); alamat web terbuka di tab baru.
 
 ## Tata letak: editor, PDF, atau keduanya
 

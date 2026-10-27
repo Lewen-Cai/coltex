@@ -42,6 +42,7 @@ Die Zahl an **Protokolle** ist die Anzahl der Fehler. Das Protokoll listet Fehle
 
 - **Quelltext → PDF**: Klicken Sie mit dem Cursor im Quelltext auf **Anzeigen** in der PDF-Leiste (oder auf „Zum PDF“ im Kontextmenü); das PDF scrollt an die Stelle und hebt sie hervor.
 - **PDF → Quelltext**: Doppelklicken Sie ins PDF; der Editor öffnet die Datei an dieser Zeile.
+- **Links im PDF**: Zitate, Verweise auf Abbildungen, Tabellen, Gleichungen und Abschnitte sowie das Inhaltsverzeichnis springen an ihre Stelle im PDF (mit `hyperref`); Webadressen öffnen sich in einem neuen Tab.
 
 ## Layout: Editor, PDF oder beides
 

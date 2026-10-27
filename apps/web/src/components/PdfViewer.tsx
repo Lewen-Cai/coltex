@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import * as pdfjs from 'pdfjs-dist'
-import { EventBus, PDFViewer } from 'pdfjs-dist/web/pdf_viewer.mjs'
+import { EventBus, LinkTarget, PDFLinkService, PDFViewer } from 'pdfjs-dist/web/pdf_viewer.mjs'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import 'pdfjs-dist/web/pdf_viewer.css'
 import { FileText, FileWarning } from 'lucide-react'
@@ -41,6 +41,7 @@ type Props = {
 export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({ url, compiling, onSyncToCode }, ref) {
   const container = useRef<HTMLDivElement>(null)
   const viewer = useRef<PDFViewer>(null)
+  const links = useRef<PDFLinkService>(null)
   const [failed, setFailed] = useState<string | null>(null)
   const loadingTask = useRef<pdfjs.PDFDocumentLoadingTask>(null)
   const onSync = useRef(onSyncToCode)
@@ -48,11 +49,16 @@ export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({
 
   useEffect(() => {
     const eventBus = new EventBus()
+    // Links in the PDF: hyperref's citations, \ref and the contents jump within it; web addresses open in a new tab.
+    const linkService = new PDFLinkService({ eventBus, externalLinkTarget: LinkTarget.BLANK, externalLinkRel: 'noopener noreferrer nofollow' })
     const v = new PDFViewer({
       container: container.current!,
       viewer: container.current!.firstElementChild as HTMLDivElement,
       eventBus,
+      linkService,
     })
+    linkService.setViewer(v)
+    links.current = linkService
     eventBus.on('pagesinit', () => {
       v.currentScaleValue = 'page-width'
     })
@@ -112,6 +118,7 @@ export const PdfViewer = forwardRef<PdfViewerHandle, Props>(function PdfViewer({
         const previous = loadingTask.current
         loadingTask.current = task
         v.setDocument(doc)
+        links.current?.setDocument(doc, null)
         v.eventBus.on(
           'pagesloaded',
           () => {

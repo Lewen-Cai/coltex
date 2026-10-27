@@ -42,6 +42,7 @@ Le nombre sur **Journaux** est le nombre d’erreurs. Le journal liste les erreu
 
 - **Source → PDF** : le curseur dans la source, cliquez sur **Localiser** dans la barre du PDF (ou « Aller au PDF » dans le menu contextuel) ; le PDF défile jusqu’à cet endroit et le met en évidence.
 - **PDF → source** : double-cliquez dans le PDF ; l’éditeur ouvre le fichier à cette ligne.
+- **Liens dans le PDF** : les citations, les renvois aux figures, tableaux, équations et sections, et la table des matières mènent à leur place dans le PDF (avec `hyperref`) ; les adresses web s’ouvrent dans un nouvel onglet.
 
 ## Disposition : éditeur, PDF ou les deux
 

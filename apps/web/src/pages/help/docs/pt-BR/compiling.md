@@ -42,6 +42,7 @@ O número em **Logs** é a contagem de erros. O log lista erros, avisos e proble
 
 - **Código → PDF**: com o cursor no código, clique em **Localizar no PDF** na barra do PDF (ou "Ir para o PDF" no menu do botão direito); o PDF rola até lá e destaca o trecho.
 - **PDF → código**: clique duas vezes no PDF; o editor abre o arquivo naquela linha.
+- **Links no PDF**: citações, referências a figuras, tabelas, equações e seções, e o sumário levam ao lugar certo no PDF (com `hyperref`); endereços da web abrem em uma nova aba.
 
 ## Layout: editor, PDF ou ambos
 

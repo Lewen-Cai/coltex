@@ -42,6 +42,7 @@ El número en **Registros** es la cantidad de errores. El registro muestra error
 
 - **Código → PDF**: con el cursor en el código, haz clic en **Localizar** en la barra del PDF (o en «Ir al PDF» en el menú contextual); el PDF se desplaza hasta allí y lo resalta.
 - **PDF → código**: haz doble clic en el PDF; el editor abre el archivo en esa línea.
+- **Enlaces en el PDF**: las citas, las referencias a figuras, tablas, ecuaciones y secciones, y el índice saltan a su lugar en el PDF (con `hyperref`); las direcciones web se abren en una pestaña nueva.
 
 ## Diseño: editor, PDF o ambos
 
