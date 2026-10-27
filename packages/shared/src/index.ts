@@ -544,6 +544,8 @@ export const TemplateInfo = z.object({
   canRemove: z.boolean(),
   /** Shared templates whose project the viewer owns: the project, to change the template. */
   projectId: z.string().nullable(),
+  /** Built-in templates that a conversion target writes into (its id): conversion uses that target. */
+  target: z.string().nullable(),
 })
 export type TemplateInfo = z.infer<typeof TemplateInfo>
 
@@ -1447,6 +1449,8 @@ export const AiMessageBody = z.object({
   selection: AiSelection.optional(),
   /** The model and thinking level picked in the panel; the saved preference otherwise. */
   preference: AiPreference.optional(),
+  /** The interface language (a BCP 47 tag such as zh-CN), which the agent answers in. */
+  language: z.string().regex(/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,2}$/).optional(),
 }).refine(b => b.text.trim() !== '' || b.skill, { message: 'Type a message', path: ['text'] })
 export type AiMessageBody = z.infer<typeof AiMessageBody>
 

@@ -893,15 +893,10 @@ export function EditorPage({ projectId, user }: { projectId: string; user: Sessi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aiAvailable, canEdit, project, projectId])
 
-  const askAiAbout = (d?: Diagnostic) => {
-    // Non-editors can't apply fixes, so they ask for an explanation instead.
-    // The request is written in the interface language, so the assistant answers in it too.
-    if (d) {
-      const error = `${d.message}${d.file ? ` (${d.file}${d.line ? `:${d.line}` : ''})` : ''}`
-      return sendToAi(canEdit ? t('Fix this error: {error}', { error }) : t('Explain this error: {error}', { error }), { errors: false, selection: false }, d)
-    }
-    return sendToAi(canEdit ? t('Fix the compile errors.') : t('Explain the compile errors and how to fix them.'), { errors: true, selection: false })
-  }
+  // Non-editors can't apply fixes, so they ask for an explanation instead.
+  // The request is written in the interface language, so the assistant answers in it too.
+  const askAiAbout = () =>
+    sendToAi(canEdit ? t('Fix the compile errors.') : t('Explain the compile errors and how to fix them.'), { errors: true, selection: false })
 
   const editorPrefs = useEditorSettings()
   const editorBody = (

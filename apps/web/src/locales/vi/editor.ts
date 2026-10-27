@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: 'Thay thế',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': 'Sửa lỗi này: {error}',
-  'Explain this error: {error}': 'Giải thích lỗi này: {error}',
   'Fix the compile errors.': 'Sửa các lỗi biên dịch.',
   'Explain the compile errors and how to fix them.': 'Giải thích các lỗi biên dịch và cách sửa chúng.',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': 'Giải thích bằng AI',
   'Raw log': 'Nhật ký gốc',
   'No errors or warnings.': 'Không có lỗi hay cảnh báo.',
-  'Ask AI': 'Hỏi AI',
   'Learn more': 'Tìm hiểu thêm',
 
   // PDF viewer
@@ -597,7 +594,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Đặt lại vào {date}',
   'Resize the message box': 'Đổi chiều cao ô nhập tin nhắn',
   'The AI agent can use the web, so its changes wait for your review.': 'Tác tử AI có thể dùng web, nên các thay đổi của nó đều chờ bạn xem xét.',
-  'Journals': 'Tạp chí',
   'Templates': 'Mẫu',
   'Upload a template (.zip)': 'Tải lên mẫu (.zip)',
   'One of my projects': 'Một dự án của tôi',

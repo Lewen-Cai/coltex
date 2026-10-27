@@ -11,6 +11,8 @@
 
 Listenin üstündeki düğmeler (**Tümü**, sonra alanlar) tek bir alanın şablonlarını gösterir. Yalnızca sizinle paylaşılan şablonları görürsünüz. Ayrıca [Başlarken](#/help/getting-started) bölümüne bakın.
 
+Altlarındaki arama alanı şablonları ada veya açıklamaya göre bulur.
+
 ## Bir projeyi şablon olarak yayımlamak
 
 Yöneticiler kendi projelerini şablon olarak yayımlayabilir, örneğin bir grubun tez biçimini:
@@ -48,7 +50,7 @@ Bilmekte fayda var:
 
 Bir projenin menüsündeki **Şablona dönüştür…** (proje ayarlarında: "Dergi şablonuna dönüştür"), bir makaleyi başka bir dergi veya konferans için yeniden yazar: IEEE Transactions, IEEE Konferansı, ACM Konferansı, ACM Dergisi, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS veya düz bir makale. Her yerleşik şablon bunlardan herhangi birine dönüştürülebilir.
 
-**Şablonlar** altında makale bunun yerine herhangi bir şablona gider: şablon listesinden biri, projelerinizden biri (**Projelerimden biri**) ya da bir derginin indirmeye sunduğu zip (**Şablon yükle (.zip)**). Makalenin başlığı, yazarları, kurumları, özeti ve anahtar sözcükleri şablonun örneklerinin olduğu yere, şablonun kendi yazımıyla yazılır; ardından gelen örnek metin makalenizle değiştirilir. Şablonun sınıf ve stil dosyaları da gelir, örnek ana dosyası başvuru için projede kalır.
+Liste **Yeni proje**dekiyle aynıdır. Yerleşik bir şablon, ColTex’in onun için yazdığı kurallarla doldurulur; diğer şablonlar (paylaşılan bir şablon, **Projelerimden biri** ile seçtiğiniz bir proje ya da bir derginin sunduğu ve **Şablon yükle (.zip)** ile yüklediğiniz zip) kendi biçimleriyle doldurulur: makalenin başlığı, yazarları, kurumları, özeti ve anahtar sözcükleri şablondaki örneklerin yerine yazılır ve ardından gelen örnek metin makalenizle değiştirilir. Şablonun sınıf ve stil dosyaları da gelir; örnek ana dosyası başvuru için projede kalır.
 
 - Başlık, yazarlar, kurumlar, özet, paketler ve kaynakça **yeni bir projede** yeniden oluşturulur ve ardından derlenir. Özgün proje olduğu gibi kalır.
 - Springer Nature'ın `sn-jnl` şablonuyla yazılmış makaleler de okunur; BMC, OUP ve Elsevier CAS makaleleri de öyle: ad ve soyadıyla yazarlar, kurumlar, `\abstract{}` ve yapılandırılmış özetler, anahtar kelimeler ve sondaki beyanlar bölümü.

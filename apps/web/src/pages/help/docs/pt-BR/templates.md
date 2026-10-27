@@ -11,6 +11,8 @@
 
 Os botões acima da lista (**Todos** e depois as áreas) mostram os modelos de uma área. Você só vê os modelos compartilhados com você. Veja também [Primeiros passos](#/help/getting-started).
 
+O campo de busca abaixo deles encontra modelos pelo nome ou pela descrição.
+
 ## Publicar um projeto como modelo
 
 Os administradores podem publicar como modelo um projeto próprio, como o formato de tese de um grupo:
@@ -48,7 +50,7 @@ Bom saber:
 
 **Converter para modelo…** no menu de um projeto (nas configurações do projeto: "Converter para um modelo de periódico") reescreve um artigo para outro periódico ou conferência: IEEE Transactions, Conferência IEEE, Conferência ACM, Periódico ACM, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS ou um artigo simples. Qualquer modelo embutido pode ser convertido para qualquer um deles.
 
-Em **Modelos**, o artigo vai para qualquer modelo: um da lista de modelos, um dos seus projetos (**Um dos meus projetos**) ou o zip que uma revista oferece para baixar (**Enviar um modelo (.zip)**). Título, autores, afiliações, resumo e palavras-chave são escritos onde o modelo tem os exemplos, do jeito do modelo, e o texto de exemplo que vem depois é substituído pelo seu artigo. Os arquivos de classe e de estilo do modelo vêm junto, e o arquivo principal de exemplo fica no projeto para consulta.
+A lista é a mesma de **Novo projeto**. Um modelo integrado é escrito pelas regras que o ColTex tem para ele; qualquer outro modelo (um compartilhado, um dos seus projetos com **Um dos meus projetos**, ou o zip que um periódico oferece com **Enviar um modelo (.zip)**) é preenchido do jeito dele: o título, os autores, as afiliações, o resumo e as palavras-chave do artigo vão para onde o modelo tem os de exemplo, e o texto de exemplo que vem depois é trocado pelo seu artigo. Os arquivos de classe e de estilo do modelo vêm junto, e o arquivo principal de exemplo fica no projeto como referência.
 
 - O título, os autores, as afiliações, o resumo, os pacotes e a bibliografia são reconstruídos em um **novo projeto**, que é então compilado. O original continua como está.
 - Artigos escritos no modelo `sn-jnl` da Springer Nature também são lidos, assim como os da BMC, OUP e Elsevier CAS: autores com nome e sobrenome, afiliações, `\abstract{}` e resumos estruturados, palavras-chave e a parte final com as declarações.

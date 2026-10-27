@@ -11,6 +11,8 @@
 
 I pulsanti sopra l’elenco (**Tutti**, poi gli ambiti) mostrano i modelli di un ambito. Vedi solo i modelli condivisi con te. Vedi anche [Primi passi](#/help/getting-started).
 
+Il campo di ricerca sotto di essi trova i modelli per nome o descrizione.
+
 ## Pubblicare un progetto come modello
 
 Gli amministratori possono pubblicare come modello un proprio progetto, per esempio il formato di tesi di un gruppo:
@@ -48,7 +50,7 @@ Da sapere:
 
 **Converti in modello…** nel menu di un progetto (nelle impostazioni del progetto: “Converti in un modello di rivista”) riscrive un articolo per un’altra rivista o conferenza: IEEE Transactions, IEEE Conference, ACM Conference, ACM Journal, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS o un articolo semplice. Ogni modello integrato può essere convertito in ciascuno di questi.
 
-In **Modelli**, l’articolo va invece in un modello qualsiasi: uno dell’elenco dei modelli, uno dei tuoi progetti (**Uno dei miei progetti**) o lo zip che una rivista offre da scaricare (**Carica un modello (.zip)**). Titolo, autori, affiliazioni, abstract e parole chiave vengono scritti dove il modello ha i suoi esempi, nel modo del modello, e il testo di esempio che segue è sostituito dal tuo articolo. I file di classe e di stile del modello vengono con lui, e il suo file principale di esempio resta nel progetto come riferimento.
+L’elenco è quello di **Nuovo progetto**. Un modello integrato viene scritto con le regole che ColTex ha per lui; qualsiasi altro modello (uno condiviso, uno dei tuoi progetti con **Uno dei miei progetti**, o lo zip offerto da una rivista con **Carica un modello (.zip)**) viene compilato a modo suo: titolo, autori, affiliazioni, abstract e parole chiave dell’articolo vanno dove il modello ha quelli di esempio, e il testo di esempio che segue viene sostituito dal tuo articolo. I file di classe e di stile del modello vengono copiati, e il suo file principale di esempio resta nel progetto come riferimento.
 
 - Titolo, autori, affiliazioni, abstract, pacchetti e bibliografia vengono ricostruiti in un **nuovo progetto**, che viene poi compilato. L’originale resta com’è.
 - Vengono letti anche gli articoli scritti con il modello `sn-jnl` di Springer Nature, come quelli BMC, OUP ed Elsevier CAS: autori con nome e cognome, affiliazioni, `\abstract{}` e abstract strutturati, parole chiave e la parte finale con le dichiarazioni.

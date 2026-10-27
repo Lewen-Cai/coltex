@@ -16,7 +16,7 @@ Find out exactly where the paper is going before changing anything: the journal 
 
 - If the author's message names the venue, repeat it in one line and ask them to confirm or correct it.
 - If it doesn't, ask: "Which journal or conference are you submitting to, and which article type?" The template only tells you the publisher (one class serves hundreds of Elsevier or Springer Nature journals).
-- Then **stop and wait for the answer**. Don't edit files, compile or search in the same turn.
+- Then **stop and wait for the answer**. Don't edit files, compile or search in the same turn. This holds even when the message lists errors to fix or asks you to fix the build right away: the venue decides how they are fixed. Your first reply is only the question (and, if it helps, a one-line summary of what the conversion left to do).
 - If the author doesn't know yet, say you'll fix the build and follow the template alone, and skip step 2.
 
 ## 2. Look up the venue's requirements

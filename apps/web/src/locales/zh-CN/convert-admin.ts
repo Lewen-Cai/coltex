@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex 已将此项目从 {source} 转换为 {template} 模板。当前构建结果：{counts}。',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex 已将此项目从 {source} 转换为 {template} 模板。当前构建结果：{counts}（原项目分别为 {errors}、{refs}、{cites} 个）。',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    '请用尽量少的 LaTeX 改动修复这些问题，使项目在新模板下顺利编译。不要改动论文的措辞或内容。',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    '请按 template-conversion Skill 来做：先和我确认这篇论文投哪个期刊或会议，等我回答后再修复编译问题，并按它的要求调整论文。不要改动论文的措辞或内容。',
   'Things the converter flagged:': '转换器标出的问题：',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

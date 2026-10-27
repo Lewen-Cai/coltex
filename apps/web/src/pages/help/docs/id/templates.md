@@ -11,6 +11,8 @@
 
 Tombol di atas daftar (**Semua**, lalu bidang-bidang) menampilkan templat satu bidang. Anda hanya melihat templat yang dibagikan dengan Anda. Lihat juga [Memulai](#/help/getting-started).
 
+Kolom pencarian di bawahnya menemukan templat menurut nama atau deskripsi.
+
 ## Menerbitkan proyek sebagai templat
 
 Administrator bisa menerbitkan proyek miliknya sebagai templat, misalnya format tesis sebuah grup:
@@ -48,7 +50,7 @@ Perlu diketahui:
 
 **Konversi ke templat…** di menu proyek (di pengaturan proyek: "Konversi ke templat jurnal") menulis ulang makalah untuk jurnal atau konferensi lain: IEEE Transactions, IEEE Conference, ACM Conference, ACM Journal, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS, atau artikel polos. Setiap templat bawaan dapat dikonversi ke salah satu dari ini.
 
-Di **Templat**, makalah masuk ke templat apa pun: templat dari daftar templat, salah satu proyek Anda (**Salah satu proyek saya**), atau zip yang disediakan jurnal untuk diunduh (**Unggah templat (.zip)**). Judul, penulis, afiliasi, abstrak, dan kata kunci ditulis di tempat contoh templat berada, dengan cara templat itu sendiri, dan teks contoh sesudahnya diganti dengan makalah Anda. Berkas kelas dan gaya templat ikut dibawa, dan berkas utama contohnya tetap ada di proyek sebagai rujukan.
+Daftarnya sama dengan di **Proyek baru**. Templat bawaan ditulis dengan aturan yang dimiliki ColTex untuknya; templat lain (templat yang dibagikan, salah satu proyek Anda lewat **Salah satu proyek saya**, atau zip dari jurnal lewat **Unggah templat (.zip)**) diisi dengan caranya sendiri: judul, penulis, afiliasi, abstrak, dan kata kunci makalah ditaruh di tempat contoh templat, dan teks contoh sesudahnya diganti dengan makalah Anda. Berkas kelas dan gaya templat ikut disertakan, dan berkas utama contohnya tetap di proyek sebagai rujukan.
 
 - Judul, penulis, afiliasi, abstrak, paket, dan bibliografi dibangun ulang dalam **proyek baru**, yang kemudian dikompilasi. Proyek asli tetap seperti semula.
 - Makalah yang ditulis dengan templat `sn-jnl` dari Springer Nature juga dibaca, begitu pula templat BMC, OUP, dan Elsevier CAS: penulis dengan nama depan dan nama belakang, afiliasi, `\abstract{}` dan abstrak terstruktur, kata kunci, serta bagian akhir berisi pernyataan.

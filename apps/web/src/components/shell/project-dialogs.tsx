@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type DragEvent, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Ellipsis, FileArchive, FolderOpen, Pencil, Trash2, TriangleAlert, Upload } from 'lucide-react'
+import { Ellipsis, FileArchive, FolderOpen, Pencil, Search, Trash2, TriangleAlert, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TemplateField, TemplateInfo } from '@coltex/shared'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -50,6 +50,7 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [templates, setTemplates] = useState<TemplateInfo[]>()
   const [template, setTemplate] = useState('article')
   const [field, setField] = useState<TemplateField | 'all'>('all')
+  const [query, setQuery] = useState('')
   const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
   // Importing a template is for administrators (the server refuses everyone else).
@@ -66,6 +67,7 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
       setName('')
       setTemplate('article')
       setField('all')
+      setQuery('')
       void load()
     }
   }, [open])
@@ -98,6 +100,7 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const imported = async (tpl: TemplateInfo) => {
     await load()
     setField('all')
+    setQuery('')
     setTemplate(tpl.id)
   }
 
@@ -157,6 +160,9 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
       </DropdownMenu>
     )
 
+  const label = (tpl: TemplateInfo) => (tpl.kind === 'builtin' ? translateServerMessage(tpl.name) : tpl.name)
+  const about = (tpl: TemplateInfo) => (tpl.kind === 'builtin' ? translateServerMessage(tpl.description) : tpl.description)
+
   const card = (tpl: TemplateInfo) => (
     <div key={tpl.id} className="group/template relative">
       <button
@@ -169,10 +175,8 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
         )}
       >
         {/* Built-in names and descriptions are English on the server. */}
-        <span className="pr-6 text-sm font-medium">{tpl.kind === 'builtin' ? translateServerMessage(tpl.name) : tpl.name}</span>
-        {tpl.description && (
-          <span className="text-xs text-muted-foreground">{tpl.kind === 'builtin' ? translateServerMessage(tpl.description) : tpl.description}</span>
-        )}
+        <span className="pr-6 text-sm font-medium">{label(tpl)}</span>
+        {tpl.description && <span className="text-xs text-muted-foreground">{about(tpl)}</span>}
         <span className="mt-1.5 flex flex-wrap gap-1">
           <Badge variant={tpl.sharing === 'builtin' ? 'secondary' : 'outline'} className="max-w-full truncate font-normal">
             {sharingTag(tpl)}
@@ -186,7 +190,11 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   // One list: what the server shares first, then the built-in ones; the field filter covers both.
   const all = [...(templates?.filter(x => x.kind === 'shared') ?? []), ...(templates?.filter(x => x.kind === 'builtin') ?? [])]
   const fields = TEMPLATE_FIELDS.filter(f => all.some(x => x.field === f.id))
-  const shown = all.filter(x => field === 'all' || x.field === field)
+  // The search covers names and descriptions in the interface language and in English, and the sharing tag.
+  const q = query.trim().toLowerCase()
+  const shown = all.filter(
+    x => (field === 'all' || x.field === field) && (!q || [label(x), about(x), x.name, x.description, sharingTag(x)].join(' ').toLowerCase().includes(q)),
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -201,14 +209,7 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
               <Input id="project-name" autoFocus value={name} onChange={e => setName(e.target.value)} placeholder={t('e.g. Thesis, NeurIPS submission')} />
             </Field>
             <Field>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <FieldLabel>{t('Template')}</FieldLabel>
-                {canImport && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => setImporting(true)}>
-                    <Upload /> {t('Import template')}
-                  </Button>
-                )}
-              </div>
+              <FieldLabel htmlFor="template-search">{t('Template')}</FieldLabel>
               {fields.length > 1 && (
                 <ToggleGroup
                   type="single"
@@ -226,11 +227,36 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                   ))}
                 </ToggleGroup>
               )}
+              <div className="relative">
+                <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input id="template-search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('Search templates…')} className="pl-8" />
+              </div>
               <div className="grid h-[min(46vh,420px)] content-start gap-2 overflow-y-auto pr-1">
                 {!templates ? (
                   <Spinner className="m-6 justify-self-center" />
                 ) : (
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{shown.map(card)}</div>
+                  <>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {/* Importing a journal's template comes first, where people look for templates. */}
+                      {canImport && (
+                        <button
+                          type="button"
+                          onClick={() => setImporting(true)}
+                          className="flex h-full min-h-20 items-center gap-3 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 p-3 text-left text-primary transition-colors hover:border-primary hover:bg-primary/10"
+                        >
+                          <span className="rounded-lg bg-primary p-2 text-primary-foreground">
+                            <Upload className="size-4" />
+                          </span>
+                          <span className="grid gap-0.5">
+                            <span className="text-sm font-medium">{t('Import template')}</span>
+                            <span className="text-xs text-primary/80">.zip</span>
+                          </span>
+                        </button>
+                      )}
+                      {shown.map(card)}
+                    </div>
+                    {q && !shown.length && <p className="py-6 text-center text-sm text-muted-foreground">{t('No template found.')}</p>}
+                  </>
                 )}
               </div>
             </Field>

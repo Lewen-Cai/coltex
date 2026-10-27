@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex a converti ce projet de {source} vers le modèle {template}. La compilation compte maintenant {counts}.',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex a converti ce projet de {source} vers le modèle {template}. La compilation compte maintenant {counts} (l’original en avait respectivement {errors}, {refs} et {cites}).',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    'Corrigez ces problèmes avec un minimum de modifications LaTeX, pour que le projet compile sans erreur avec le nouveau modèle. Ne modifiez ni la formulation ni le contenu de l’article.',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    'Utilise le Skill template-conversion : confirme d’abord avec moi la revue ou la conférence visée et attends ma réponse, puis corrige la compilation et mets l’article en conformité avec ses exigences. Ne change ni la formulation ni le contenu de l’article.',
   'Things the converter flagged:': 'Points signalés par le convertisseur :',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

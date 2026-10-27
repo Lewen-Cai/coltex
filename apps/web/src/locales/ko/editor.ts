@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: '바꾸기',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': '이 오류를 고쳐 주세요: {error}',
-  'Explain this error: {error}': '이 오류를 설명해 주세요: {error}',
   'Fix the compile errors.': '컴파일 오류를 고쳐 주세요.',
   'Explain the compile errors and how to fix them.': '컴파일 오류와 해결 방법을 설명해 주세요.',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': 'AI로 설명',
   'Raw log': '원본 로그',
   'No errors or warnings.': '오류나 경고가 없습니다.',
-  'Ask AI': 'AI에게 묻기',
   'Learn more': '자세히 알아보기',
 
   // PDF viewer
@@ -598,7 +595,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': '{date}에 초기화',
   'Resize the message box': '입력창 높이 조절',
   'The AI agent can use the web, so its changes wait for your review.': 'AI 에이전트가 웹을 사용할 수 있으므로 변경 사항은 모두 검토를 기다립니다.',
-  'Journals': '학술지',
   'Templates': '템플릿',
   'Upload a template (.zip)': '템플릿 업로드(.zip)',
   'One of my projects': '내 프로젝트 중 하나',

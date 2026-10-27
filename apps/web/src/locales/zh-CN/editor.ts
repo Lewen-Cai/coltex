@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: '替换',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': '修复这个错误：{error}',
-  'Explain this error: {error}': '解释这个错误：{error}',
   'Fix the compile errors.': '修复编译错误。',
   'Explain the compile errors and how to fix them.': '解释这些编译错误以及如何修复。',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': '用 AI 解释',
   'Raw log': '原始日志',
   'No errors or warnings.': '没有错误或警告。',
-  'Ask AI': '问 AI',
   'Learn more': '了解更多',
 
   // PDF viewer
@@ -598,7 +595,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': '{date}重置',
   'Resize the message box': '调整输入框高度',
   'The AI agent can use the web, so its changes wait for your review.': 'AI 智能体可以联网，所以它的修改都要等你审阅后再应用。',
-  'Journals': '期刊',
   'Templates': '模板',
   'Upload a template (.zip)': '上传模板（.zip）',
   'One of my projects': '我的某个项目',

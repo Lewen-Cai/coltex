@@ -11,6 +11,8 @@
 
 Die Schaltflächen über der Liste (**Alle**, dann die Fachgebiete) zeigen die Vorlagen eines Fachgebiets. Sie sehen nur die Vorlagen, die mit Ihnen geteilt sind. Siehe auch [Erste Schritte](#/help/getting-started).
 
+Das Suchfeld darunter findet Vorlagen nach Name oder Beschreibung.
+
 ## Ein Projekt als Vorlage veröffentlichen
 
 Administratoren können ein eigenes Projekt als Vorlage veröffentlichen, etwa das Dissertationsformat einer Arbeitsgruppe:
@@ -48,7 +50,7 @@ Gut zu wissen:
 
 **In Vorlage umwandeln…** im Menü eines Projekts (in den Projekteinstellungen: „In eine Zeitschriftenvorlage umwandeln“) schreibt ein Paper für eine andere Zeitschrift oder Konferenz um: IEEE Transactions, IEEE-Konferenz, ACM-Konferenz, ACM-Zeitschrift, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS oder einen einfachen Artikel. Jede eingebaute Vorlage lässt sich in jede davon umwandeln.
 
-Unter **Vorlagen** geht der Artikel stattdessen in eine beliebige Vorlage: eine aus der Vorlagenliste, eines Ihrer Projekte (**Eines meiner Projekte**) oder das Zip, das eine Zeitschrift zum Herunterladen anbietet (**Vorlage hochladen (.zip)**). Titel, Autoren, Affiliationen, Zusammenfassung und Schlüsselwörter werden dort eingetragen, wo die Vorlage ihre Beispiele hat, und so, wie die Vorlage sie schreibt; der Beispieltext danach wird durch Ihren Artikel ersetzt. Die Klassen- und Stildateien der Vorlage kommen mit, und ihre Beispiel-Hauptdatei bleibt zum Nachschlagen im Projekt.
+Die Liste ist dieselbe wie unter **Neues Projekt**. Eine eingebaute Vorlage wird nach den Regeln geschrieben, die ColTex für sie hat; jede andere Vorlage (eine geteilte, eines Ihrer Projekte mit **Eines meiner Projekte** oder das Zip einer Zeitschrift mit **Vorlage hochladen (.zip)**) wird auf ihre eigene Weise gefüllt: Titel, Autoren, Affiliationen, Abstract und Schlagwörter des Artikels kommen dorthin, wo die Vorlage ihre Beispiele hat, und der Beispieltext danach wird durch Ihren Artikel ersetzt. Die Klassen- und Stildateien der Vorlage kommen mit, und ihre Beispiel-Hauptdatei bleibt zum Nachschlagen im Projekt.
 
 - Titel, Autoren, Affiliationen, Abstract, Pakete und Literaturverzeichnis werden in einem **neuen Projekt** neu aufgebaut, das anschließend kompiliert wird. Das Original bleibt unverändert.
 - Paper in der `sn-jnl`-Vorlage von Springer Nature werden ebenfalls gelesen, ebenso solche von BMC, OUP und Elsevier CAS: Autoren mit Vor- und Nachnamen, Affiliationen, `\abstract{}` und strukturierte Abstracts, Schlüsselwörter und der Schlussteil mit den Erklärungen.

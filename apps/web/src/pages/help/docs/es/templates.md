@@ -11,6 +11,8 @@
 
 Los botones sobre la lista (**Todo** y luego los campos) muestran las plantillas de un campo. Solo ves las plantillas compartidas contigo. Ver también [Primeros pasos](#/help/getting-started).
 
+El campo de búsqueda debajo de ellos encuentra plantillas por nombre o descripción.
+
 ## Publicar un proyecto como plantilla
 
 Los administradores pueden publicar como plantilla un proyecto propio, por ejemplo el formato de tesis de un grupo:
@@ -48,7 +50,7 @@ A tener en cuenta:
 
 **Convertir a plantilla…** en el menú de un proyecto (en la configuración del proyecto: «Convertir a una plantilla de revista») reescribe un artículo para otra revista o congreso: IEEE Transactions, Congreso IEEE, Congreso ACM, Revista ACM, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS o un artículo simple. Cualquier plantilla integrada se puede convertir a cualquiera de ellas.
 
-En **Plantillas**, el artículo va en cambio a cualquier plantilla: una de la lista de plantillas, uno de tus proyectos (**Uno de mis proyectos**) o el zip que una revista ofrece para descargar (**Subir una plantilla (.zip)**). El título, los autores, las afiliaciones, el resumen y las palabras clave se escriben donde la plantilla tiene sus ejemplos, a la manera de la plantilla, y el texto de ejemplo que sigue se sustituye por tu artículo. Los archivos de clase y de estilo de la plantilla van con él, y su archivo principal de ejemplo queda en el proyecto como referencia.
+La lista es la misma que en **Nuevo proyecto**. Una plantilla integrada se escribe con las reglas que ColTex tiene para ella; cualquier otra (una compartida, uno de tus proyectos con **Uno de mis proyectos**, o el zip que ofrece una revista con **Subir una plantilla (.zip)**) se rellena a su manera: el título, los autores, las afiliaciones, el resumen y las palabras clave van donde la plantilla tiene los de ejemplo, y el texto de ejemplo que sigue se sustituye por tu artículo. Los archivos de clase y de estilo de la plantilla vienen con ella, y su archivo principal de ejemplo queda en el proyecto como referencia.
 
 - El título, los autores, las afiliaciones, el resumen, los paquetes y la bibliografía se reconstruyen en un **proyecto nuevo**, que después se compila. El original no cambia.
 - También se leen los artículos escritos con la plantilla `sn-jnl` de Springer Nature, igual que los de BMC, OUP y Elsevier CAS: autores con nombre y apellidos, afiliaciones, `\abstract{}` y resúmenes estructurados, palabras clave y la parte final con las declaraciones.

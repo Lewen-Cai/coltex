@@ -32,7 +32,7 @@ import { Changeset, type TurnFile } from './changeset.ts'
 import { AgentChat, shortId } from './chat.ts'
 import { COMPACT_SYSTEM_PROMPT, compactedTranscript, estimateTokens, renderTranscript } from './compact.ts'
 import { conversationTitle, type ConversationStore, type SavedConversation } from './conversations.ts'
-import { permissionNote, systemPrompt, userMessage, webNote } from './prompt.ts'
+import { languageNote, permissionNote, systemPrompt, userMessage, webNote } from './prompt.ts'
 import { NO_WEB, modelInfo, type AiService } from './service.ts'
 import { saveDraftedSkill, type SkillStore } from './skills.ts'
 import { WEB_TOOLS, createTools, describeToolCall, errorCount, withoutPageImages, type ToolContext } from './tools.ts'
@@ -98,6 +98,8 @@ export class AiSession extends AgentChat {
   private told?: AiPermission
   /** The web access it was last told about. */
   private toldWeb?: string
+  /** The interface language it was last told about. */
+  private toldLanguage?: string
   /** Addresses read_web_page may open: the author's and search results'. */
   private readonly scope = new WebScope()
   /** Files deleted or moved this turn (full access), for the turn's card. */
@@ -287,6 +289,10 @@ export class AiSession extends AgentChat {
       if (webKey !== this.toldWeb && (web.read || this.toldWeb)) this.notes.push(webNote(web))
       this.told = permission
       this.toldWeb = webKey
+    }
+    if (body.language && body.language !== this.toldLanguage) {
+      this.notes.push(languageNote(body.language))
+      this.toldLanguage = body.language
     }
     const { text, attachments } = userMessage(body, this.notes, skill)
     this.notes = []

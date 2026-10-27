@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: 'Ganti',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': 'Perbaiki galat ini: {error}',
-  'Explain this error: {error}': 'Jelaskan galat ini: {error}',
   'Fix the compile errors.': 'Perbaiki galat kompilasi.',
   'Explain the compile errors and how to fix them.': 'Jelaskan galat kompilasi dan cara memperbaikinya.',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': 'Jelaskan dengan AI',
   'Raw log': 'Log mentah',
   'No errors or warnings.': 'Tidak ada galat atau peringatan.',
-  'Ask AI': 'Tanya AI',
   'Learn more': 'Pelajari lebih lanjut',
 
   // PDF viewer
@@ -597,7 +594,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Direset pada {date}',
   'Resize the message box': 'Ubah tinggi kotak pesan',
   'The AI agent can use the web, so its changes wait for your review.': 'Agen AI dapat memakai web, jadi perubahannya menunggu tinjauan Anda.',
-  'Journals': 'Jurnal',
   'Templates': 'Templat',
   'Upload a template (.zip)': 'Unggah templat (.zip)',
   'One of my projects': 'Salah satu proyek saya',

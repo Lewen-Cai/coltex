@@ -11,6 +11,8 @@
 
 Các nút phía trên danh sách (**Tất cả**, rồi các lĩnh vực) hiện mẫu của một lĩnh vực. Bạn chỉ thấy các mẫu được chia sẻ với bạn. Xem thêm [Bắt đầu](#/help/getting-started).
 
+Ô tìm kiếm bên dưới các nút tìm mẫu theo tên hoặc mô tả.
+
 ## Xuất bản một dự án thành mẫu
 
 Quản trị viên có thể xuất bản dự án của mình thành mẫu, ví dụ định dạng luận văn của một nhóm:
@@ -48,7 +50,7 @@ Cần biết:
 
 **Chuyển sang mẫu khác…** trong menu của dự án (trong cài đặt dự án: “Chuyển sang mẫu tạp chí”) viết lại một bài báo cho tạp chí hoặc hội nghị khác: IEEE Transactions, Hội nghị IEEE, Hội nghị ACM, Tạp chí ACM, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS hoặc một article đơn giản. Mọi mẫu tích hợp đều chuyển được sang bất kỳ định dạng nào trong số này.
 
-Trong **Mẫu**, bài báo được chuyển sang một mẫu bất kỳ: một mẫu trong danh sách mẫu, một dự án của bạn (**Một dự án của tôi**), hoặc tệp zip mà tạp chí cho tải về (**Tải lên mẫu (.zip)**). Tiêu đề, tác giả, đơn vị, tóm tắt và từ khóa được ghi vào đúng chỗ mẫu có ví dụ, theo cách viết của chính mẫu, còn phần văn bản ví dụ phía sau được thay bằng bài báo của bạn. Các tệp lớp và tệp kiểu của mẫu đi kèm, và tệp chính ví dụ của mẫu được giữ lại trong dự án để tham khảo.
+Danh sách giống trong **Dự án mới**. Mẫu tích hợp được viết theo quy tắc ColTex có cho mẫu đó; mọi mẫu khác (mẫu được chia sẻ, một dự án của bạn chọn bằng **Một dự án của tôi**, hoặc tệp zip tạp chí cho tải bằng **Tải lên mẫu (.zip)**) được điền theo cách riêng của mẫu: tiêu đề, tác giả, đơn vị, tóm tắt và từ khóa của bài được đặt vào chỗ ví dụ của mẫu, và phần văn bản mẫu phía sau được thay bằng bài của bạn. Các tệp lớp và kiểu của mẫu đi kèm, và tệp chính mẫu được giữ lại trong dự án để tham khảo.
 
 - Tiêu đề, tác giả, đơn vị công tác, tóm tắt, các gói và tài liệu tham khảo được dựng lại trong một **dự án mới**, sau đó dự án này được biên dịch. Bản gốc vẫn giữ nguyên.
 - Bài viết theo mẫu `sn-jnl` của Springer Nature cũng đọc được, các bài theo mẫu BMC, OUP và Elsevier CAS cũng vậy: tác giả với tên và họ, đơn vị công tác, `\abstract{}` và tóm tắt có cấu trúc, từ khóa và phần tuyên bố ở cuối bài.

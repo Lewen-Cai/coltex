@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex가 이 프로젝트를 {source}에서 {template} 템플릿으로 변환했습니다. 현재 빌드 결과: {counts}.',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex가 이 프로젝트를 {source}에서 {template} 템플릿으로 변환했습니다. 현재 빌드 결과: {counts}(원본은 각각 {errors}, {refs}, {cites}개).',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    '새 템플릿에서 오류 없이 컴파일되도록 LaTeX를 최소한으로 수정해 이 문제들을 고치세요. 논문의 문구나 내용은 바꾸지 마세요.',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    'template-conversion Skill에 따라 진행해 주세요. 먼저 이 논문을 투고할 학술지나 학회를 저에게 확인하고 제 답을 기다린 뒤, 빌드를 고치고 그 투고 규정에 맞게 논문을 정리해 주세요. 논문의 문구나 내용은 바꾸지 마세요.',
   'Things the converter flagged:': '변환기가 표시한 문제:',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

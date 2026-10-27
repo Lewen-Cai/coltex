@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { and, asc, eq, exists, inArray, or, sql } from 'drizzle-orm'
 import { customAlphabet } from 'nanoid'
 import type { z } from 'zod'
+import { TARGETS } from '@coltex/convert'
 import { EngineSetting, TemplateField, type ProjectTemplateState, type TemplateAudience, type TemplateBody, type TemplateInfo } from '@coltex/shared'
 import type { CollabHooks } from '../collab/server.ts'
 import type { Db } from '../db/client.ts'
@@ -27,6 +28,8 @@ type Builtin = {
   engine: EngineSetting
   rootFile: string
   order: number
+  /** The conversion target for it: `target` in template.json, else one of the same id. */
+  target: string | null
   dir: string
 }
 
@@ -82,6 +85,7 @@ export class TemplateService {
           engine: EngineSetting.parse(meta.engine ?? 'auto'),
           rootFile: String(meta.rootFile ?? 'main.tex'),
           order: Number(meta.order ?? 100),
+          target: TARGETS.find(t => t.id === (meta.target ?? entry.name))?.id ?? null,
           dir,
         })
       }
@@ -124,6 +128,7 @@ export class TemplateService {
         publishedBy: null,
         canRemove: false,
         projectId: null,
+        target: b.target,
       }),
     )
     const rows = await this.db
@@ -158,6 +163,7 @@ export class TemplateService {
         publishedBy: r.publisher,
         canRemove: viewer.role === 'admin' || r.ownerId === viewer.id,
         projectId: r.ownerId === viewer.id ? r.template.projectId : null,
+        target: null,
       }
     })
     return [...builtins, ...shared]

@@ -389,6 +389,7 @@ const messages: Record<string, string> = {
   Economics: 'Kinh tế',
   'Social sciences & humanities': 'Khoa học xã hội và nhân văn',
   'Earth & environment': 'Trái Đất và môi trường',
+  'No template found.': 'Không tìm thấy mẫu.',
 }
 
 export default messages

@@ -389,6 +389,7 @@ const messages: Record<string, string> = {
   Economics: 'Экономика',
   'Social sciences & humanities': 'Социальные и гуманитарные науки',
   'Earth & environment': 'Земля и окружающая среда',
+  'No template found.': 'Шаблон не найден.',
 }
 
 export default messages

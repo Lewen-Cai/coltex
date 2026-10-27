@@ -6,7 +6,7 @@ import type { Db } from '../db/client.ts'
 import { aiSkillChats } from '../db/schema.ts'
 import { ConflictError, ForbiddenError } from '../errors.ts'
 import { AgentChat, shortId, type SavedChat } from './chat.ts'
-import { workshopPrompt } from './prompt.ts'
+import { languageNote, workshopPrompt } from './prompt.ts'
 import type { Tier } from './routing.ts'
 import { modelInfo, type AiService } from './service.ts'
 import { saveDraftedSkill, type SkillStore } from './skills.ts'
@@ -53,6 +53,8 @@ export class SkillWorkshop extends AgentChat {
   private readonly deps: WorkshopDeps
   private lastTier?: Tier
   private toolCalls = 0
+  /** The interface language the agent was last told about. */
+  private toldLanguage?: string
 
   constructor(deps: WorkshopDeps, userId: string, saved?: SavedChat) {
     super(deps.ai, userId, null, saved)
@@ -130,8 +132,10 @@ export class SkillWorkshop extends AgentChat {
       ++this.toolCalls > MAX_TOOL_CALLS
         ? { block: true, reason: 'Tool call limit for this message reached. Stop and summarise your progress for the author.', terminate: true }
         : undefined
+    const note = body.language && body.language !== this.toldLanguage ? `[${languageNote(body.language)}]\n\n` : ''
+    if (body.language) this.toldLanguage = body.language
     void agent
-      .prompt(body.text.trim())
+      .prompt(note + body.text.trim())
       .catch((err: unknown) => this.notice('error', err instanceof Error ? err.message : String(err)))
       .finally(() => {
         this.running = false

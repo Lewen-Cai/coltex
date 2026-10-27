@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex mengonversi proyek ini dari {source} ke templat {template}. Hasil kompilasi sekarang: {counts}.',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex mengonversi proyek ini dari {source} ke templat {template}. Hasil kompilasi sekarang: {counts} (aslinya {errors}, {refs}, dan {cites}).',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    'Perbaiki masalah-masalah ini dengan perubahan LaTeX seminimal mungkin agar terkompilasi tanpa masalah dengan templat baru. Jangan ubah susunan kata atau isi makalah.',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    'Gunakan Skill template-conversion: pertama, pastikan dengan saya jurnal atau konferensi tujuan makalah ini dan tunggu jawaban saya, lalu perbaiki kompilasinya dan sesuaikan makalah dengan persyaratannya. Jangan ubah kata-kata atau isi makalah.',
   'Things the converter flagged:': 'Hal yang ditandai pengonversi:',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

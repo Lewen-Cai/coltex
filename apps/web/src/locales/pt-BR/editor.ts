@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: 'Substituir',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': 'Corrija este erro: {error}',
-  'Explain this error: {error}': 'Explique este erro: {error}',
   'Fix the compile errors.': 'Corrija os erros de compilação.',
   'Explain the compile errors and how to fix them.': 'Explique os erros de compilação e como corrigi-los.',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': 'Explicar com IA',
   'Raw log': 'Log bruto',
   'No errors or warnings.': 'Nenhum erro ou aviso.',
-  'Ask AI': 'Perguntar à IA',
   'Learn more': 'Saiba mais',
 
   // PDF viewer
@@ -598,7 +595,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Reinicia em {date}',
   'Resize the message box': 'Redimensionar a caixa de mensagem',
   'The AI agent can use the web, so its changes wait for your review.': 'O agente de IA pode usar a web, então as alterações dele aguardam sua revisão.',
-  'Journals': 'Revistas',
   'Templates': 'Modelos',
   'Upload a template (.zip)': 'Enviar um modelo (.zip)',
   'One of my projects': 'Um dos meus projetos',

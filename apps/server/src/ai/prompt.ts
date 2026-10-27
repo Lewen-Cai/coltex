@@ -66,6 +66,18 @@ export function permissionNote(permission: AiPermission, web = false): string {
 }
 
 /** Told to the agent whenever its web access differs from what it was last told. */
+/**
+ * The author's interface language, said when it changes: skills, logs and
+ * the editor's context are English, and the agent would otherwise answer in it.
+ */
+export function languageNote(tag: string): string {
+  let name = tag
+  try {
+    name = new Intl.DisplayNames(['en'], { type: 'language' }).of(tag) ?? tag
+  } catch {}
+  return `Language: the author's interface is in ${name}. Write your replies in ${name} unless the author writes to you in another language. Files keep the language they are written in.`
+}
+
 export function webNote(web: WebAccess): string {
   if (!web.read) return 'Web: you have no web access any more.'
   const search = web.native ? 'You can search the web with your built-in web search' : web.search ? 'You can search the web with web_search' : "You can't search the web"

@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex bu projeyi {source} kaynağından {template} şablonuna dönüştürdü. Derlemede şu anda şunlar var: {counts}.',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex bu projeyi {source} kaynağından {template} şablonuna dönüştürdü. Derlemede şu anda şunlar var: {counts} (özgün projede sırasıyla {errors}, {refs} ve {cites} vardı).',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    'Proje yeni şablonla sorunsuz derlensin diye bu sorunları olabildiğince az LaTeX değişikliğiyle düzelt. Makalenin ifadelerini veya içeriğini değiştirme.',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    'template-conversion Skill’ini kullan: önce makalenin hangi dergi ya da konferans için olduğunu benimle doğrula ve yanıtımı bekle; sonra derlemeyi düzelt ve makaleyi onun koşullarına uygun hale getir. Makalenin ifadelerini ve içeriğini değiştirme.',
   'Things the converter flagged:': 'Dönüştürücünün işaretledikleri:',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

@@ -3,6 +3,7 @@ import type { AiApplyBody, AiItem, AiMessageBody, AiPreference, AiSaveProposedSk
 import { toast } from 'sonner'
 import { api } from './api.ts'
 import { openEventStream } from './event-stream.ts'
+import { getLocale } from './i18n.ts'
 
 /**
  * Whether the assistant is set up for the current user (checked once per
@@ -128,7 +129,7 @@ export function useAiSession(projectId: string, enabled: boolean, onBuilt?: (com
     }
   }, [])
 
-  const send = useCallback((body: AiMessageBody) => guard(() => api.aiSend(projectId, body)), [guard, projectId])
+  const send = useCallback((body: AiMessageBody) => guard(() => api.aiSend(projectId, { ...body, language: getLocale() })), [guard, projectId])
   const abort = useCallback(() => guard(() => api.aiAbort(projectId)), [guard, projectId])
   const discard = useCallback(() => guard(() => api.aiDiscard(projectId)), [guard, projectId])
   const reset = useCallback(
@@ -202,7 +203,7 @@ export function useSkillChat() {
     }
   }, [])
 
-  const send = useCallback((body: AiMessageBody) => guard(() => api.skillChatSend(body)), [guard])
+  const send = useCallback((body: AiMessageBody) => guard(() => api.skillChatSend({ ...body, language: getLocale() })), [guard])
   const abort = useCallback(() => guard(() => api.skillChatAbort()), [guard])
   const reset = useCallback(
     () =>

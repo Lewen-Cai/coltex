@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex đã chuyển dự án này từ {source} sang mẫu {template}. Kết quả biên dịch hiện có {counts}.',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex đã chuyển dự án này từ {source} sang mẫu {template}. Kết quả biên dịch hiện có {counts} (bản gốc có {errors}, {refs} và {cites}).',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    'Hãy sửa các vấn đề này với ít thay đổi LaTeX nhất để dự án biên dịch không lỗi với mẫu mới. Không thay đổi câu chữ hay nội dung của bài báo.',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    'Hãy dùng Skill template-conversion: trước tiên xác nhận với tôi bài báo gửi tạp chí hay hội nghị nào và chờ tôi trả lời, sau đó sửa lỗi biên dịch và chỉnh bài báo theo yêu cầu của nơi đó. Không thay đổi câu chữ hay nội dung của bài báo.',
   'Things the converter flagged:': 'Những điểm trình chuyển đổi đã đánh dấu:',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

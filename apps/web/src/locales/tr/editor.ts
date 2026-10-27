@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: 'Değiştir',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': 'Bu hatayı düzelt: {error}',
-  'Explain this error: {error}': 'Bu hatayı açıkla: {error}',
   'Fix the compile errors.': 'Derleme hatalarını düzelt.',
   'Explain the compile errors and how to fix them.': 'Derleme hatalarını ve nasıl düzeltileceklerini açıkla.',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': 'YZ ile açıkla',
   'Raw log': 'Ham günlük',
   'No errors or warnings.': 'Hata veya uyarı yok.',
-  'Ask AI': 'YZ’ye sor',
   'Learn more': 'Daha fazla bilgi',
 
   // PDF viewer
@@ -597,7 +594,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': 'Sıfırlanma: {date}',
   'Resize the message box': 'Mesaj kutusunu yeniden boyutlandır',
   'The AI agent can use the web, so its changes wait for your review.': 'YZ ajanı web’i kullanabildiği için değişiklikleri incelemenizi bekler.',
-  'Journals': 'Dergiler',
   'Templates': 'Şablonlar',
   'Upload a template (.zip)': 'Şablon yükle (.zip)',
   'One of my projects': 'Projelerimden biri',

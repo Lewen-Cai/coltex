@@ -19,8 +19,8 @@ type Props = {
   result: CompileResult
   rawLogUrl?: string
   onJump: (file: string, line: number) => void
-  /** Ask the AI assistant about all errors, or one diagnostic. Absent when AI is unavailable. */
-  onAskAi?: (diagnostic?: Diagnostic) => void
+  /** Hand the build's errors to the AI assistant. Absent when AI is unavailable. */
+  onAskAi?: () => void
   /** Editors get "Fix with AI"; others can only have errors explained. */
   canFix?: boolean
 }
@@ -104,11 +104,6 @@ export function LogPanel({ result, rawLogUrl, onJump, onAskAi, canFix = true }: 
                     </button>
                   )}
                 </div>
-                {onAskAi && d.level === 'error' && (
-                  <Button variant="ghost" size="xs" onClick={() => onAskAi(d)} className="shrink-0 text-primary hover:text-primary">
-                    <Sparkles /> {t('Ask AI')}
-                  </Button>
-                )}
               </div>
               {d.content && (
                 <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-md bg-muted/70 p-2 font-mono text-sm text-muted-foreground">

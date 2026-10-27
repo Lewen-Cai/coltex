@@ -471,6 +471,25 @@ describe('AI agent', () => {
     }
   })
 
+  test('the agent is told the interface language, once and again when it changes', async () => {
+    const seen: string[] = []
+    const watch = (reply: ReturnType<typeof fauxAssistantMessage>) => (context: { messages: Message[] }) => {
+      seen.push(JSON.stringify(context.messages.findLast(m => m.role === 'user')?.content ?? ''))
+      return reply
+    }
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+    for (const [text, language] of [['Hi', 'zh-CN'], ['Again', 'zh-CN'], ['Now in German', 'de']]) {
+      faux.setResponses([watch(fauxAssistantMessage(fauxText('OK.')))])
+      assert.equal((await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text, language })).statusCode, 202)
+      await idle()
+    }
+    assert.match(seen[0]!, /Language: the author's interface is in Chinese \(China\)\. Write your replies in Chinese \(China\)/)
+    assert.doesNotMatch(seen[1]!, /Language:/, 'told once')
+    assert.match(seen[2]!, /Language: the author's interface is in German/)
+    assert.equal((await api('POST', `/projects/${projectId}/ai/session/messages`, admin, { text: 'x', language: 'zh CN; drop' })).statusCode, 400)
+    await api('POST', `/projects/${projectId}/ai/session/reset`, admin)
+  })
+
   test('several search services can be connected, and one is in use', async () => {
     const sent: string[] = []
     t.webFakes.service = async url => {

@@ -41,8 +41,6 @@ const messages: Record<string, string> = {
   Replace: '置換',
 
   // Requests sent to the AI assistant
-  'Fix this error: {error}': 'このエラーを修正してください：{error}',
-  'Explain this error: {error}': 'このエラーを説明してください：{error}',
   'Fix the compile errors.': 'コンパイルエラーを修正してください。',
   'Explain the compile errors and how to fix them.': 'コンパイルエラーの内容と修正方法を説明してください。',
 
@@ -68,7 +66,6 @@ const messages: Record<string, string> = {
   'Explain with AI': 'AI で説明',
   'Raw log': '生ログ',
   'No errors or warnings.': 'エラーや警告はありません。',
-  'Ask AI': 'AI に質問',
   'Learn more': '詳細',
 
   // PDF viewer
@@ -598,7 +595,6 @@ const messages: Record<string, string> = {
   'Resets on {date}': '{date} にリセット',
   'Resize the message box': '入力欄の高さを変更',
   'The AI agent can use the web, so its changes wait for your review.': 'AI エージェントはウェブを使えるため、変更はすべてあなたの確認を待ちます。',
-  'Journals': 'ジャーナル',
   'Templates': 'テンプレート',
   'Upload a template (.zip)': 'テンプレートをアップロード（.zip）',
   'One of my projects': '自分のプロジェクトから',

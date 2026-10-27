@@ -69,8 +69,8 @@ const messages: Record<string, string> = {
     'ColTex はこのプロジェクトを {source} から {template} テンプレートに変換しました。現在のビルド結果：{counts}。',
   'ColTex converted this project from {source} to the {template} template. The build now has {counts} (the original had {errors}, {refs} and {cites}).':
     'ColTex はこのプロジェクトを {source} から {template} テンプレートに変換しました。現在のビルド結果：{counts}（元のプロジェクトはそれぞれ {errors}、{refs}、{cites} 件）。',
-  'Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.':
-    '新しいテンプレートで問題なくコンパイルできるよう、LaTeX の変更を最小限にしてこれらの問題を修正してください。論文の表現や内容は変更しないでください。',
+  'Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.':
+    'template-conversion Skill に従ってください。まず投稿先の学術誌または学会を私に確認し、返事を待ってから、ビルドを直し、その投稿規定に合わせて論文を整えてください。論文の文言や内容は変えないでください。',
   'Things the converter flagged:': '変換ツールが指摘した点：',
 
   // Conversion targets (packages/convert/src/targets.ts, shown via t(target.label) etc.)

@@ -37,7 +37,6 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover.tsx'
 import { Spinner } from './ui/spinner.tsx'
 import { Switch } from './ui/switch.tsx'
 import { Textarea } from './ui/textarea.tsx'
-import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group.tsx'
 
 const OPEN_EVENT = 'coltex:convert'
 /** The editor picks this up to start the assistant on the converted project. */
@@ -230,7 +229,6 @@ function Steps({ step }: { step: Step }) {
 }
 
 function TargetStep({ analysis, projectId, value, onChange }: { analysis: ConvertAnalysis; projectId: string; value?: Into; onChange: (into: Into) => void }) {
-  const [mode, setMode] = useState<Into['kind']>(value?.kind ?? 'builtin')
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -242,47 +240,18 @@ function TargetStep({ analysis, projectId, value, onChange }: { analysis: Conver
         <Badge variant="secondary">
           {analysis.bibliography === 'none' ? t('no bibliography') : analysis.bibliography === 'inline' ? t('inline bibliography') : analysis.bibliography}
         </Badge>
-        <ToggleGroup type="single" variant="outline" size="sm" value={mode} onValueChange={v => v && setMode(v as Into['kind'])} className="ml-auto">
-          <ToggleGroupItem value="builtin">{t('Journals')}</ToggleGroupItem>
-          <ToggleGroupItem value="template">{t('Templates')}</ToggleGroupItem>
-        </ToggleGroup>
       </div>
-      {mode === 'builtin' ? (
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-          {analysis.targets.map((target, i) => (
-            <motion.button
-              key={target.id}
-              type="button"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              onClick={() => onChange({ kind: 'builtin', target })}
-              aria-pressed={value?.kind === 'builtin' && value.target.id === target.id}
-              className={cn(
-                'flex flex-col rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/50',
-                value?.kind === 'builtin' && value.target.id === target.id && 'border-primary bg-primary/5 ring-1 ring-primary',
-              )}
-            >
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="text-sm font-medium">{t(target.label)}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">{target.publisher}</span>
-              </span>
-              <span className="mt-1 text-xs leading-snug text-muted-foreground">{t(target.description)}</span>
-              <span className="mt-1.5 text-[11px] text-muted-foreground">
-                <span className="font-mono">{target.documentClass}.cls</span> · {target.twoColumn ? t('Two columns') : t('One column')}
-              </span>
-            </motion.button>
-          ))}
-        </div>
-      ) : (
-        <TemplatePicker projectId={projectId} value={value?.kind === 'template' ? value : undefined} onChange={onChange} />
-      )}
+      <TemplatePicker projectId={projectId} targets={analysis.targets} value={value} onChange={onChange} />
     </div>
   )
 }
 
-/** Any template as the target: one from the list, one of the person's projects, or a journal's zip. */
-function TemplatePicker({ projectId, value, onChange }: { projectId: string; value?: Extract<Into, { kind: 'template' }>; onChange: (into: Into) => void }) {
+/**
+ * Any template as the target: one from the list, one of the person's
+ * projects, or a journal's zip. A built-in template with a conversion target
+ * of its own goes through that target (its renderer and fields).
+ */
+function TemplatePicker({ projectId, targets, value, onChange }: { projectId: string; targets: ConvertTarget[]; value?: Into; onChange: (into: Into) => void }) {
   const [templates, setTemplates] = useState<TemplateInfo[]>()
   const [projects, setProjects] = useState<ProjectSummary[]>()
   const [query, setQuery] = useState('')
@@ -316,7 +285,12 @@ function TemplatePicker({ projectId, value, onChange }: { projectId: string; val
   const all = [...(templates?.filter(x => x.kind === 'shared') ?? []), ...(templates?.filter(x => x.kind === 'builtin') ?? [])]
   const q = query.trim().toLowerCase()
   const shown = q ? all.filter(x => `${label(x)} ${x.name} ${x.description}`.toLowerCase().includes(q)) : all
-  const own = value && !('template' in value.into) ? value : undefined
+  const own = value?.kind === 'template' && !('template' in value.into) ? value : undefined
+  const targetOf = (tpl: TemplateInfo) => (tpl.kind === 'builtin' && tpl.target ? targets.find(x => x.id === tpl.target) : undefined)
+  const pick = (tpl: TemplateInfo) => {
+    const target = targetOf(tpl)
+    onChange(target ? { kind: 'builtin', target } : { kind: 'template', into: { template: tpl.id }, name: label(tpl), key: `template:${tpl.id}` })
+  }
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
@@ -386,12 +360,13 @@ function TemplatePicker({ projectId, value, onChange }: { projectId: string; val
       ) : (
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
           {shown.map(tpl => {
-            const on = value?.key === `template:${tpl.id}`
+            const target = targetOf(tpl)
+            const on = value?.kind === 'builtin' ? !!target && value.target.id === target.id : value?.key === `template:${tpl.id}`
             return (
               <button
                 key={tpl.id}
                 type="button"
-                onClick={() => onChange({ kind: 'template', into: { template: tpl.id }, name: label(tpl), key: `template:${tpl.id}` })}
+                onClick={() => pick(tpl)}
                 aria-pressed={on}
                 className={cn('grid content-start gap-0.5 rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/50', on && 'border-primary bg-primary/5 ring-1 ring-primary')}
               >
@@ -656,7 +631,7 @@ function ResultStep({ report, label, options, sourceClass, onClose }: { report?:
             cites: base.undefinedCitations,
           })
         : t('ColTex converted this project from {source} to the {template} template. The build now has {counts}.', vars),
-      t('Fix these problems with minimal LaTeX changes so it compiles cleanly with the new template. Do not change the paper’s wording or content.'),
+      t('Use the template-conversion Skill: first confirm with me which journal or conference this is for and wait for my answer, then fix the build and bring the paper in line with its requirements. Do not change the paper’s wording or content.'),
       options.journal || options.venue?.name ? t('The paper is to be submitted to {venue}.', { venue: options.journal || options.venue?.name || '' }) : '',
       warnings.length ? `${t('Things the converter flagged:')}\n${warnings.map(w => `- ${translateServerMessage(w.text)}`).join('\n')}` : '',
     ]

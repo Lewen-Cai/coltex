@@ -11,6 +11,8 @@
 
 Les boutons au-dessus de la liste (**Tout**, puis les domaines) affichent les modèles d’un domaine. Vous ne voyez que les modèles partagés avec vous. Voir aussi [Premiers pas](#/help/getting-started).
 
+Le champ de recherche en dessous trouve les modèles par nom ou description.
+
 ## Publier un projet comme modèle
 
 Les administrateurs peuvent publier comme modèle un projet qui leur appartient, le format de thèse d’une équipe par exemple :
@@ -48,7 +50,7 @@ Beaucoup de revues et de conférences publient des modèles LaTeX qui ne sont pa
 
 **Convertir vers un modèle…** dans le menu d’un projet (dans les paramètres du projet : « Convertir vers un modèle de revue ») réécrit un article pour une autre revue ou conférence : IEEE Transactions, conférence IEEE, conférence ACM, revue ACM, Elsevier, Elsevier CAS, Oxford University Press (OUP), Springer LNCS, APS (REVTeX), AMS, APA 7, AAS (AASTeX), MNRAS, ACS ou un article simple. Chaque modèle intégré peut être converti vers chacun d’eux.
 
-Sous **Modèles**, l’article va plutôt dans n’importe quel modèle : un modèle de la liste, un de vos projets (**Un de mes projets**) ou le zip qu’une revue propose au téléchargement (**Téléverser un modèle (.zip)**). Le titre, les auteurs, les affiliations, le résumé et les mots-clés sont écrits là où le modèle a ses exemples, à la manière du modèle, et le texte d’exemple qui suit est remplacé par votre article. Les fichiers de classe et de style du modèle suivent, et son fichier principal d’exemple reste dans le projet pour référence.
+La liste est celle de **Nouveau projet**. Un modèle intégré est rempli selon les règles que ColTex a pour lui ; tout autre modèle (un modèle partagé, un de vos projets avec **Un de mes projets**, ou le zip proposé par une revue avec **Téléverser un modèle (.zip)**) est rempli à sa façon : le titre, les auteurs, les affiliations, le résumé et les mots-clés de l’article vont là où le modèle a les siens d’exemple, et le texte d’exemple qui suit est remplacé par votre article. Les fichiers de classe et de style du modèle sont repris, et son fichier principal d’exemple reste dans le projet pour référence.
 
 - Le titre, les auteurs, les affiliations, le résumé, les packages et la bibliographie sont reconstruits dans un **nouveau projet**, qui est ensuite compilé. L’original reste tel quel.
 - Les articles écrits avec le modèle `sn-jnl` de Springer Nature sont lus aussi, tout comme ceux de BMC, OUP et Elsevier CAS : auteurs avec prénom et nom, affiliations, `\abstract{}` et résumés structurés, mots-clés et la partie finale avec les déclarations.
