@@ -185,10 +185,21 @@ jobs:
       # there (the same manifests, copied within ghcr.io).
       - name: Also at the old address
         if: env.LEGACY_TOKEN != ''
+        # For installs that haven't updated since the move: a copy that keeps failing is reported,
+        # but never stops the mirror and the scan of the release itself.
+        continue-on-error: true
+        env:
+          # The registry resets long HTTP/2 streams now and then (PROTOCOL_ERROR on a large layer).
+          GODEBUG: http2client=0
         run: |
           echo "$LEGACY_TOKEN" | docker login ghcr.io -u lewen-cai --password-stdin
           mapfile -t tags < <(jq -r '.tags[] | sub("^ghcr.io/[^/]+/"; "ghcr.io/lewen-cai/") | "-t", .' <<< "$DOCKER_METADATA_OUTPUT_JSON")
-          docker buildx imagetools create "${tags[@]}" "${IMAGE}:${{ steps.meta.outputs.version }}"
+          for try in 1 2 3; do
+            docker buildx imagetools create "${tags[@]}" "${IMAGE}:${{ steps.meta.outputs.version }}" && exit 0
+            echo "::warning::Copy to the old address failed (try $try of 3)"
+            sleep 30
+          done
+          exit 1
 
   mirror:
     # The same images on Alibaba Cloud (mirror.yml), once they are on ghcr.io.
