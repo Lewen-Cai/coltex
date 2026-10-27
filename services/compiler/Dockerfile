@@ -7,6 +7,13 @@
 #     can read (texlive_doc), and the extra Noto CJK weights.
 # BuildKit only fetches the TeX Live image of the edition being built.
 ARG EDITION=standard
+# TeX Live is pinned (user's decision): it moves to each year's release, and within a year
+# only for a serious security fix. An update that keeps it downloads only the layers that
+# changed, ColTex's own last. `coltex update` compares these with the running compiler's
+# labels to say when an update brings a new TeX Live. Change the year with the digests.
+ARG TEXLIVE_YEAR=2026
+ARG TEXLIVE_STANDARD=texlive/texlive:latest@sha256:540d736c78e2803cdd7b6a196bd21339c30185948db55e04e75a415959102ca8
+ARG TEXLIVE_FULL=texlive/texlive:latest-full-doc-src@sha256:acee1c3f738c681f1c3014621bbd4fcbb9412cfc10cfb0d70e5bab805843bf8a
 
 # ---- Install the worker's Node dependencies ----
 FROM node:24-trixie-slim AS deps
@@ -22,11 +29,14 @@ COPY packages/shared packages/shared
 COPY packages/log-parser packages/log-parser
 COPY services/compiler services/compiler
 
-# ---- TeX Live (per edition) + fonts + Node runtime ----
-FROM texlive/texlive:latest AS tex-standard
-FROM texlive/texlive:latest-full-doc-src AS tex-full
+# ---- TeX Live (per edition) + fonts ----
+FROM ${TEXLIVE_STANDARD} AS tex-standard
+FROM ${TEXLIVE_FULL} AS tex-full
 FROM tex-${EDITION} AS assembled
 ARG EDITION
+ARG TEXLIVE_YEAR
+# The digests must be the year's release.
+RUN test -d /usr/local/texlive/${TEXLIVE_YEAR}
 # ghostscript for EPS and PostScript; poppler's pdftotext reads PDF manuals (full)
 # and pdftoppm turns PDF figures into pictures for Word; pandoc writes .docx.
 RUN apt-get update \
@@ -38,8 +48,6 @@ RUN apt-get update \
 # tlcockpit is a graphical front end to tlmgr, which can't open in a container; its jar
 # bundles old Java libraries (Jackson, Logback) with known vulnerabilities.
 RUN rm -rf /usr/local/texlive/*/texmf-dist/scripts/tlcockpit /usr/local/texlive/*/bin/*/tlcockpit
-COPY --from=deps /usr/local/bin/node /usr/local/bin/node
-COPY --from=deps /app /app
 
 # The base image already ships an unprivileged `texlive` user (uid 1000).
 RUN mkdir -p /work /data && chown texlive:texlive /work /data
@@ -60,6 +68,10 @@ RUN mkdir -m 777 /opt/biber-par \
 # `assembled`.
 FROM scratch
 ARG EDITION
+ARG TEXLIVE_YEAR
+ARG TEXLIVE_STANDARD
+ARG TEXLIVE_FULL
+LABEL org.coltex.texlive.year=${TEXLIVE_YEAR} org.coltex.texlive.standard=${TEXLIVE_STANDARD} org.coltex.texlive.full=${TEXLIVE_FULL}
 COPY --from=assembled --exclude=usr/local/texlive / /
 COPY --from=assembled --parents /usr/local/texlive/*/texmf-dist/fonts/type1 /usr/local/texlive/*/texmf-dist/fonts/afm /
 COPY --from=assembled --parents /usr/local/texlive/*/texmf-dist/fonts/tfm /usr/local/texlive/*/texmf-dist/fonts/vf /
@@ -90,6 +102,9 @@ COPY --from=assembled \
      --exclude=*/texmf-dist/doc/support \
      --exclude=*/texmf-dist/source \
      /usr/local/texlive /usr/local/texlive
+# ColTex's worker last: an update that changes only it downloads only these layers.
+COPY --from=deps /usr/local/bin/node /usr/local/bin/node
+COPY --from=deps /app /app
 # What the TeX Live image set (a new image starts without it).
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=C.UTF-8 LC_ALL=C.UTF-8 TEXLIVE_INSTALL_NO_CONTEXT_CACHE=1 NOPERLDOC=1

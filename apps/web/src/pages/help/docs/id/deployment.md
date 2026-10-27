@@ -35,7 +35,7 @@ Lalu kelola dengan `coltex`:
 | --- | --- |
 | `coltex status` / `logs` | Status / log |
 | `coltex edition [standard\|full]` | Tampilkan atau ganti edisi TeX Live (mengunduh image kompilator yang lain) |
-| `coltex update` | Perbarui ke rilis terbaru (mengunduh image baru); data dan pengaturan tetap |
+| `coltex update` | Perbarui ke rilis terbaru, hanya mengunduh yang berubah (pembaruan tahunan yang membawa TeX Live baru lebih lama); data dan pengaturan tetap |
 | `coltex stop` / `start` | Hentikan / jalankan |
 | `coltex tailscale up` | Bergabung dengan tailnet Anda (mencetak tautan masuk dan kode QR) |
 | `coltex cloudflare quick` | Alamat Cloudflare publik sementara |

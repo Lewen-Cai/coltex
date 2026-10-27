@@ -68,6 +68,7 @@ msg_en() {
     edition_show) M='TeX Live edition: {edition} (standard: every package without their manuals, about 12 GB on disk; full: with the manuals and sources, about 23 GB)' ;;
     edition_already) M='Already the {edition} edition' ;;
     images_fallback) M='Alibaba Cloud doesn’t have the images of this version yet.' ;;
+    texlive_update) M='This update includes TeX Live {year}, so the download takes longer. Please wait…' ;;
     edition_switching) M='Switching to the {edition} edition (downloads TeX Live)…' ;;
     done) M='Done.' ;;
     edition_usage) M='Usage: coltex edition [standard | full]' ;;
@@ -128,6 +129,7 @@ msg_zh_CN() {
     edition_show) M='TeX Live 版本：{edition}（standard：全部宏包，不含手册，占用约 12 GB；full：含手册和源码，约 23 GB）' ;;
     edition_already) M='已经是 {edition} 版本' ;;
     images_fallback) M='阿里云上还没有这个版本的镜像。' ;;
+    texlive_update) M='本次更新包含 TeX Live {year}，下载时间较长，请耐心等待…' ;;
     edition_switching) M='正在切换到 {edition} 版本（会下载 TeX Live）…' ;;
     done) M='完成。' ;;
     edition_usage) M='用法：coltex edition [standard | full]' ;;
@@ -188,6 +190,7 @@ msg_zh_TW() {
     edition_show) M='TeX Live 版本：{edition}（standard：全部套件，不含手冊，磁碟占用約 12 GB；full：含手冊和原始碼，約 23 GB）' ;;
     edition_already) M='已經是 {edition} 版本' ;;
     images_fallback) M='阿里雲上還沒有這個版本的映像檔。' ;;
+    texlive_update) M='本次更新包含 TeX Live {year}，下載時間較長，請耐心等候…' ;;
     edition_switching) M='正在切換到 {edition} 版本（會下載 TeX Live）…' ;;
     done) M='完成。' ;;
     edition_usage) M='用法：coltex edition [standard | full]' ;;
@@ -248,6 +251,7 @@ msg_ja() {
     edition_show) M='TeX Live エディション：{edition}（standard：すべてのパッケージ、マニュアルなし、約 12 GB。full：マニュアルとソース付き、約 23 GB）' ;;
     edition_already) M='すでに {edition} エディションです' ;;
     images_fallback) M='Alibaba Cloud にはまだこのバージョンのイメージがありません。' ;;
+    texlive_update) M='今回の更新には TeX Live {year} が含まれるため、ダウンロードに時間がかかります。しばらくお待ちください…' ;;
     edition_switching) M='{edition} エディションに切り替え中（TeX Live をダウンロードします）…' ;;
     done) M='完了しました。' ;;
     edition_usage) M='使い方：coltex edition [standard | full]' ;;
@@ -308,6 +312,7 @@ msg_ko() {
     edition_show) M='TeX Live 에디션: {edition} (standard: 모든 패키지, 매뉴얼 제외, 약 12 GB / full: 매뉴얼·소스 포함, 약 23 GB)' ;;
     edition_already) M='이미 {edition} 에디션입니다' ;;
     images_fallback) M='Alibaba Cloud에 아직 이 버전의 이미지가 없습니다.' ;;
+    texlive_update) M='이번 업데이트에는 TeX Live {year}이(가) 포함되어 다운로드에 시간이 더 걸립니다. 잠시 기다려 주세요…' ;;
     edition_switching) M='{edition} 에디션으로 전환하는 중(TeX Live를 다운로드합니다)…' ;;
     done) M='완료.' ;;
     edition_usage) M='사용법: coltex edition [standard | full]' ;;
@@ -368,6 +373,7 @@ msg_es() {
     edition_show) M='Edición de TeX Live: {edition} (standard: todos los paquetes sin manuales, unos 12 GB en disco; full: con manuales y fuentes, unos 23 GB)' ;;
     edition_already) M='Ya es la edición {edition}' ;;
     images_fallback) M='Alibaba Cloud aún no tiene las imágenes de esta versión.' ;;
+    texlive_update) M='Esta actualización incluye TeX Live {year}, así que la descarga tarda más. Espera, por favor…' ;;
     edition_switching) M='Cambiando a la edición {edition} (descarga TeX Live)…' ;;
     done) M='Listo.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
@@ -428,6 +434,7 @@ msg_fr() {
     edition_show) M='Édition de TeX Live : {edition} (standard : tous les packages sans manuels, environ 12 GB ; full : avec manuels et sources, environ 23 GB)' ;;
     edition_already) M='Déjà en édition {edition}' ;;
     images_fallback) M='Alibaba Cloud n’a pas encore les images de cette version.' ;;
+    texlive_update) M='Cette mise à jour contient TeX Live {year} : le téléchargement prend plus de temps. Merci de patienter…' ;;
     edition_switching) M='Passage à l’édition {edition} (télécharge TeX Live)…' ;;
     done) M='Terminé.' ;;
     edition_usage) M='Utilisation : coltex edition [standard | full]' ;;
@@ -488,6 +495,7 @@ msg_de() {
     edition_show) M='TeX-Live-Edition: {edition} (standard: alle Pakete ohne Handbücher, etwa 12 GB; full: mit Handbüchern und Quellen, etwa 23 GB)' ;;
     edition_already) M='Bereits die Edition {edition}' ;;
     images_fallback) M='Alibaba Cloud hat die Images dieser Version noch nicht.' ;;
+    texlive_update) M='Dieses Update enthält TeX Live {year}, daher dauert der Download länger. Bitte warten…' ;;
     edition_switching) M='Wechsel zur Edition {edition} (lädt TeX Live herunter)…' ;;
     done) M='Fertig.' ;;
     edition_usage) M='Verwendung: coltex edition [standard | full]' ;;
@@ -548,6 +556,7 @@ msg_pt_BR() {
     edition_show) M='Edição do TeX Live: {edition} (standard: todos os pacotes sem manuais, cerca de 12 GB em disco; full: com manuais e fontes, cerca de 23 GB)' ;;
     edition_already) M='Já está na edição {edition}' ;;
     images_fallback) M='A Alibaba Cloud ainda não tem as imagens desta versão.' ;;
+    texlive_update) M='Esta atualização inclui o TeX Live {year}, então o download demora mais. Aguarde…' ;;
     edition_switching) M='Mudando para a edição {edition} (baixa o TeX Live)…' ;;
     done) M='Concluído.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
@@ -608,6 +617,7 @@ msg_it() {
     edition_show) M='Edizione di TeX Live: {edition} (standard: tutti i pacchetti senza manuali, circa 12 GB; full: con manuali e sorgenti, circa 23 GB)' ;;
     edition_already) M='È già l’edizione {edition}' ;;
     images_fallback) M='Alibaba Cloud non ha ancora le immagini di questa versione.' ;;
+    texlive_update) M='Questo aggiornamento include TeX Live {year}, quindi il download richiede più tempo. Attendi…' ;;
     edition_switching) M='Passaggio all’edizione {edition} (scarica TeX Live)…' ;;
     done) M='Fatto.' ;;
     edition_usage) M='Uso: coltex edition [standard | full]' ;;
@@ -668,6 +678,7 @@ msg_ru() {
     edition_show) M='Редакция TeX Live: {edition} (standard: все пакеты без руководств, около 12 GB; full: с руководствами и исходниками, около 23 GB)' ;;
     edition_already) M='Уже установлена редакция {edition}' ;;
     images_fallback) M='В Alibaba Cloud пока нет образов этой версии.' ;;
+    texlive_update) M='Это обновление содержит TeX Live {year}, поэтому загрузка займёт больше времени. Пожалуйста, подождите…' ;;
     edition_switching) M='Переключение на редакцию {edition} (загружается TeX Live)…' ;;
     done) M='Готово.' ;;
     edition_usage) M='Использование: coltex edition [standard | full]' ;;
@@ -728,6 +739,7 @@ msg_tr() {
     edition_show) M='TeX Live sürümü: {edition} (standard: kılavuzlar olmadan tüm paketler, yaklaşık 12 GB; full: kılavuzlar ve kaynaklarla, yaklaşık 23 GB)' ;;
     edition_already) M='Zaten bu sürüm kullanılıyor: {edition}' ;;
     images_fallback) M='Alibaba Cloud’da bu sürümün imajları henüz yok.' ;;
+    texlive_update) M='Bu güncelleme TeX Live {year} içeriyor, bu yüzden indirme daha uzun sürer. Lütfen bekleyin…' ;;
     edition_switching) M='Şu sürüme geçiliyor: {edition} (TeX Live indirilir)…' ;;
     done) M='Bitti.' ;;
     edition_usage) M='Kullanım: coltex edition [standard | full]' ;;
@@ -788,6 +800,7 @@ msg_vi() {
     edition_show) M='Phiên bản TeX Live: {edition} (standard: mọi gói, không kèm tài liệu, khoảng 12 GB; full: kèm tài liệu và mã nguồn, khoảng 23 GB)' ;;
     edition_already) M='Đang dùng phiên bản {edition} rồi' ;;
     images_fallback) M='Alibaba Cloud chưa có image của phiên bản này.' ;;
+    texlive_update) M='Bản cập nhật này có TeX Live {year} nên tải xuống sẽ lâu hơn. Vui lòng chờ…' ;;
     edition_switching) M='Đang chuyển sang phiên bản {edition} (tải TeX Live)…' ;;
     done) M='Xong.' ;;
     edition_usage) M='Cách dùng: coltex edition [standard | full]' ;;
@@ -848,6 +861,7 @@ msg_id() {
     edition_show) M='Edisi TeX Live: {edition} (standard: semua paket tanpa manual, sekitar 12 GB; full: dengan manual dan sumber, sekitar 23 GB)' ;;
     edition_already) M='Sudah menggunakan edisi {edition}' ;;
     images_fallback) M='Alibaba Cloud belum punya image versi ini.' ;;
+    texlive_update) M='Pembaruan ini menyertakan TeX Live {year}, jadi unduhan lebih lama. Mohon tunggu…' ;;
     edition_switching) M='Beralih ke edisi {edition} (mengunduh TeX Live)…' ;;
     done) M='Selesai.' ;;
     edition_usage) M='Penggunaan: coltex edition [standard | full]' ;;
@@ -1211,6 +1225,21 @@ from_github() {
     docker image rm "$github" >/dev/null 2>&1 || true
   done
 }
+# A new TeX Live is several GB: say so before the download, which goes ahead anyway (user's
+# decision). Run before the image tag changes: the compiler's image now is the one to compare.
+# Images from before the labels count as a new TeX Live (their layers are all new).
+texlive_note() {
+  local edition year want have image
+  edition="$(get COLTEX_EDITION)"
+  [ "$edition" = full ] || edition=standard
+  year="$(sed -n 's/^ARG TEXLIVE_YEAR=//p' "$DIR/services/compiler/Dockerfile" | head -1)"
+  want="$(sed -n "s/^ARG TEXLIVE_$(echo "$edition" | tr a-z A-Z)=//p" "$DIR/services/compiler/Dockerfile" | head -1)"
+  [ -n "$year" ] && [ -n "$want" ] || return 0
+  image="$(docker compose config --images compiler 2>/dev/null | head -1)"
+  have=""
+  [ -n "$image" ] && have="$(docker image inspect -f "{{ index .Config.Labels \"org.coltex.texlive.$edition\" }}" "$image" 2>/dev/null || true)"
+  [ "$have" = "$want" ] || note "$(T texlive_update year="$year")"
+}
 # The user id owning a file (GNU and busybox stat, then BSD's).
 owner() { stat -c %u "$1" 2>/dev/null || stat -f %u "$1" 2>/dev/null || true; }
 # ./data and the two folders the compiler mounts, made and owned by the user the containers run
@@ -1258,6 +1287,7 @@ finish_update() {
   # Installs whose PATH line went only into ~/.bashrc, which SSH logins don't read.
   if [ -L "$HOME/.local/bin/coltex" ] && [ ! -e /usr/local/bin/coltex ] && path_started; then add_to_path || true; fi
   T updating from="$1" to="$(current)"
+  texlive_note
   setting COLTEX_IMAGE_TAG "$2"
   # Until the new images run: an update that stopped half way (no images, a broken download) is
   # finished by running it again, though the checkout already says the new version.

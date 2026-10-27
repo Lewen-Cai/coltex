@@ -35,7 +35,7 @@ Ardından `coltex` ile yönetin:
 | --- | --- |
 | `coltex status` / `logs` | Durum / günlükler |
 | `coltex edition [standard\|full]` | TeX Live sürümünü gösterir veya değiştirir (diğer derleyici imajını indirir) |
-| `coltex update` | En son sürüme günceller (yeni imajları indirir); veriler ve ayarlar kalır |
+| `coltex update` | En son sürüme günceller, yalnızca değişenleri indirir (yeni TeX Live getiren yıllık güncelleme daha uzun sürer); veriler ve ayarlar kalır |
 | `coltex stop` / `start` | Durdurur / başlatır |
 | `coltex tailscale up` | tailnet’inize katılır (bir oturum açma bağlantısı ve QR kodu yazdırır) |
 | `coltex cloudflare quick` | Geçici bir genel Cloudflare adresi |

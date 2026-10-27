@@ -35,7 +35,7 @@ curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.e
 | --- | --- |
 | `coltex status` / `logs` | 状態 / ログ |
 | `coltex edition [standard\|full]` | TeX Live のエディションを表示または切り替え（もう一方のコンパイライメージをダウンロードします） |
-| `coltex update` | 最新のリリースに更新（新しいイメージをダウンロードします）。データと設定はそのまま残ります |
+| `coltex update` | 最新のリリースに更新（変わった部分だけをダウンロードします。新しい TeX Live を含む年に一度の更新は時間がかかります）。データと設定はそのまま残ります |
 | `coltex stop` / `start` | 停止 / 起動 |
 | `coltex tailscale up` | tailnet に参加（ログインリンクと QR コードを表示します） |
 | `coltex cloudflare quick` | Cloudflare の一時的な公開アドレス |

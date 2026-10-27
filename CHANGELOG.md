@@ -21,6 +21,7 @@ Export to Word, the AI agent on the web, 60 templates across twelve fields, grou
 ### Improved
 
 - New project: **Import template** is the first card of the template list, and a search field finds templates by name or description.
+- Updates download only what changed: TeX Live stays the same for a year (TeX Live 2026 now; it moves with each year's release), and ColTex's own part is the compiler image's last layer, so an update is usually some tens of megabytes instead of several gigabytes. The update that brings a new TeX Live says so.
 - The AI agent answers in the language of the interface (unless spoken to in another one).
 - The log has no "Ask AI" button on each error any more: it had the AI agent fix the error, not explain it. **Fix with AI** at the top hands over the build's errors.
 - The compiler runs as many builds at once as its CPUs and memory allow (two before), and fewer while memory is low. The administration overview shows how many.

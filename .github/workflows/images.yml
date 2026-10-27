@@ -97,9 +97,11 @@ jobs:
           build-args: ${{ matrix.edition && format('EDITION={0}', matrix.edition) || '' }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
-          # The server's layers are small enough for the Actions cache; TeX Live's are not.
-          cache-from: ${{ matrix.image == 'server' && format('type=gha,scope={0}', env.PAIR) || '' }}
-          cache-to: ${{ matrix.image == 'server' && format('type=gha,scope={0},mode=max', env.PAIR) || '' }}
+          # The server's layers are small enough for the Actions cache; TeX Live's go to a cache
+          # image beside the compiler's. Unchanged layers then come out the same, so an update
+          # downloads only what changed (TeX Live is pinned, ColTex's worker is the last layer).
+          cache-from: ${{ matrix.image == 'server' && format('type=gha,scope={0}', env.PAIR) || format('type=registry,ref={0}:buildcache-{1}', env.IMAGE, env.PAIR) }}
+          cache-to: ${{ matrix.image == 'server' && format('type=gha,scope={0},mode=max', env.PAIR) || format('type=registry,ref={0}:buildcache-{1},mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true', env.IMAGE, env.PAIR) }}
 
       - name: Keep the digest
         run: |

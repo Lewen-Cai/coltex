@@ -35,7 +35,7 @@ curl -fsSL https://coltexeditor.github.io/install.sh | bash -s -- --domain tex.e
 | --- | --- |
 | `coltex status` / `logs` | 狀態 / 記錄檔 |
 | `coltex edition [standard\|full]` | 顯示或切換 TeX Live 版本（會下載另一個編譯器映像檔） |
-| `coltex update` | 更新到最新版本（會下載新的映像檔）；資料和設定都會保留 |
+| `coltex update` | 更新到最新版本，只下載有變動的部分（每年一次帶新版 TeX Live 的更新會久一些）；資料和設定都會保留 |
 | `coltex stop` / `start` | 停止 / 啟動 |
 | `coltex tailscale up` | 加入你的 tailnet（會列出登入連結和 QR 碼） |
 | `coltex cloudflare quick` | 臨時的 Cloudflare 公開網址 |

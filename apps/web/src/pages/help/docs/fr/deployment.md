@@ -35,7 +35,7 @@ Gérez-le ensuite avec `coltex` :
 | --- | --- |
 | `coltex status` / `logs` | État / journaux |
 | `coltex edition [standard\|full]` | Affiche ou change l’édition de TeX Live (télécharge l’autre image du compilateur) |
-| `coltex update` | Met à jour vers la dernière version publiée (télécharge les nouvelles images) ; les données et les réglages sont conservés |
+| `coltex update` | Met à jour vers la dernière version publiée en ne téléchargeant que ce qui a changé (la mise à jour annuelle qui apporte un nouveau TeX Live est plus longue) ; les données et les réglages restent |
 | `coltex stop` / `start` | Arrêter / démarrer |
 | `coltex tailscale up` | Rejoindre votre tailnet (affiche un lien de connexion et un code QR) |
 | `coltex cloudflare quick` | Une adresse Cloudflare publique temporaire |

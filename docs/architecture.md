@@ -271,7 +271,15 @@ lookups run in the compiler container on their own queue (`texlive`), with
 validated names and no shell. The compiler image comes in two editions
 (`COLTEX_EDITION`): `standard` (default, `texlive/texlive:latest`, the full
 scheme without manuals and sources, about 9 GB) and `full`
-(`latest-full-doc-src`, about 20 GB). Workers report which they are; without
+(`latest-full-doc-src`, about 20 GB). Both are pinned by digest
+(`TEXLIVE_YEAR`, `TEXLIVE_STANDARD`, `TEXLIVE_FULL` in the Dockerfile) and move
+to each year's TeX Live release, within a year only for a serious security fix.
+The image's layers are the system, TeX Live in parts, then Node and the worker,
+and builds share a registry cache (`buildcache-<image>-<platform>` tags beside
+the compiler's), so unchanged layers come out the same and an update that keeps
+TeX Live downloads only the last ones. `coltex update` compares the pinned image
+with the running compiler's `org.coltex.texlive.*` labels and says when an
+update brings a new TeX Live. Workers report which edition they are; without
 manuals the assistant isn't offered `texlive_doc` and its prompt says so.
 
 **Configuration** (`apps/server/src/ai/service.ts`, admin page): every Pi

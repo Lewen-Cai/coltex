@@ -35,7 +35,7 @@ Sau đó quản lý bằng `coltex`:
 | --- | --- |
 | `coltex status` / `logs` | Trạng thái / nhật ký |
 | `coltex edition [standard\|full]` | Hiển thị hoặc chuyển phiên bản TeX Live (tải image trình biên dịch còn lại) |
-| `coltex update` | Cập nhật lên bản phát hành mới nhất (tải các image mới); dữ liệu và cài đặt được giữ nguyên |
+| `coltex update` | Cập nhật lên bản phát hành mới nhất, chỉ tải phần thay đổi (bản cập nhật hằng năm có TeX Live mới sẽ lâu hơn); dữ liệu và cài đặt được giữ nguyên |
 | `coltex stop` / `start` | Dừng / khởi động |
 | `coltex tailscale up` | Tham gia tailnet của bạn (in ra liên kết đăng nhập và mã QR) |
 | `coltex cloudflare quick` | Một địa chỉ Cloudflare công khai tạm thời |
