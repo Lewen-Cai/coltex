@@ -827,28 +827,24 @@ function WebSearchCard({
   onChanged: () => Promise<void>
 }) {
   const web = state.settings.web
-  const service = web.search
   const [connecting, setConnecting] = useState<{ service?: WebSearchService }>()
-  const stored = !!service && state.web.keys.includes(service)
-  const fromProvider = service === 'deepseek' && !stored && state.web.deepseekConnected
-  const ready = !!service && (stored || fromProvider)
 
-  const remove = async () => {
-    if (!service) return
+  const remove = async (service: WebSearchService) => {
     if (!(await confirmDialog({ title: t('Remove {name}?', { name: SERVICE_NAMES[service] }), confirmLabel: t('Remove'), destructive: true }))) return
     try {
-      if (stored) await api.aiDeleteWebKey(service)
-      await onSave({ web: { ...web, search: null } }, t('Removed {name}', { name: SERVICE_NAMES[service] }))
+      if (state.web.keys.includes(service)) await api.aiDeleteWebKey(service)
+      const services = web.services.filter(s => s !== service)
+      // Removing the service in use hands the search to the next one connected.
+      await onSave({ web: { ...web, services, search: web.search === service ? (services[0] ?? null) : web.search } }, t('Removed {name}', { name: SERVICE_NAMES[service] }))
     } catch (err) {
       toast.error((err as Error).message)
     }
   }
 
-  const test = async () => {
-    if (!service) return
+  const test = async (service: WebSearchService) => {
     const id = toast.loading(t('Testing {name}…', { name: SERVICE_NAMES[service] }))
     try {
-      const r = await api.aiTestWebSearch()
+      const r = await api.aiTestWebSearch(service)
       if (r.ok) toast.success(plural(r.results, '{n} result in {seconds} s', '{n} results in {seconds} s', { seconds: (r.ms / 1000).toFixed(1) }), { id, description: r.message })
       else toast.error(r.message, { id })
     } catch (err) {
@@ -856,10 +852,12 @@ function WebSearchCard({
     }
   }
 
+  const use = (service: WebSearchService) => void onSave({ web: { ...web, search: service } }, t('{name} is used for search', { name: SERVICE_NAMES[service] }))
+
   const setNative = (provider: string, on: boolean) =>
     void onSave({ web: { ...web, nativeOff: on ? web.nativeOff.filter(p => p !== provider) : [...web.nativeOff, provider] } }, t('Web search updated'))
 
-  const tiles = state.web.native.length + (service ? 1 : 0)
+  const tiles = state.web.native.length + web.services.length
   return (
     <Card>
       <CardHeader>
@@ -918,41 +916,62 @@ function WebSearchCard({
                 </div>
               )
             })}
-            {service && (
-              <div className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-shadow hover:shadow-md">
-                <span className="rounded-lg border bg-background p-2">
-                  <ServiceIcon service={service} className="size-6" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium">{SERVICE_NAMES[service]}</div>
-                  <div className={cn('flex items-center gap-1.5 text-xs', ready ? 'text-muted-foreground' : 'text-amber-700 dark:text-amber-400')}>
-                    <span className={cn('size-1.5 shrink-0 rounded-full', ready ? 'bg-emerald-500' : 'bg-amber-500')} />
-                    <span className="truncate">{stored ? t('API key') : fromProvider ? t('Uses the DeepSeek provider’s key') : t('No API key')}</span>
+            {web.services.map(service => {
+              const stored = state.web.keys.includes(service)
+              const fromProvider = service === 'deepseek' && !stored && state.web.deepseekConnected
+              const ready = stored || fromProvider
+              const inUse = web.search === service
+              return (
+                <div
+                  key={service}
+                  className={cn('flex items-center gap-3 rounded-xl border bg-card p-3 transition-shadow hover:shadow-md', inUse && 'border-primary ring-1 ring-primary/30')}
+                >
+                  <span className="rounded-lg border bg-background p-2">
+                    <ServiceIcon service={service} className="size-6" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium">{SERVICE_NAMES[service]}</span>
+                      {inUse && (
+                        <Badge variant="outline" className="shrink-0 border-primary/40 text-primary">
+                          {t('In use')}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className={cn('flex items-center gap-1.5 text-xs', ready ? 'text-muted-foreground' : 'text-amber-700 dark:text-amber-400')}>
+                      <span className={cn('size-1.5 shrink-0 rounded-full', !ready ? 'bg-amber-500' : inUse ? 'bg-emerald-500' : 'bg-muted-foreground/40')} />
+                      <span className="truncate">{stored ? t('API key') : fromProvider ? t('Uses the DeepSeek provider’s key') : t('No API key')}</span>
+                    </div>
                   </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" aria-label={t('{name} actions', { name: SERVICE_NAMES[service] })}>
-                      <MoreHorizontal />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {ready && (
-                      <DropdownMenuItem onSelect={() => void test()}>
-                        <Zap /> {t('Test')}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon-sm" aria-label={t('{name} actions', { name: SERVICE_NAMES[service] })}>
+                        <MoreHorizontal />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {!inUse && (
+                        <DropdownMenuItem onSelect={() => use(service)}>
+                          <Check /> {t('Use for search')}
+                        </DropdownMenuItem>
+                      )}
+                      {ready && (
+                        <DropdownMenuItem onSelect={() => void test(service)}>
+                          <Zap /> {t('Test')}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem onSelect={() => setConnecting({ service })}>
+                        <KeyRound /> {stored ? t('Change API key') : t('Set API key')}
                       </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem onSelect={() => setConnecting({ service })}>
-                      <KeyRound /> {stored ? t('Change API key') : t('Set API key')}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem variant="destructive" onSelect={() => void remove()}>
-                      <Trash2 /> {t('Remove')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive" onSelect={() => void remove(service)}>
+                        <Trash2 /> {t('Remove')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )
+            })}
           </div>
         )}
       </CardContent>
@@ -971,7 +990,7 @@ function WebSearchCard({
   )
 }
 
-/** Picks the search service (one at a time) and takes its key, like connecting a provider. */
+/** Connects a search service with its key, like connecting a provider; the first one connected is used. */
 function SearchConnectDialog(props: {
   open: boolean
   initial?: WebSearchService
@@ -995,9 +1014,8 @@ function SearchConnectDialog(props: {
     setBusy(true)
     try {
       if (withKey) await api.aiSetWebKey(picked, key.trim())
-      // One service at a time: the one it replaces doesn't keep its key.
-      if (web.search && web.search !== picked && props.state.web.keys.includes(web.search)) await api.aiDeleteWebKey(web.search)
-      await api.aiUpdateSettings({ web: { ...web, search: picked } })
+      // Another service joins the connected ones; the one in use stays until the admin picks another.
+      await api.aiUpdateSettings({ web: { ...web, services: [...new Set([...web.services, picked])], search: web.search ?? picked } })
       await props.onConnected(SERVICE_NAMES[picked])
     } catch (err) {
       toast.error((err as Error).message)
@@ -1022,7 +1040,7 @@ function SearchConnectDialog(props: {
                       <CommandItem key={s} value={SERVICE_NAMES[s]} onSelect={() => setPicked(s)} className="gap-3 py-2">
                         <ServiceIcon service={s} className="size-5" />
                         <span className="flex-1">{SERVICE_NAMES[s]}</span>
-                        {web.search === s && (
+                        {web.services.includes(s) && (
                           <Badge variant="outline" className="gap-1">
                             <span className="size-1.5 rounded-full bg-emerald-500" /> {t('Connected')}
                           </Badge>

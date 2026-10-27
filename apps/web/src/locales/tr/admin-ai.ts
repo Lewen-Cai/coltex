@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': 'Yerleşik aramayı kapat',
   'Turn on built-in search': 'Yerleşik aramayı aç',
   'Use the DeepSeek provider’s key': 'DeepSeek sağlayıcısının anahtarını kullan',
+  'In use': 'Kullanımda',
+  'Use for search': 'Arama için kullan',
+  '{name} is used for search': 'Arama {name} ile yapılıyor',
 }
 
 export default messages

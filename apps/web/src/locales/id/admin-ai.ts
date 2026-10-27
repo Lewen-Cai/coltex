@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': 'Matikan pencarian bawaan',
   'Turn on built-in search': 'Nyalakan pencarian bawaan',
   'Use the DeepSeek provider’s key': 'Gunakan kunci penyedia DeepSeek',
+  'In use': 'Digunakan',
+  'Use for search': 'Gunakan untuk pencarian',
+  '{name} is used for search': 'Pencarian memakai {name}',
 }
 
 export default messages

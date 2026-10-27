@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': '組み込みのウェブ検索をオフにする',
   'Turn on built-in search': '組み込みのウェブ検索をオンにする',
   'Use the DeepSeek provider’s key': 'DeepSeek プロバイダーのキーを使う',
+  'In use': '使用中',
+  'Use for search': '検索に使う',
+  '{name} is used for search': '{name} を検索に使います',
 }
 
 export default messages

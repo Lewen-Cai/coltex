@@ -447,7 +447,7 @@ export const api = {
   aiTest: (model: AiModelRef) => request<{ ok: boolean; message: string; ms: number }>('/api/admin/ai/test', json('POST', model)),
   aiSetWebKey: (service: WebSearchService, key: string) => request<void>(`/api/admin/ai/web/keys/${service}`, json('PUT', { key })),
   aiDeleteWebKey: (service: WebSearchService) => request<void>(`/api/admin/ai/web/keys/${service}`, { method: 'DELETE' }),
-  aiTestWebSearch: () => request<WebSearchTestResult>('/api/admin/ai/web/test', json('POST', {})),
+  aiTestWebSearch: (service?: WebSearchService) => request<WebSearchTestResult>('/api/admin/ai/web/test', json('POST', { service })),
   aiUsage: (days = 30, userId?: string) =>
     request<AiUsageReport>(`/api/admin/ai/usage?days=${days}${userId ? `&userId=${encodeURIComponent(userId)}` : ''}`),
   aiUsers: (days = 30) => request<AiUserRow[]>(`/api/admin/ai/users?days=${days}`),

@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': 'Tắt tìm kiếm tích hợp',
   'Turn on built-in search': 'Bật tìm kiếm tích hợp',
   'Use the DeepSeek provider’s key': 'Dùng khóa của nhà cung cấp DeepSeek',
+  'In use': 'Đang dùng',
+  'Use for search': 'Dùng để tìm kiếm',
+  '{name} is used for search': 'Đang tìm kiếm bằng {name}',
 }
 
 export default messages

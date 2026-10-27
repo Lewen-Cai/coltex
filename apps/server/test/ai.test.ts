@@ -471,6 +471,33 @@ describe('AI agent', () => {
     }
   })
 
+  test('several search services can be connected, and one is in use', async () => {
+    const sent: string[] = []
+    t.webFakes.service = async url => {
+      sent.push(url)
+      return Response.json({ results: [] })
+    }
+    const settings = async (web: object) => (await api('PUT', '/admin/ai/settings', admin, { web: { nativeOff: [], ...web } })).json().web
+    try {
+      await api('PUT', '/admin/ai/web/keys/tavily', admin, { key: 'tvly-test' })
+      await api('PUT', '/admin/ai/web/keys/exa', admin, { key: 'exa-test' })
+      // Settings from before several could be connected name only the one in use.
+      assert.deepEqual(await settings({ search: 'tavily' }), { search: 'tavily', services: ['tavily'], nativeOff: [] })
+      assert.deepEqual(await settings({ search: 'tavily', services: ['tavily', 'exa'] }), { search: 'tavily', services: ['tavily', 'exa'], nativeOff: [] })
+      assert.deepEqual((await api('GET', '/admin/ai', admin)).json().web.keys, ['tavily', 'exa'], 'each keeps its key')
+      assert.equal((await settings({ search: 'exa', services: ['tavily', 'exa'] })).search, 'exa')
+      assert.equal((await api('POST', '/admin/ai/web/test', admin, {})).json().ok, true)
+      assert.equal((await api('POST', '/admin/ai/web/test', admin, { service: 'tavily' })).json().ok, true)
+      assert.deepEqual(sent, ['https://api.exa.ai/search', 'https://api.tavily.com/search'], 'the one in use, or the one named')
+      // None chosen: the first connected one is used.
+      assert.equal((await settings({ search: null, services: ['tavily', 'exa'] })).search, 'tavily')
+    } finally {
+      await settings({ search: null, services: [] })
+      await api('DELETE', '/admin/ai/web/keys/tavily', admin)
+      await api('DELETE', '/admin/ai/web/keys/exa', admin)
+    }
+  })
+
   test('Stop ends an automatic apply that is still building', async () => {
     const realBuilds = () => t.compileJobs.filter(j => j.projectId === projectId && !j.overlay).length
     const hold = (n: number) => {

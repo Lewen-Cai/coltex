@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': '关闭自带联网搜索',
   'Turn on built-in search': '打开自带联网搜索',
   'Use the DeepSeek provider’s key': '使用 DeepSeek 提供商的密钥',
+  'In use': '使用中',
+  'Use for search': '用于搜索',
+  '{name} is used for search': '已改用 {name} 搜索',
 }
 
 export default messages

@@ -22,6 +22,7 @@ import {
   AiSettingsPatch,
   WebSearchKeyBody,
   WebSearchService,
+  WebSearchTestBody,
   WebSearchTestResult,
   AiPreference,
   AiStatus,
@@ -218,9 +219,9 @@ export const aiRoutes: FastifyPluginAsyncZod<Deps> = async (app, { ai, aiSession
     return reply.code(204).send()
   })
 
-  app.post('/admin/ai/web/test', { schema: { response: { 200: WebSearchTestResult } } }, async req => {
+  app.post('/admin/ai/web/test', { schema: { body: WebSearchTestBody, response: { 200: WebSearchTestResult } } }, async req => {
     requireAdmin(req)
-    return ai.testWebSearch()
+    return ai.testWebSearch(req.body.service)
   })
 
   app.get('/admin/ai/models', { schema: { response: { 200: z.array(AiModelInfo) } } }, async req => {

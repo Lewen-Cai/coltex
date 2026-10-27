@@ -78,6 +78,17 @@ const webKeyId = (service: WebSearchService) => `web-search:${service}`
 export type WebAccess = { search: WebSearchService | null; native: boolean; read: boolean }
 export const NO_WEB: WebAccess = { search: null, native: false, read: false }
 
+/**
+ * The search service in use is one of those connected (the first one when
+ * none is chosen); settings from before several could be connected list
+ * only the one in use.
+ */
+function withServices(settings: AiSettings): AiSettings {
+  const { web } = settings
+  const services = [...new Set([...web.services, ...(web.search ? [web.search] : [])])]
+  return { ...settings, web: { ...web, services, search: web.search ?? services[0] ?? null } }
+}
+
 /** The thinking level used until someone picks one: a middle setting, adjusted to the model. */
 const DEFAULT_THINKING = 'medium'
 
@@ -253,7 +264,7 @@ export class AiService {
     const [row] = await this.db.select().from(appSettings).where(eq(appSettings.key, SETTINGS_KEY))
     const raw = (row?.value ?? {}) as Record<string, unknown>
     const parsed = AiSettings.safeParse(raw)
-    this.settings = parsed.success ? parsed.data : AiSettings.parse({})
+    this.settings = parsed.success ? withServices(parsed.data) : AiSettings.parse({})
     this.applyCustomProviders([], this.settings.customProviders)
   }
 
@@ -262,7 +273,7 @@ export class AiService {
   }
 
   async updateSettings(patch: AiSettingsPatch): Promise<AiSettings> {
-    const next = AiSettings.parse({ ...this.settings, ...patch })
+    const next = withServices(AiSettings.parse({ ...this.settings, ...patch }))
     const ids = new Set<string>()
     for (const p of next.customProviders) {
       if (ids.has(p.id)) throw new BadRequestError(`Duplicate provider id ${p.id}`)
@@ -351,9 +362,9 @@ export class AiService {
     return own || service ? { search: service, native: own, read: true } : NO_WEB
   }
 
-  /** A search with the chosen service, for the admin page. */
-  async testWebSearch(): Promise<WebSearchTestResult> {
-    const service = this.settings.web.search
+  /** A search for the admin page, with the service in use or another connected one. */
+  async testWebSearch(which?: WebSearchService): Promise<WebSearchTestResult> {
+    const service = which ?? this.settings.web.search
     if (!service) throw new BadRequestError('Choose a search service first')
     const started = Date.now()
     try {

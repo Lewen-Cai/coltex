@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': '내장 웹 검색 끄기',
   'Turn on built-in search': '내장 웹 검색 켜기',
   'Use the DeepSeek provider’s key': 'DeepSeek 제공업체의 키 사용',
+  'In use': '사용 중',
+  'Use for search': '검색에 사용',
+  '{name} is used for search': '{name}(으)로 검색합니다',
 }
 
 export default messages

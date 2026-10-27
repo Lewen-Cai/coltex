@@ -349,8 +349,9 @@ ColTex uses (Anthropic, OpenAI, ChatGPT; unless the admin turned their
 provider's off, `settings.web.nativeOff`) get it added to each request with
 pi-ai's `onPayload`, and their searches are read from the raw stream events
 (`onProviderStreamEvent`) to show as steps. Other models get `web_search`
-(the admin's search service: DeepSeek, Tavily, Exa or Brave, its API key
-stored with the provider credentials; DeepSeek falls back to the connected
+(the search service in use: DeepSeek, Tavily, Exa or Brave; several can be
+connected, `settings.web.services`, each with its API key stored with the
+provider credentials, and `settings.web.search` is the one in use; DeepSeek falls back to the connected
 DeepSeek provider's key). Either way `read_web_page` reads a page (the
 service's reader, else a GET through `url-fetch.ts`, HTML turned into text). What may leave
 the server is limited so that a model misled by a page can't send the

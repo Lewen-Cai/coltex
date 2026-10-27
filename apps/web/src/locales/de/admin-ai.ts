@@ -193,6 +193,9 @@ const messages: Record<string, string> = {
   'Turn off built-in search': 'Integrierte Suche ausschalten',
   'Turn on built-in search': 'Integrierte Suche einschalten',
   'Use the DeepSeek provider’s key': 'Schlüssel des DeepSeek-Anbieters verwenden',
+  'In use': 'Aktiv',
+  'Use for search': 'Für die Suche verwenden',
+  '{name} is used for search': 'Die Suche verwendet {name}',
 }
 
 export default messages

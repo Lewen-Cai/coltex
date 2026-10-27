@@ -1118,11 +1118,13 @@ export type WebSearchService = z.infer<typeof WebSearchService>
 
 /**
  * Web access for the AI agent: models with a built-in web search (Anthropic's
- * and OpenAI's APIs) use it unless their provider is in `nativeOff`; the
- * search service is for the other models, and optional.
+ * and OpenAI's APIs) use it unless their provider is in `nativeOff`; a search
+ * service is for the other models, and optional. Several can be connected;
+ * `search` is the one in use.
  */
 export const AiWebSettings = z.object({
   search: WebSearchService.nullable().default(null),
+  services: z.array(WebSearchService).max(WEB_SEARCH_SERVICES.length).default([]),
   nativeOff: z.array(z.string().min(1)).max(100).default([]),
 })
 export type AiWebSettings = z.infer<typeof AiWebSettings>
@@ -1134,7 +1136,7 @@ export type AiWebSettings = z.infer<typeof AiWebSettings>
 export const AiSettings = z.object({
   auto: AiAutoRouting.default({ judge: null, light: null, strong: null }),
   customProviders: z.array(CustomAiProvider).default([]),
-  web: AiWebSettings.default({ search: null, nativeOff: [] }),
+  web: AiWebSettings.default({ search: null, services: [], nativeOff: [] }),
 })
 export type AiSettings = z.infer<typeof AiSettings>
 
@@ -1201,6 +1203,10 @@ export type AiAdminState = z.infer<typeof AiAdminState>
 
 export const WebSearchKeyBody = z.object({ key: z.string().trim().min(1).max(500) })
 export type WebSearchKeyBody = z.infer<typeof WebSearchKeyBody>
+
+/** A test search from the admin page, with the service in use unless another is named. */
+export const WebSearchTestBody = z.object({ service: WebSearchService.optional() })
+export type WebSearchTestBody = z.infer<typeof WebSearchTestBody>
 
 /** A test search from the admin page. */
 export const WebSearchTestResult = z.object({ ok: z.boolean(), message: z.string(), results: z.number(), ms: z.number() })
